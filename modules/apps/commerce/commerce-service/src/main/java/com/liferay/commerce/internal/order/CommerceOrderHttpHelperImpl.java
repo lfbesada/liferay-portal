@@ -219,6 +219,10 @@ public class CommerceOrderHttpHelperImpl implements CommerceOrderHttpHelper {
 		CommerceOrder commerceOrder = getCurrentCommerceOrder(
 			httpServletRequest);
 
+		if (commerceOrder == null) {
+			return portletURL;
+		}
+
 		httpServletRequest.setAttribute(
 			CommerceCheckoutWebKeys.COMMERCE_ORDER, commerceOrder);
 
@@ -250,9 +254,8 @@ public class CommerceOrderHttpHelperImpl implements CommerceOrderHttpHelper {
 		portletURL.setParameter("commerceOrderUuid", commerceOrder.getUuid());
 		portletURL.setParameter("p_p_state", "normal");
 
-		if ((commerceOrder != null) &&
-			(commerceOrder.getCommerceAccountId() ==
-				CommerceAccountConstants.ACCOUNT_ID_GUEST)) {
+		if (commerceOrder.getCommerceAccountId() ==
+				CommerceAccountConstants.ACCOUNT_ID_GUEST) {
 
 			PortletURL checkoutPortletURL = portletURL;
 
