@@ -16,12 +16,12 @@ import {PortletBase, openSelectionModal} from 'frontend-js-web';
 import {Config} from 'metal-state';
 
 /**
- * @class MoveEntries
+ * @class SelectFolderButton
  * It adds a listener to a #selectFolderButton DOM element
  * and allows selecting a directory with itemSelector
  * @review
  */
-class MoveEntries extends PortletBase {
+class SelectFolderButton extends PortletBase {
 
 	/**
 	 * @inheritdoc
@@ -66,11 +66,18 @@ class MoveEntries extends PortletBase {
 	 * @review
 	 */
 	_handleSelectFolderButtonClick() {
+		let hiddenFolderIdInput = 'folderId';
+		const newFolderIdInput = document.getElementById(
+			this.ns('newFolderId')
+		);
+		if (newFolderIdInput) {
+			hiddenFolderIdInput = 'newFolderId';
+		}
 		openSelectionModal({
 			onSelect: (selectedItem) => {
 				if (selectedItem) {
 					var folderData = {
-						idString: 'newFolderId',
+						idString: hiddenFolderIdInput,
 						idValue: selectedItem.folderId,
 						nameString: 'folderName',
 						nameValue: selectedItem.folderName,
@@ -94,11 +101,11 @@ class MoveEntries extends PortletBase {
  * @review
  * @static
  */
-MoveEntries.STATE = {
+SelectFolderButton.STATE = {
 
 	/**
 	 * @default undefined
-	 * @memberof MoveEntries
+	 * @memberof SelectFolderButton
 	 * @required
 	 * @review
 	 * @type {string}
@@ -106,4 +113,4 @@ MoveEntries.STATE = {
 	selectFolderURL: Config.string().required(),
 };
 
-export default MoveEntries;
+export default SelectFolderButton;
