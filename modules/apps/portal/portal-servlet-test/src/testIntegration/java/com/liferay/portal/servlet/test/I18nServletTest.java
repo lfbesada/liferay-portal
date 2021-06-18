@@ -15,11 +15,13 @@
 package com.liferay.portal.servlet.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
@@ -209,6 +211,31 @@ public class I18nServletTest extends I18nServlet {
 	}
 
 	@Test
+	public void testI18nNotGroupFoundSetErrorPathAttribute() throws Exception {
+		String expectedI18nErrorPath =
+			StringPool.SLASH + LocaleUtil.SPAIN.getLanguage();
+
+		MockHttpServletRequest mockHttpServletRequest =
+			new MockHttpServletRequest();
+
+		mockHttpServletRequest.setServletPath(expectedI18nErrorPath);
+
+		mockHttpServletRequest.setAttribute(
+			WebKeys.COMPANY_ID, _group.getCompanyId());
+
+		mockHttpServletRequest.setPathInfo(
+			StringBundler.concat(
+				PropsValues.LAYOUT_FRIENDLY_URL_PRIVATE_USER_SERVLET_MAPPING,
+				"/nonexistingfriendlyurl", RandomTestUtil.randomString()));
+
+		Assert.assertNull(getI18nData(mockHttpServletRequest));
+
+		Assert.assertEquals(
+			expectedI18nErrorPath,
+			mockHttpServletRequest.getAttribute("I18nErrorPath"));
+	}
+
+	@Test
 	public void testI18nNotUseDefaultExistentLocale() throws Exception {
 		PropsValues.LOCALE_USE_DEFAULT_IF_NOT_AVAILABLE = false;
 
@@ -332,6 +359,45 @@ public class I18nServletTest extends I18nServlet {
 				"/%s-%s/", LocaleUtil.CANADA_FRENCH.getLanguage(),
 				LocaleUtil.CANADA_FRENCH.getCountry()),
 			mockHttpServletResponse.getHeader("Location"));
+	}
+
+	@Test
+	public void testServiceIfNotGroupFoundResponseForwardedToLocalized404Page()
+		throws Exception {
+
+		String layoutFriendlyUrlPageNotFound = "/web/guest/page-404";
+
+		ReflectionTestUtil.setFieldValue(
+			PropsValues.class, "LAYOUT_FRIENDLY_URL_PAGE_NOT_FOUND",
+			layoutFriendlyUrlPageNotFound);
+
+		String expectedI18nErrorPath =
+			StringPool.SLASH + LocaleUtil.SPAIN.getLanguage();
+
+		MockHttpServletRequest mockHttpServletRequest =
+			new MockHttpServletRequest();
+
+		mockHttpServletRequest.setServletPath(expectedI18nErrorPath);
+
+		mockHttpServletRequest.setAttribute(
+			WebKeys.COMPANY_ID, _group.getCompanyId());
+
+		mockHttpServletRequest.setPathInfo(
+			StringBundler.concat(
+				PropsValues.LAYOUT_FRIENDLY_URL_PRIVATE_USER_SERVLET_MAPPING,
+				"/nonexistingfriendlyurl", RandomTestUtil.randomString()));
+
+		MockHttpServletResponse mockHttpServletResponse =
+			new MockHttpServletResponse();
+
+		service(mockHttpServletRequest, mockHttpServletResponse);
+
+		Assert.assertEquals(
+			expectedI18nErrorPath + layoutFriendlyUrlPageNotFound,
+			mockHttpServletResponse.getForwardedUrl());
+		Assert.assertEquals(
+			HttpServletResponse.SC_NOT_FOUND,
+			mockHttpServletResponse.getStatus());
 	}
 
 	private Locale _getDefaultLocale(Group group) throws Exception {
