@@ -24,6 +24,12 @@ import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
@@ -42,13 +48,22 @@ import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.SessionClicks;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.product.navigation.product.menu.constants.ProductNavigationProductMenuPortletKeys;
 import com.liferay.product.navigation.product.menu.web.internal.constants.ProductNavigationProductMenuWebKeys;
+import com.liferay.site.navigation.model.SiteNavigationMenu;
+import com.liferay.site.navigation.model.SiteNavigationMenuItem;
+import com.liferay.site.navigation.service.SiteNavigationMenuItemLocalService;
+import com.liferay.site.navigation.service.SiteNavigationMenuLocalService;
+import com.liferay.site.navigation.type.SiteNavigationMenuItemType;
+import com.liferay.site.navigation.type.SiteNavigationMenuItemTypeRegistry;
 
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Objects;
 
@@ -71,6 +86,19 @@ public class LayoutsTreeDisplayContext {
 			ApplicationListWebKeys.GROUP_PROVIDER);
 		_themeDisplay = (ThemeDisplay)liferayPortletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
+		_siteNavigationMenuItemLocalService =
+			(SiteNavigationMenuItemLocalService)
+				liferayPortletRequest.getAttribute(
+					"siteNavigationMenuItemLocalService");
+		_siteNavigationMenuItemTypeRegistry =
+			(SiteNavigationMenuItemTypeRegistry)
+				liferayPortletRequest.getAttribute(
+					"siteNavigationMenuItemTypeRegistry");
+		_siteNavigationMenuLocalService =
+			(SiteNavigationMenuLocalService)liferayPortletRequest.getAttribute(
+				"siteNavigationMenuLocalService");
+
+		_siteNavigationMenuItemTypesMap = new HashMap<>();
 	}
 
 	public String getAddChildCollectionURLTemplate() throws Exception {
@@ -443,9 +471,23 @@ public class LayoutsTreeDisplayContext {
 		return portletURL.toString();
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		LayoutsTreeDisplayContext.class.getName());
+
 	private Long _groupId;
 	private final GroupProvider _groupProvider;
 	private final LiferayPortletRequest _liferayPortletRequest;
+	private Long _siteNavigationMenuId;
+	private JSONArray _siteNavigationMenuItemHierarchyJSONArray;
+	private final SiteNavigationMenuItemLocalService
+		_siteNavigationMenuItemLocalService;
+	private final SiteNavigationMenuItemTypeRegistry
+		_siteNavigationMenuItemTypeRegistry;
+	private final Map<String, SiteNavigationMenuItemType>
+		_siteNavigationMenuItemTypesMap;
+	private final SiteNavigationMenuLocalService
+		_siteNavigationMenuLocalService;
+	private Map<Long, String> _siteNavigationMenuMap;
 	private final ThemeDisplay _themeDisplay;
 
 }
