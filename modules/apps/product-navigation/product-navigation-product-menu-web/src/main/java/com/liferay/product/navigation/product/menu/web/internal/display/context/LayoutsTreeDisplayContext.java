@@ -338,6 +338,10 @@ public class LayoutsTreeDisplayContext {
 
 				return true;
 			}
+		).put(
+			"siteNavigationMenuId", _getSiteNavigationMenuId()
+		).put(
+			"siteNavigationMenuMap", _getSiteNavigationMenuMap()
 		).build();
 	}
 
@@ -369,6 +373,15 @@ public class LayoutsTreeDisplayContext {
 		}
 
 		return layout.getPlid();
+	}
+
+	public Map<String, Object> getSiteNavigationMenuData() throws Exception {
+		return HashMapBuilder.<String, Object>put(
+			"siteNavigationMenuId", _getSiteNavigationMenuId()
+		).put(
+			"siteNavigationMenuItemHierarchy",
+			_getSiteNavigationMenuItemHierarchyJSONArray()
+		).build();
 	}
 
 	public String getViewCollectionItemsURL()
@@ -458,6 +471,159 @@ public class LayoutsTreeDisplayContext {
 					ProductNavigationProductMenuWebKeys.PRIVATE_LAYOUT,
 				"false"),
 			layout.isPrivateLayout());
+	}
+
+	public boolean isSiteNavigationMenu() {
+		if (_getSiteNavigationMenuId() > 0) {
+			return true;
+		}
+
+		return false;
+	}
+
+	private JSONArray _getChildSiteNavigationMenuItemJSONArray(
+		long siteNavigationMenuId, long parentSiteNavigationMenuItemId) {
+
+		JSONArray childSiteNavigationMenuItemJSONArray =
+			JSONFactoryUtil.createJSONArray();
+
+		List<SiteNavigationMenuItem> siteNavigationMenuItemList =
+			_siteNavigationMenuItemLocalService.getSiteNavigationMenuItems(
+				siteNavigationMenuId, parentSiteNavigationMenuItemId);
+
+		for (SiteNavigationMenuItem childSiteNavigationMenuItem :
+				siteNavigationMenuItemList) {
+
+			childSiteNavigationMenuItemJSONArray.put(
+				_getSiteNavigationMenuItemJSONObject(
+					childSiteNavigationMenuItem));
+		}
+
+		return childSiteNavigationMenuItemJSONArray;
+	}
+
+	private long _getSiteNavigationMenuId() {
+		if (_siteNavigationMenuId != null) {
+			return _siteNavigationMenuId;
+		}
+
+		_siteNavigationMenuId = GetterUtil.getLong(
+			SessionClicks.get(
+				PortalUtil.getHttpServletRequest(_liferayPortletRequest),
+				getNamespace() +
+					ProductNavigationProductMenuWebKeys.SITE_NAVIGATION_MENU_ID,
+				"0"));
+
+		return _siteNavigationMenuId;
+	}
+
+	private String _getSiteNavigationMenuItemUrl(
+		SiteNavigationMenuItem siteNavigationMenuItem,
+		SiteNavigationMenuItemType siteNavigationMenuItemType) {
+
+		String url = StringPool.BLANK;
+
+		try {
+			url = siteNavigationMenuItemType.getRegularURL(
+				_liferayPortletRequest.getHttpServletRequest(),
+				siteNavigationMenuItem);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unabled to get url for siteNavigationMenuItemId: " +
+					siteNavigationMenuItem.getSiteNavigationMenuItemId(),
+				exception);
+		}
+
+		return url;
+	}
+
+	private JSONArray _getSiteNavigationMenuItemHierarchyJSONArray()
+		throws Exception {
+
+		if (_siteNavigationMenuItemHierarchyJSONArray == null) {
+			_siteNavigationMenuItemHierarchyJSONArray =
+				_getChildSiteNavigationMenuItemJSONArray(
+					_getSiteNavigationMenuId(), 0L);
+		}
+
+		if (_log.isDebugEnabled()) {
+			_log.debug(
+				StringBundler.concat(
+					"GroupId: ", getGroupId(), " SiteNavigationMenuId: ",
+					_getSiteNavigationMenuId(),
+					" SiteNavigationMenuItemHierarchy: ",
+					_siteNavigationMenuItemHierarchyJSONArray.toJSONString()));
+		}
+
+		return _siteNavigationMenuItemHierarchyJSONArray;
+	}
+
+	private JSONObject _getSiteNavigationMenuItemJSONObject(
+		SiteNavigationMenuItem siteNavigationMenuItem) {
+
+		SiteNavigationMenuItemType siteNavigationMenuItemType =
+			_getSiteNavigationMenuItemType(siteNavigationMenuItem.getType());
+
+		String title = siteNavigationMenuItemType.getTitle(
+			siteNavigationMenuItem, _themeDisplay.getSiteDefaultLocale());
+
+		String url = _getSiteNavigationMenuItemUrl(
+			siteNavigationMenuItem, siteNavigationMenuItemType);
+
+		JSONArray childSiteNavigationMenuItemJSONArray =
+			_getChildSiteNavigationMenuItemJSONArray(
+				siteNavigationMenuItem.getSiteNavigationMenuId(),
+				siteNavigationMenuItem.getSiteNavigationMenuItemId());
+
+		return JSONUtil.put(
+			"childSiteNavigationMenuItemJSONArray",
+			childSiteNavigationMenuItemJSONArray
+		).put(
+			"title", title
+		).put(
+			"url", url
+		);
+	}
+
+	private SiteNavigationMenuItemType _getSiteNavigationMenuItemType(
+		String type) {
+
+		if (!_siteNavigationMenuItemTypesMap.containsKey(type)) {
+			_siteNavigationMenuItemTypesMap.put(
+				type,
+				_siteNavigationMenuItemTypeRegistry.
+					getSiteNavigationMenuItemType(type));
+		}
+
+		return _siteNavigationMenuItemTypesMap.get(type);
+	}
+
+	private Map<Long, String> _getSiteNavigationMenuMap() {
+		if (_siteNavigationMenuMap != null) {
+			return _siteNavigationMenuMap;
+		}
+
+		_siteNavigationMenuMap = new HashMap<>();
+
+		List<SiteNavigationMenu> siteNavigationMenuList =
+			_siteNavigationMenuLocalService.getSiteNavigationMenus(
+				getGroupId());
+
+		for (SiteNavigationMenu siteNavigationMenu : siteNavigationMenuList) {
+			_siteNavigationMenuMap.put(
+				siteNavigationMenu.getSiteNavigationMenuId(),
+				siteNavigationMenu.getName());
+		}
+
+		if (_log.isDebugEnabled()) {
+			_log.debug(
+				StringBundler.concat(
+					"GroupId: ", getGroupId(), " SiteNavigationMenuMap: ",
+					MapUtil.toString(_siteNavigationMenuMap)));
+		}
+
+		return _siteNavigationMenuMap;
 	}
 
 	private String _setSelPlid(PortletURL portletURL) {

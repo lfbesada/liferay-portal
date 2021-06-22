@@ -30,4 +30,7 @@ public class ProductNavigationProductMenuWebKeys {
 
 	public static final String PRODUCT_MENU = "PRODUCT_MENU";
 
+	public static final String SITE_NAVIGATION_MENU_ID =
+		"SITE_NAVIGATION_MENU_ID";
+
 }
