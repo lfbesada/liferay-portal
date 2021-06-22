@@ -12,8 +12,67 @@
  * details.
  */
 
+import {Treeview} from 'frontend-js-components-web';
 import React from 'react';
 
-export default function NavigationMenuItemsTree() {
-	return <div></div>;
+import NavigationMenuItemsTreeNode from './NavigationMenuItemsTreeNode';
+
+const INITIAL_NODES = [
+	{
+		children: [
+			{
+				id: '1.1',
+				name: 'Pablictor',
+			},
+			{
+				children: [
+					{
+						id: '1.2.1',
+						name: 'Eudaldo',
+					},
+				],
+				id: '1.2',
+				name: 'Pabla',
+			},
+		],
+		id: '1',
+		name: 'Sandro',
+	},
+	{
+		id: '2',
+		name: 'Victor',
+	},
+	{
+		children: [
+			{
+				id: '3.1',
+				name: 'Straight line',
+			},
+		],
+		expanded: true,
+		id: '3',
+		name: 'Juan',
+	},
+	{
+		children: [
+			{
+				expanded: true,
+				id: '4.1',
+				name: 'Victor Son',
+			},
+		],
+		id: '4',
+		name: 'Victor Father',
+	},
+];
+
+export default function NavigationMenuItemsTree({nodes = INITIAL_NODES}) {
+	return (
+		<div className="m-3 navigation-menu-items-tree">
+			<Treeview
+				NodeComponent={NavigationMenuItemsTreeNode}
+				nodes={nodes}
+			/>
+		</div>
+	);
 }
