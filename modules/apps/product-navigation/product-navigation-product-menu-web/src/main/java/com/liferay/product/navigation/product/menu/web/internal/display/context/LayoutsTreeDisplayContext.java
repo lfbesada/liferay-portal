@@ -579,10 +579,12 @@ public class LayoutsTreeDisplayContext {
 				siteNavigationMenuItem.getSiteNavigationMenuItemId());
 
 		return JSONUtil.put(
-			"childSiteNavigationMenuItemJSONArray",
+			"children",
 			childSiteNavigationMenuItemJSONArray
 		).put(
-			"title", title
+			"name", title
+		).put(
+			"id", siteNavigationMenuItem.getSiteNavigationMenuItemId()
 		).put(
 			"url", url
 		);
