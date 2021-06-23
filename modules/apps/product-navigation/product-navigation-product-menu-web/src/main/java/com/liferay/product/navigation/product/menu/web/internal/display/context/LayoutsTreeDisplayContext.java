@@ -48,7 +48,6 @@ import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.SessionClicks;
@@ -342,7 +341,7 @@ public class LayoutsTreeDisplayContext {
 		).put(
 			"siteNavigationMenuId", _getSiteNavigationMenuId()
 		).put(
-			"siteNavigationMenuMap", _getSiteNavigationMenuMap()
+			"siteNavigationMenus", _getSiteNavigationMenusJSONArray()
 		).build();
 	}
 
@@ -513,31 +512,10 @@ public class LayoutsTreeDisplayContext {
 				PortalUtil.getHttpServletRequest(_liferayPortletRequest),
 				getNamespace() +
 					ProductNavigationProductMenuWebKeys.SITE_NAVIGATION_MENU_ID,
-					FFProductMenuWebConfigurationUtil.
-							getTestSiteNavigationMenuId()));
+				FFProductMenuWebConfigurationUtil.
+					getTestSiteNavigationMenuId()));
 
 		return _siteNavigationMenuId;
-	}
-
-	private String _getSiteNavigationMenuItemUrl(
-		SiteNavigationMenuItem siteNavigationMenuItem,
-		SiteNavigationMenuItemType siteNavigationMenuItemType) {
-
-		String url = StringPool.BLANK;
-
-		try {
-			url = siteNavigationMenuItemType.getRegularURL(
-				_liferayPortletRequest.getHttpServletRequest(),
-				siteNavigationMenuItem);
-		}
-		catch (Exception exception) {
-			_log.error(
-				"Unabled to get url for siteNavigationMenuItemId: " +
-					siteNavigationMenuItem.getSiteNavigationMenuItemId(),
-				exception);
-		}
-
-		return url;
 	}
 
 	private JSONArray _getSiteNavigationMenuItemHierarchyJSONArray()
@@ -579,12 +557,11 @@ public class LayoutsTreeDisplayContext {
 				siteNavigationMenuItem.getSiteNavigationMenuItemId());
 
 		return JSONUtil.put(
-			"children",
-			childSiteNavigationMenuItemJSONArray
-		).put(
-			"name", title
+			"children", childSiteNavigationMenuItemJSONArray
 		).put(
 			"id", siteNavigationMenuItem.getSiteNavigationMenuItemId()
+		).put(
+			"name", title
 		).put(
 			"url", url
 		);
@@ -603,15 +580,36 @@ public class LayoutsTreeDisplayContext {
 		return _siteNavigationMenuItemTypesMap.get(type);
 	}
 
-	private Map<Long, String> _getSiteNavigationMenuMap() {
-		if (_siteNavigationMenuMap != null) {
-			return _siteNavigationMenuMap;
+	private String _getSiteNavigationMenuItemUrl(
+		SiteNavigationMenuItem siteNavigationMenuItem,
+		SiteNavigationMenuItemType siteNavigationMenuItemType) {
+
+		String url = StringPool.BLANK;
+
+		try {
+			url = siteNavigationMenuItemType.getRegularURL(
+				_liferayPortletRequest.getHttpServletRequest(),
+				siteNavigationMenuItem);
+		}
+		catch (Exception exception) {
+			_log.error(
+				"Unabled to get url for siteNavigationMenuItemId: " +
+					siteNavigationMenuItem.getSiteNavigationMenuItemId(),
+				exception);
 		}
 
-		_siteNavigationMenuMap = new HashMap<>();
+		return url;
+	}
+
+	private JSONArray _getSiteNavigationMenusJSONArray() {
+		if (_siteNavigationMenuJSONArray != null) {
+			return _siteNavigationMenuJSONArray;
+		}
+
+		_siteNavigationMenuJSONArray = JSONFactoryUtil.createJSONArray();
 
 		if (!FFProductMenuWebConfigurationUtil.isSiteNavigationMenuEnabled()) {
-			return _siteNavigationMenuMap;
+			return _siteNavigationMenuJSONArray;
 		}
 
 		List<SiteNavigationMenu> siteNavigationMenuList =
@@ -619,19 +617,23 @@ public class LayoutsTreeDisplayContext {
 				getGroupId());
 
 		for (SiteNavigationMenu siteNavigationMenu : siteNavigationMenuList) {
-			_siteNavigationMenuMap.put(
-				siteNavigationMenu.getSiteNavigationMenuId(),
-				siteNavigationMenu.getName());
+			_siteNavigationMenuJSONArray.put(
+				JSONUtil.put(
+					"name", siteNavigationMenu.getName()
+				).put(
+					"siteNavigationMenuId",
+					siteNavigationMenu.getSiteNavigationMenuId()
+				));
 		}
 
 		if (_log.isDebugEnabled()) {
 			_log.debug(
 				StringBundler.concat(
-					"GroupId: ", getGroupId(), " SiteNavigationMenuMap: ",
-					MapUtil.toString(_siteNavigationMenuMap)));
+					"GroupId: ", getGroupId(), " SiteNavigationMenuJSONArray: ",
+					_siteNavigationMenuJSONArray));
 		}
 
-		return _siteNavigationMenuMap;
+		return _siteNavigationMenuJSONArray;
 	}
 
 	private String _setSelPlid(PortletURL portletURL) {
@@ -659,9 +661,9 @@ public class LayoutsTreeDisplayContext {
 		_siteNavigationMenuItemTypeRegistry;
 	private final Map<String, SiteNavigationMenuItemType>
 		_siteNavigationMenuItemTypesMap;
+	private JSONArray _siteNavigationMenuJSONArray;
 	private final SiteNavigationMenuLocalService
 		_siteNavigationMenuLocalService;
-	private Map<Long, String> _siteNavigationMenuMap;
 	private final ThemeDisplay _themeDisplay;
 
 }
