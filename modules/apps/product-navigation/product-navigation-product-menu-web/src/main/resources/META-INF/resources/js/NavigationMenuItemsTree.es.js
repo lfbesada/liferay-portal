@@ -17,61 +17,14 @@ import React from 'react';
 
 import NavigationMenuItemsTreeNode from './NavigationMenuItemsTreeNode';
 
-const INITIAL_NODES = [
-	{
-		children: [
-			{
-				id: '1.1',
-				name: 'Pablictor',
-			},
-			{
-				children: [
-					{
-						id: '1.2.1',
-						name: 'Eudaldo',
-					},
-				],
-				id: '1.2',
-				name: 'Pabla',
-			},
-		],
-		id: '1',
-		name: 'Sandro',
-	},
-	{
-		id: '2',
-		name: 'Victor',
-	},
-	{
-		children: [
-			{
-				id: '3.1',
-				name: 'Straight line',
-			},
-		],
-		expanded: true,
-		id: '3',
-		name: 'Juan',
-	},
-	{
-		children: [
-			{
-				expanded: true,
-				id: '4.1',
-				name: 'Victor Son',
-			},
-		],
-		id: '4',
-		name: 'Victor Father',
-	},
-];
-
-export default function NavigationMenuItemsTree({nodes = INITIAL_NODES}) {
+export default function NavigationMenuItemsTree({
+	siteNavigationMenuItemHierarchy,
+}) {
 	return (
-		<div className="m-3 navigation-menu-items-tree">
+		<div className="navigation-menu-items-tree">
 			<Treeview
 				NodeComponent={NavigationMenuItemsTreeNode}
-				nodes={nodes}
+				nodes={siteNavigationMenuItemHierarchy}
 			/>
 		</div>
 	);

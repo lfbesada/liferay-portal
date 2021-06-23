@@ -12,12 +12,17 @@
  * details.
  */
 
+import classNames from 'classnames';
 import React from 'react';
 
 export default function NavigationMenuItemsTreeNode({node}) {
 	return (
-		<div>
-			<p>{node.name}</p>
+		<div className={classNames({'text-bold': node.selected})}>
+			{node.url ? (
+				<a href={node.url}>{node.name}</a>
+			) : (
+				<p className="m-0">{node.name}</p>
+			)}
 		</div>
 	);
 }
