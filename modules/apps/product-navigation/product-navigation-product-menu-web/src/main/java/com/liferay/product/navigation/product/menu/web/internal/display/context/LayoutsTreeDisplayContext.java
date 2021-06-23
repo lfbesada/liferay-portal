@@ -55,6 +55,7 @@ import com.liferay.portal.kernel.util.SessionClicks;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.product.navigation.product.menu.constants.ProductNavigationProductMenuPortletKeys;
 import com.liferay.product.navigation.product.menu.web.internal.constants.ProductNavigationProductMenuWebKeys;
+import com.liferay.product.navigation.product.menu.web.internal.util.FFProductMenuWebConfigurationUtil;
 import com.liferay.site.navigation.model.SiteNavigationMenu;
 import com.liferay.site.navigation.model.SiteNavigationMenuItem;
 import com.liferay.site.navigation.service.SiteNavigationMenuItemLocalService;
@@ -512,7 +513,8 @@ public class LayoutsTreeDisplayContext {
 				PortalUtil.getHttpServletRequest(_liferayPortletRequest),
 				getNamespace() +
 					ProductNavigationProductMenuWebKeys.SITE_NAVIGATION_MENU_ID,
-				"0"));
+					FFProductMenuWebConfigurationUtil.
+							getTestSiteNavigationMenuId()));
 
 		return _siteNavigationMenuId;
 	}
@@ -605,6 +607,10 @@ public class LayoutsTreeDisplayContext {
 		}
 
 		_siteNavigationMenuMap = new HashMap<>();
+
+		if (!FFProductMenuWebConfigurationUtil.isSiteNavigationMenuEnabled()) {
+			return _siteNavigationMenuMap;
+		}
 
 		List<SiteNavigationMenu> siteNavigationMenuList =
 			_siteNavigationMenuLocalService.getSiteNavigationMenus(
