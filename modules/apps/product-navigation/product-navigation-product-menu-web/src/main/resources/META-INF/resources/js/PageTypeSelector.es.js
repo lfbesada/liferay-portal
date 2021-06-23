@@ -24,12 +24,36 @@ function PageTypeSelector(props) {
 
 	const handleOnChange = useCallback(
 		(event) => {
-			const pageType = event.target.value;
+			const value = event.target.value;
 
-			Liferay.Util.Session.set(
-				`${props.namespace}PRIVATE_LAYOUT`,
-				pageType === 'private-pages'
-			).then(() => Liferay.Util.navigate(window.location.href));
+			if (value === 'private-pages' || value === 'public-pages') {
+				Liferay.Util.Session.set(
+					`${props.namespace}SITE_NAVIGATION_MENU_ID`,
+					value === 'private-pages'
+				)
+					.then(() =>
+						Liferay.Util.Session.set(
+							`${props.namespace}PRIVATE_LAYOUT`,
+							value === 'private-pages'
+						)
+					)
+					.then(() => Liferay.Util.navigate(window.location.href));
+			}
+			else {
+				Liferay.Util.Session.set(
+					`${props.namespace}PRIVATE_LAYOUT`,
+					null
+				)
+					.then(() => {
+						Liferay.Util.Session.set(
+							`${props.namespace}SITE_NAVIGATION_MENU_ID`,
+							value
+						);
+					})
+					.then(() => {
+						Liferay.Util.navigate(window.location.href);
+					});
+			}
 		},
 		[props.namespace]
 	);
@@ -50,7 +74,11 @@ function PageTypeSelector(props) {
 				<select
 					className="form-control form-control-sm"
 					defaultValue={
-						props.privateLayout ? 'private-pages' : 'public-pages'
+						props.siteNavigationMenuId > 0
+							? props.siteNavigationMenuId
+							: props.privateLayout
+							? 'private-pages'
+							: 'public-pages'
 					}
 					onChange={handleOnChange}
 				>
@@ -60,6 +88,16 @@ function PageTypeSelector(props) {
 					<option value="private-pages">
 						{Liferay.Language.get('private-pages')}
 					</option>
+					{props.siteNavigationMenus.map(
+						({name, siteNavigationMenuId}) => (
+							<option
+								key={siteNavigationMenuId}
+								value={siteNavigationMenuId}
+							>
+								{name}
+							</option>
+						)
+					)}
 				</select>
 			</div>
 
