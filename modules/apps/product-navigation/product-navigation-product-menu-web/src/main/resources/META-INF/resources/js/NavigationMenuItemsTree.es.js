@@ -18,13 +18,15 @@ import React from 'react';
 import NavigationMenuItemsTreeNode from './NavigationMenuItemsTreeNode';
 
 export default function NavigationMenuItemsTree({
-	siteNavigationMenuItemHierarchy,
+	selectedSiteNavigationMenuItemId,
+	siteNavigationMenuItems,
 }) {
 	return (
 		<div className="navigation-menu-items-tree">
 			<Treeview
 				NodeComponent={NavigationMenuItemsTreeNode}
-				nodes={siteNavigationMenuItemHierarchy}
+				initialSelectedNodeIds={[selectedSiteNavigationMenuItemId]}
+				nodes={siteNavigationMenuItems}
 			/>
 		</div>
 	);

@@ -19,93 +19,84 @@ import ClayLink from '@clayui/link';
 import PropTypes from 'prop-types';
 import React, {useCallback, useState} from 'react';
 
-function PageTypeSelector(props) {
-	const [active, setActive] = useState(false);
+function PageTypeSelector({
+	addCollectionLayoutURL,
+	addLayoutURL,
+	configureLayoutSetURL,
+	namespace,
+	pageTypeOptions,
+	pageTypeSelectedOption,
+	pageTypeSelectedOptionLabel,
+	showAddIcon,
+}) {
+	const [addPageDropdownActive, setAddPageDropdownActive] = useState(false);
+	const [pageTypeDropdownActive, setPageTypeDropdownActive] = useState(false);
 
-	const handleOnChange = useCallback(
-		(event) => {
-			const value = event.target.value;
-
-			if (value === 'private-pages' || value === 'public-pages') {
-				Liferay.Util.Session.set(
-					`${props.namespace}SITE_NAVIGATION_MENU_ID`,
-					value === 'private-pages'
-				)
-					.then(() =>
-						Liferay.Util.Session.set(
-							`${props.namespace}PRIVATE_LAYOUT`,
-							value === 'private-pages'
-						)
-					)
-					.then(() => Liferay.Util.navigate(window.location.href));
-			}
-			else {
-				Liferay.Util.Session.set(
-					`${props.namespace}PRIVATE_LAYOUT`,
-					null
-				)
-					.then(() => {
-						Liferay.Util.Session.set(
-							`${props.namespace}SITE_NAVIGATION_MENU_ID`,
-							value
-						);
-					})
-					.then(() => {
-						Liferay.Util.navigate(window.location.href);
-					});
-			}
-		},
-		[props.namespace]
-	);
+	const handleSelect = (type) => {
+		Liferay.Util.Session.set(
+			`${namespace}PAGE_TYPE_SELECTED_OPTION`,
+			type
+		).then(() => {
+			Liferay.Util.navigate(window.location.href);
+		});
+	};
 
 	const handleOnAddCollectionPageClick = useCallback(() => {
-		setActive(false);
-		Liferay.Util.navigate(props.addCollectionLayoutURL);
-	}, [props.addCollectionLayoutURL]);
+		setAddPageDropdownActive(false);
+		Liferay.Util.navigate(addCollectionLayoutURL);
+	}, [addCollectionLayoutURL]);
 
 	const handleOnAddPageClick = useCallback(() => {
-		setActive(false);
-		Liferay.Util.navigate(props.addLayoutURL);
-	}, [props.addLayoutURL]);
+		setAddPageDropdownActive(false);
+		Liferay.Util.navigate(addLayoutURL);
+	}, [addLayoutURL]);
 
 	return (
 		<div className="align-items-center d-flex page-type-selector">
-			<div>
-				<select
-					className="form-control form-control-sm"
-					defaultValue={
-						props.siteNavigationMenuId > 0
-							? props.siteNavigationMenuId
-							: props.privateLayout
-							? 'private-pages'
-							: 'public-pages'
-					}
-					onChange={handleOnChange}
-				>
-					<option value="public-pages">
-						{Liferay.Language.get('public-pages')}
-					</option>
-					<option value="private-pages">
-						{Liferay.Language.get('private-pages')}
-					</option>
-					{props.siteNavigationMenus.map(
-						({name, siteNavigationMenuId}) => (
-							<option
-								key={siteNavigationMenuId}
-								value={siteNavigationMenuId}
-							>
-								{name}
-							</option>
-						)
-					)}
-				</select>
-			</div>
+			<ClayDropDown
+				active={pageTypeDropdownActive}
+				onActiveChange={setPageTypeDropdownActive}
+				trigger={
+					<ClayButton
+						className="form-control-select text-left"
+						displayType="secondary"
+						small
+						type="button"
+					>
+						{pageTypeSelectedOptionLabel}
+					</ClayButton>
+				}
+			>
+				<ClayDropDown.ItemList>
+					{pageTypeOptions.map((option) => (
+						<>
+							<ClayDropDown.Item disabled key={option.value}>
+								{option.name}
+							</ClayDropDown.Item>
+							{option.items.map((item) => (
+								<ClayDropDown.Item
+									className="page-type-selector-option"
+									key={item.value}
+									onClick={() => handleSelect(item.value)}
+									symbolRight={
+										item.value === pageTypeSelectedOption
+											? 'check'
+											: null
+									}
+								>
+									{item.name}
+								</ClayDropDown.Item>
+							))}
+						</>
+					))}
+				</ClayDropDown.ItemList>
+			</ClayDropDown>
 
 			<div className="flex-fill flex-grow-1 text-right">
-				{props.showAddIcon && (
+				{showAddIcon && (
 					<ClayDropDown
-						active={active}
-						onActiveChange={setActive}
+						active={addPageDropdownActive}
+						onActiveChange={setAddPageDropdownActive}
 						trigger={
 							<ClayButton
 								aria-haspopup="true"
@@ -117,7 +108,7 @@ function PageTypeSelector(props) {
 						}
 					>
 						<ClayDropDown.ItemList>
-							{props.addLayoutURL && (
+							{addLayoutURL && (
 								<ClayDropDown.Item
 									data-value={Liferay.Language.get(
 										'add-page'
@@ -129,7 +120,7 @@ function PageTypeSelector(props) {
 									{Liferay.Language.get('add-page')}
 								</ClayDropDown.Item>
 							)}
-							{props.addCollectionLayoutURL && (
+							{addCollectionLayoutURL && (
 								<ClayDropDown.Item
 									data-value={Liferay.Language.get(
 										'add-collection-page'
@@ -152,12 +143,12 @@ function PageTypeSelector(props) {
 				)}
 			</div>
 			<div className="autofit-col ml-2">
-				{props.configureLayoutSetURL && (
+				{configureLayoutSetURL && (
 					<ClayLink
 						borderless
 						className="configure-link"
 						displayType="unstyled"
-						href={props.configureLayoutSetURL}
+						href={configureLayoutSetURL}
 						monospaced
 						outline
 					>
