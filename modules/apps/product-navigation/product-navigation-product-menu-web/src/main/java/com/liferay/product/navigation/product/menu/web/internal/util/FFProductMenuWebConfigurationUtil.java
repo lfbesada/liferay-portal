@@ -32,10 +32,6 @@ import org.osgi.service.component.annotations.Modified;
 )
 public class FFProductMenuWebConfigurationUtil {
 
-	public static String getTestSiteNavigationMenuId() {
-		return _ffProductMenuWebConfiguration.getTestSiteNavigationMenuId();
-	}
-
 	public static boolean isSiteNavigationMenuEnabled() {
 		return _ffProductMenuWebConfiguration.isSiteNavigationMenuEnabled();
 	}

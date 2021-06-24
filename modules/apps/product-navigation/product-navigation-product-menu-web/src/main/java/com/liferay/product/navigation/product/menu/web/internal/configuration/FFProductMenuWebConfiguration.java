@@ -21,7 +21,7 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 /**
  * @author Lourdes Fernández Besada
  */
-@ExtendedObjectClassDefinition(generateUI = true)
+@ExtendedObjectClassDefinition(generateUI = false)
 @Meta.OCD(
 	id = "com.liferay.product.navigation.product.menu.web.internal.configuration.FFProductMenuWebConfiguration"
 )
@@ -29,8 +29,5 @@ public interface FFProductMenuWebConfiguration {
 
 	@Meta.AD(deflt = "false", required = false)
 	public boolean isSiteNavigationMenuEnabled();
-
-	@Meta.AD(deflt = "0", required = false)
-	public String getTestSiteNavigationMenuId();
 
 }
