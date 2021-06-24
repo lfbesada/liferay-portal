@@ -331,6 +331,9 @@ public class LayoutsTreeDisplayContext {
 			"pageTypeSelectedOptionLabel", _getPageTypeSelectedOptionLabel()
 		).put(
 			"showAddIcon", this::_isShowAddIcon
+		).put(
+			"siteNavigationMenuEnabled",
+			FFProductMenuWebConfigurationUtil.isSiteNavigationMenuEnabled()
 		).build();
 	}
 
