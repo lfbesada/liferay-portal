@@ -89,18 +89,7 @@ public class AssetSearcher extends BaseSearcher {
 		queryBooleanFilter.addTerm(field, "-1", BooleanClauseOccur.MUST);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
-	 *             #addSearchAllCategories(BooleanFilter, String...)}
-	 */
-	@Deprecated
-	protected void addSearchAllCategories(BooleanFilter queryBooleanFilter)
-		throws Exception {
-
-		addSearchAllCategories(queryBooleanFilter, Field.ASSET_CATEGORY_IDS);
-	}
-
-	protected void addSearchAllCategories(
+	protected void addSearchAllAssetCategories(
 			BooleanFilter queryBooleanFilter, String... fieldNamesArray)
 		throws Exception {
 
@@ -125,6 +114,32 @@ public class AssetSearcher extends BaseSearcher {
 				_getCategoryIdsBooleanFilter(fieldName, filteredAllCategoryIds),
 				BooleanClauseOccur.MUST);
 		}
+	}
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             #addSearchAllAssetCategories(BooleanFilter,
+	 *             String...)}
+	 */
+	@Deprecated
+	protected void addSearchAllCategories(BooleanFilter queryBooleanFilter)
+		throws Exception {
+
+		addSearchAllAssetCategories(
+			queryBooleanFilter, Field.ASSET_CATEGORY_IDS);
+	}
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             #addSearchAllAssetCategories(BooleanFilter,
+	 *             String...)}
+	 */
+	@Deprecated
+	protected void addSearchAllCategories(
+			BooleanFilter queryBooleanFilter, String fieldName)
+		throws Exception {
+
+		addSearchAllAssetCategories(queryBooleanFilter, fieldName);
 	}
 
 	protected void addSearchAllKeywords(BooleanFilter queryBooleanFilter)
@@ -181,18 +196,7 @@ public class AssetSearcher extends BaseSearcher {
 			tagIdsArrayBooleanFilter, BooleanClauseOccur.MUST);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
-	 *             #addSearchAnyCategories(BooleanFilter, String...)}
-	 */
-	@Deprecated
-	protected void addSearchAnyCategories(BooleanFilter queryBooleanFilter)
-		throws Exception {
-
-		addSearchAllCategories(queryBooleanFilter, Field.ASSET_CATEGORY_IDS);
-	}
-
-	protected void addSearchAnyCategories(
+	protected void addSearchAnyAssetCategories(
 			BooleanFilter queryBooleanFilter, String... fieldNamesArray)
 		throws Exception {
 
@@ -227,6 +231,32 @@ public class AssetSearcher extends BaseSearcher {
 			queryBooleanFilter.add(
 				categoryIdsQueryBooleanFilter, BooleanClauseOccur.MUST);
 		}
+	}
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             #addSearchAnyAssetCategories(BooleanFilter,
+	 *             String...)}
+	 */
+	@Deprecated
+	protected void addSearchAnyCategories(BooleanFilter queryBooleanFilter)
+		throws Exception {
+
+		addSearchAnyAssetCategories(
+			queryBooleanFilter, Field.ASSET_CATEGORY_IDS);
+	}
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             #addSearchAnyAssetCategories(BooleanFilter,
+	 *             String...)}
+	 */
+	@Deprecated
+	protected void addSearchAnyCategories(
+			BooleanFilter queryBooleanFilter, String fieldName)
+		throws Exception {
+
+		addSearchAnyAssetCategories(queryBooleanFilter, fieldName);
 	}
 
 	protected void addSearchAnyKeywords(BooleanFilter queryBooleanFilter)
@@ -286,10 +316,14 @@ public class AssetSearcher extends BaseSearcher {
 			assetCategoryFieldsArray = new String[] {Field.ASSET_CATEGORY_IDS};
 		}
 
-		addSearchAllCategories(queryBooleanFilter, assetCategoryFieldsArray);
-		addSearchAnyCategories(queryBooleanFilter, assetCategoryFieldsArray);
-		addSearchNotAllCategories(queryBooleanFilter, assetCategoryFieldsArray);
-		addSearchNotAnyCategories(queryBooleanFilter, assetCategoryFieldsArray);
+		addSearchAllAssetCategories(
+			queryBooleanFilter, assetCategoryFieldsArray);
+		addSearchAnyAssetCategories(
+			queryBooleanFilter, assetCategoryFieldsArray);
+		addSearchNotAllAssetCategories(
+			queryBooleanFilter, assetCategoryFieldsArray);
+		addSearchNotAnyAssetCategories(
+			queryBooleanFilter, assetCategoryFieldsArray);
 	}
 
 	@Override
@@ -340,18 +374,7 @@ public class AssetSearcher extends BaseSearcher {
 		}
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
-	 *             #addSearchNotAllCategories(BooleanFilter, String...)}
-	 */
-	@Deprecated
-	protected void addSearchNotAllCategories(BooleanFilter queryBooleanFilter)
-		throws Exception {
-
-		addSearchNotAllCategories(queryBooleanFilter, Field.ASSET_CATEGORY_IDS);
-	}
-
-	protected void addSearchNotAllCategories(
+	protected void addSearchNotAllAssetCategories(
 			BooleanFilter queryBooleanFilter, String... fieldNamesArray)
 		throws Exception {
 
@@ -376,6 +399,32 @@ public class AssetSearcher extends BaseSearcher {
 			queryBooleanFilter.add(
 				categoryIdsQueryBooleanFilter, BooleanClauseOccur.MUST_NOT);
 		}
+	}
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             #addSearchNotAllAssetCategories(BooleanFilter,
+	 *             String...)}
+	 */
+	@Deprecated
+	protected void addSearchNotAllCategories(BooleanFilter queryBooleanFilter)
+		throws Exception {
+
+		addSearchNotAllAssetCategories(
+			queryBooleanFilter, Field.ASSET_CATEGORY_IDS);
+	}
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             #addSearchNotAllAssetCategories(BooleanFilter,
+	 *             String...)}
+	 */
+	@Deprecated
+	protected void addSearchNotAllCategories(
+			BooleanFilter queryBooleanFilter, String fieldName)
+		throws Exception {
+
+		addSearchNotAllAssetCategories(queryBooleanFilter, fieldName);
 	}
 
 	protected void addSearchNotAllKeywords(BooleanFilter queryBooleanFilter)
@@ -432,18 +481,7 @@ public class AssetSearcher extends BaseSearcher {
 			tagIdsArrayBooleanFilter, BooleanClauseOccur.MUST_NOT);
 	}
 
-	/**
-	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
-	 *             #addSearchNotAnyCategories(BooleanFilter, String...)}
-	 */
-	@Deprecated
-	protected void addSearchNotAnyCategories(BooleanFilter queryBooleanFilter)
-		throws Exception {
-
-		addSearchNotAnyCategories(queryBooleanFilter, Field.ASSET_CATEGORY_IDS);
-	}
-
-	protected void addSearchNotAnyCategories(
+	protected void addSearchNotAnyAssetCategories(
 			BooleanFilter queryBooleanFilter, String... fieldNamesArray)
 		throws Exception {
 
@@ -461,6 +499,32 @@ public class AssetSearcher extends BaseSearcher {
 					fieldName, filteredNotAnyCategoryIds),
 				BooleanClauseOccur.MUST_NOT);
 		}
+	}
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             #addSearchNotAnyAssetCategories(BooleanFilter,
+	 *             String...)}
+	 */
+	@Deprecated
+	protected void addSearchNotAnyCategories(BooleanFilter queryBooleanFilter)
+		throws Exception {
+
+		addSearchNotAnyAssetCategories(
+			queryBooleanFilter, Field.ASSET_CATEGORY_IDS);
+	}
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             #addSearchNotAnyAssetCategories(BooleanFilter,
+	 *             String...)}
+	 */
+	@Deprecated
+	protected void addSearchNotAnyCategories(
+			BooleanFilter queryBooleanFilter, String fieldName)
+		throws Exception {
+
+		addSearchNotAnyAssetCategories(queryBooleanFilter, fieldName);
 	}
 
 	protected void addSearchNotAnyKeywords(BooleanFilter queryBooleanFilter)
