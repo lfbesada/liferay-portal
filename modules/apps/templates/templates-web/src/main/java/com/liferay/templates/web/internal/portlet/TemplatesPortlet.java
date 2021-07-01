@@ -1,0 +1,282 @@
+/**
+ * Copyright (c) 2000-present Liferay, Inc. All rights reserved.
+ *
+ * This library is free software; you can redistribute it and/or modify it under
+ * the terms of the GNU Lesser General Public License as published by the Free
+ * Software Foundation; either version 2.1 of the License, or (at your option)
+ * any later version.
+ *
+ * This library is distributed in the hope that it will be useful, but WITHOUT
+ * ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or FITNESS
+ * FOR A PARTICULAR PURPOSE. See the GNU Lesser General Public License for more
+ * details.
+ */
+
+package com.liferay.templates.web.internal.portlet;
+
+import com.liferay.dynamic.data.mapping.configuration.DDMWebConfiguration;
+import com.liferay.dynamic.data.mapping.exception.NoSuchStructureException;
+import com.liferay.dynamic.data.mapping.exception.NoSuchTemplateException;
+import com.liferay.dynamic.data.mapping.exception.RequiredTemplateException;
+import com.liferay.dynamic.data.mapping.exception.TemplateNameException;
+import com.liferay.dynamic.data.mapping.exception.TemplateScriptException;
+import com.liferay.dynamic.data.mapping.exception.TemplateSmallImageContentException;
+import com.liferay.dynamic.data.mapping.exception.TemplateSmallImageNameException;
+import com.liferay.dynamic.data.mapping.exception.TemplateSmallImageSizeException;
+import com.liferay.dynamic.data.mapping.model.DDMTemplate;
+import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalService;
+import com.liferay.dynamic.data.mapping.service.DDMTemplateService;
+import com.liferay.dynamic.data.mapping.storage.StorageAdapterRegistry;
+import com.liferay.dynamic.data.mapping.util.DDMDisplayRegistry;
+import com.liferay.dynamic.data.mapping.util.DDMTemplateHelper;
+import com.liferay.info.item.renderer.InfoItemRendererTracker;
+import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.kernel.exception.LocaleException;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.exception.PortletPreferencesException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Release;
+import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.servlet.SessionErrors;
+import com.liferay.portal.kernel.servlet.taglib.DynamicIncludeUtil;
+import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.templates.web.internal.constants.TemplatesPortletKeys;
+import com.liferay.templates.web.internal.display.context.TemplatesDisplayContext;
+
+import java.io.IOException;
+
+import java.util.Map;
+
+import javax.portlet.ActionRequest;
+import javax.portlet.ActionResponse;
+import javax.portlet.Portlet;
+import javax.portlet.PortletException;
+import javax.portlet.RenderRequest;
+import javax.portlet.RenderResponse;
+
+import org.osgi.service.component.annotations.Activate;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
+import org.osgi.service.component.annotations.Modified;
+import org.osgi.service.component.annotations.Reference;
+
+/**
+ * @author Marcellus Tavares
+ * @author Lourdes Fernández Besada
+ */
+@Component(
+	configurationPid = "com.liferay.dynamic.data.mapping.configuration.DDMWebConfiguration",
+	configurationPolicy = ConfigurationPolicy.OPTIONAL, immediate = true,
+	property = {
+		"com.liferay.portlet.add-default-resource=true",
+		"com.liferay.portlet.autopropagated-parameters=scopeTitle",
+		"com.liferay.portlet.autopropagated-parameters=showAncestorScopes",
+		"com.liferay.portlet.autopropagated-parameters=showManageTemplates",
+		"com.liferay.portlet.css-class-wrapper=templates-portlet",
+		"com.liferay.portlet.display-category=category.hidden",
+		"com.liferay.portlet.header-portlet-css=/css/main.css",
+		"com.liferay.portlet.icon=/icons/templates_portlet.png",
+		"com.liferay.portlet.preferences-owned-by-group=true",
+		"com.liferay.portlet.preferences-unique-per-layout=false",
+		"com.liferay.portlet.private-request-attributes=false",
+		"com.liferay.portlet.private-session-attributes=false",
+		"com.liferay.portlet.render-weight=50",
+		"com.liferay.portlet.use-default-template=true",
+		"javax.portlet.display-name=Templates",
+		"javax.portlet.expiration-cache=0",
+		"javax.portlet.init-param.always-send-redirect=true",
+		"javax.portlet.init-param.refererWebDAVToken=templates-portlet",
+		"javax.portlet.init-param.template-path=/META-INF/resources/",
+		"javax.portlet.init-param.view-template=/view.jsp",
+		"javax.portlet.name=" + TemplatesPortletKeys.TEMPLATES_PORTLET,
+		"javax.portlet.resource-bundle=content.Language",
+		"javax.portlet.security-role-ref=administrator"
+	},
+	service = Portlet.class
+)
+public class TemplatesPortlet extends MVCPortlet {
+
+	@Override
+	public void processAction(
+			ActionRequest actionRequest, ActionResponse actionResponse)
+		throws IOException, PortletException {
+
+		try {
+			super.processAction(actionRequest, actionResponse);
+		}
+		catch (Exception exception) {
+			if (exception instanceof NoSuchTemplateException ||
+				exception instanceof PortletPreferencesException ||
+				exception instanceof PrincipalException) {
+
+				SessionErrors.add(actionRequest, exception.getClass());
+
+				include("/error.jsp", actionRequest, actionResponse);
+			}
+			else if (exception instanceof LocaleException ||
+					 exception instanceof RequiredTemplateException ||
+					 exception instanceof TemplateNameException ||
+					 exception instanceof TemplateNameException ||
+					 exception instanceof TemplateScriptException ||
+					 exception instanceof TemplateSmallImageContentException ||
+					 exception instanceof TemplateSmallImageNameException ||
+					 exception instanceof TemplateSmallImageSizeException) {
+
+				SessionErrors.add(
+					actionRequest, exception.getClass(), exception);
+
+				if (exception instanceof RequiredTemplateException) {
+					String redirect = portal.escapeRedirect(
+						ParamUtil.getString(actionRequest, "redirect"));
+
+					if (Validator.isNotNull(redirect)) {
+						actionResponse.sendRedirect(redirect);
+					}
+				}
+			}
+			else {
+				throw exception;
+			}
+		}
+	}
+
+	@Override
+	public void render(
+			RenderRequest renderRequest, RenderResponse renderResponse)
+		throws IOException, PortletException {
+
+		try {
+			setTemplatesDisplayContextRequestAttribute(
+				renderRequest, renderResponse);
+
+			setDDMTemplateRequestAttribute(renderRequest);
+		}
+		catch (NoSuchStructureException | NoSuchTemplateException exception) {
+
+			// Let this slide because the user can manually input a structure
+			// or template key for a new model that does not yet exist
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception, exception);
+			}
+		}
+		catch (Exception exception) {
+			if (exception instanceof PortletPreferencesException ||
+				exception instanceof PrincipalException) {
+
+				SessionErrors.add(renderRequest, exception.getClass());
+
+				include("/error.jsp", renderRequest, renderResponse);
+			}
+			else {
+				throw new PortletException(exception);
+			}
+		}
+
+		DynamicIncludeUtil.include(
+			portal.getHttpServletRequest(renderRequest),
+			portal.getHttpServletResponse(renderResponse),
+			TemplatesPortlet.class.getName() + "#formRendered", true);
+
+		super.render(renderRequest, renderResponse);
+	}
+
+	@Activate
+	@Modified
+	protected void activate(Map<String, Object> properties) {
+		ddmWebConfiguration = ConfigurableUtil.createConfigurable(
+			DDMWebConfiguration.class, properties);
+	}
+
+	@Reference(unbind = "-")
+	protected void setDDMDisplayRegistry(
+		DDMDisplayRegistry ddmDisplayRegistry) {
+
+		_ddmDisplayRegistry = ddmDisplayRegistry;
+	}
+
+	@Reference(unbind = "-")
+	protected void setDDMTemplateHelper(DDMTemplateHelper ddmTemplateHelper) {
+		_ddmTemplateHelper = ddmTemplateHelper;
+	}
+
+	@Reference(unbind = "-")
+	protected void setDDMTemplateLocalService(
+		DDMTemplateLocalService ddmTemplateLocalService) {
+
+		this.ddmTemplateLocalService = ddmTemplateLocalService;
+	}
+
+	protected void setDDMTemplateRequestAttribute(RenderRequest renderRequest)
+		throws PortalException {
+
+		long templateId = ParamUtil.getLong(renderRequest, "templateId");
+
+		if (templateId > 0) {
+			DDMTemplate template = ddmTemplateLocalService.getDDMTemplate(
+				templateId);
+
+			renderRequest.setAttribute(
+				TemplatesPortletKeys.DDM_TEMPLATE, template);
+		}
+	}
+
+	@Reference(unbind = "-")
+	protected void setDDMTemplateService(
+		DDMTemplateService ddmTemplateService) {
+
+		this.ddmTemplateService = ddmTemplateService;
+	}
+
+	@Reference(
+		target = "(&(release.bundle.symbolic.name=com.liferay.dynamic.data.mapping.web)(&(release.schema.version>=1.0.0)(!(release.schema.version>=2.0.0))))",
+		unbind = "-"
+	)
+	protected void setRelease(Release release) {
+	}
+
+	@Reference(unbind = "-")
+	protected void setStorageAdapterRegistry(
+		StorageAdapterRegistry storageAdapterRegistry) {
+
+		_storageAdapterRegistry = storageAdapterRegistry;
+	}
+
+	protected void setTemplatesDisplayContextRequestAttribute(
+			RenderRequest renderRequest, RenderResponse renderResponse)
+		throws PortalException {
+
+		TemplatesDisplayContext templatesDisplayContext =
+			new TemplatesDisplayContext(
+				renderRequest, renderResponse, _ddmDisplayRegistry,
+				_ddmTemplateHelper, ddmTemplateService, ddmWebConfiguration,
+				_infoItemRendererTracker, _storageAdapterRegistry);
+
+		renderRequest.setAttribute(
+			WebKeys.PORTLET_DISPLAY_CONTEXT, templatesDisplayContext);
+	}
+
+	protected volatile DDMTemplateLocalService ddmTemplateLocalService;
+	protected volatile DDMTemplateService ddmTemplateService;
+	protected volatile DDMWebConfiguration ddmWebConfiguration;
+
+	@Reference
+	protected Portal portal;
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		TemplatesPortlet.class);
+
+	private DDMDisplayRegistry _ddmDisplayRegistry;
+	private DDMTemplateHelper _ddmTemplateHelper;
+
+	@Reference
+	private InfoItemRendererTracker _infoItemRendererTracker;
+
+	private StorageAdapterRegistry _storageAdapterRegistry;
+
+}
