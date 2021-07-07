@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.templates.web.internal.constants.TemplatesWebKeys;
 import com.liferay.templates.web.internal.util.TemplateActionDropdownItemsProvider;
 
 import java.util.List;
@@ -84,23 +85,28 @@ public class TemplatesDisplayContext {
 		return NavigationItemListBuilder.add(
 			navigationItem -> {
 				navigationItem.setActive(
-					Objects.equals(getTabs1(), _INFORMATION_TEMPLATES));
+					Objects.equals(
+						getTabs1(), TemplatesWebKeys.INFORMATION_TEMPLATES));
 				navigationItem.setHref(
 					_liferayPortletResponse.createRenderURL(), "tabs1",
-					_INFORMATION_TEMPLATES);
+					TemplatesWebKeys.INFORMATION_TEMPLATES);
 				navigationItem.setLabel(
 					LanguageUtil.get(
-						_httpServletRequest, _INFORMATION_TEMPLATES));
+						_httpServletRequest,
+						TemplatesWebKeys.INFORMATION_TEMPLATES));
 			}
 		).add(
 			navigationItem -> {
 				navigationItem.setActive(
-					Objects.equals(getTabs1(), _WIDGET_TEMPLATES));
+					Objects.equals(
+						getTabs1(), TemplatesWebKeys.WIDGET_TEMPLATES));
 				navigationItem.setHref(
 					_liferayPortletResponse.createRenderURL(), "tabs1",
-					_WIDGET_TEMPLATES);
+					TemplatesWebKeys.WIDGET_TEMPLATES);
 				navigationItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, _WIDGET_TEMPLATES));
+					LanguageUtil.get(
+						_httpServletRequest,
+						TemplatesWebKeys.WIDGET_TEMPLATES));
 			}
 		).build();
 	}
@@ -111,7 +117,8 @@ public class TemplatesDisplayContext {
 		}
 
 		_tabs1 = ParamUtil.getString(
-			_liferayPortletRequest, "tabs1", _INFORMATION_TEMPLATES);
+			_liferayPortletRequest, "tabs1",
+			TemplatesWebKeys.INFORMATION_TEMPLATES);
 
 		return _tabs1;
 	}
@@ -141,11 +148,6 @@ public class TemplatesDisplayContext {
 			getTabs1()
 		).build();
 	}
-
-	private static final String _INFORMATION_TEMPLATES =
-		"information-templates";
-
-	private static final String _WIDGET_TEMPLATES = "widget-templates";
 
 	private SearchContainer<DDMTemplate> _ddmTemplatesSearchContainer;
 	private final HttpServletRequest _httpServletRequest;
