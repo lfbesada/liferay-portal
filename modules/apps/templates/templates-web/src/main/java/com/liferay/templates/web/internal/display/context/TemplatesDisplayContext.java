@@ -14,16 +14,22 @@
 
 package com.liferay.templates.web.internal.display.context;
 
+import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemListBuilder;
+import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
+import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+
+import javax.portlet.PortletURL;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -47,7 +53,7 @@ public class TemplatesDisplayContext {
 		return NavigationItemListBuilder.add(
 			navigationItem -> {
 				navigationItem.setActive(
-					Objects.equals(_getTabs1(), _INFORMATION_TEMPLATES));
+					Objects.equals(getTabs1(), _INFORMATION_TEMPLATES));
 				navigationItem.setHref(
 					_liferayPortletResponse.createRenderURL(), "tabs1",
 					_INFORMATION_TEMPLATES);
@@ -58,7 +64,7 @@ public class TemplatesDisplayContext {
 		).add(
 			navigationItem -> {
 				navigationItem.setActive(
-					Objects.equals(_getTabs1(), _WIDGET_TEMPLATES));
+					Objects.equals(getTabs1(), _WIDGET_TEMPLATES));
 				navigationItem.setHref(
 					_liferayPortletResponse.createRenderURL(), "tabs1",
 					_WIDGET_TEMPLATES);
@@ -68,7 +74,7 @@ public class TemplatesDisplayContext {
 		).build();
 	}
 
-	private String _getTabs1() {
+	public String getTabs1() {
 		if (_tabs1 != null) {
 			return _tabs1;
 		}
@@ -79,11 +85,38 @@ public class TemplatesDisplayContext {
 		return _tabs1;
 	}
 
+	public SearchContainer<DDMTemplate> getTemplatesSearchContainer() {
+		if (_ddmTemplatesSearchContainer != null) {
+			return _ddmTemplatesSearchContainer;
+		}
+
+		SearchContainer<DDMTemplate> ddmTemplatesSearchContainer =
+			new SearchContainer(
+				_liferayPortletRequest, _getPortletURL(), null,
+				"there-are-no-templates");
+
+		ddmTemplatesSearchContainer.setResults(Collections.emptyList());
+		ddmTemplatesSearchContainer.setTotal(0);
+
+		_ddmTemplatesSearchContainer = ddmTemplatesSearchContainer;
+
+		return _ddmTemplatesSearchContainer;
+	}
+
+	private PortletURL _getPortletURL() {
+		return PortletURLBuilder.createRenderURL(
+			_liferayPortletResponse
+		).setTabs1(
+			getTabs1()
+		).build();
+	}
+
 	private static final String _INFORMATION_TEMPLATES =
 		"information-templates";
 
 	private static final String _WIDGET_TEMPLATES = "widget-templates";
 
+	private SearchContainer<DDMTemplate> _ddmTemplatesSearchContainer;
 	private final HttpServletRequest _httpServletRequest;
 	private final LiferayPortletRequest _liferayPortletRequest;
 	private final LiferayPortletResponse _liferayPortletResponse;

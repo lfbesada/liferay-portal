@@ -14,16 +14,21 @@
  */
 --%>
 
+<%@ taglib uri="http://java.sun.com/portlet_2_0" prefix="portlet" %>
+
 <%@ taglib uri="http://liferay.com/tld/clay" prefix="clay" %><%@
 taglib uri="http://liferay.com/tld/frontend" prefix="liferay-frontend" %><%@
 taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %>
 
 <%@ page import="com.liferay.portal.kernel.util.WebKeys" %><%@
-page import="com.liferay.templates.web.internal.display.context.TemplatesDisplayContext" %>
+page import="com.liferay.templates.web.internal.display.context.TemplatesDisplayContext" %><%@
+page import="com.liferay.templates.web.internal.display.context.TemplatesManagementToolbarDisplayContext" %>
 
 <liferay-frontend:defineObjects />
 
 <liferay-theme:defineObjects />
+
+<portlet:defineObjects />
 
 <%
 TemplatesDisplayContext templatesDisplayContext = (TemplatesDisplayContext)request.getAttribute(WebKeys.PORTLET_DISPLAY_CONTEXT);

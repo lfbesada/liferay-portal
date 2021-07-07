@@ -20,3 +20,7 @@
 	inverted="<%= true %>"
 	navigationItems="<%= templatesDisplayContext.getNavigationItems() %>"
 />
+
+<clay:management-toolbar
+	managementToolbarDisplayContext="<%= new TemplatesManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, templatesDisplayContext.getTabs1(), templatesDisplayContext.getTemplatesSearchContainer()) %>"
+/>
