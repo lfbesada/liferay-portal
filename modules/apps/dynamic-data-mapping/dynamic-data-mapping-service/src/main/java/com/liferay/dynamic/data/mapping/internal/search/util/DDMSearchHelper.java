@@ -162,7 +162,6 @@ public class DDMSearchHelper {
 		String description, String type, String mode, String language,
 		int status, int start, int end,
 		OrderByComparator<DDMTemplate> orderByComparator) {
-
 		long[] resourceClassNameIds = null;
 
 		if (resourceClassNameId > 0) {
