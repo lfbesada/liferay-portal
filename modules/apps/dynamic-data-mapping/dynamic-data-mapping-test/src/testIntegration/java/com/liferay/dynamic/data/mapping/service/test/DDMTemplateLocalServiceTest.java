@@ -637,6 +637,140 @@ public class DDMTemplateLocalServiceTest extends BaseDDMServiceTestCase {
 	}
 
 	@Test
+	public void testSearchCountByKeywordsMultipleResourceClassNameId()
+		throws Exception {
+
+		long journalArticleClassNameId = PortalUtil.getClassNameId(
+			JournalArticle.class);
+		long portletDisplayTemplateClassNameId = PortalUtil.getClassNameId(
+			PORTLET_DISPLAY_TEMPLATE_CLASS_NAME);
+
+		addDisplayTemplate(
+			PortalUtil.getClassNameId(DDMStructure.class), 0,
+			journalArticleClassNameId, JOURNAL_ARTICLE_TEMPLATE_NAME, null,
+			WorkflowConstants.STATUS_APPROVED);
+		addDisplayTemplate(
+			PortalUtil.getClassNameId(AssetEntry.class), 0,
+			portletDisplayTemplateClassNameId, ASSET_PUBLISHER_TEMPLATE_NAME,
+			null, WorkflowConstants.STATUS_APPROVED);
+		addDisplayTemplate(
+			_classNameId, 0, _resourceClassNameId, RECORD_TEMPLATE_NAME, null,
+			WorkflowConstants.STATUS_APPROVED);
+
+		int count = DDMTemplateLocalServiceUtil.searchCount(
+			TestPropsValues.getCompanyId(), new long[] {group.getGroupId()},
+			null, null,
+			new long[] {
+				journalArticleClassNameId, portletDisplayTemplateClassNameId
+			},
+			"template", null, null, WorkflowConstants.STATUS_APPROVED);
+
+		Assert.assertEquals(2, count);
+	}
+
+	@Test
+	public void testSearchCountByKeywordsMultipleResourceClassNameIdSpecificClassNameId()
+		throws Exception {
+
+		long assetEntryClassNameId = PortalUtil.getClassNameId(
+			AssetEntry.class);
+		long journalArticleClassNameId = PortalUtil.getClassNameId(
+			JournalArticle.class);
+		long portletDisplayTemplateClassNameId = PortalUtil.getClassNameId(
+			PORTLET_DISPLAY_TEMPLATE_CLASS_NAME);
+
+		addDisplayTemplate(
+			PortalUtil.getClassNameId(DDMStructure.class), 0,
+			journalArticleClassNameId, JOURNAL_ARTICLE_TEMPLATE_NAME, null,
+			WorkflowConstants.STATUS_APPROVED);
+		addDisplayTemplate(
+			assetEntryClassNameId, 0, portletDisplayTemplateClassNameId,
+			ASSET_PUBLISHER_TEMPLATE_NAME, null,
+			WorkflowConstants.STATUS_APPROVED);
+		addDisplayTemplate(
+			_classNameId, 0, _resourceClassNameId, RECORD_TEMPLATE_NAME, null,
+			WorkflowConstants.STATUS_APPROVED);
+
+		int count = DDMTemplateLocalServiceUtil.searchCount(
+			TestPropsValues.getCompanyId(), new long[] {group.getGroupId()},
+			new long[] {assetEntryClassNameId}, null,
+			new long[] {
+				journalArticleClassNameId, portletDisplayTemplateClassNameId
+			},
+			"template", null, null, WorkflowConstants.STATUS_APPROVED);
+
+		Assert.assertEquals(1, count);
+	}
+
+	@Test
+	public void testSearchCountByKeywordsMultipleResourceClassNameIdSpecificClassPK()
+		throws Exception {
+
+		long journalArticleClassNameId = PortalUtil.getClassNameId(
+			JournalArticle.class);
+		long portletDisplayTemplateClassNameId = PortalUtil.getClassNameId(
+			PORTLET_DISPLAY_TEMPLATE_CLASS_NAME);
+
+		DDMStructure ddmStructure = DDMStructureLocalServiceUtil.getStructure(
+			group.getGroupId(), journalArticleClassNameId, "BASIC-WEB-CONTENT",
+			true);
+
+		long structureId = ddmStructure.getStructureId();
+
+		addDisplayTemplate(
+			PortalUtil.getClassNameId(DDMStructure.class), structureId,
+			journalArticleClassNameId, JOURNAL_ARTICLE_TEMPLATE_NAME, null,
+			WorkflowConstants.STATUS_APPROVED);
+
+		addDisplayTemplate(
+			PortalUtil.getClassNameId(AssetEntry.class), 0,
+			portletDisplayTemplateClassNameId, ASSET_PUBLISHER_TEMPLATE_NAME,
+			null, WorkflowConstants.STATUS_APPROVED);
+		addDisplayTemplate(
+			_classNameId, 0, _resourceClassNameId, RECORD_TEMPLATE_NAME, null,
+			WorkflowConstants.STATUS_APPROVED);
+
+		int count = DDMTemplateLocalServiceUtil.searchCount(
+			TestPropsValues.getCompanyId(), new long[] {group.getGroupId()},
+			null, new long[] {structureId},
+			new long[] {
+				journalArticleClassNameId, portletDisplayTemplateClassNameId
+			},
+			"template", null, null, WorkflowConstants.STATUS_APPROVED);
+
+		Assert.assertEquals(1, count);
+	}
+
+	@Test
+	public void testSearchCountByKeywordsNullResourceClassNameIds()
+		throws Exception {
+
+		long journalArticleClassNameId = PortalUtil.getClassNameId(
+			JournalArticle.class);
+		long portletDisplayTemplateClassNameId = PortalUtil.getClassNameId(
+			PORTLET_DISPLAY_TEMPLATE_CLASS_NAME);
+
+		addDisplayTemplate(
+			PortalUtil.getClassNameId(DDMStructure.class), 0,
+			journalArticleClassNameId, JOURNAL_ARTICLE_TEMPLATE_NAME, null,
+			WorkflowConstants.STATUS_APPROVED);
+		addDisplayTemplate(
+			PortalUtil.getClassNameId(AssetEntry.class), 0,
+			portletDisplayTemplateClassNameId, ASSET_PUBLISHER_TEMPLATE_NAME,
+			null, WorkflowConstants.STATUS_APPROVED);
+		addDisplayTemplate(
+			_classNameId, 0, _resourceClassNameId, RECORD_TEMPLATE_NAME, null,
+			WorkflowConstants.STATUS_APPROVED);
+
+		int count = DDMTemplateLocalServiceUtil.searchCount(
+			TestPropsValues.getCompanyId(), new long[] {group.getGroupId()},
+			null, null, null, "template", null, null,
+			WorkflowConstants.STATUS_APPROVED);
+
+		Assert.assertEquals(3, count);
+	}
+
+	@Test
 	public void testSearchCountByLanguage() throws Exception {
 		String velocityLanguage = TemplateConstants.LANG_TYPE_VM;
 
