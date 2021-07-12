@@ -18,7 +18,6 @@ import com.liferay.dynamic.data.mapping.util.DDMTemplatePermissionSupport;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.service.ResourceActionLocalServiceUtil;
-import com.liferay.portlet.documentlibrary.constants.DLConstants;
 
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
