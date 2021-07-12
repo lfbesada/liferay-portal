@@ -1456,6 +1456,43 @@ public class DDMTemplateLocalServiceImpl
 	}
 
 	/**
+	 * Returns the number of templates matching the group IDs, class name IDs,
+	 * class PK, resource class name IDs, type, and mode, and matching the
+	 * keywords in the template names and descriptions.
+	 *
+	 * @param  companyId the primary key of the template's company
+	 * @param  groupIds the primary keys of the groups
+	 * @param  classNameIds the primary keys of the entity's instances the
+	 *         templates are related to
+	 * @param  classPKs the primary keys of the template's related entities
+	 * @param  resourceClassNameIds the primary keys of the class names for
+	 *         template's resource models
+	 * @param  keywords the keywords (space separated), which may occur in the
+	 *         template's name or description (optionally <code>null</code>)
+	 * @param  type the template's type (optionally <code>null</code>). For more
+	 *         information, see DDMTemplateConstants in the
+	 *         dynamic-data-mapping-api module.
+	 * @param  mode the template's mode (optionally <code>null</code>). For more
+	 *         information, see DDMTemplateConstants in the
+	 *         dynamic-data-mapping-api module.
+	 * @return the number of matching templates
+	 */
+	@Override
+	public int searchCount(
+		long companyId, long[] groupIds, long[] classNameIds, long[] classPKs,
+		long[] resourceClassNameIds, String keywords, String type, String mode,
+		int status) {
+
+		SearchContext searchContext =
+			_ddmSearchHelper.buildTemplateSearchContext(
+				companyId, groupIds, classNameIds, classPKs,
+				resourceClassNameIds, keywords, keywords, type, mode, null,
+				status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
+
+		return _ddmSearchHelper.doSearchCount(searchContext, DDMTemplate.class);
+	}
+
+	/**
 	 * Updates the template matching the ID.
 	 *
 	 * @param  userId the primary key of the template's creator/owner
