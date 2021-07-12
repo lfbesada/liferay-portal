@@ -16,19 +16,30 @@ package com.liferay.templates.web.internal.display.context;
 
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateServiceUtil;
+import com.liferay.dynamic.data.mapping.util.comparator.TemplateIdComparator;
+import com.liferay.dynamic.data.mapping.util.comparator.TemplateModifiedDateComparator;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemListBuilder;
 import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.templates.web.internal.constants.TemplatesWebKeys;
 import com.liferay.templates.web.internal.util.TemplateActionDropdownItemsProvider;
+import com.liferay.templates.web.internal.util.TemplatesUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -50,6 +61,9 @@ public class TemplatesDisplayContext {
 
 		_httpServletRequest = PortalUtil.getHttpServletRequest(
 			_liferayPortletRequest);
+
+		_themeDisplay = (ThemeDisplay)liferayPortletRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
 	}
 
 	public List<DropdownItem> getDDMTemplateActionDropdownItems(
@@ -79,6 +93,16 @@ public class TemplatesDisplayContext {
 		).setParameter(
 			"type", ddmTemplate.getType()
 		).buildString();
+	}
+
+	public String getKeywords() {
+		if (_keywords != null) {
+			return _keywords;
+		}
+
+		_keywords = ParamUtil.getString(_httpServletRequest, "keywords");
+
+		return _keywords;
 	}
 
 	public List<NavigationItem> getNavigationItems() {
@@ -111,6 +135,54 @@ public class TemplatesDisplayContext {
 		).build();
 	}
 
+	public String getOrderByCol() {
+		if (Validator.isNotNull(_orderByCol)) {
+			return _orderByCol;
+		}
+
+		_orderByCol = ParamUtil.getString(
+			_httpServletRequest, SearchContainer.DEFAULT_ORDER_BY_COL_PARAM,
+			"create-date");
+
+		return _orderByCol;
+	}
+
+	public String getOrderByType() {
+		if (Validator.isNotNull(_orderByType)) {
+			return _orderByType;
+		}
+
+		_orderByType = ParamUtil.getString(
+			_httpServletRequest, SearchContainer.DEFAULT_ORDER_BY_TYPE_PARAM,
+			"asc");
+
+		return _orderByType;
+	}
+
+	public PortletURL getSearchURL() {
+		PortletURL portletURL = _getPortletURL();
+
+		String keywords = getKeywords();
+
+		if (Validator.isNotNull(keywords)) {
+			portletURL.setParameter("keywords", keywords);
+		}
+
+		String orderByCol = getOrderByCol();
+
+		if (Validator.isNotNull(orderByCol)) {
+			portletURL.setParameter("orderByCol", orderByCol);
+		}
+
+		String orderByType = getOrderByType();
+
+		if (Validator.isNotNull(orderByType)) {
+			portletURL.setParameter("orderByType", orderByType);
+		}
+
+		return portletURL;
+	}
+
 	public String getTabs1() {
 		if (_tabs1 != null) {
 			return _tabs1;
@@ -133,12 +205,52 @@ public class TemplatesDisplayContext {
 				_liferayPortletRequest, _getPortletURL(), null,
 				"there-are-no-templates");
 
-		ddmTemplatesSearchContainer.setResults(Collections.emptyList());
-		ddmTemplatesSearchContainer.setTotal(0);
+		ddmTemplatesSearchContainer.setOrderByCol(getOrderByCol());
+		ddmTemplatesSearchContainer.setOrderByComparator(
+			_getTemplateOrderByComparator());
+		ddmTemplatesSearchContainer.setOrderByType(getOrderByType());
+		ddmTemplatesSearchContainer.setRowChecker(
+			new EmptyOnClickRowChecker(_liferayPortletResponse));
+
+		long[] groupIds = {_themeDisplay.getScopeGroupId()};
+
+		long[] resourceClassNameIdsArray =
+			TemplatesUtil.getResourceClassNameIdsArray(getTabs1());
+
+		long[] classNameIdsArray = TemplatesUtil.getTemplateClassNameIdsArray(
+			_themeDisplay.getScopeGroupId(), resourceClassNameIdsArray);
+		long[] classPKsArray = TemplatesUtil.getTemplateClassPKsArray(
+			_themeDisplay.getScopeGroupId(), resourceClassNameIdsArray);
+
+		List<DDMTemplate> results = DDMTemplateServiceUtil.search(
+				_themeDisplay.getCompanyId(), groupIds, classNameIdsArray,
+				classPKsArray, resourceClassNameIdsArray, getKeywords(),
+				TemplatesUtil.getTemplateType(), StringPool.BLANK,
+				WorkflowConstants.STATUS_ANY,
+				ddmTemplatesSearchContainer.getStart(),
+				ddmTemplatesSearchContainer.getEnd(),
+				ddmTemplatesSearchContainer.getOrderByComparator());
+
+		int total = DDMTemplateServiceUtil.searchCount(
+				_themeDisplay.getCompanyId(), groupIds, classNameIdsArray,
+				classPKsArray, resourceClassNameIdsArray, getKeywords(),
+				TemplatesUtil.getTemplateType(), StringPool.BLANK,
+				WorkflowConstants.STATUS_ANY);
+
+		ddmTemplatesSearchContainer.setResults(results);
+		ddmTemplatesSearchContainer.setTotal(total);
 
 		_ddmTemplatesSearchContainer = ddmTemplatesSearchContainer;
 
 		return _ddmTemplatesSearchContainer;
+	}
+
+	public boolean isSearch() {
+		if (Validator.isNotNull(getKeywords())) {
+			return true;
+		}
+
+		return false;
 	}
 
 	private PortletURL _getPortletURL() {
@@ -149,10 +261,33 @@ public class TemplatesDisplayContext {
 		).build();
 	}
 
+	private OrderByComparator<DDMTemplate> _getTemplateOrderByComparator() {
+		boolean orderByAsc = false;
+
+		if (Objects.equals(getOrderByType(), "asc")) {
+			orderByAsc = true;
+		}
+
+		OrderByComparator<DDMTemplate> orderByComparator = null;
+
+		if (Objects.equals(getOrderByCol(), "id")) {
+			orderByComparator = new TemplateIdComparator(orderByAsc);
+		}
+		else if (Objects.equals(getOrderByCol(), "modified-date")) {
+			orderByComparator = new TemplateModifiedDateComparator(orderByAsc);
+		}
+
+		return orderByComparator;
+	}
+
 	private SearchContainer<DDMTemplate> _ddmTemplatesSearchContainer;
 	private final HttpServletRequest _httpServletRequest;
+	private String _keywords;
 	private final LiferayPortletRequest _liferayPortletRequest;
 	private final LiferayPortletResponse _liferayPortletResponse;
+	private String _orderByCol;
+	private String _orderByType;
 	private String _tabs1;
+	private final ThemeDisplay _themeDisplay;
 
 }
