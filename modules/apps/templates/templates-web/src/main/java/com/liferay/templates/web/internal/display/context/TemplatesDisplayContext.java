@@ -39,7 +39,6 @@ import com.liferay.templates.web.internal.constants.TemplatesWebKeys;
 import com.liferay.templates.web.internal.util.TemplateActionDropdownItemsProvider;
 import com.liferay.templates.web.internal.util.TemplatesUtil;
 
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -223,19 +222,19 @@ public class TemplatesDisplayContext {
 			_themeDisplay.getScopeGroupId(), resourceClassNameIdsArray);
 
 		List<DDMTemplate> results = DDMTemplateServiceUtil.search(
-				_themeDisplay.getCompanyId(), groupIds, classNameIdsArray,
-				classPKsArray, resourceClassNameIdsArray, getKeywords(),
-				TemplatesUtil.getTemplateType(), StringPool.BLANK,
-				WorkflowConstants.STATUS_ANY,
-				ddmTemplatesSearchContainer.getStart(),
-				ddmTemplatesSearchContainer.getEnd(),
-				ddmTemplatesSearchContainer.getOrderByComparator());
+			_themeDisplay.getCompanyId(), groupIds, classNameIdsArray,
+			classPKsArray, resourceClassNameIdsArray, getKeywords(),
+			TemplatesUtil.getTemplateType(), StringPool.BLANK,
+			WorkflowConstants.STATUS_ANY,
+			ddmTemplatesSearchContainer.getStart(),
+			ddmTemplatesSearchContainer.getEnd(),
+			ddmTemplatesSearchContainer.getOrderByComparator());
 
 		int total = DDMTemplateServiceUtil.searchCount(
-				_themeDisplay.getCompanyId(), groupIds, classNameIdsArray,
-				classPKsArray, resourceClassNameIdsArray, getKeywords(),
-				TemplatesUtil.getTemplateType(), StringPool.BLANK,
-				WorkflowConstants.STATUS_ANY);
+			_themeDisplay.getCompanyId(), groupIds, classNameIdsArray,
+			classPKsArray, resourceClassNameIdsArray, getKeywords(),
+			TemplatesUtil.getTemplateType(), StringPool.BLANK,
+			WorkflowConstants.STATUS_ANY);
 
 		ddmTemplatesSearchContainer.setResults(results);
 		ddmTemplatesSearchContainer.setTotal(total);
