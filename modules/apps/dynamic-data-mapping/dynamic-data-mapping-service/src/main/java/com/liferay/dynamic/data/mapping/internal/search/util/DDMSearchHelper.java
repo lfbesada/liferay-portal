@@ -329,6 +329,12 @@ public class DDMSearchHelper {
 				}
 			}
 
+			if (resourcePermissionNamesList.size() == 1) {
+				searchContext.setAttribute(
+					"resourcePermissionName",
+					resourcePermissionNamesList.get(0));
+			}
+
 			Stream<String> resourcePermissionNamesStream =
 				resourcePermissionNamesList.stream();
 
