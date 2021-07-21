@@ -143,7 +143,8 @@ public class AssetTagsSelectorDisplayContext {
 
 		List<AssetTag> filteredTags = _removeDuplicateAssetTags(tags);
 
-		tagsSearchContainer.setTotal(filteredTags.size());
+		tagsSearchContainer.setTotal(
+			AssetTagServiceUtil.getTagsCount(_getGroupIds(), _getKeywords()));
 
 		tagsSearchContainer.setResults(filteredTags);
 
