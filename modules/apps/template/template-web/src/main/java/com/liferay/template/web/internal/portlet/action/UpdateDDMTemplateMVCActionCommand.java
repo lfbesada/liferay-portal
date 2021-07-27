@@ -98,7 +98,7 @@ public class UpdateDDMTemplateMVCActionCommand extends BaseMVCActionCommand {
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			DDMTemplate.class.getName(), uploadPortletRequest);
 
-		DDMTemplate ddmTemplate;
+		DDMTemplate ddmTemplate = null;
 
 		if (ddmTemplateId <= 0) {
 			long groupId = ParamUtil.getLong(uploadPortletRequest, "groupId");
