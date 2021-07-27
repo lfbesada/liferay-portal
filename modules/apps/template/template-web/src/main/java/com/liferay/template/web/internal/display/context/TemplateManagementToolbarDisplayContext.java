@@ -18,6 +18,7 @@ import com.liferay.dynamic.data.mapping.constants.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.frontend.taglib.clay.servlet.taglib.display.context.SearchContainerManagementToolbarDisplayContext;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
@@ -36,6 +37,7 @@ import com.liferay.template.web.internal.security.permissions.resource.DDMTempla
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.portlet.PortletURL;
 
@@ -107,6 +109,18 @@ public class TemplateManagementToolbarDisplayContext
 	public CreationMenu getCreationMenu() {
 		if (!_templateDisplayContext.isAddDDMTemplateEnabled()) {
 			return null;
+		}
+
+		if (Objects.equals(
+				_templateDisplayContext.getTabs1(), "information-templates")) {
+
+			return CreationMenuBuilder.addDropdownItem(
+				dropdownItem -> {
+					dropdownItem.putData("action", "addInformationTemplate");
+					dropdownItem.setLabel(
+						LanguageUtil.get(httpServletRequest, "add"));
+				}
+			).build();
 		}
 
 		List<Long> addAllowedClassNameIds = _getAddAllowedClassNameIds();
