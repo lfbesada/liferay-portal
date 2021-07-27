@@ -133,7 +133,7 @@ public abstract class TemplateDisplayContext {
 		return NavigationItemListBuilder.add(
 			navigationItem -> {
 				navigationItem.setActive(
-					Objects.equals(_getTabs1(), "information-templates"));
+					Objects.equals(getTabs1(), "information-templates"));
 				navigationItem.setHref(
 					_liferayPortletResponse.createRenderURL(), "tabs1",
 					"information-templates");
@@ -144,7 +144,7 @@ public abstract class TemplateDisplayContext {
 		).add(
 			navigationItem -> {
 				navigationItem.setActive(
-					Objects.equals(_getTabs1(), "widget-templates"));
+					Objects.equals(getTabs1(), "widget-templates"));
 				navigationItem.setHref(
 					_liferayPortletResponse.createRenderURL(), "tabs1",
 					"widget-templates");
@@ -155,6 +155,17 @@ public abstract class TemplateDisplayContext {
 	}
 
 	public abstract String getResourceName(long classNameId);
+
+	public String getTabs1() {
+		if (_tabs1 != null) {
+			return _tabs1;
+		}
+
+		_tabs1 = ParamUtil.getString(
+			liferayPortletRequest, "tabs1", "information-templates");
+
+		return _tabs1;
+	}
 
 	public SearchContainer<DDMTemplate> getTemplateSearchContainer() {
 		if (_ddmTemplateSearchContainer != null) {
@@ -259,19 +270,8 @@ public abstract class TemplateDisplayContext {
 		return PortletURLBuilder.createRenderURL(
 			_liferayPortletResponse
 		).setTabs1(
-			_getTabs1()
+			getTabs1()
 		).buildPortletURL();
-	}
-
-	private String _getTabs1() {
-		if (_tabs1 != null) {
-			return _tabs1;
-		}
-
-		_tabs1 = ParamUtil.getString(
-			liferayPortletRequest, "tabs1", "information-templates");
-
-		return _tabs1;
 	}
 
 	private OrderByComparator<DDMTemplate> _getTemplateOrderByComparator() {
