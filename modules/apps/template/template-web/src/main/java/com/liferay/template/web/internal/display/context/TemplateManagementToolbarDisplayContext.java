@@ -24,6 +24,7 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuil
 import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -32,11 +33,13 @@ import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.template.web.internal.security.permissions.resource.DDMTemplatePermission;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 
 import javax.portlet.PortletURL;
@@ -75,6 +78,21 @@ public class TemplateManagementToolbarDisplayContext
 					LanguageUtil.get(httpServletRequest, "delete"));
 				dropdownItem.setQuickAction(true);
 			}
+		).build();
+	}
+
+	public Map<String, Object> getAdditionalProps() {
+		return HashMapBuilder.<String, Object>put(
+			"addTemplateURL",
+			PortletURLBuilder.createActionURL(
+				liferayPortletResponse
+			).setActionName(
+				"/template/update_ddm_template"
+			).setParameter(
+				"resourceClassNameId", "information"
+			).buildString()
+		).put(
+			"itemTypes", _getItemTypesJSONArray()
 		).build();
 	}
 
@@ -222,6 +240,16 @@ public class TemplateManagementToolbarDisplayContext
 		}
 
 		return addAllowedClassNameIds;
+	}
+
+	private Object _getItemTypesJSONArray() {
+		if (!Objects.equals(
+				_templateDisplayContext.getTabs1(), "information-templates")) {
+
+			return JSONFactoryUtil.createJSONArray();
+		}
+
+		return JSONFactoryUtil.createJSONArray();
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
