@@ -16,6 +16,7 @@ package com.liferay.template.web.internal.display.context;
 
 import com.liferay.dynamic.data.mapping.configuration.DDMWebConfiguration;
 import com.liferay.dynamic.data.mapping.constants.DDMActionKeys;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.info.item.InfoItemServiceTracker;
 import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
