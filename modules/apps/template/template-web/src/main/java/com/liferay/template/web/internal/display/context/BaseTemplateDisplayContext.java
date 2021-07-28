@@ -79,8 +79,6 @@ public abstract class BaseTemplateDisplayContext
 			WebKeys.THEME_DISPLAY);
 	}
 
-	public abstract String getAddPermissionActionId();
-
 	public abstract long[] getClassNameIds();
 
 	public CreationMenu getCreationMenu() {
@@ -170,8 +168,6 @@ public abstract class BaseTemplateDisplayContext
 	}
 
 	public abstract long getResourceClassNameId();
-
-	public abstract String getResourceName(long classNameId);
 
 	public SearchContainer<DDMTemplate> getTemplateSearchContainer() {
 		if (_ddmTemplateSearchContainer != null) {
