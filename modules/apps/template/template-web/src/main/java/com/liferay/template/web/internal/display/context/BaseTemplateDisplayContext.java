@@ -19,6 +19,7 @@ import com.liferay.dynamic.data.mapping.constants.DDMTemplateConstants;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateServiceUtil;
+import com.liferay.dynamic.data.mapping.util.DDMTemplateHelper;
 import com.liferay.dynamic.data.mapping.util.comparator.TemplateIdComparator;
 import com.liferay.dynamic.data.mapping.util.comparator.TemplateModifiedDateComparator;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
@@ -73,10 +74,12 @@ public abstract class BaseTemplateDisplayContext
 	implements TemplateDisplayContext {
 
 	public BaseTemplateDisplayContext(
+		DDMTemplateHelper ddmTemplateHelper,
 		DDMWebConfiguration ddmWebConfiguration,
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse) {
 
+		_ddmTemplateHelper = ddmTemplateHelper;
 		_ddmWebConfiguration = ddmWebConfiguration;
 		this.liferayPortletRequest = liferayPortletRequest;
 		this.liferayPortletResponse = liferayPortletResponse;
@@ -368,7 +371,9 @@ public abstract class BaseTemplateDisplayContext
 	protected final ThemeDisplay themeDisplay;
 
 	private JSONObject _getAutocompleteJSONObject() throws Exception {
-		return JSONFactoryUtil.createJSONObject();
+		return JSONFactoryUtil.createJSONObject(
+			_ddmTemplateHelper.getAutocompleteJSON(
+				_httpServletRequest, getLanguage()));
 	}
 
 	private String _getEditorMode() {
@@ -495,6 +500,7 @@ public abstract class BaseTemplateDisplayContext
 		BaseTemplateDisplayContext.class);
 
 	private DDMTemplate _ddmTemplate;
+	private final DDMTemplateHelper _ddmTemplateHelper;
 	private Long _ddmTemplateId;
 	private SearchContainer<DDMTemplate> _ddmTemplateSearchContainer;
 	private final DDMWebConfiguration _ddmWebConfiguration;
