@@ -20,6 +20,7 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItem;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONArray;
 
 import java.util.Collections;
 import java.util.List;
@@ -57,6 +58,8 @@ public interface TemplateDisplayContext {
 	public SearchContainer<DDMTemplate> getTemplateSearchContainer();
 
 	public String getTemplateType(long classNameId);
+
+	public JSONArray getTemplateVariableGroupJSONArray() throws Exception;
 
 	public boolean isAddDDMTemplateEnabled();
 
