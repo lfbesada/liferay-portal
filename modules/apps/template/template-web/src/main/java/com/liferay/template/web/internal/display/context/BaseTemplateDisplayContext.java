@@ -97,7 +97,7 @@ public abstract class BaseTemplateDisplayContext
 			ddmTemplateActionDropdownItemsProvider =
 				new DDMTemplateActionDropdownItemsProvider(
 					isAddDDMTemplateEnabled(), ddmTemplate, _httpServletRequest,
-					liferayPortletResponse);
+					liferayPortletResponse, _getTabs1());
 
 		return ddmTemplateActionDropdownItemsProvider.getActionDropdownItems();
 	}
@@ -118,6 +118,8 @@ public abstract class BaseTemplateDisplayContext
 			"/edit_ddm_template.jsp"
 		).setRedirect(
 			themeDisplay.getURLCurrent()
+		).setTabs1(
+			_getTabs1()
 		).setParameter(
 			"ddmTemplateId", ddmTemplate.getTemplateId()
 		).buildString();
