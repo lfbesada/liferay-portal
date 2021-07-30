@@ -17,10 +17,5 @@
 <%@ include file="/init.jsp" %>
 
 <div>
-	<liferay-frontend:form-navigator
-		fieldSetCssClass="form-group-sm mb-0 panel-group-flush"
-		formModelBean="<%= templateDisplayContext.getDDMTemplate(); %>"
-		id="template.form"
-		showButtons="<%= false %>"
-	/>
+	<h1>holi</h1>
 </div>

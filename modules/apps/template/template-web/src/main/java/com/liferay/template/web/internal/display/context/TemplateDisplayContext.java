@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -44,6 +45,8 @@ public interface TemplateDisplayContext {
 	public List<DropdownItem> getDDMTemplateActionDropdownItems(
 			DDMTemplate ddmTemplate)
 		throws Exception;
+
+	public HashMap<String, Object> getDDMTemplateEditorContext() throws Exception;
 
 	public String getDDMTemplateEditURL(DDMTemplate ddmTemplate)
 		throws PortalException;
