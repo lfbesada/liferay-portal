@@ -19,6 +19,10 @@
 <%
 DDMTemplate ddmTemplate = templateDisplayContext.getDDMTemplate();
 
+Portlet portlet = PortletLocalServiceUtil.getPortletById(portletDisplay.getId());
+
+String refererWebDAVToken = WebDAVUtil.getStorageToken(portlet);
+
 String smallImageSource = templateDisplayContext.getSmallImageSource();
 List<String> templateLanguageTypes = Arrays.asList(TemplateConstants.LANG_TYPE_FTL, TemplateConstants.LANG_TYPE_VM);
 String templateSubtypeLocalizedLabel = templateDisplayContext.getTemplateSubtypeLocalizedLabel();
@@ -79,6 +83,10 @@ String templateSubtypeLocalizedLabel = templateDisplayContext.getTemplateSubtype
 		</portlet:resourceURL>
 
 		<aui:input name="url" type="resource" value="<%= getTemplateURL.toString() %>" />
+
+		<c:if test="<%= Validator.isNotNull(refererWebDAVToken) %>">
+			<aui:input name="webDavURL" type="resource" value="<%= ddmStructure.getWebDavURL(themeDisplay, refererWebDAVToken) %>" />
+		</c:if>
 	</c:if>
 
 	<aui:input name="description" />
