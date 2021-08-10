@@ -332,6 +332,8 @@ public class EditDDMTemplateDisplayContext {
 		JSONArray templateVariableGroupJSONArray =
 			JSONFactoryUtil.createJSONArray();
 
+		ResourceBundle resourceBundle = _getTemplateHandlerResourceBundle();
+
 		for (TemplateVariableGroup templateVariableGroup :
 				_getTemplateVariableGroups()) {
 
@@ -353,7 +355,7 @@ public class EditDDMTemplateDisplayContext {
 					).put(
 						"label",
 						LanguageUtil.get(
-							_themeDisplay.getRequest(),
+							_themeDisplay.getRequest(), resourceBundle,
 							templateVariableDefinition.getLabel())
 					).put(
 						"repeatable",
@@ -362,8 +364,7 @@ public class EditDDMTemplateDisplayContext {
 					).put(
 						"tooltip",
 						TemplateDDMTemplateUtil.getPaletteItemTitle(
-							_themeDisplay.getRequest(),
-							_getTemplateHandlerResourceBundle(),
+							_themeDisplay.getRequest(), resourceBundle,
 							templateVariableDefinition)
 					));
 			}
