@@ -21,6 +21,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanParamUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
@@ -42,7 +43,10 @@ import com.liferay.template.web.internal.util.TemplateDDMTemplateUtil;
 
 import java.util.Collection;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ResourceBundle;
+
+import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Eudaldo Alonso
@@ -56,6 +60,8 @@ public class EditDDMTemplateDisplayContext {
 		_liferayPortletRequest = liferayPortletRequest;
 		_liferayPortletResponse = liferayPortletResponse;
 
+		_httpServletRequest = PortalUtil.getHttpServletRequest(
+			liferayPortletRequest);
 		_themeDisplay = (ThemeDisplay)liferayPortletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 	}
@@ -105,12 +111,30 @@ public class EditDDMTemplateDisplayContext {
 				LiferayWindowState.EXCLUSIVE
 			).buildString()
 		).put(
+			"script", _getScript()
+		).put(
+			"showLanguageChangeWarning", _getShowLanguageChangeWarning()
+		).put(
 			"templateVariableGroups", _getTemplateVariableGroupJSONArray()
 		).build();
 	}
 
 	public String getLanguageType() {
-		return StringPool.BLANK;
+		if (_language != null) {
+			return _language;
+		}
+
+		String language = TemplateConstants.LANG_TYPE_FTL;
+
+		DDMTemplate ddmTemplate = getDDMTemplate();
+
+		if (ddmTemplate != null) {
+			language = ddmTemplate.getLanguage();
+		}
+
+		_language = language;
+
+		return _language;
 	}
 
 	public String[] getLanguageTypes() {
@@ -184,6 +208,18 @@ public class EditDDMTemplateDisplayContext {
 		return _ddmTemplateId;
 	}
 
+	protected String getDefaultScript(long classNameId) {
+		return "<#-- Empty script -->";
+	}
+
+	protected long getTemplateHandlerClassNameId() {
+		return getClassNameId();
+	}
+
+	protected String[] getTemplateLanguageTypes() {
+		return new String[] {TemplateConstants.LANG_TYPE_FTL};
+	}
+
 	private long _getClassPK() {
 		DDMTemplate ddmTemplate = getDDMTemplate();
 
@@ -192,6 +228,46 @@ public class EditDDMTemplateDisplayContext {
 		}
 
 		return 0;
+	}
+
+	private String _getScript() {
+		if (_script != null) {
+			return _script;
+		}
+
+		_language = BeanParamUtil.getString(
+			getDDMTemplate(), _httpServletRequest, "language",
+			TemplateConstants.LANG_TYPE_FTL);
+
+		String script = BeanParamUtil.getString(
+			getDDMTemplate(), _httpServletRequest, "script");
+
+		if (Validator.isNull(script)) {
+			script = getDefaultScript(getClassNameId());
+		}
+
+		String scriptContent = ParamUtil.getString(
+			_httpServletRequest, "scriptContent");
+
+		if (Validator.isNotNull(scriptContent)) {
+			script = scriptContent;
+		}
+
+		_script = script;
+
+		return _script;
+	}
+
+	private boolean _getShowLanguageChangeWarning() {
+		DDMTemplate ddmTemplate = getDDMTemplate();
+
+		if ((ddmTemplate != null) && (getTemplateLanguageTypes().length > 1) &&
+			!Objects.equals(ddmTemplate.getLanguage(), getLanguageType())) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private String _getTabs1() {
@@ -286,8 +362,11 @@ public class EditDDMTemplateDisplayContext {
 	private Long _classNameId;
 	private DDMTemplate _ddmTemplate;
 	private Long _ddmTemplateId;
+	private final HttpServletRequest _httpServletRequest;
+	private String _language;
 	private final LiferayPortletRequest _liferayPortletRequest;
 	private final LiferayPortletResponse _liferayPortletResponse;
+	private String _script;
 	private Boolean _smallImage;
 	private String _smallImageSource;
 	private String _tabs1;
