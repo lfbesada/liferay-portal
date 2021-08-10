@@ -154,11 +154,11 @@ public class EditDDMTemplateDisplayContext {
 		return _smallImageSource;
 	}
 
-	public String getTemplateSubtypeLabel() {
+	public String getTemplateSubtypeLocalizedLabel() {
 		return StringPool.BLANK;
 	}
 
-	public String getTemplateTypeLabel() {
+	public String getTemplateTypeLocalizedLabel() {
 		return StringPool.BLANK;
 	}
 

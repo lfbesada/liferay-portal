@@ -52,16 +52,16 @@ DDMTemplate ddmTemplate = editDDMTemplateDisplayContext.getDDMTemplate();
 	</p>
 
 	<p class="small">
-		<%= editDDMTemplateDisplayContext.getTemplateTypeLabel() %>
+		<%= editDDMTemplateDisplayContext.getTemplateTypeLocalizedLabel() %>
 	</p>
 
-	<c:if test="<%= Validator.isNotNull(editDDMTemplateDisplayContext.getTemplateSubtypeLabel()) %>">
+	<c:if test="<%= Validator.isNotNull(editDDMTemplateDisplayContext.getTemplateSubtypeLocalizedLabel()) %>">
 		<p class="control-label mb-1">
 			<b><liferay-ui:message key="item-subtype" /></b>
 		</p>
 
 		<p class="small">
-			<%= editDDMTemplateDisplayContext.getTemplateSubtypeLabel() %>
+			<%= editDDMTemplateDisplayContext.getTemplateSubtypeLocalizedLabel() %>
 		</p>
 	</c:if>
 

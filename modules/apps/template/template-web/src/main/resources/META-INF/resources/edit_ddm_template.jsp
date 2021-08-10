@@ -36,7 +36,7 @@ if (ddmTemplate != null) {
 	renderResponse.setTitle(LanguageUtil.format(request, "edit-x", HtmlUtil.escape(ddmTemplate.getName(locale))));
 }
 else {
-	renderResponse.setTitle(LanguageUtil.format(request, "add-x", HtmlUtil.escape(editDDMTemplateDisplayContext.getTemplateTypeLabel())));
+	renderResponse.setTitle(LanguageUtil.format(request, "add-x", HtmlUtil.escape(editDDMTemplateDisplayContext.getTemplateTypeLocalizedLabel())));
 }
 %>
 
