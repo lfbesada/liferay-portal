@@ -114,7 +114,7 @@ public class EditDDMTemplateDisplayContext {
 			).setParameter(
 				"classNameId", getClassNameId()
 			).setParameter(
-				"classPK", _getClassPK()
+				"classPK", getClassPK()
 			).setParameter(
 				"ddmTemplateId", getDDMTemplateId()
 			).setWindowState(
@@ -224,6 +224,16 @@ public class EditDDMTemplateDisplayContext {
 		return Collections.emptyMap();
 	}
 
+	protected long getClassPK() {
+		DDMTemplate ddmTemplate = getDDMTemplate();
+
+		if (ddmTemplate != null) {
+			return ddmTemplate.getClassPK();
+		}
+
+		return 0;
+	}
+
 	protected long getDDMTemplateId() {
 		if (_ddmTemplateId != null) {
 			return _ddmTemplateId;
@@ -251,16 +261,6 @@ public class EditDDMTemplateDisplayContext {
 		return JSONFactoryUtil.createJSONObject(
 			_ddmTemplateHelper.getAutocompleteJSON(
 				_httpServletRequest, getLanguageType()));
-	}
-
-	private long _getClassPK() {
-		DDMTemplate ddmTemplate = getDDMTemplate();
-
-		if (ddmTemplate != null) {
-			return ddmTemplate.getClassPK();
-		}
-
-		return 0;
 	}
 
 	private String _getEditorMode() {
@@ -385,7 +385,7 @@ public class EditDDMTemplateDisplayContext {
 
 		Map<String, TemplateVariableGroup> templateVariableGroups =
 			TemplateContextHelper.getTemplateVariableGroups(
-				getTemplateHandlerClassNameId(), _getClassPK(),
+				getTemplateHandlerClassNameId(), getClassPK(),
 				getLanguageType(), _themeDisplay.getLocale());
 
 		templateVariableGroups.putAll(getAdditionalTemplateVariableGroups());
