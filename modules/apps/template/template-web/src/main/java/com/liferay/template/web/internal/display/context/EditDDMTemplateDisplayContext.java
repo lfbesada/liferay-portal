@@ -36,6 +36,7 @@ import com.liferay.portal.kernel.template.TemplateVariableGroup;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -43,6 +44,7 @@ import com.liferay.portal.template.TemplateContextHelper;
 import com.liferay.template.web.internal.util.TemplateDDMTemplateUtil;
 
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Map;
 import java.util.Objects;
 import java.util.ResourceBundle;
@@ -216,6 +218,12 @@ public class EditDDMTemplateDisplayContext {
 		return _smallImage;
 	}
 
+	protected Map<String, TemplateVariableGroup>
+		getAdditionalTemplateVariableGroups() {
+
+		return Collections.emptyMap();
+	}
+
 	protected long getDDMTemplateId() {
 		if (_ddmTemplateId != null) {
 			return _ddmTemplateId;
@@ -377,8 +385,10 @@ public class EditDDMTemplateDisplayContext {
 
 		Map<String, TemplateVariableGroup> templateVariableGroups =
 			TemplateContextHelper.getTemplateVariableGroups(
-				getClassNameId(), _getClassPK(), getLanguageType(),
-				_themeDisplay.getLocale());
+				getTemplateHandlerClassNameId(), _getClassPK(),
+				getLanguageType(), _themeDisplay.getLocale());
+
+		templateVariableGroups.putAll(getAdditionalTemplateVariableGroups());
 
 		return templateVariableGroups.values();
 	}
