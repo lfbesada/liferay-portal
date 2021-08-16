@@ -641,6 +641,11 @@ public class LayoutStructure {
 		return layoutStructureItem;
 	}
 
+	public void updatePageDefinitionVersion() {
+		_pageDefinitionVersion =
+			LayoutStructureConstants.LATEST_PAGE_DEFINITION_VERSION;
+	}
+
 	public List<LayoutStructureItem> updateRowColumnsLayoutStructureItem(
 		String itemId, int numberOfColumns) {
 

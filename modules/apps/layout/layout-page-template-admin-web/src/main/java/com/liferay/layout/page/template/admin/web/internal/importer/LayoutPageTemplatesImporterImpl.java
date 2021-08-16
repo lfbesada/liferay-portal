@@ -1082,6 +1082,8 @@ public class LayoutPageTemplatesImporterImpl
 			layout = _layoutLocalService.fetchLayout(layout.getPlid());
 
 			_updateLayoutSettings(layout, settings);
+
+			layoutStructure.updatePageDefinitionVersion();
 		}
 
 		_updateLayoutPageTemplateStructure(layout, layoutStructure);
