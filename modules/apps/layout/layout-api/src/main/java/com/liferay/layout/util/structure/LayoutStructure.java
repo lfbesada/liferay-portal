@@ -506,6 +506,15 @@ public class LayoutStructure {
 		_mainItemId = mainItemId;
 	}
 
+	public void setPageDefinitionVersion(Double pageDefinitionVersion) {
+		if (pageDefinitionVersion == null) {
+			pageDefinitionVersion =
+				LayoutStructureConstants.DEFAULT_PAGE_DEFINITION_VERSION;
+		}
+
+		_pageDefinitionVersion = pageDefinitionVersion;
+	}
+
 	public JSONObject toJSONObject() {
 		String dropZoneItemId = StringPool.BLANK;
 		JSONObject layoutStructureItemsJSONObject =

@@ -1054,6 +1054,9 @@ public class LayoutPageTemplatesImporterImpl
 			layoutStructure.addRootLayoutStructureItem();
 
 		if (pageDefinition != null) {
+			layoutStructure.setPageDefinitionVersion(
+				pageDefinition.getVersion());
+
 			PageElement pageElement = pageDefinition.getPageElement();
 
 			if ((pageElement.getType() == PageElement.Type.ROOT) &&
