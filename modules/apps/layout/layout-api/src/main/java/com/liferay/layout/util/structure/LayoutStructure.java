@@ -125,6 +125,8 @@ public class LayoutStructure {
 		_deletedLayoutStructureItems = new HashMap<>();
 		_layoutStructureItems = new HashMap<>();
 		_mainItemId = StringPool.BLANK;
+		_pageDefinitionVersion =
+			LayoutStructureConstants.LATEST_PAGE_DEFINITION_VERSION;
 	}
 
 	public LayoutStructureItem addCollectionItemLayoutStructureItem(
@@ -434,6 +436,10 @@ public class LayoutStructure {
 		return _layoutStructureItems.get(_mainItemId);
 	}
 
+	public double getPageDefinitionVersion() {
+		return _pageDefinitionVersion;
+	}
+
 	@Override
 	public int hashCode() {
 		return HashUtil.hash(0, getMainItemId());
@@ -545,7 +551,7 @@ public class LayoutStructure {
 				"main", _mainItemId
 			)
 		).put(
-			"version", 1
+			"version", _pageDefinitionVersion
 		);
 	}
 
@@ -716,6 +722,9 @@ public class LayoutStructure {
 		_fragmentLayoutStructureItems = fragmentLayoutStructureItems;
 		_layoutStructureItems = layoutStructureItems;
 		_mainItemId = mainItemId;
+
+		_pageDefinitionVersion =
+			LayoutStructureConstants.LATEST_PAGE_DEFINITION_VERSION;
 	}
 
 	private void _addColumnLayoutStructureItem(
@@ -900,5 +909,6 @@ public class LayoutStructure {
 	private final Map<Long, LayoutStructureItem> _fragmentLayoutStructureItems;
 	private final Map<String, LayoutStructureItem> _layoutStructureItems;
 	private String _mainItemId;
+	private double _pageDefinitionVersion;
 
 }
