@@ -45,6 +45,7 @@ import com.liferay.template.constants.TemplatePortletKeys;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 import javax.portlet.PortletPreferences;
 
@@ -151,7 +152,8 @@ public class TemplatePortletDataHandler extends BasePortletDataHandler {
 			PortletPreferences portletPreferences, String data)
 		throws Exception {
 
-		List<Long> classNameIds = _getClassNameIds(portletDataContext);
+		List<Long> portletDisplayTemplateSelectedClassNameIds =
+			_getPortletDisplayTemplateSelectedClassNameIds(portletDataContext);
 
 		Element ddmTemplatesElement =
 			portletDataContext.getImportDataGroupElement(DDMTemplate.class);
@@ -159,12 +161,22 @@ public class TemplatePortletDataHandler extends BasePortletDataHandler {
 		List<Element> ddmTemplateElements = ddmTemplatesElement.elements();
 
 		for (Element ddmTemplateElement : ddmTemplateElements) {
-			long classNameId = _portal.getClassNameId(
-				ddmTemplateElement.attributeValue("attached-class-name"));
+			String resourceClassName = ddmTemplateElement.attributeValue(
+				"resource-class-name");
 
-			if (classNameIds.contains(classNameId)) {
-				StagedModelDataHandlerUtil.importStagedModel(
-					portletDataContext, ddmTemplateElement);
+			if (Objects.equals(
+					PortletDisplayTemplate.class.getName(),
+					resourceClassName)) {
+
+				long classNameId = _portal.getClassNameId(
+					ddmTemplateElement.attributeValue("attached-class-name"));
+
+				if (portletDisplayTemplateSelectedClassNameIds.contains(
+						classNameId)) {
+
+					StagedModelDataHandlerUtil.importStagedModel(
+						portletDataContext, ddmTemplateElement);
+				}
 			}
 		}
 
@@ -200,31 +212,6 @@ public class TemplatePortletDataHandler extends BasePortletDataHandler {
 	@Reference(target = ModuleServiceLifecycle.PORTAL_INITIALIZED, unbind = "-")
 	protected void setModuleServiceLifecycle(
 		ModuleServiceLifecycle moduleServiceLifecycle) {
-	}
-
-	private List<Long> _getClassNameIds(PortletDataContext portletDataContext) {
-		List<Long> classNameIds = new ArrayList<>();
-
-		for (TemplateHandler templateHandler :
-				_templateHandlerRegistry.getTemplateHandlers()) {
-
-			ClassName className = _classNameLocalService.fetchClassName(
-				templateHandler.getClassName());
-
-			if (className == null) {
-				continue;
-			}
-
-			if (portletDataContext.getBooleanParameter(
-					NAMESPACE,
-					templateHandler.getName(LocaleUtil.getSiteDefault()))) {
-
-				classNameIds.add(
-					_portal.getClassNameId(templateHandler.getClassName()));
-			}
-		}
-
-		return classNameIds;
 	}
 
 	private ActionableDynamicQuery _getDDMTemplateActionableDynamicQuery(
