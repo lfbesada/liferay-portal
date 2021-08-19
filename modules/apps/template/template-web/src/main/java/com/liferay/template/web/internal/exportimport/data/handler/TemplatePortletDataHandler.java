@@ -500,6 +500,38 @@ public class TemplatePortletDataHandler extends BasePortletDataHandler {
 				_portal.getClassNameId(DDMTemplate.class.getName()));
 		}
 
+		StagedModelType informationTemplateStagedModelType =
+			_getInformationTemplatesStagedModelType();
+
+		if (changesetEntries != null) {
+			long informationTemplatesModelAdditionCount = 0;
+
+			for (ChangesetEntry changesetEntry : changesetEntries) {
+				DDMTemplate ddmTemplate =
+					_ddmTemplateStagedModelRepository.getStagedModel(
+						changesetEntry.getClassPK());
+
+				if (ddmTemplate.getResourceClassNameId() ==
+						informationTemplateStagedModelType.
+							getReferrerClassNameId()) {
+
+					informationTemplatesModelAdditionCount++;
+				}
+			}
+
+			manifestSummary.addModelAdditionCount(
+				informationTemplateStagedModelType,
+				informationTemplatesModelAdditionCount);
+		}
+
+		long informationTemplatesModelDeletionCount =
+			_exportImportHelper.getModelDeletionCount(
+				portletDataContext, informationTemplateStagedModelType);
+
+		manifestSummary.addModelDeletionCount(
+			informationTemplateStagedModelType,
+			informationTemplatesModelDeletionCount);
+
 		for (StagedModelType portletDisplayTemplatesStagedModelType :
 				_getPortletDisplayTemplatesStagedModelTypes()) {
 
