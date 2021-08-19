@@ -34,15 +34,12 @@ import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.kernel.staging.Staging;
 import com.liferay.exportimport.kernel.staging.constants.StagingConstants;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
-import com.liferay.exportimport.staged.model.repository.StagedModelRepositoryRegistryUtil;
 import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
 import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
 import com.liferay.portal.kernel.model.ClassName;
-import com.liferay.portal.kernel.model.StagedModel;
-import com.liferay.portal.kernel.model.TypedModel;
 import com.liferay.portal.kernel.module.framework.ModuleServiceLifecycle;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.template.TemplateHandler;
@@ -495,6 +492,14 @@ public class TemplatePortletDataHandler extends BasePortletDataHandler {
 				portletDataContext.getScopeGroupId(),
 				StagingConstants.RANGE_FROM_LAST_PUBLISH_DATE_CHANGESET_NAME);
 
+		List<ChangesetEntry> changesetEntries = null;
+
+		if (changesetCollection != null) {
+			changesetEntries = _changesetEntryLocalService.getChangesetEntries(
+				changesetCollection.getChangesetCollectionId(),
+				_portal.getClassNameId(DDMTemplate.class.getName()));
+		}
+
 		for (StagedModelType stagedModelType : _getStagedModelTypes()) {
 			long modelAdditionCount = manifestSummary.getModelAdditionCount(
 				stagedModelType);
@@ -503,34 +508,18 @@ public class TemplatePortletDataHandler extends BasePortletDataHandler {
 				continue;
 			}
 
-			if (changesetCollection != null) {
-				StagedModelRepository<?> stagedModelRepository =
-					StagedModelRepositoryRegistryUtil.getStagedModelRepository(
-						stagedModelType.getClassName());
+			if (changesetEntries != null) {
+				modelAdditionCount = 0;
 
-				if (stagedModelRepository != null) {
-					List<ChangesetEntry> changesetEntries =
-						_changesetEntryLocalService.getChangesetEntries(
-							changesetCollection.getChangesetCollectionId(),
-							stagedModelType.getClassNameId());
+				for (ChangesetEntry changesetEntry : changesetEntries) {
+					DDMTemplate ddmTemplate =
+						_ddmTemplateStagedModelRepository.getStagedModel(
+							changesetEntry.getClassPK());
 
-					modelAdditionCount = 0;
+					if (ddmTemplate.getClassNameId() ==
+							stagedModelType.getReferrerClassNameId()) {
 
-					for (ChangesetEntry changesetEntry : changesetEntries) {
-						StagedModel stagedModel =
-							stagedModelRepository.getStagedModel(
-								changesetEntry.getClassPK());
-
-						if (stagedModel instanceof TypedModel) {
-							TypedModel typedModel = (TypedModel)stagedModel;
-
-							if (Objects.equals(
-									typedModel.getClassName(),
-									stagedModelType.getReferrerClassName())) {
-
-								modelAdditionCount++;
-							}
-						}
+						modelAdditionCount++;
 					}
 				}
 
@@ -559,6 +548,12 @@ public class TemplatePortletDataHandler extends BasePortletDataHandler {
 
 	@Reference
 	private DDMTemplateLocalService _ddmTemplateLocalService;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.dynamic.data.mapping.model.DDMTemplate)"
+	)
+	private StagedModelRepository<DDMTemplate>
+		_ddmTemplateStagedModelRepository;
 
 	@Reference
 	private ExportImportHelper _exportImportHelper;
