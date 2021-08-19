@@ -504,41 +504,31 @@ public class TemplatePortletDataHandler extends BasePortletDataHandler {
 			}
 
 			if (changesetCollection != null) {
-				if (stagedModelType.getReferrerClassName() == null) {
-					modelAdditionCount =
-						_changesetEntryLocalService.getChangesetEntriesCount(
+				StagedModelRepository<?> stagedModelRepository =
+					StagedModelRepositoryRegistryUtil.getStagedModelRepository(
+						stagedModelType.getClassName());
+
+				if (stagedModelRepository != null) {
+					List<ChangesetEntry> changesetEntries =
+						_changesetEntryLocalService.getChangesetEntries(
 							changesetCollection.getChangesetCollectionId(),
 							stagedModelType.getClassNameId());
-				}
-				else {
-					StagedModelRepository<?> stagedModelRepository =
-						StagedModelRepositoryRegistryUtil.
-							getStagedModelRepository(
-								stagedModelType.getClassName());
 
-					if (stagedModelRepository != null) {
-						List<ChangesetEntry> changesetEntries =
-							_changesetEntryLocalService.getChangesetEntries(
-								changesetCollection.getChangesetCollectionId(),
-								stagedModelType.getClassNameId());
+					modelAdditionCount = 0;
 
-						modelAdditionCount = 0;
+					for (ChangesetEntry changesetEntry : changesetEntries) {
+						StagedModel stagedModel =
+							stagedModelRepository.getStagedModel(
+								changesetEntry.getClassPK());
 
-						for (ChangesetEntry changesetEntry : changesetEntries) {
-							StagedModel stagedModel =
-								stagedModelRepository.getStagedModel(
-									changesetEntry.getClassPK());
+						if (stagedModel instanceof TypedModel) {
+							TypedModel typedModel = (TypedModel)stagedModel;
 
-							if (stagedModel instanceof TypedModel) {
-								TypedModel typedModel = (TypedModel)stagedModel;
+							if (Objects.equals(
+									typedModel.getClassName(),
+									stagedModelType.getReferrerClassName())) {
 
-								if (Objects.equals(
-										typedModel.getClassName(),
-										stagedModelType.
-											getReferrerClassName())) {
-
-									modelAdditionCount++;
-								}
+								modelAdditionCount++;
 							}
 						}
 					}
