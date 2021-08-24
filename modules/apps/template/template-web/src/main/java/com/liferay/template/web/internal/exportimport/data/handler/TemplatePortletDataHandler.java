@@ -34,6 +34,7 @@ import com.liferay.exportimport.kernel.lar.StagedModelType;
 import com.liferay.exportimport.kernel.staging.Staging;
 import com.liferay.exportimport.kernel.staging.constants.StagingConstants;
 import com.liferay.exportimport.staged.model.repository.StagedModelRepository;
+import com.liferay.info.item.InfoItemServiceTracker;
 import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.portal.kernel.dao.orm.ActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.ExportActionableDynamicQuery;
@@ -46,6 +47,7 @@ import com.liferay.portal.kernel.template.TemplateHandler;
 import com.liferay.portal.kernel.template.TemplateHandlerRegistry;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portlet.display.template.PortletDisplayTemplate;
 import com.liferay.template.constants.TemplatePortletKeys;
@@ -53,6 +55,8 @@ import com.liferay.template.constants.TemplatePortletKeys;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import javax.portlet.PortletPreferences;
 
@@ -349,6 +353,59 @@ public class TemplatePortletDataHandler extends BasePortletDataHandler {
 		return _informationTemplatesStagedModelType;
 	}
 
+	private List<StagedModelType> _getOnlyDeletionStagedModelTypes() {
+		if (_onlyDeletionStagedModelTypes != null) {
+			return _onlyDeletionStagedModelTypes;
+		}
+
+		List<String> infoItemClassNames =
+			_infoItemServiceTracker.getInfoItemClassNames(
+				InfoItemFormProvider.class);
+
+		Stream<String> infoItemClassNamesStream = infoItemClassNames.stream();
+
+		List<Long> infoItemsClassNameIds = infoItemClassNamesStream.map(
+			infoItemClassName ->
+				_infoItemServiceTracker.getFirstInfoItemService(
+					InfoItemFormProvider.class, infoItemClassName)
+		).map(
+			InfoItemFormProvider::getInfoForm
+		).filter(
+			infoForm -> Validator.isNotNull(infoForm.getName())
+		).map(
+			infoForm -> _portal.getClassNameId(infoForm.getName())
+		).collect(
+			Collectors.toList()
+		);
+
+		for (StagedModelType portletDisplayTemplateStagedModelType :
+				_getPortletDisplayTemplatesStagedModelTypes()) {
+
+			if (infoItemsClassNameIds.contains(
+					portletDisplayTemplateStagedModelType.
+						getReferrerClassNameId())) {
+
+				infoItemsClassNameIds.remove(
+					portletDisplayTemplateStagedModelType.
+						getReferrerClassNameId());
+			}
+		}
+
+		Stream<Long> exclusiveClassNameIdsInformationTemplatesStream =
+			infoItemsClassNameIds.stream();
+
+		_onlyDeletionStagedModelTypes =
+			exclusiveClassNameIdsInformationTemplatesStream.map(
+				exclusiveClassNameIdInformationTemplates -> new StagedModelType(
+					_getDDMTemplateClassNameId(),
+					exclusiveClassNameIdInformationTemplates)
+			).collect(
+				Collectors.toList()
+			);
+
+		return _onlyDeletionStagedModelTypes;
+	}
+
 	private PortletDataHandlerControl[] _getPortletDataHandlerControls() {
 		List<PortletDataHandlerControl>
 			portletDisplayTemplatesPortletDataHandlerControls =
@@ -468,6 +525,8 @@ public class TemplatePortletDataHandler extends BasePortletDataHandler {
 
 		stagedModelTypes.add(_getInformationTemplatesStagedModelType());
 
+		stagedModelTypes.addAll(_getOnlyDeletionStagedModelTypes());
+
 		_stagedModelTypes = stagedModelTypes.toArray(new StagedModelType[0]);
 
 		return _stagedModelTypes;
@@ -524,13 +583,8 @@ public class TemplatePortletDataHandler extends BasePortletDataHandler {
 				informationTemplatesModelAdditionCount);
 		}
 
-		long informationTemplatesModelDeletionCount =
-			_exportImportHelper.getModelDeletionCount(
-				portletDataContext, informationTemplateStagedModelType);
-
 		manifestSummary.addModelDeletionCount(
-			informationTemplateStagedModelType,
-			informationTemplatesModelDeletionCount);
+			informationTemplateStagedModelType, 0);
 
 		for (StagedModelType portletDisplayTemplatesStagedModelType :
 				_getPortletDisplayTemplatesStagedModelTypes()) {
@@ -571,6 +625,19 @@ public class TemplatePortletDataHandler extends BasePortletDataHandler {
 			manifestSummary.addModelDeletionCount(
 				portletDisplayTemplatesStagedModelType, modelDeletionCount);
 		}
+
+		for (StagedModelType onlyDeletionStagedModelType :
+				_getOnlyDeletionStagedModelTypes()) {
+
+			manifestSummary.addModelAdditionCount(
+				onlyDeletionStagedModelType, 0);
+
+			long modelDeletionCount = _exportImportHelper.getModelDeletionCount(
+				portletDataContext, onlyDeletionStagedModelType);
+
+			manifestSummary.addModelDeletionCount(
+				onlyDeletionStagedModelType, modelDeletionCount);
+		}
 	}
 
 	@Reference
@@ -597,7 +664,12 @@ public class TemplatePortletDataHandler extends BasePortletDataHandler {
 	private ExportImportHelper _exportImportHelper;
 
 	private Long _infoItemFormProviderClassNameId;
+
+	@Reference
+	private InfoItemServiceTracker _infoItemServiceTracker;
+
 	private StagedModelType _informationTemplatesStagedModelType;
+	private List<StagedModelType> _onlyDeletionStagedModelTypes;
 
 	@Reference
 	private Portal _portal;
