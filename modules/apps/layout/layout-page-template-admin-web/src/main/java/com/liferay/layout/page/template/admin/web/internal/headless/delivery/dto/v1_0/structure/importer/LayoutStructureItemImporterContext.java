@@ -24,25 +24,56 @@ public class LayoutStructureItemImporterContext {
 	public LayoutStructureItemImporterContext(
 		Layout layout, String parentItemId, int position) {
 
-		_layout = layout;
 		_parentItemId = parentItemId;
 		_position = position;
+
+		_companyId = layout.getCompanyId();
+		_groupId = layout.getGroupId();
+		_plid = layout.getPlid();
+		_userId = layout.getUserId();
 	}
 
-	public Layout getLayout() {
-		return _layout;
+	public LayoutStructureItemImporterContext(
+		long companyId, long groupId, String parentItemId, long plid,
+		int position, long userId) {
+
+		_companyId = companyId;
+		_groupId = groupId;
+		_parentItemId = parentItemId;
+		_plid = plid;
+		_position = position;
+		_userId = userId;
+	}
+
+	public long getCompanyId() {
+		return _companyId;
+	}
+
+	public long getGroupId() {
+		return _groupId;
 	}
 
 	public String getParentItemId() {
 		return _parentItemId;
 	}
 
+	public long getPlid() {
+		return _plid;
+	}
+
 	public int getPosition() {
 		return _position;
 	}
 
-	private final Layout _layout;
+	public long getUserId() {
+		return _userId;
+	}
+
+	private final long _companyId;
+	private final long _groupId;
 	private final String _parentItemId;
+	private final long _plid;
 	private final int _position;
+	private final long _userId;
 
 }

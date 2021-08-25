@@ -46,7 +46,6 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
@@ -93,8 +92,7 @@ public class FragmentLayoutStructureItemImporter
 		throws Exception {
 
 		FragmentEntryLink fragmentEntryLink = _addFragmentEntryLink(
-			layoutStructureItemImporterContext.getLayout(), pageElement,
-			layoutStructureItemImporterContext.getPosition(), warningMessages);
+			layoutStructureItemImporterContext, pageElement, warningMessages);
 
 		if (fragmentEntryLink == null) {
 			return null;
@@ -164,8 +162,9 @@ public class FragmentLayoutStructureItemImporter
 	}
 
 	private FragmentEntryLink _addFragmentEntryLink(
-			Layout layout, PageElement pageElement, int position,
-			Set<String> warningMessages)
+			LayoutStructureItemImporterContext
+				layoutStructureItemImporterContext,
+			PageElement pageElement, Set<String> warningMessages)
 		throws Exception {
 
 		Map<String, Object> definitionMap = getDefinitionMap(
@@ -185,14 +184,16 @@ public class FragmentLayoutStructureItemImporter
 		}
 
 		FragmentEntry fragmentEntry = _getFragmentEntry(
-			fragmentKey, layout.getGroupId());
+			fragmentKey, layoutStructureItemImporterContext.getGroupId());
 
 		FragmentRenderer fragmentRenderer =
 			_fragmentRendererTracker.getFragmentRenderer(fragmentKey);
 
 		if ((fragmentEntry == null) && (fragmentRenderer == null)) {
 			warningMessages.add(
-				_getWarningMessage(layout.getGroupId(), fragmentKey));
+				_getWarningMessage(
+					layoutStructureItemImporterContext.getGroupId(),
+					fragmentKey));
 
 			return null;
 		}
@@ -271,17 +272,21 @@ public class FragmentLayoutStructureItemImporter
 
 		FragmentEntryLink fragmentEntryLink =
 			_fragmentEntryLinkLocalService.addFragmentEntryLink(
-				layout.getUserId(), layout.getGroupId(), 0, fragmentEntryId, 0,
-				layout.getPlid(), css, html, js, configuration,
-				jsonObject.toString(), StringUtil.randomId(), position,
-				fragmentKey, ServiceContextThreadLocal.getServiceContext());
+				layoutStructureItemImporterContext.getUserId(),
+				layoutStructureItemImporterContext.getGroupId(), 0,
+				fragmentEntryId, 0,
+				layoutStructureItemImporterContext.getPlid(), css, html, js,
+				configuration, jsonObject.toString(), StringUtil.randomId(),
+				layoutStructureItemImporterContext.getPosition(), fragmentKey,
+				ServiceContextThreadLocal.getServiceContext());
 
 		List<Object> widgetInstances = (List<Object>)definitionMap.get(
 			"widgetInstances");
 
 		if (widgetInstances != null) {
 			_processWidgetInstances(
-				fragmentEntryLink, layout, warningMessages, widgetInstances);
+				fragmentEntryLink, layoutStructureItemImporterContext,
+				warningMessages, widgetInstances);
 		}
 
 		return fragmentEntryLink;
@@ -678,7 +683,9 @@ public class FragmentLayoutStructureItemImporter
 	}
 
 	private void _processWidgetInstances(
-			FragmentEntryLink fragmentEntryLink, Layout layout,
+			FragmentEntryLink fragmentEntryLink,
+			LayoutStructureItemImporterContext
+				layoutStructureItemImporterContext,
 			Set<String> warningMessages, List<Object> widgetInstances)
 		throws Exception {
 
@@ -712,7 +719,7 @@ public class FragmentLayoutStructureItemImporter
 				(Map<String, Object>)widgetInstanceMap.get("widgetConfig");
 
 			_portletConfigurationImporterHelper.importPortletConfiguration(
-				layout.getPlid(),
+				layoutStructureItemImporterContext.getPlid(),
 				PortletIdCodec.encode(widgetName, widgetInstanceId),
 				widgetConfigDefinitionMap);
 
@@ -721,7 +728,7 @@ public class FragmentLayoutStructureItemImporter
 					"widgetPermissions");
 
 			_portletPermissionsImporterHelper.importPortletPermissions(
-				layout.getPlid(),
+				layoutStructureItemImporterContext.getPlid(),
 				PortletIdCodec.encode(widgetName, widgetInstanceId),
 				warningMessages, widgetPermissionsMaps);
 		}

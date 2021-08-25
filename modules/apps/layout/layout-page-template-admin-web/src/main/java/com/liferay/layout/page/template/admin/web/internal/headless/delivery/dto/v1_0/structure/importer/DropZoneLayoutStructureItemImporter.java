@@ -28,7 +28,6 @@ import com.liferay.layout.util.structure.DropZoneLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.ArrayList;
@@ -115,13 +114,12 @@ public class DropZoneLayoutStructureItemImporter
 					_KEY_UNALLOWED_FRAGMENTS));
 		}
 
-		Layout layout = layoutStructureItemImporterContext.getLayout();
-
 		for (Map<String, String> allowedFragmentMap : allowedFragments) {
 			fragmentEntryKeys.add(allowedFragmentMap.get(_KEY_KEY));
 
 			String fragmentCollectionKey = _getFragmentCollectionKey(
-				allowedFragmentMap.get(_KEY_KEY), layout.getGroupId());
+				allowedFragmentMap.get(_KEY_KEY),
+				layoutStructureItemImporterContext.getGroupId());
 
 			if (Validator.isNotNull(fragmentCollectionKey)) {
 				fragmentCollectionKeys.add(fragmentCollectionKey);

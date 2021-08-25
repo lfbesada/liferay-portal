@@ -25,7 +25,6 @@ import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortletIdException;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.PortletIdCodec;
 import com.liferay.portal.kernel.service.PortletLocalService;
@@ -59,8 +58,7 @@ public class WidgetLayoutStructureItemImporter
 		throws Exception {
 
 		FragmentEntryLink fragmentEntryLink = _addFragmentEntryLink(
-			layoutStructureItemImporterContext.getLayout(), pageElement,
-			warningMessages);
+			layoutStructureItemImporterContext, pageElement, warningMessages);
 
 		if (fragmentEntryLink == null) {
 			return null;
@@ -78,7 +76,9 @@ public class WidgetLayoutStructureItemImporter
 	}
 
 	private FragmentEntryLink _addFragmentEntryLink(
-			Layout layout, PageElement pageElement, Set<String> warningMessages)
+			LayoutStructureItemImporterContext
+				layoutStructureItemImporterContext,
+			PageElement pageElement, Set<String> warningMessages)
 		throws Exception {
 
 		Map<String, Object> definitionMap = getDefinitionMap(
@@ -113,7 +113,7 @@ public class WidgetLayoutStructureItemImporter
 		}
 
 		widgetInstanceId = _getPortletInstanceId(
-			layout, widgetInstanceId, widgetName);
+			layoutStructureItemImporterContext, widgetInstanceId, widgetName);
 
 		editableValueJSONObject.put(
 			"instanceId", widgetInstanceId
@@ -125,7 +125,7 @@ public class WidgetLayoutStructureItemImporter
 			(Map<String, Object>)widgetInstance.get("widgetConfig");
 
 		_portletConfigurationImporterHelper.importPortletConfiguration(
-			layout.getPlid(),
+			layoutStructureItemImporterContext.getPlid(),
 			PortletIdCodec.encode(widgetName, widgetInstanceId),
 			widgetConfigDefinitionMap);
 
@@ -133,24 +133,27 @@ public class WidgetLayoutStructureItemImporter
 			(List<Map<String, Object>>)widgetInstance.get("widgetPermissions");
 
 		_portletPermissionsImporterHelper.importPortletPermissions(
-			layout.getPlid(),
+			layoutStructureItemImporterContext.getPlid(),
 			PortletIdCodec.encode(widgetName, widgetInstanceId),
 			warningMessages, widgetPermissionsMaps);
 
 		return _fragmentEntryLinkLocalService.addFragmentEntryLink(
-			layout.getUserId(), layout.getGroupId(), 0, 0, 0, layout.getPlid(),
+			layoutStructureItemImporterContext.getUserId(),
+			layoutStructureItemImporterContext.getGroupId(), 0, 0, 0,
+			layoutStructureItemImporterContext.getPlid(), StringPool.BLANK,
 			StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
-			StringPool.BLANK, editableValueJSONObject.toString(),
-			widgetInstanceId, 0, null,
+			editableValueJSONObject.toString(), widgetInstanceId, 0, null,
 			ServiceContextThreadLocal.getServiceContext());
 	}
 
 	private String _getPortletInstanceId(
-			Layout layout, String portletInstanceId, String portletId)
+			LayoutStructureItemImporterContext
+				layoutStructureItemImporterContext,
+			String portletInstanceId, String portletId)
 		throws Exception {
 
 		Portlet portlet = _portletLocalService.fetchPortletById(
-			layout.getCompanyId(), portletId);
+			layoutStructureItemImporterContext.getCompanyId(), portletId);
 
 		if (portlet == null) {
 			throw new PortletIdException();
@@ -161,7 +164,8 @@ public class WidgetLayoutStructureItemImporter
 		}
 
 		long count = _portletPreferencesLocalService.getPortletPreferencesCount(
-			PortletKeys.PREFS_OWNER_TYPE_LAYOUT, layout.getPlid(), portletId);
+			PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
+			layoutStructureItemImporterContext.getPlid(), portletId);
 
 		if (count > 0) {
 			throw new PortletIdException(
