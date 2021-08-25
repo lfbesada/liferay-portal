@@ -525,6 +525,7 @@ public class JournalContentDisplayContext {
 			new AssetEntryItemSelectorReturnType());
 
 		assetEntryItemSelectorCriterion.setGroupId(getGroupId());
+		assetEntryItemSelectorCriterion.setScopeGroupType(getScopeGroupType());
 		assetEntryItemSelectorCriterion.setShowNonindexable(true);
 		assetEntryItemSelectorCriterion.setShowScheduled(true);
 		assetEntryItemSelectorCriterion.setSingleSelect(true);
@@ -564,6 +565,24 @@ public class JournalContentDisplayContext {
 			_portletRequest, "portletResource");
 
 		return _portletResource;
+	}
+
+	public String getScopeGroupType() {
+		Group scopeGroup = _themeDisplay.getScopeGroup();
+
+		if (scopeGroup.isDepot()) {
+			return "asset-library";
+		}
+
+		if (scopeGroup.getGroupId() == _themeDisplay.getCompanyGroupId()) {
+			return "global";
+		}
+
+		if (scopeGroup.isLayout()) {
+			return "page";
+		}
+
+		return "site";
 	}
 
 	public JournalArticle getSelectedArticle() {
