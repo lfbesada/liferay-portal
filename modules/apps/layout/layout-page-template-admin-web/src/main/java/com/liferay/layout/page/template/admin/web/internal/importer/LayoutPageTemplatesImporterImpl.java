@@ -52,6 +52,7 @@ import com.liferay.layout.page.template.validator.MasterPageValidator;
 import com.liferay.layout.page.template.validator.PageDefinitionValidator;
 import com.liferay.layout.page.template.validator.PageTemplateValidator;
 import com.liferay.layout.util.LayoutCopyHelper;
+import com.liferay.layout.util.constants.LayoutStructureConstants;
 import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
@@ -77,6 +78,7 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
@@ -166,8 +168,13 @@ public class LayoutPageTemplatesImporterImpl
 
 		Set<String> warningMessages = new HashSet<>();
 
+		LayoutStructureItemImporterContext layoutStructureItemImporterContext =
+			new LayoutStructureItemImporterContext(
+				layout, LayoutStructureConstants.LATEST_PAGE_DEFINITION_VERSION,
+				parentItemId, position);
+
 		_processPageElement(
-			layout, layoutStructure, pageElement, parentItemId, position,
+			layoutStructure, layoutStructureItemImporterContext, pageElement,
 			warningMessages);
 
 		List<FragmentEntryLink> fragmentEntryLinks = new ArrayList<>();
@@ -1061,14 +1068,21 @@ public class LayoutPageTemplatesImporterImpl
 				(pageElement.getPageElements() != null)) {
 
 				int position = 0;
+				double pageDefinitionVersion = GetterUtil.getDouble(
+					pageDefinition.getVersion(), 1);
 
 				for (PageElement childPageElement :
 						pageElement.getPageElements()) {
 
+					LayoutStructureItemImporterContext
+						layoutStructureItemImporterContext =
+							new LayoutStructureItemImporterContext(
+								layout, pageDefinitionVersion,
+								rootLayoutStructureItem.getItemId(), position);
+
 					if (_processPageElement(
-							layout, layoutStructure, childPageElement,
-							rootLayoutStructureItem.getItemId(), position,
-							warningMessages)) {
+							layoutStructure, layoutStructureItemImporterContext,
+							childPageElement, warningMessages)) {
 
 						position++;
 					}
@@ -1088,9 +1102,10 @@ public class LayoutPageTemplatesImporterImpl
 	}
 
 	private boolean _processPageElement(
-			Layout layout, LayoutStructure layoutStructure,
-			PageElement pageElement, String parentItemId, int position,
-			Set<String> warningMessages)
+			LayoutStructure layoutStructure,
+			LayoutStructureItemImporterContext
+				layoutStructureItemImporterContext,
+			PageElement pageElement, Set<String> warningMessages)
 		throws Exception {
 
 		LayoutStructureItemImporter layoutStructureItemImporter =
@@ -1102,9 +1117,7 @@ public class LayoutPageTemplatesImporterImpl
 		if (layoutStructureItemImporter != null) {
 			layoutStructureItem =
 				layoutStructureItemImporter.addLayoutStructureItem(
-					layoutStructure,
-					new LayoutStructureItemImporterContext(
-						layout, parentItemId, position),
+					layoutStructure, layoutStructureItemImporterContext,
 					pageElement, warningMessages);
 		}
 		else if (pageElement.getType() == PageElement.Type.ROOT) {
@@ -1125,10 +1138,15 @@ public class LayoutPageTemplatesImporterImpl
 		int childPosition = 0;
 
 		for (PageElement childPageElement : pageElement.getPageElements()) {
+			LayoutStructureItemImporterContext
+				childLayoutStructureItemImporterContext =
+					new LayoutStructureItemImporterContext(
+						layoutStructureItemImporterContext,
+						layoutStructureItem.getItemId(), childPosition);
+
 			if (_processPageElement(
-					layout, layoutStructure, childPageElement,
-					layoutStructureItem.getItemId(), childPosition,
-					warningMessages)) {
+					layoutStructure, childLayoutStructureItemImporterContext,
+					childPageElement, warningMessages)) {
 
 				childPosition++;
 			}

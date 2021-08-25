@@ -22,8 +22,10 @@ import com.liferay.portal.kernel.model.Layout;
 public class LayoutStructureItemImporterContext {
 
 	public LayoutStructureItemImporterContext(
-		Layout layout, String parentItemId, int position) {
+		Layout layout, double pageDefinitionVersion, String parentItemId,
+		int position) {
 
+		_pageDefinitionVersion = pageDefinitionVersion;
 		_parentItemId = parentItemId;
 		_position = position;
 
@@ -34,11 +36,27 @@ public class LayoutStructureItemImporterContext {
 	}
 
 	public LayoutStructureItemImporterContext(
-		long companyId, long groupId, String parentItemId, long plid,
-		int position, long userId) {
+		LayoutStructureItemImporterContext layoutStructureItemImporterContext,
+		String parentItemId, int position) {
+
+		_parentItemId = parentItemId;
+		_position = position;
+
+		_companyId = layoutStructureItemImporterContext.getCompanyId();
+		_groupId = layoutStructureItemImporterContext.getGroupId();
+		_pageDefinitionVersion =
+			layoutStructureItemImporterContext.getPageDefinitionVersion();
+		_plid = layoutStructureItemImporterContext.getPlid();
+		_userId = layoutStructureItemImporterContext.getUserId();
+	}
+
+	public LayoutStructureItemImporterContext(
+		long companyId, long groupId, double pageDefinitionVersion,
+		String parentItemId, long plid, int position, long userId) {
 
 		_companyId = companyId;
 		_groupId = groupId;
+		_pageDefinitionVersion = pageDefinitionVersion;
 		_parentItemId = parentItemId;
 		_plid = plid;
 		_position = position;
@@ -51,6 +69,10 @@ public class LayoutStructureItemImporterContext {
 
 	public long getGroupId() {
 		return _groupId;
+	}
+
+	public double getPageDefinitionVersion() {
+		return _pageDefinitionVersion;
 	}
 
 	public String getParentItemId() {
@@ -71,6 +93,7 @@ public class LayoutStructureItemImporterContext {
 
 	private final long _companyId;
 	private final long _groupId;
+	private final double _pageDefinitionVersion;
 	private final String _parentItemId;
 	private final long _plid;
 	private final int _position;
