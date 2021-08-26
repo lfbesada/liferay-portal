@@ -429,18 +429,19 @@ public class TemplatePortletDataHandler extends BasePortletDataHandler {
 					className.getValue()));
 		}
 
-		return new PortletDataHandlerControl[] {
+		List<PortletDataHandlerControl> allPortletDataHandlerControls =
+			new ArrayList<>();
+
+		allPortletDataHandlerControls.add(
 			new PortletDataHandlerBoolean(
 				NAMESPACE, "information-templates", true, false, null,
 				DDMTemplate.class.getName(),
-				InfoItemFormProvider.class.getName()),
-			new PortletDataHandlerBoolean(
-				NAMESPACE, "widget-templates", true, false,
-				portletDisplayTemplatesPortletDataHandlerControls.toArray(
-					new PortletDataHandlerControl[0]),
-				DDMTemplate.class.getName(),
-				PortletDisplayTemplate.class.getName())
-		};
+				InfoItemFormProvider.class.getName()));
+		allPortletDataHandlerControls.addAll(
+			portletDisplayTemplatesPortletDataHandlerControls);
+
+		return allPortletDataHandlerControls.toArray(
+			new PortletDataHandlerControl[0]);
 	}
 
 	private long _getPortletDisplayTemplateClassNameId() {
