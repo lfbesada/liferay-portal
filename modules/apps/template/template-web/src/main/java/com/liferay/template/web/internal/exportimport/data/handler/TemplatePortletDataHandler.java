@@ -408,9 +408,14 @@ public class TemplatePortletDataHandler extends BasePortletDataHandler {
 	}
 
 	private PortletDataHandlerControl[] _getPortletDataHandlerControls() {
-		List<PortletDataHandlerControl>
-			portletDisplayTemplatesPortletDataHandlerControls =
-				new ArrayList<>();
+		List<PortletDataHandlerControl> portletDataHandlerControls =
+			new ArrayList<>();
+
+		portletDataHandlerControls.add(
+			new PortletDataHandlerBoolean(
+				NAMESPACE, "information-templates", true, false, null,
+				DDMTemplate.class.getName(),
+				InfoItemFormProvider.class.getName()));
 
 		for (TemplateHandler templateHandler :
 				_portletDisplayTemplate.getPortletDisplayTemplateHandlers()) {
@@ -422,7 +427,7 @@ public class TemplatePortletDataHandler extends BasePortletDataHandler {
 				continue;
 			}
 
-			portletDisplayTemplatesPortletDataHandlerControls.add(
+			portletDataHandlerControls.add(
 				new PortletDataHandlerBoolean(
 					NAMESPACE,
 					templateHandler.getName(LocaleUtil.getSiteDefault()), true,
@@ -430,18 +435,8 @@ public class TemplatePortletDataHandler extends BasePortletDataHandler {
 					className.getValue()));
 		}
 
-		return new PortletDataHandlerControl[] {
-			new PortletDataHandlerBoolean(
-				NAMESPACE, "information-templates", true, false, null,
-				DDMTemplate.class.getName(),
-				InfoItemFormProvider.class.getName()),
-			new PortletDataHandlerBoolean(
-				NAMESPACE, "widget-templates", true, false,
-				portletDisplayTemplatesPortletDataHandlerControls.toArray(
-					new PortletDataHandlerControl[0]),
-				DDMTemplate.class.getName(),
-				PortletDisplayTemplate.class.getName())
-		};
+		return portletDataHandlerControls.toArray(
+			new PortletDataHandlerControl[0]);
 	}
 
 	private long _getPortletDisplayTemplateClassNameId() {
