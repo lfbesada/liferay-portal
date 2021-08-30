@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.template.info.item.provider.TemplateInfoItemFieldSetProvider;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +57,9 @@ public class CProductInfoItemFieldValuesProvider
 			_getCProductInfoFieldValues(cProduct)
 		).infoFieldValues(
 			_infoItemFieldReaderFieldSetProvider.getInfoFieldValues(
+				CProduct.class.getName(), cProduct)
+		).infoFieldValues(
+			_templateInfoItemFieldSetProvider.getInfoFieldValues(
 				CProduct.class.getName(), cProduct)
 		).infoItemReference(
 			new InfoItemReference(
@@ -137,5 +141,8 @@ public class CProductInfoItemFieldValuesProvider
 	@Reference
 	private InfoItemFieldReaderFieldSetProvider
 		_infoItemFieldReaderFieldSetProvider;
+
+	@Reference
+	private TemplateInfoItemFieldSetProvider _templateInfoItemFieldSetProvider;
 
 }
