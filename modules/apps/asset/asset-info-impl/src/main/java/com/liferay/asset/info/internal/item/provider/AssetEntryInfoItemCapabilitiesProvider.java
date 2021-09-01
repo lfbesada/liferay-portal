@@ -15,31 +15,29 @@
 package com.liferay.asset.info.internal.item.provider;
 
 import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.info.item.InfoItemClassDetails;
-import com.liferay.info.item.InfoItemDetails;
-import com.liferay.info.item.InfoItemReference;
-import com.liferay.info.item.provider.InfoItemDetailsProvider;
+import com.liferay.info.item.capability.InfoItemCapability;
+import com.liferay.info.item.provider.InfoItemCapabilitiesProvider;
+import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.template.info.item.capability.TemplateInfoItemCapability;
+
+import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Lourdes Fernández Besada
  */
-@Component(immediate = true, service = InfoItemDetailsProvider.class)
-public class AssetEntryInfoItemDetailsProvider
-	implements InfoItemDetailsProvider<AssetEntry> {
+@Component(service = InfoItemCapabilitiesProvider.class)
+public class AssetEntryInfoItemCapabilitiesProvider
+	implements InfoItemCapabilitiesProvider<AssetEntry> {
 
 	@Override
-	public InfoItemClassDetails getInfoItemClassDetails() {
-		return new InfoItemClassDetails(AssetEntry.class.getName());
+	public List<InfoItemCapability> getInfoItemCapabilities() {
+		return ListUtil.fromArray(_templatePageInfoItemCapability);
 	}
 
-	@Override
-	public InfoItemDetails getInfoItemDetails(AssetEntry assetEntry) {
-		return new InfoItemDetails(
-			getInfoItemClassDetails(),
-			new InfoItemReference(
-				AssetEntry.class.getName(), assetEntry.getEntryId()));
-	}
+	@Reference
+	private TemplateInfoItemCapability _templatePageInfoItemCapability;
 
 }
