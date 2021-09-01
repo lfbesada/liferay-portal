@@ -15,6 +15,9 @@
 package com.liferay.template.info.item.provider;
 
 import com.liferay.info.field.InfoFieldSet;
+import com.liferay.info.field.InfoFieldValue;
+
+import java.util.List;
 
 /**
  * @author Lourdes Fernández Besada
@@ -26,5 +29,14 @@ public interface TemplateInfoItemFieldSetProvider {
 	}
 
 	public InfoFieldSet getInfoFieldSet(String className, long classPK);
+
+	public default List<InfoFieldValue<Object>> getInfoFieldValues(
+		String className, Object itemObject) {
+
+		return getInfoFieldValues(className, itemObject, 0);
+	}
+
+	public List<InfoFieldValue<Object>> getInfoFieldValues(
+		String className, Object itemObject, long classPK);
 
 }

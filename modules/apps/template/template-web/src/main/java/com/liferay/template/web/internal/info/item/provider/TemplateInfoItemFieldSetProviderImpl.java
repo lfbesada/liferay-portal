@@ -18,6 +18,7 @@ import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalService;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldSet;
+import com.liferay.info.field.InfoFieldValue;
 import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.info.localized.InfoLocalizedValue;
@@ -72,6 +73,13 @@ public class TemplateInfoItemFieldSetProviderImpl
 		).name(
 			"information-templates"
 		).build();
+	}
+
+	@Override
+	public List<InfoFieldValue<Object>> getInfoFieldValues(
+		String className, Object itemObject, long classPK) {
+
+		return Collections.emptyList();
 	}
 
 	private List<DDMTemplate> _getDDMTemplates(String className, long classPK) {
