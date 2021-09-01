@@ -589,7 +589,7 @@ public class AssetBrowserDisplayContext {
 				"groupType", "site"
 			).setParameter(
 				"scopeGroupType",
-				ParamUtil.getString(_httpServletRequest, "scopeGroupType", "")
+				ParamUtil.getString(_httpServletRequest, "scopeGroupType")
 			).setParameter(
 				"showGroupSelector", true
 			).buildString());
