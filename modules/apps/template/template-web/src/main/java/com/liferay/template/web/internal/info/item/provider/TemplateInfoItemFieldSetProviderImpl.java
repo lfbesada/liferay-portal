@@ -19,6 +19,8 @@ import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalService;
 import com.liferay.info.field.InfoFieldSet;
 import com.liferay.info.field.InfoFieldValue;
 import com.liferay.info.item.InfoItemFieldValues;
+import com.liferay.info.item.InfoItemServiceTracker;
+import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
 import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.info.localized.InfoLocalizedValue;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
@@ -70,12 +72,24 @@ public class TemplateInfoItemFieldSetProviderImpl
 	public List<InfoFieldValue<Object>> getInfoFieldValues(
 		String className, Object itemObject, long classPK) {
 
+		InfoItemFieldValues infoItemFieldValues = InfoItemFieldValues.builder(
+		).build();
+
+		InfoItemFieldValuesProvider<Object> infoItemFieldValuesProvider =
+			_infoItemServiceTracker.getFirstInfoItemService(
+				InfoItemFieldValuesProvider.class, className);
+
+		if (infoItemFieldValuesProvider != null) {
+			infoItemFieldValues =
+				infoItemFieldValuesProvider.getTemplateInfoItemFieldValues(
+					itemObject);
+		}
+
 		List<InfoFieldValue<Object>> infoFieldValues = new ArrayList<>();
 
 		for (TemplateInfoItemFieldReader templateInfoItemFieldReader :
-				_getTemplateInfoItemFieldReaders(className, classPK,
-					InfoItemFieldValues.builder(
-					).build())) {
+				_getTemplateInfoItemFieldReaders(
+					className, classPK, infoItemFieldValues)) {
 
 			InfoFieldValue<Object> infoFieldValue = new InfoFieldValue<>(
 				templateInfoItemFieldReader.getInfoField(),
@@ -113,15 +127,17 @@ public class TemplateInfoItemFieldSetProviderImpl
 
 		return templatesStream.map(
 			ddmTemplate -> new TemplateInfoItemFieldReader(
-					ddmTemplate, infoItemFieldValues)
+				ddmTemplate, infoItemFieldValues)
 		).collect(
 			Collectors.toList()
 		);
-
 	}
 
 	@Reference
 	private DDMTemplateLocalService _ddmTemplateLocalService;
+
+	@Reference
+	private InfoItemServiceTracker _infoItemServiceTracker;
 
 	@Reference
 	private Portal _portal;
