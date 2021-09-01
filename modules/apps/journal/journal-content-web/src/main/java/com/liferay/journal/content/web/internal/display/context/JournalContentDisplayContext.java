@@ -27,6 +27,7 @@ import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalServiceUtil;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.criteria.AssetEntryItemSelectorReturnType;
 import com.liferay.item.selector.criteria.asset.criterion.AssetEntryItemSelectorCriterion;
+import com.liferay.item.selector.criteria.constants.ScopeGroupTypeConstants;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.constants.JournalWebKeys;
 import com.liferay.journal.content.asset.addon.entry.ContentMetadataAssetAddonEntry;
@@ -571,18 +572,18 @@ public class JournalContentDisplayContext {
 		Group scopeGroup = _themeDisplay.getScopeGroup();
 
 		if (scopeGroup.isDepot()) {
-			return "asset-library";
+			return ScopeGroupTypeConstants.ASSET_LIBRARY;
 		}
 
 		if (scopeGroup.getGroupId() == _themeDisplay.getCompanyGroupId()) {
-			return "global";
+			return ScopeGroupTypeConstants.GLOBAL;
 		}
 
 		if (scopeGroup.isLayout()) {
-			return "page";
+			return ScopeGroupTypeConstants.PAGE;
 		}
 
-		return "site";
+		return ScopeGroupTypeConstants.SITE;
 	}
 
 	public JournalArticle getSelectedArticle() {
