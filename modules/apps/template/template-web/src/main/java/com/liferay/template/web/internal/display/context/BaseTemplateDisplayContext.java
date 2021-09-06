@@ -45,6 +45,7 @@ import com.liferay.template.web.internal.security.permissions.resource.DDMTempla
 import com.liferay.template.web.internal.util.DDMTemplateActionDropdownItemsProvider;
 import com.liferay.template.web.internal.util.FFTemplateConfigurationUtil;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
 
@@ -122,29 +123,37 @@ public abstract class BaseTemplateDisplayContext {
 	}
 
 	public List<NavigationItem> getNavigationItems() {
-		return NavigationItemListBuilder.add(
-			FFTemplateConfigurationUtil::informationTemplatesEnabled,
-			navigationItem -> {
-				navigationItem.setActive(
-					Objects.equals(getTabs1(), "information-templates"));
-				navigationItem.setHref(
-					_liferayPortletResponse.createRenderURL(), "tabs1",
-					"information-templates");
-				navigationItem.setLabel(
-					LanguageUtil.get(
-						_httpServletRequest, "information-templates"));
-			}
-		).add(
-			navigationItem -> {
-				navigationItem.setActive(
-					Objects.equals(getTabs1(), "widget-templates"));
-				navigationItem.setHref(
-					_liferayPortletResponse.createRenderURL(), "tabs1",
-					"widget-templates");
-				navigationItem.setLabel(
-					LanguageUtil.get(_httpServletRequest, "widget-templates"));
-			}
-		).build();
+		boolean showTabs = ParamUtil.getBoolean(
+			_httpServletRequest, "showTabs", true);
+
+		if (showTabs) {
+			return NavigationItemListBuilder.add(
+				FFTemplateConfigurationUtil::informationTemplatesEnabled,
+				navigationItem -> {
+					navigationItem.setActive(
+						Objects.equals(getTabs1(), "information-templates"));
+					navigationItem.setHref(
+						_liferayPortletResponse.createRenderURL(), "tabs1",
+						"information-templates");
+					navigationItem.setLabel(
+						LanguageUtil.get(
+							_httpServletRequest, "information-templates"));
+				}
+			).add(
+				navigationItem -> {
+					navigationItem.setActive(
+						Objects.equals(getTabs1(), "widget-templates"));
+					navigationItem.setHref(
+						_liferayPortletResponse.createRenderURL(), "tabs1",
+						"widget-templates");
+					navigationItem.setLabel(
+						LanguageUtil.get(
+							_httpServletRequest, "widget-templates"));
+				}
+			).build();
+		}
+
+		return Collections.emptyList();
 	}
 
 	public abstract long getResourceClassNameId();

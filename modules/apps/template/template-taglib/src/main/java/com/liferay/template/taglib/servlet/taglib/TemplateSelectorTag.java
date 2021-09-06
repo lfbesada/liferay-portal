@@ -261,6 +261,8 @@ public class TemplateSelectorTag extends IncludeTag {
 				"refererPortletName", TemplatePortletKeys.TEMPLATE
 			).setParameter(
 				"showHeader", false
+			).setParameter(
+				"showTabs", false
 			).setWindowState(
 				LiferayWindowState.POP_UP
 			).buildString();
