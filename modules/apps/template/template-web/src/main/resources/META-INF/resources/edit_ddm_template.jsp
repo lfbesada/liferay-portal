@@ -29,14 +29,18 @@ long resourceClassNameId = BeanParamUtil.getLong(ddmTemplate, request, "resource
 
 EditDDMTemplateDisplayContext editDDMTemplateDisplayContext = (EditDDMTemplateDisplayContext)request.getAttribute(WebKeys.PORTLET_DISPLAY_CONTEXT);
 
-portletDisplay.setShowBackIcon(true);
-portletDisplay.setURLBack(redirect);
+boolean showHeader = ParamUtil.getBoolean(request, "showHeader", true);
 
-if (ddmTemplate != null) {
-	renderResponse.setTitle(LanguageUtil.format(request, "edit-x", HtmlUtil.escape(ddmTemplate.getName(locale))));
-}
-else {
-	renderResponse.setTitle(LanguageUtil.format(request, "add-x", HtmlUtil.escape(editDDMTemplateDisplayContext.getTemplateTypeLabel())));
+if (showHeader) {
+	portletDisplay.setShowBackIcon(true);
+	portletDisplay.setURLBack(redirect);
+
+	if (ddmTemplate != null) {
+		renderResponse.setTitle(LanguageUtil.format(request, "edit-x", HtmlUtil.escape(ddmTemplate.getName(locale))));
+	}
+	else {
+		renderResponse.setTitle(LanguageUtil.format(request, "add-x", HtmlUtil.escape(editDDMTemplateDisplayContext.getTemplateTypeLabel())));
+	}
 }
 %>
 
