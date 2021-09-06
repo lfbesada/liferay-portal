@@ -31,6 +31,7 @@ import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.util.IncludeTag;
+import com.liferay.template.constants.TemplatePortletKeys;
 import com.liferay.template.taglib.internal.security.permission.resource.DDMTemplatePermission;
 import com.liferay.template.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.template.taglib.internal.util.PortletDisplayTemplateUtil;
@@ -249,9 +250,9 @@ public class TemplateSelectorTag extends IncludeTag {
 			return PortletURLBuilder.create(
 				PortletProviderUtil.getPortletURL(
 					httpServletRequest, DDMTemplate.class.getName(),
-					PortletProvider.Action.VIEW)
-			).setMVCPath(
-				"/view_template.jsp"
+					PortletProvider.Action.BROWSE)
+			).setTabs1(
+				"widget-templates"
 			).setParameter(
 				"classNameId", PortalUtil.getClassNameId(getClassName())
 			).setParameter(
@@ -259,9 +260,7 @@ public class TemplateSelectorTag extends IncludeTag {
 				PortletDisplayTemplateUtil.getDDMTemplateGroupId(
 					themeDisplay.getScopeGroupId())
 			).setParameter(
-				"navigationStartsOn", DDMNavigationHelper.VIEW_TEMPLATES
-			).setParameter(
-				"refererPortletName", PortletKeys.PORTLET_DISPLAY_TEMPLATE
+				"refererPortletName", TemplatePortletKeys.TEMPLATE
 			).setParameter(
 				"showHeader", false
 			).setWindowState(
