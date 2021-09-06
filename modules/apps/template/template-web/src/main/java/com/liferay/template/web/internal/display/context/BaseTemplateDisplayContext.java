@@ -75,6 +75,16 @@ public abstract class BaseTemplateDisplayContext {
 			WebKeys.THEME_DISPLAY);
 	}
 
+	public long getClassNameId() {
+		if (_classNameId != null) {
+			return _classNameId;
+		}
+
+		_classNameId = ParamUtil.getLong(_httpServletRequest, "classNameId");
+
+		return _classNameId;
+	}
+
 	public abstract long[] getClassNameIds();
 
 	public List<DropdownItem> getDDMTemplateActionDropdownItems(
@@ -291,6 +301,7 @@ public abstract class BaseTemplateDisplayContext {
 		return orderByComparator;
 	}
 
+	private Long _classNameId;
 	private SearchContainer<DDMTemplate> _ddmTemplateSearchContainer;
 	private final DDMWebConfiguration _ddmWebConfiguration;
 	private final HttpServletRequest _httpServletRequest;

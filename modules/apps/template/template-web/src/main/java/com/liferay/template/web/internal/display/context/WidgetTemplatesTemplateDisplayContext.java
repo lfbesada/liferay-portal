@@ -47,16 +47,21 @@ public class WidgetTemplatesTemplateDisplayContext
 			return _classNameIds;
 		}
 
-		List<TemplateHandler> templateHandlers =
-			_portletDisplayTemplate.getPortletDisplayTemplateHandlers();
+		if (getClassNameId() <= 0) {
+			List<TemplateHandler> templateHandlers =
+				_portletDisplayTemplate.getPortletDisplayTemplateHandlers();
 
-		Stream<TemplateHandler> templateHandlersStream =
-			templateHandlers.stream();
+			Stream<TemplateHandler> templateHandlersStream =
+				templateHandlers.stream();
 
-		_classNameIds = templateHandlersStream.mapToLong(
-			templateHandler -> PortalUtil.getClassNameId(
-				templateHandler.getClassName())
-		).toArray();
+			_classNameIds = templateHandlersStream.mapToLong(
+				templateHandler -> PortalUtil.getClassNameId(
+					templateHandler.getClassName())
+			).toArray();
+		}
+		else {
+			_classNameIds = new long[] {getClassNameId()};
+		}
 
 		return _classNameIds;
 	}
