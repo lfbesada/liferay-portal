@@ -58,7 +58,7 @@ definition {
 
 		PopulateObjectFormsConfiguration.selectObject(label = "Object");
 
-		PopulateObjectFormsConfiguration.selectCustomObject(label = "C_CustomObject");
+		PopulateObjectFormsConfiguration.selectCustomObject(label = "Custom Object");
 
 		Form.gotoAddField(fieldType = "Numeric");
 
@@ -68,13 +68,13 @@ definition {
 			key_fieldLabel = "Numeric",
 			key_fieldName = "Text");
 
-		PopulateObjectFormsConfiguration.mapFormField(fieldName = "text");
+		PopulateObjectFormsConfiguration.mapFormField(fieldLabelName = "Not Required Field");
 
 		Form.closeSidebar();
 
 		PopulateObjectFormsConfiguration.gotoFormField(formFieldName = "Numeric");
 
-		PopulateObjectFormsConfiguration.mapFormField(fieldName = "integer");
+		PopulateObjectFormsConfiguration.mapFormField(fieldLabelName = "Not Required Field");
 
 		Form.save();
 
@@ -130,7 +130,7 @@ definition {
 
 		PopulateObjectFormsConfiguration.selectObject(label = "Object");
 
-		PopulateObjectFormsConfiguration.selectCustomObject(label = "C_CustomObject");
+		PopulateObjectFormsConfiguration.selectCustomObject(label = "Custom Object");
 
 		Form.gotoAddField(fieldType = "Numeric");
 
@@ -138,7 +138,7 @@ definition {
 			fieldName = "",
 			radioOption = "Decimal");
 
-		PopulateObjectFormsConfiguration.mapFormField(fieldName = "bigDecimal");
+		PopulateObjectFormsConfiguration.mapFormField(fieldLabelName = "Not Required Field");
 
 		Form.save();
 
@@ -198,11 +198,11 @@ definition {
 
 		PopulateObjectFormsConfiguration.selectObject(label = "Object");
 
-		PopulateObjectFormsConfiguration.selectCustomObject(label = "C_CustomObject");
+		PopulateObjectFormsConfiguration.selectCustomObject(label = "Custom Object");
 
 		Form.gotoAddField(fieldType = "Date");
 
-		PopulateObjectFormsConfiguration.mapFormField(fieldName = "date");
+		PopulateObjectFormsConfiguration.mapFormField(fieldLabelName = "Not Required Field");
 
 		Form.save();
 
@@ -252,7 +252,7 @@ definition {
 
 		PopulateObjectFormsConfiguration.selectObject(label = "Object");
 
-		PopulateObjectFormsConfiguration.selectCustomObject(label = "C_CustomObject");
+		PopulateObjectFormsConfiguration.selectCustomObject(label = "Custom Object");
 
 		Form.gotoAddField(fieldType = "Numeric");
 
@@ -260,7 +260,7 @@ definition {
 			fieldName = "",
 			radioOption = "Decimal");
 
-		PopulateObjectFormsConfiguration.mapFormField(fieldName = "double");
+		PopulateObjectFormsConfiguration.mapFormField(fieldLabelName = "Not Required Field");
 
 		Form.save();
 
@@ -310,11 +310,11 @@ definition {
 
 		PopulateObjectFormsConfiguration.selectObject(label = "Object");
 
-		PopulateObjectFormsConfiguration.selectCustomObject(label = "C_CustomObject");
+		PopulateObjectFormsConfiguration.selectCustomObject(label = "Custom Object");
 
 		Form.gotoAddField(fieldType = "Numeric");
 
-		PopulateObjectFormsConfiguration.mapFormField(fieldName = "integer");
+		PopulateObjectFormsConfiguration.mapFormField(fieldLabelName = "Not Required Field");
 
 		Form.save();
 
@@ -364,11 +364,11 @@ definition {
 
 		PopulateObjectFormsConfiguration.selectObject(label = "Object");
 
-		PopulateObjectFormsConfiguration.selectCustomObject(label = "C_CustomObject");
+		PopulateObjectFormsConfiguration.selectCustomObject(label = "Custom Object");
 
 		Form.gotoAddField(fieldType = "Numeric");
 
-		PopulateObjectFormsConfiguration.mapFormField(fieldName = "long");
+		PopulateObjectFormsConfiguration.mapFormField(fieldLabelName = "Not Required Field");
 
 		Form.save();
 
@@ -419,11 +419,11 @@ definition {
 
 		PopulateObjectFormsConfiguration.selectObject(label = "Object");
 
-		PopulateObjectFormsConfiguration.selectCustomObject(label = "C_CustomObject");
+		PopulateObjectFormsConfiguration.selectCustomObject(label = "Custom Object");
 
 		Form.gotoAddField(fieldType = "Text");
 
-		PopulateObjectFormsConfiguration.mapFormField(fieldName = "text");
+		PopulateObjectFormsConfiguration.mapFormField(fieldLabelName = "Not Required Field");
 
 		Form.save();
 
@@ -469,11 +469,11 @@ definition {
 
 		PopulateObjectFormsConfiguration.selectObject(label = "Object");
 
-		PopulateObjectFormsConfiguration.selectCustomObject(label = "C_CustomObject");
+		PopulateObjectFormsConfiguration.selectCustomObject(label = "Custom Object");
 
 		Form.gotoAddField(fieldType = "Text");
 
-		PopulateObjectFormsConfiguration.viewUnmappedFormField(fieldName = "There are no compatible object fields to map.");
+		PopulateObjectFormsConfiguration.viewUnmappedFormField(fieldLabelName = "There are no compatible object fields to map.");
 	}
 
 	@description = "LPS-133365 - Verify if it's not possible to map a Object field with a Form field of a different type in a Field Group"
@@ -501,7 +501,7 @@ definition {
 
 		PopulateObjectFormsConfiguration.selectObject(label = "Object");
 
-		PopulateObjectFormsConfiguration.selectCustomObject(label = "C_CustomObject");
+		PopulateObjectFormsConfiguration.selectCustomObject(label = "Custom Object");
 
 		Form.gotoAddField(fieldType = "Numeric");
 
@@ -511,7 +511,7 @@ definition {
 			key_fieldLabel = "Numeric",
 			key_fieldName = "Text");
 
-		PopulateObjectFormsConfiguration.viewUnmappedFormField(fieldName = "There are no compatible object fields to map.");
+		PopulateObjectFormsConfiguration.viewUnmappedFormField(fieldLabelName = "There are no compatible object fields to map.");
 	}
 
 	@description = "LPS-133365 - Verify if it's not possible to publish the Form when a required Object field is not mapped to a Form field"
@@ -548,16 +548,16 @@ definition {
 
 		PopulateObjectFormsConfiguration.selectObject(label = "Object");
 
-		PopulateObjectFormsConfiguration.selectCustomObject(label = "C_CustomObject");
+		PopulateObjectFormsConfiguration.selectCustomObject(label = "Custom Object");
 
 		Form.gotoAddField(fieldType = "Date");
 
-		PopulateObjectFormsConfiguration.mapFormField(fieldName = "date");
+		PopulateObjectFormsConfiguration.mapFormField(fieldLabelName = "Not Required Field");
 
 		PopulateObjectFormsConfiguration.publishFormObject();
 
 		PopulateObjectFormsConfiguration.viewUnmappedObjectRequiredFieldsError(
-			fieldName = "text",
+			fieldLabelName = "Required Field",
 			fieldType = "String");
 
 		PopulateObjectFormsConfiguration.closeUnmappedError();
@@ -565,7 +565,7 @@ definition {
 		PopulateObjectFormsConfiguration.saveFormObject();
 
 		PopulateObjectFormsConfiguration.viewUnmappedObjectRequiredFieldsError(
-			fieldName = "text",
+			fieldLabelName = "Required Field",
 			fieldType = "String");
 	}
 
@@ -610,7 +610,7 @@ definition {
 
 		PopulateObjectFormsConfiguration.selectObject(label = "Object");
 
-		PopulateObjectFormsConfiguration.selectCustomObject(label = "C_CustomObject");
+		PopulateObjectFormsConfiguration.selectCustomObject(label = "Custom Object");
 
 		Form.gotoAddField(fieldType = "Date");
 
@@ -620,18 +620,18 @@ definition {
 			key_fieldLabel = "Date",
 			key_fieldName = "Numeric");
 
-		PopulateObjectFormsConfiguration.mapFormField(fieldName = "integer");
+		PopulateObjectFormsConfiguration.mapFormField(fieldLabelName = "Not Required Field");
 
 		Form.closeSidebar();
 
 		PopulateObjectFormsConfiguration.gotoFormField(formFieldName = "Date");
 
-		PopulateObjectFormsConfiguration.mapFormField(fieldName = "date");
+		PopulateObjectFormsConfiguration.mapFormField(fieldLabelName = "Not Required Field");
 
 		PopulateObjectFormsConfiguration.publishFormObject();
 
 		PopulateObjectFormsConfiguration.viewUnmappedObjectRequiredFieldsError(
-			fieldName = "text",
+			fieldLabelName = "Required Field",
 			fieldType = "String");
 
 		PopulateObjectFormsConfiguration.closeUnmappedError();
@@ -639,7 +639,7 @@ definition {
 		PopulateObjectFormsConfiguration.saveFormObject();
 
 		PopulateObjectFormsConfiguration.viewUnmappedObjectRequiredFieldsError(
-			fieldName = "text",
+			fieldLabelName = "Required Field",
 			fieldType = "String");
 	}
 
@@ -663,7 +663,7 @@ definition {
 
 		PopulateObjectFormsConfiguration.selectObject(label = "Object");
 
-		PopulateObjectFormsConfiguration.selectCustomObject(label = "C_CustomObject");
+		PopulateObjectFormsConfiguration.selectCustomObject(label = "Custom Object");
 
 		Form.gotoAddField(fieldType = "Text");
 
@@ -709,7 +709,7 @@ definition {
 
 		PopulateObjectFormsConfiguration.selectObject(label = "Object");
 
-		PopulateObjectFormsConfiguration.selectCustomObject(label = "C_CustomObject");
+		PopulateObjectFormsConfiguration.selectCustomObject(label = "Custom Object");
 
 		Form.gotoAddField(fieldType = "Date");
 
@@ -757,11 +757,11 @@ definition {
 
 		PopulateObjectFormsConfiguration.selectObject(label = "Object");
 
-		PopulateObjectFormsConfiguration.viewDisplaySelectOption(label = "CommerceOrder");
+		PopulateObjectFormsConfiguration.viewDisplaySelectOption(label = "Commerce Order");
 
 		PopulateObjectFormsConfiguration.viewDisplaySelectOption(label = "User");
 
-		PopulateObjectFormsConfiguration.viewDisplaySelectOption(label = "C_CustomObject");
+		PopulateObjectFormsConfiguration.viewDisplaySelectOption(label = "Custom Object");
 	}
 
 }
