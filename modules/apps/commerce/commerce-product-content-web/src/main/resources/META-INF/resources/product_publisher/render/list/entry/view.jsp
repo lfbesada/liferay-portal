@@ -33,7 +33,7 @@ String productDetailURL = cpContentHelper.getFriendlyURL(cpCatalogEntry, themeDi
 		<div class="card-item-first position-relative">
 			<a href="<%= productDetailURL %>">
 				<liferay-adaptive-media:img
-					class="img-fluid"
+					class="img-fluid product-card-picture"
 					fileVersion="<%= cpContentHelper.getCPDefinitionImageFileVersion(cpCatalogEntry.getCPDefinitionId(), request) %>"
 				/>
 

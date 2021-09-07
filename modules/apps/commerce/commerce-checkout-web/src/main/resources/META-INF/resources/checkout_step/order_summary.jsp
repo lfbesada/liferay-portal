@@ -99,10 +99,14 @@ Map<Long, List<CommerceOrderValidatorResult>> commerceOrderValidatorResultMap = 
 							cssClass="thumbnail-section"
 							name="image"
 						>
-							<liferay-adaptive-media:img
-								class="img-fluid"
-								fileVersion="<%= orderSummaryCheckoutStepDisplayContext.getCPInstanceImageFileVersion(commerceOrderItem) %>"
-							/>
+							<span class="sticker sticker-xl">
+								<span class="sticker-overlay">
+									<liferay-adaptive-media:img
+										class="sticker-img"
+										fileVersion="<%= orderSummaryCheckoutStepDisplayContext.getCPInstanceImageFileVersion(commerceOrderItem) %>"
+									/>
+								</span>
+							</span>
 						</liferay-ui:search-container-column-text>
 
 						<liferay-ui:search-container-column-text

@@ -110,10 +110,14 @@ request.setAttribute("view.jsp-portletURL", portletURL);
 				<liferay-ui:search-container-column-text
 					cssClass="col-1 thumbnail-section"
 				>
-					<liferay-adaptive-media:img
-						class="img-fluid"
-						fileVersion="<%= commerceCartContentMiniDisplayContext.getCPInstanceImageFileVersion(commerceOrderItem) %>"
-					/>
+					<span class="sticker sticker-xl">
+						<span class="sticker-overlay">
+							<liferay-adaptive-media:img
+								class="sticker-img"
+								fileVersion="<%= commerceCartContentMiniDisplayContext.getCPInstanceImageFileVersion(commerceOrderItem) %>"
+							/>
+						</span>
+					</span>
 				</liferay-ui:search-container-column-text>
 
 				<liferay-ui:search-container-column-text
