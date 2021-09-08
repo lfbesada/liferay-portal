@@ -255,14 +255,16 @@ public class ObjectRelationshipLocalServiceImpl
 			throw new ObjectRelationshipTypeException("Invalid type " + type);
 		}
 
-		if (Objects.equals(type, ObjectRelationshipConstants.TYPE_ONE_TO_ONE)) {
+		if (Objects.equals(
+				type, ObjectRelationshipConstants.TYPE_MANY_TO_MANY) ||
+			Objects.equals(type, ObjectRelationshipConstants.TYPE_ONE_TO_ONE)) {
+
 			int count = objectRelationshipPersistence.countByODI1_ODI2_N_T(
-				objectDefinitionId2, objectDefinitionId1, name,
-				ObjectRelationshipConstants.TYPE_ONE_TO_ONE);
+				objectDefinitionId2, objectDefinitionId1, name, type);
 
 			if (count > 0) {
 				throw new ObjectRelationshipTypeException(
-					"Inverse one to one type already exists");
+					"Inverse type already exists");
 			}
 		}
 	}
