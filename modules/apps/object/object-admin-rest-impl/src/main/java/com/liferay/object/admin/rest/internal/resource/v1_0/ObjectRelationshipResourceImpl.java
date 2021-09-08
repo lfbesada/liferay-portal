@@ -63,10 +63,10 @@ public class ObjectRelationshipResourceImpl
 
 		return _toObjectRelationship(
 			_objectRelationshipLocalService.addObjectRelationship(
-				contextUser.getUserId(),
-				LocalizedMapUtil.getLocalizedMap(objectRelationship.getLabel()),
-				objectRelationship.getName(), objectDefinitionId,
+				contextUser.getUserId(), objectDefinitionId,
 				objectRelationship.getObjectDefinitionId2(),
+				LocalizedMapUtil.getLocalizedMap(objectRelationship.getLabel()),
+				objectRelationship.getName(),
 				objectRelationship.getTypeAsString()));
 	}
 
