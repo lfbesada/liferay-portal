@@ -85,15 +85,15 @@ public class GroupFinderTest {
 	public void testFindByC_C_N_DJoinByActionId() throws Exception {
 		_user = UserTestUtil.addUser();
 
-		Group groupWithActionId = GroupTestUtil.addGroup();
+		Group withActionIdGroup = GroupTestUtil.addGroup();
 
-		_groups.addFirst(groupWithActionId);
+		_groups.addFirst(withActionIdGroup);
 
-		Group groupWithoutActionId = GroupTestUtil.addGroup();
+		Group withoutActionIdGroup = GroupTestUtil.addGroup();
 
-		_groups.addFirst(groupWithoutActionId);
+		_groups.addFirst(withoutActionIdGroup);
 
-		_userLocalService.addGroupUser(groupWithActionId.getGroupId(), _user);
+		_userLocalService.addGroupUser(withActionIdGroup.getGroupId(), _user);
 
 		List<ResourceAction> resourceActions =
 			_resourceActionLocalService.getResourceActions(
@@ -104,13 +104,13 @@ public class GroupFinderTest {
 		_role = RoleTestUtil.addRole(RoleConstants.TYPE_SITE);
 
 		_userGroupRoleLocalService.addUserGroupRoles(
-			_user.getUserId(), groupWithActionId.getGroupId(),
+			_user.getUserId(), withActionIdGroup.getGroupId(),
 			new long[] {_role.getRoleId()});
 
 		_resourcePermission = ResourcePermissionTestUtil.addResourcePermission(
 			_arbitraryResourceAction.getBitwiseValue(),
 			_arbitraryResourceAction.getName(),
-			String.valueOf(groupWithActionId.getGroupId()), _role.getRoleId(),
+			String.valueOf(withActionIdGroup.getGroupId()), _role.getRoleId(),
 			ResourceConstants.SCOPE_GROUP);
 
 		List<Group> groups = _groupFinder.findByC_C_PG_N_D(
@@ -125,14 +125,8 @@ public class GroupFinderTest {
 			).build(),
 			true, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 
-		Assert.assertTrue(
-			"The method findByC_C_N_D should have returned the group " +
-				groupWithActionId.getGroupId(),
-			groups.contains(groupWithActionId));
-		Assert.assertFalse(
-			"The method findByC_C_N_D should not have returned the group " +
-				groupWithoutActionId.getGroupId(),
-			groups.contains(groupWithoutActionId));
+		Assert.assertTrue(groups.contains(withActionIdGroup));
+		Assert.assertFalse(groups.contains(withoutActionIdGroup));
 	}
 
 	@Test
