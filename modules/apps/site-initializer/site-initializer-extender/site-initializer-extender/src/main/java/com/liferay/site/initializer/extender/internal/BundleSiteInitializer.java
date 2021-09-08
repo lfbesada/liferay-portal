@@ -55,7 +55,6 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.repository.model.FileEntry;
-import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -84,7 +83,6 @@ import java.net.URL;
 import java.net.URLConnection;
 
 import java.util.Calendar;
-import java.util.Collection;
 import java.util.Collections;
 import java.util.Dictionary;
 import java.util.Enumeration;
@@ -92,7 +90,6 @@ import java.util.HashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
-import java.util.stream.Stream;
 
 import javax.servlet.ServletContext;
 
@@ -704,8 +701,9 @@ public class BundleSiteInitializer implements SiteInitializer {
 	}
 
 	private void _addTaxonomyCategories(
-			long groupId, String parentCategoryId, String parentResourcePath,
-			ServiceContext serviceContext, long vocabularyId)
+			long groupId, String parentResourcePath,
+			String parentTaxonomyCategoryId, ServiceContext serviceContext,
+			long taxonomyVocabularyId)
 		throws Exception {
 
 		Set<String> resourcePaths = _servletContext.getResourcePaths(
@@ -731,28 +729,23 @@ public class BundleSiteInitializer implements SiteInitializer {
 				continue;
 			}
 
-			if (parentCategoryId == null) {
+			if (parentTaxonomyCategoryId == null) {
 				taxonomyCategory = _addTaxonomyVocabularyTaxonomyCategory(
-					serviceContext, taxonomyCategory, vocabularyId);
+					serviceContext, taxonomyCategory, taxonomyVocabularyId);
 			}
 			else {
 				taxonomyCategory = _addTaxonomyCategoryTaxonomyCategory(
-					parentCategoryId, serviceContext, taxonomyCategory);
+					parentTaxonomyCategoryId, serviceContext, taxonomyCategory);
 			}
 
-			String categoriesResourcePath = StringUtil.replace(
-				resourcePath, ".json", "/");
-
-			if (resourcePaths.contains(categoriesResourcePath)) {
-				_addTaxonomyCategories(
-					groupId, taxonomyCategory.getId(), categoriesResourcePath,
-					serviceContext, vocabularyId);
-			}
+			_addTaxonomyCategories(
+				groupId, StringUtil.replaceLast(resourcePath, ".json", "/"),
+				taxonomyCategory.getId(), serviceContext, taxonomyVocabularyId);
 		}
 	}
 
 	private TaxonomyCategory _addTaxonomyCategoryTaxonomyCategory(
-			String parentCategoryId, ServiceContext serviceContext,
+			String parentTaxonomyCategoryId, ServiceContext serviceContext,
 			TaxonomyCategory taxonomyCategory)
 		throws Exception {
 
@@ -764,29 +757,21 @@ public class BundleSiteInitializer implements SiteInitializer {
 				serviceContext.fetchUser()
 			).build();
 
-		Filter filter = taxonomyCategoryResource.toFilter(
-			StringBundler.concat("name eq '", taxonomyCategory.getName(), "'"));
-
 		Page<TaxonomyCategory> taxonomyCategoryPage =
 			taxonomyCategoryResource.getTaxonomyCategoryTaxonomyCategoriesPage(
-				parentCategoryId, "", filter, null, null);
-
-		Collection<TaxonomyCategory> taxonomyCategoryCollection =
-			taxonomyCategoryPage.getItems();
-
-		Stream<TaxonomyCategory> taxonomyCategoryStream =
-			taxonomyCategoryCollection.stream();
+				parentTaxonomyCategoryId, "",
+				taxonomyCategoryResource.toFilter(
+					StringBundler.concat(
+						"name eq '", taxonomyCategory.getName(), "'")),
+				null, null);
 
 		TaxonomyCategory existingTaxonomyCategory =
-			taxonomyCategoryStream.findFirst(
-			).orElse(
-				null
-			);
+			taxonomyCategoryPage.fetchFirstItem();
 
 		if (existingTaxonomyCategory == null) {
 			taxonomyCategory =
 				taxonomyCategoryResource.postTaxonomyCategoryTaxonomyCategory(
-					parentCategoryId, taxonomyCategory);
+					parentTaxonomyCategoryId, taxonomyCategory);
 		}
 		else {
 			taxonomyCategory = taxonomyCategoryResource.patchTaxonomyCategory(
@@ -834,40 +819,31 @@ public class BundleSiteInitializer implements SiteInitializer {
 				continue;
 			}
 
-			Filter filter = taxonomyVocabularyResource.toFilter(
-				StringBundler.concat(
-					"name eq '", taxonomyVocabulary.getName(), "'"));
-
 			Page<TaxonomyVocabulary> taxonomyVocabularyPage =
 				taxonomyVocabularyResource.getSiteTaxonomyVocabulariesPage(
-					groupId, "", filter, null, null);
-
-			Collection<TaxonomyVocabulary> taxonomyVocabularyCollection =
-				taxonomyVocabularyPage.getItems();
-
-			Stream<TaxonomyVocabulary> taxonomyVocabularyStream =
-				taxonomyVocabularyCollection.stream();
+					groupId, "",
+					taxonomyVocabularyResource.toFilter(
+						StringBundler.concat(
+							"name eq '", taxonomyVocabulary.getName(), "'")),
+					null, null);
 
 			TaxonomyVocabulary existingTaxonomyVocabulary =
-				taxonomyVocabularyStream.findFirst(
-				).orElse(
-					null
-				);
+				taxonomyVocabularyPage.fetchFirstItem();
 
-			if (existingTaxonomyVocabulary != null) {
-				taxonomyVocabulary =
-					taxonomyVocabularyResource.patchTaxonomyVocabulary(
-						existingTaxonomyVocabulary.getId(), taxonomyVocabulary);
-			}
-			else {
+			if (existingTaxonomyVocabulary == null) {
 				taxonomyVocabulary =
 					taxonomyVocabularyResource.postSiteTaxonomyVocabulary(
 						groupId, taxonomyVocabulary);
 			}
+			else {
+				taxonomyVocabulary =
+					taxonomyVocabularyResource.patchTaxonomyVocabulary(
+						existingTaxonomyVocabulary.getId(), taxonomyVocabulary);
+			}
 
 			_addTaxonomyCategories(
-				groupId, null, StringUtil.replace(resourcePath, ".json", "/"),
-				serviceContext, taxonomyVocabulary.getId());
+				groupId, StringUtil.replaceLast(resourcePath, ".json", "/"),
+				null, serviceContext, taxonomyVocabulary.getId());
 		}
 	}
 
@@ -899,25 +875,17 @@ public class BundleSiteInitializer implements SiteInitializer {
 				serviceContext.fetchUser()
 			).build();
 
-		Filter filter = taxonomyCategoryResource.toFilter(
-			StringBundler.concat("name eq '", taxonomyCategory.getName(), "'"));
-
 		Page<TaxonomyCategory> taxonomyCategoryPage =
 			taxonomyCategoryResource.
 				getTaxonomyVocabularyTaxonomyCategoriesPage(
-					vocabularyId, "", filter, null, null);
-
-		Collection<TaxonomyCategory> taxonomyCategoryCollection =
-			taxonomyCategoryPage.getItems();
-
-		Stream<TaxonomyCategory> taxonomyCategoryStream =
-			taxonomyCategoryCollection.stream();
+					vocabularyId, "",
+					taxonomyCategoryResource.toFilter(
+						StringBundler.concat(
+							"name eq '", taxonomyCategory.getName(), "'")),
+					null, null);
 
 		TaxonomyCategory existingTaxonomyCategory =
-			taxonomyCategoryStream.findFirst(
-			).orElse(
-				null
-			);
+			taxonomyCategoryPage.fetchFirstItem();
 
 		if (existingTaxonomyCategory == null) {
 			taxonomyCategory =
