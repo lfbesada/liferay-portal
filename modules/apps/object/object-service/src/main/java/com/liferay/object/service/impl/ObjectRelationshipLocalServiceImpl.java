@@ -170,9 +170,6 @@ public class ObjectRelationshipLocalServiceImpl
 		objectField.setListTypeDefinitionId(0);
 		objectField.setObjectDefinitionId(objectDefinitionId1);
 
-		ObjectDefinition objectDefinition1 =
-			_objectDefinitionPersistence.findByPrimaryKey(objectDefinitionId1);
-
 		ObjectDefinition objectDefinition2 =
 			_objectDefinitionPersistence.findByPrimaryKey(objectDefinitionId2);
 
@@ -180,6 +177,9 @@ public class ObjectRelationshipLocalServiceImpl
 			"r_", name, "_", objectDefinition2.getPKObjectFieldName());
 
 		objectField.setDBColumnName(dbColumnName);
+
+		ObjectDefinition objectDefinition1 =
+			_objectDefinitionPersistence.findByPrimaryKey(objectDefinitionId1);
 
 		String dbTableName = objectDefinition1.getDBTableName();
 
