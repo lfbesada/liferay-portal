@@ -17,8 +17,8 @@ package com.liferay.object.service.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.model.ObjectDefinition;
-import com.liferay.object.service.ObjectDefinitionLocalServiceUtil;
-import com.liferay.object.service.ObjectDefinitionServiceUtil;
+import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.object.service.ObjectDefinitionService;
 import com.liferay.object.util.LocalizedMapUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -173,13 +173,13 @@ public class ObjectDefinitionServiceTest {
 		// permission resources are added before publishing
 
 		/*ObjectDefinition objectDefinition =
-			ObjectDefinitionLocalServiceUtil.addCustomObjectDefinition(
+			_objectDefinitionLocalService.addCustomObjectDefinition(
 				user.getUserId(), "Test", null);
 
-		return ObjectDefinitionLocalServiceUtil.publishCustomObjectDefinition(
+		return _objectDefinitionLocalService.publishCustomObjectDefinition(
 			user.getUserId(), objectDefinition.getObjectDefinitionId());*/
 
-		return ObjectDefinitionLocalServiceUtil.addCustomObjectDefinition(
+		return _objectDefinitionLocalService.addCustomObjectDefinition(
 			user.getUserId(), _labelMap, "Test", null, null, _pluralLabelMap,
 			ObjectDefinitionConstants.SCOPE_COMPANY, null);
 	}
@@ -198,17 +198,17 @@ public class ObjectDefinitionServiceTest {
 			_setUser(user);
 
 			objectDefinition =
-				ObjectDefinitionServiceUtil.addCustomObjectDefinition(
+				_objectDefinitionService.addCustomObjectDefinition(
 					_labelMap, "Test", null, null, _pluralLabelMap,
 					ObjectDefinitionConstants.SCOPE_COMPANY, null);
 
 			objectDefinition =
-				ObjectDefinitionLocalServiceUtil.publishCustomObjectDefinition(
+				_objectDefinitionLocalService.publishCustomObjectDefinition(
 					user.getUserId(), objectDefinition.getObjectDefinitionId());
 		}
 		finally {
 			if (objectDefinition != null) {
-				ObjectDefinitionLocalServiceUtil.deleteObjectDefinition(
+				_objectDefinitionLocalService.deleteObjectDefinition(
 					objectDefinition);
 			}
 		}
@@ -224,12 +224,12 @@ public class ObjectDefinitionServiceTest {
 			objectDefinition = _addCustomObjectDefinition(user);
 
 			deleteObjectDefinition =
-				ObjectDefinitionServiceUtil.deleteObjectDefinition(
+				_objectDefinitionService.deleteObjectDefinition(
 					objectDefinition.getObjectDefinitionId());
 		}
 		finally {
 			if (deleteObjectDefinition == null) {
-				ObjectDefinitionLocalServiceUtil.deleteObjectDefinition(
+				_objectDefinitionLocalService.deleteObjectDefinition(
 					objectDefinition);
 			}
 		}
@@ -243,12 +243,12 @@ public class ObjectDefinitionServiceTest {
 
 			objectDefinition = _addCustomObjectDefinition(user);
 
-			ObjectDefinitionServiceUtil.getObjectDefinition(
+			_objectDefinitionService.getObjectDefinition(
 				objectDefinition.getObjectDefinitionId());
 		}
 		finally {
 			if (objectDefinition != null) {
-				ObjectDefinitionLocalServiceUtil.deleteObjectDefinition(
+				_objectDefinitionLocalService.deleteObjectDefinition(
 					objectDefinition);
 			}
 		}
@@ -263,18 +263,18 @@ public class ObjectDefinitionServiceTest {
 			_setUser(user);
 
 			objectDefinition =
-				ObjectDefinitionLocalServiceUtil.addCustomObjectDefinition(
+				_objectDefinitionLocalService.addCustomObjectDefinition(
 					user.getUserId(), _labelMap, "Test", null, null,
 					_pluralLabelMap, ObjectDefinitionConstants.SCOPE_COMPANY,
 					null);
 
 			objectDefinition =
-				ObjectDefinitionServiceUtil.publishCustomObjectDefinition(
+				_objectDefinitionService.publishCustomObjectDefinition(
 					objectDefinition.getObjectDefinitionId());
 		}
 		finally {
 			if (objectDefinition != null) {
-				ObjectDefinitionLocalServiceUtil.deleteObjectDefinition(
+				_objectDefinitionLocalService.deleteObjectDefinition(
 					objectDefinition);
 			}
 		}
@@ -287,13 +287,13 @@ public class ObjectDefinitionServiceTest {
 			_setUser(user);
 
 			objectDefinition =
-				ObjectDefinitionLocalServiceUtil.addCustomObjectDefinition(
+				_objectDefinitionLocalService.addCustomObjectDefinition(
 					user.getUserId(), _labelMap, "Test", null, null,
 					_pluralLabelMap, ObjectDefinitionConstants.SCOPE_COMPANY,
 					null);
 
 			objectDefinition =
-				ObjectDefinitionServiceUtil.updateCustomObjectDefinition(
+				_objectDefinitionService.updateCustomObjectDefinition(
 					objectDefinition.getObjectDefinitionId(),
 					LocalizedMapUtil.getLocalizedMap("Able"), "Able", null,
 					null, LocalizedMapUtil.getLocalizedMap("Ables"),
@@ -301,7 +301,7 @@ public class ObjectDefinitionServiceTest {
 		}
 		finally {
 			if (objectDefinition != null) {
-				ObjectDefinitionLocalServiceUtil.deleteObjectDefinition(
+				_objectDefinitionLocalService.deleteObjectDefinition(
 					objectDefinition);
 			}
 		}
@@ -310,6 +310,13 @@ public class ObjectDefinitionServiceTest {
 	private User _defaultUser;
 	private final Map<Locale, String> _labelMap =
 		LocalizedMapUtil.getLocalizedMap("Test");
+
+	@Inject
+	private ObjectDefinitionLocalService _objectDefinitionLocalService;
+
+	@Inject
+	private ObjectDefinitionService _objectDefinitionService;
+
 	private String _originalName;
 	private PermissionChecker _originalPermissionChecker;
 	private final Map<Locale, String> _pluralLabelMap =
