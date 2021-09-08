@@ -124,7 +124,7 @@ definition {
 				userEmail = "${userEmail}");
 		}
 
-		task("Delete Pending All Users"){
+		task ("Delete Pending All Users") {
 			ACSettings.deletePendingAllUsers();
 		}
 	}
@@ -164,18 +164,54 @@ definition {
 				userEmail = "${userEmail}");
 		}
 
-		task("Delete Pending All Users"){
+		task ("Delete Pending All Users") {
 			ACSettings.deletePendingAllUsers();
 		}
 	}
 
 	@description = "Automation ID: LRAC-9089 | Test Summary: Select multiple users to change permissions at once."
-	@ignore = "true"
 	@priority = "3"
 	test ChangeMultipleUserPermissions {
+		var firstUser = "ac@liferay.com";
+		var secondUser = "ac2@liferay.com";
 
-		// TODO LRAC-9089 ChangeMultipleUserPermissions
+		task ("Go to User Management") {
+			ACNavigation.goToSettings();
 
+			ACSettings.goToUserManagement();
+		}
+
+		task ("Invite user") {
+			for (var users : list "${firstUser},${secondUser}") {
+				ACSettings.addUser(userInvite = "${users}");
+			}
+		}
+
+		task ("Assert user permission") {
+			for (var users : list "${firstUser},${secondUser}") {
+				ACSettings.assertUserPermission(
+					permissionType = "Member",
+					userEmail = "${users}");
+			}
+		}
+
+		task ("Change user permission") {
+			ACSettings.changeMultipleUsersPermissions(
+				permissionType = "Administrator",
+				userEmail = "${firstUser},${secondUser}");
+		}
+
+		task ("Assert user permission") {
+			for (var users : list "${firstUser},${secondUser}") {
+				ACSettings.assertUserPermission(
+					permissionType = "Administrator",
+					userEmail = "${users}");
+			}
+		}
+
+		task ("Delete Pending All Users") {
+			ACSettings.deletePendingAllUsers();
+		}
 	}
 
 	@description = "Automation ID: LRAC-9084 | Test Summary: [AC] Change the user role and check if the Properties creation handles the mofification successfully"
@@ -489,7 +525,7 @@ definition {
 				userEmail = "${userEmail}");
 		}
 
-		task("Delete Pending All Users"){
+		task ("Delete Pending All Users") {
 			ACSettings.deletePendingAllUsers();
 		}
 	}
@@ -569,7 +605,7 @@ definition {
 			}
 		}
 
-		task("Delete Pending All Users"){
+		task ("Delete Pending All Users") {
 			ACSettings.deletePendingAllUsers();
 		}
 	}
@@ -619,7 +655,7 @@ definition {
 			}
 		}
 
-		task("Delete Pending All Users"){
+		task ("Delete Pending All Users") {
 			ACSettings.deletePendingAllUsers();
 		}
 	}
