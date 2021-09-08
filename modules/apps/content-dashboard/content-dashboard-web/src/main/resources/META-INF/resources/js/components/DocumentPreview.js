@@ -25,9 +25,9 @@ const DocumentPreview = ({
 	viewURL,
 }) => {
 	return (
-		<div className="document-preview sidebar-section sidebar-section--spaced">
+		<div className="document-preview sidebar-section">
 			{documentSrc && (
-				<figure className="document-preview-figure">
+				<figure className="document-preview-figure mb-2">
 					<a
 						className="align-items-center c-focus-inset d-flex h-100"
 						href={viewURL}

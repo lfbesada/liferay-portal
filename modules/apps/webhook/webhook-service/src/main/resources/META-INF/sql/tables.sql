@@ -9,8 +9,8 @@ create table WebhookEntry (
 	modifiedDate DATE null,
 	active_ BOOLEAN,
 	destinationName VARCHAR(75) null,
-	destinationWebhookEventKeys VARCHAR(75) null,
+	destinationWebhookEventKeys STRING null,
 	name VARCHAR(75) null,
 	secret VARCHAR(75) null,
-	url VARCHAR(75) null
+	url STRING null
 );

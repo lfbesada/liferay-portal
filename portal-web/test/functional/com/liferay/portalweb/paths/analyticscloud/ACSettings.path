@@ -21,6 +21,16 @@
 	<td>//div[contains(@class,'content-header')]//span[contains(@class,'title')][normalize-space(text())='${title}']</td>
 	<td></td>
 </tr>
+<tr>
+	<td>HEADER_USER_MANAGEMENT</td>
+	<td>//h3[contains(@class,'title-text')]/span[contains(@title,'') and contains (text(),'User Management')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USER_MANAGEMENT_DESCRIPTION</td>
+	<td>//div[contains(@class,'header-text')]//div[contains(text(),'Invite new users to Analytics Cloud and/or configure existing users.')]</td>
+	<td></td>
+</tr>
 <!-- SETTINGS NAVIGATION -->
 <tr>
 	<td>SETTINGS_NAVIGATION</td>
@@ -257,6 +267,11 @@
 </tr>
 <!-- USERS LIST -->
 <tr>
+	<td>USER_UNSELECTABLE</td>
+	<td>//tr[contains(@class,'clickable disabled')]//td[contains(text(),'${userEmail}')]</td>
+	<td></td>
+</tr>
+<tr>
 	<td>USER_LIST</td>
 	<td>//h4[contains(@class,'table')]</td>
 	<td></td>
@@ -269,6 +284,11 @@
 <tr>
 	<td>USER_LIST_CHECKBOX</td>
 	<td>//tr//input[@type="checkbox"]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USER_LIST_BY_EMAIL</td>
+	<td>//td[contains(text(),'${userEmail}')]</td>
 	<td></td>
 </tr>
 <tr>
@@ -294,6 +314,31 @@
 <tr>
 	<td>SELECT_USER_EMAIL</td>
 	<td>//td[text()='${userEmail}']</td>
+	<td></td>
+</tr>
+<tr>
+	<td>EDIT_BUTTON_BY_EMAIL</td>
+	<td>//td[contains(text(),'${key_userEmail}')]/..//button[contains(@class,'btn') and contains(.,'Edit')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>USER_ROLE_BY_EMAIL</td>
+	<td>//td[contains(text(),'${key_userEmail}')]/..//span[contains(text(),'${key_permissionType}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>PERMISSION_DROPDOWN</td>
+	<td>//button[contains(@class,'show-caret') and contains(.,'${key_permissionType}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>SELECT_SITE_ROLE</td>
+	<td>//div[contains(@class,'dropdown-menu show')]//button[contains(@value,'Site ${key_siteRole}')]</td>
+	<td></td>
+</tr>
+<tr>
+	<td>CHECKBOX_BY_EMAIL</td>
+	<td>//td[contains(text(),'${key_userEmail}')]/..//div[contains(@class,'custom-checkbox')]</td>
 	<td></td>
 </tr>
 </tbody>

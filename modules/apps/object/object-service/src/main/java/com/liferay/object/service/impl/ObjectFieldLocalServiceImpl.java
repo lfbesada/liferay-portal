@@ -80,12 +80,45 @@ public class ObjectFieldLocalServiceImpl
 		ObjectField objectField = _addObjectField(
 			userId, listTypeDefinitionId, objectDefinitionId,
 			name + StringPool.UNDERLINE, dbTableName, indexed, indexedAsKeyword,
-			indexedLanguageId, labelMap, name, required, type);
+			indexedLanguageId, labelMap, name, false, required, type);
 
 		if (objectDefinition.isApproved()) {
 			runSQL(
 				_getAlterTableAddColumnSQL(
 					dbTableName, objectField.getDBColumnName(), type));
+		}
+
+		return objectField;
+	}
+
+	@Override
+	public ObjectField addRelationshipObjectField(
+			long userId, long objectDefinitionId, Map<Locale, String> labelMap,
+			String name)
+		throws PortalException {
+
+		name = StringUtil.trim(name);
+
+		ObjectDefinition objectDefinition =
+			_objectDefinitionPersistence.findByPrimaryKey(objectDefinitionId);
+
+		name = StringBundler.concat(
+			"r_", name, "_", objectDefinition.getPKObjectFieldName());
+
+		String dbTableName = objectDefinition.getDBTableName();
+
+		if (objectDefinition.isApproved()) {
+			dbTableName = objectDefinition.getExtensionDBTableName();
+		}
+
+		ObjectField objectField = _addObjectField(
+			userId, 0, objectDefinitionId, name, dbTableName, false, false,
+			null, labelMap, name, true, false, "Long");
+
+		if (objectDefinition.isApproved()) {
+			runSQL(
+				_getAlterTableAddColumnSQL(
+					dbTableName, objectField.getDBColumnName(), "Long"));
 		}
 
 		return objectField;
@@ -111,7 +144,7 @@ public class ObjectFieldLocalServiceImpl
 		return _addObjectField(
 			userId, 0, objectDefinitionId, dbColumnName,
 			objectDefinition.getDBTableName(), indexed, indexedAsKeyword,
-			indexedLanguageId, labelMap, name, required, type);
+			indexedLanguageId, labelMap, name, false, required, type);
 	}
 
 	@Override
@@ -186,8 +219,8 @@ public class ObjectFieldLocalServiceImpl
 			long userId, long listTypeDefinitionId, long objectDefinitionId,
 			String dbColumnName, String dbTableName, boolean indexed,
 			boolean indexedAsKeyword, String indexedLanguageId,
-			Map<Locale, String> labelMap, String name, boolean required,
-			String type)
+			Map<Locale, String> labelMap, String name, boolean relationship,
+			boolean required, String type)
 		throws PortalException {
 
 		ObjectDefinition objectDefinition =
@@ -216,6 +249,7 @@ public class ObjectFieldLocalServiceImpl
 		objectField.setIndexedLanguageId(indexedLanguageId);
 		objectField.setLabelMap(labelMap, LocaleUtil.getSiteDefault());
 		objectField.setName(name);
+		objectField.setRelationship(relationship);
 		objectField.setRequired(required);
 		objectField.setType(type);
 

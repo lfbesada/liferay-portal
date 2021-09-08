@@ -17,11 +17,11 @@ package com.liferay.asset.list.item.selector.web.internal.layout.list.retriever;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.list.asset.entry.provider.AssetListAssetEntryProvider;
-import com.liferay.asset.list.info.filter.AssetEntryListInfoFilter;
 import com.liferay.asset.list.model.AssetListEntry;
 import com.liferay.asset.list.service.AssetListEntryLocalService;
+import com.liferay.info.filter.CategoriesInfoFilter;
 import com.liferay.info.filter.InfoFilter;
-import com.liferay.info.filter.InfoFilterProvider;
+import com.liferay.info.filter.KeywordsInfoFilter;
 import com.liferay.info.item.InfoItemServiceTracker;
 import com.liferay.info.pagination.Pagination;
 import com.liferay.item.selector.criteria.InfoListItemSelectorReturnType;
@@ -32,9 +32,9 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 
@@ -68,9 +68,6 @@ public class AssetEntryListLayoutListRetriever
 		long[] segmentsEntryIds = segmentsEntryIdsOptional.orElse(
 			new long[] {0});
 
-		AssetEntryListInfoFilter assetEntryListInfoFilter =
-			_getAssetEntryListInfoFilter(layoutListRetrieverContext);
-
 		Optional<Pagination> paginationOptional =
 			layoutListRetrieverContext.getPaginationOptional();
 
@@ -80,8 +77,8 @@ public class AssetEntryListLayoutListRetriever
 		List<AssetEntry> assetEntries =
 			_assetListAssetEntryProvider.getAssetEntries(
 				assetListEntry, segmentsEntryIds,
-				assetEntryListInfoFilter.getAssetCategoryIds(),
-				assetEntryListInfoFilter.getKeywords(), StringPool.BLANK,
+				_getAssetCategoryIds(layoutListRetrieverContext),
+				_getKeywords(layoutListRetrieverContext), StringPool.BLANK,
 				pagination.getStart(), pagination.getEnd());
 
 		if (Objects.equals(
@@ -113,43 +110,50 @@ public class AssetEntryListLayoutListRetriever
 		long[] segmentsEntryIds = segmentsEntryIdsOptional.orElse(
 			new long[] {0});
 
-		AssetEntryListInfoFilter assetEntryListInfoFilter =
-			_getAssetEntryListInfoFilter(layoutListRetrieverContext);
-
 		return _assetListAssetEntryProvider.getAssetEntriesCount(
 			assetListEntry, segmentsEntryIds,
-			assetEntryListInfoFilter.getAssetCategoryIds(),
-			assetEntryListInfoFilter.getKeywords(), StringPool.BLANK);
+			_getAssetCategoryIds(layoutListRetrieverContext),
+			_getKeywords(layoutListRetrieverContext), StringPool.BLANK);
 	}
 
-	private AssetEntryListInfoFilter _getAssetEntryListInfoFilter(
+	@Override
+	public List<InfoFilter> getSupportedInfoFilters(
+		ClassedModelListObjectReference classedModelListObjectReference) {
+
+		return _supportedInfoFilters;
+	}
+
+	private long[][] _getAssetCategoryIds(
 		LayoutListRetrieverContext layoutListRetrieverContext) {
 
-		Optional<Map<String, String[]>> filterValuesOptional =
-			layoutListRetrieverContext.getFilterValues();
+		Optional<CategoriesInfoFilter> infoFilterOptional =
+			layoutListRetrieverContext.getInfoFilterOptional(
+				CategoriesInfoFilter.class);
 
-		Map<String, String[]> filterValues = filterValuesOptional.orElse(null);
+		CategoriesInfoFilter categoriesInfoFilter = infoFilterOptional.orElse(
+			null);
 
-		if (filterValues == null) {
-			return new AssetEntryListInfoFilter();
+		if (categoriesInfoFilter == null) {
+			return new long[0][];
 		}
 
-		InfoFilterProvider<?> infoFilterProvider =
-			_infoItemServiceTracker.getFirstInfoItemService(
-				InfoFilterProvider.class,
-				AssetEntryListInfoFilter.class.getName());
+		return categoriesInfoFilter.getCategoryIds();
+	}
 
-		if (infoFilterProvider == null) {
-			return new AssetEntryListInfoFilter();
+	private String _getKeywords(
+		LayoutListRetrieverContext layoutListRetrieverContext) {
+
+		Optional<KeywordsInfoFilter> infoFilterOptional =
+			layoutListRetrieverContext.getInfoFilterOptional(
+				KeywordsInfoFilter.class);
+
+		KeywordsInfoFilter keywordsInfoFilter = infoFilterOptional.orElse(null);
+
+		if (keywordsInfoFilter == null) {
+			return StringPool.BLANK;
 		}
 
-		InfoFilter infoFilter = infoFilterProvider.create(filterValues);
-
-		if (!(infoFilter instanceof AssetEntryListInfoFilter)) {
-			throw new UnsupportedOperationException();
-		}
-
-		return (AssetEntryListInfoFilter)infoFilter;
+		return keywordsInfoFilter.getKeywords();
 	}
 
 	private List<Object> _toAssetObjects(List<AssetEntry> assetEntries) {
@@ -163,6 +167,9 @@ public class AssetEntryListLayoutListRetriever
 
 		return assetObjects;
 	}
+
+	private static final List<InfoFilter> _supportedInfoFilters = Arrays.asList(
+		new CategoriesInfoFilter(), new KeywordsInfoFilter());
 
 	@Reference
 	private AssetListAssetEntryProvider _assetListAssetEntryProvider;

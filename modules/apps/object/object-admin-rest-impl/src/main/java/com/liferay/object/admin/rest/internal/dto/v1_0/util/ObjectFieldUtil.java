@@ -41,7 +41,8 @@ public class ObjectFieldUtil {
 					serviceBuilderObjectField.getListTypeDefinitionId();
 				name = serviceBuilderObjectField.getName();
 				required = serviceBuilderObjectField.isRequired();
-				type = serviceBuilderObjectField.getType();
+				type = ObjectField.Type.valueOf(
+					serviceBuilderObjectField.getType());
 			}
 		};
 	}
@@ -66,7 +67,7 @@ public class ObjectFieldUtil {
 		serviceBuilderObjectField.setName(objectField.getName());
 		serviceBuilderObjectField.setRequired(
 			GetterUtil.getBoolean(objectField.getRequired()));
-		serviceBuilderObjectField.setType(objectField.getType());
+		serviceBuilderObjectField.setType(objectField.getTypeAsString());
 
 		return serviceBuilderObjectField;
 	}

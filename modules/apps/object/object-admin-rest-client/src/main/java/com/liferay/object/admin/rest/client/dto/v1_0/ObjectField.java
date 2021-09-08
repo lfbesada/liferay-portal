@@ -221,15 +221,23 @@ public class ObjectField implements Cloneable, Serializable {
 
 	protected Boolean required;
 
-	public String getType() {
+	public Type getType() {
 		return type;
 	}
 
-	public void setType(String type) {
+	public String getTypeAsString() {
+		if (type == null) {
+			return null;
+		}
+
+		return type.toString();
+	}
+
+	public void setType(Type type) {
 		this.type = type;
 	}
 
-	public void setType(UnsafeSupplier<String, Exception> typeUnsafeSupplier) {
+	public void setType(UnsafeSupplier<Type, Exception> typeUnsafeSupplier) {
 		try {
 			type = typeUnsafeSupplier.get();
 		}
@@ -238,7 +246,7 @@ public class ObjectField implements Cloneable, Serializable {
 		}
 	}
 
-	protected String type;
+	protected Type type;
 
 	@Override
 	public ObjectField clone() throws CloneNotSupportedException {
@@ -269,6 +277,40 @@ public class ObjectField implements Cloneable, Serializable {
 
 	public String toString() {
 		return ObjectFieldSerDes.toJSON(this);
+	}
+
+	public static enum Type {
+
+		BIG_DECIMAL("BigDecimal"), BOOLEAN("Boolean"), DATE("Date"),
+		DOUBLE("Double"), INTEGER("Integer"), LONG("Long"), STRING("String");
+
+		public static Type create(String value) {
+			for (Type type : values()) {
+				if (Objects.equals(type.getValue(), value) ||
+					Objects.equals(type.name(), value)) {
+
+					return type;
+				}
+			}
+
+			return null;
+		}
+
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private Type(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
 	}
 
 }

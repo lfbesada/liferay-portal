@@ -18,39 +18,37 @@ import DndHandler from './utils/DndHandler';
 import HighlightHandler from './utils/HighlightHandler';
 import MultiSelectHandler from './utils/MultiSelectHandler';
 import {
+	ACTION_KEYS,
+	COUNTER_KEYS_MAP,
 	DY,
 	RECT_SIZES,
 	TRANSITIONS_DISABLED,
 	TRANSITION_TIME,
 	ZOOM_EXTENT,
 } from './utils/constants';
-import {ACCOUNTS_DND_ENABLED} from './utils/flags';
 import {
 	changeNodesParentOrganization,
 	formatChild,
 	formatItem,
-	formatItemDescription,
 	formatItemName,
 	formatRootData,
-	getEntityId,
 	getMinWidth,
+	hasPermission,
 	hideChildren,
 	insertAddButtons,
 	insertChildrenIntoNode,
 	showChildren,
 	tree,
 } from './utils/index';
-import {fillAddButtons, fillEntityNode, getLinkDiagonal} from './utils/paint';
+import {
+	fillAddButtons,
+	fillEntityNode,
+	getLinkDiagonal,
+	printDescription,
+} from './utils/paint';
 
 class D3OrganizationChart {
-	constructor(
-		rootData,
-		refs,
-		spritemap,
-		modalActions,
-		nodeMenuActions,
-		rootVisible = true
-	) {
+	constructor(rootData, refs, spritemap, modalActions, nodeMenuActions) {
 		this._spritemap = spritemap;
 		this._refs = refs;
 		this._handleZoomInClick = this._handleZoomInClick.bind(this);
@@ -59,18 +57,19 @@ class D3OrganizationChart {
 		this._handleNodeClick = this._handleNodeClick.bind(this);
 		this._handleNodeMouseDown = this._handleNodeMouseDown.bind(this);
 		this._handleKeyDown = this._handleKeyDown.bind(this);
+		this._handleKeyUp = this._handleKeyUp.bind(this);
 		this._hideChildrenAndUpdate = this._hideChildrenAndUpdate.bind(this);
 		this._currentScale = 1;
 		this._nodeMenuActions = nodeMenuActions;
 		this._modalActions = modalActions;
 		this._selectedNodes = new Map();
-		this._rootVisible = rootVisible;
 		this._multiSelectHandler = new MultiSelectHandler();
 		this._dndHandler = new DndHandler();
 		this._highlightHandler = new HighlightHandler();
 		this._initialiseZoomListeners(this._refs);
 		this._createChart();
-		this._initializeData(formatRootData(rootData, this._rootVisible));
+		this._rootVisible = !Array.isArray(rootData);
+		this._initializeData(formatRootData(rootData));
 		this._update(this._root);
 		this._addListeners();
 	}
@@ -84,44 +83,49 @@ class D3OrganizationChart {
 		}
 	}
 
+	_handleKeyUp() {
+		this._multiSelectHandler.resetSelectableItems();
+	}
+
 	_addListeners() {
 		document.addEventListener('keydown', this._handleKeyDown);
-		document.addEventListener(
-			'keyup',
-			this._multiSelectHandler.resetSelectableItems
-		);
+		document.addEventListener('keyup', this._handleKeyUp);
 	}
 
 	addNodes(children, type, parentData) {
-		const parentId = getEntityId(parentData);
+		const parentId = parentData.id;
+
 		const formattedChildren = children.map((child) =>
 			formatChild(child, type)
 		);
-		let lastNodeAdded = null;
+
+		let firstNodeAdded = null;
 
 		this._root.each((d) => {
-			if (getEntityId(d.data) === parentId) {
+			if (d.data.id === parentId) {
 				const {children} = insertChildrenIntoNode(formattedChildren, d);
 
-				lastNodeAdded = children[children.length - 1];
+				firstNodeAdded = children[children.length - 1];
 				this._update(d, false);
 			}
 		});
 
-		if (lastNodeAdded) {
-			this._recenterViewport(lastNodeAdded);
+		if (firstNodeAdded) {
+			this._recenterViewport(firstNodeAdded);
 		}
 	}
 
 	cleanUp() {
 		document.removeEventListener('keydown', this._handleKeyDown);
-		document.removeEventListener(
-			'keyup',
-			this._multiSelectHandler.resetSelectableItems
-		);
+		document.removeEventListener('keyup', this._handleKeyUp);
 	}
 
-	deleteNodes(nodesToBeDeleted, allNodeInstances = true, forceUpdate = true) {
+	deleteNodes(
+		nodesToBeDeleted,
+		allNodeInstances = true,
+		forceUpdate = true,
+		updateCounter = true
+	) {
 		const propertyToMatch = allNodeInstances
 			? 'chartNodeId'
 			: 'chartNodeNumber';
@@ -141,6 +145,16 @@ class D3OrganizationChart {
 					});
 
 					return;
+				}
+
+				if (updateCounter) {
+					const currentQuantity =
+						node.parent.data[COUNTER_KEYS_MAP[node.data.type]];
+
+					this.updateNodeContent({
+						...node.parent.data,
+						[COUNTER_KEYS_MAP[node.data.type]]: currentQuantity - 1,
+					});
 				}
 
 				if (node.parent.children.length === 1) {
@@ -184,9 +198,11 @@ class D3OrganizationChart {
 
 		nodesToBeUpdated.selectAll('.node-title').text(formatItemName);
 
-		nodesToBeUpdated
-			.selectAll('.node-description')
-			.text(formatItemDescription);
+		nodesToBeUpdated.selectAll('.node-description').remove();
+
+		nodesToBeUpdated.each((d, index, nodes) =>
+			printDescription(d, nodes[index], this._spritemap)
+		);
 	}
 
 	collapseAllNodes() {
@@ -316,7 +332,7 @@ class D3OrganizationChart {
 			const getData =
 				d.data.type === 'organization' ? getOrganization : getAccount;
 
-			return getData(getEntityId(d.data))
+			return getData(d.data.id)
 				.then((rawData) => formatItem(rawData, d.data.type))
 				.then((data) => insertChildrenIntoNode(data.children, d))
 				.then(() => {
@@ -387,7 +403,7 @@ class D3OrganizationChart {
 			return this._recenterViewport(d);
 		}
 
-		if (!ACCOUNTS_DND_ENABLED && d.data.type === 'account') {
+		if (!hasPermission(d.data, ACTION_KEYS[d.data.type].MOVE)) {
 			return this._handleNodeClick(d3.event, d);
 		}
 
@@ -435,28 +451,22 @@ class D3OrganizationChart {
 					);
 
 					fulfilledNodes.forEach((node) => {
-						const countersMap = {
-							account: 'numberOfAccounts',
-							organization: 'numberOfOrganizations',
-							user: 'numberOfUsers',
-						};
-
 						node.parent.data = {
 							...node.parent.data,
-							[countersMap[node.data.type]]:
-								node.parent.data[countersMap[node.data.type]] -
-								1,
+							[COUNTER_KEYS_MAP[node.data.type]]:
+								node.parent.data[
+									COUNTER_KEYS_MAP[node.data.type]
+								] - 1,
 						};
 
-						target.data[countersMap[node.data.type]] =
-							target.data[countersMap[node.data.type]] + 1;
-
+						target.data[COUNTER_KEYS_MAP[node.data.type]] =
+							target.data[COUNTER_KEYS_MAP[node.data.type]] + 1;
 						this.updateNodeContent(node.parent.data);
 					});
 
 					this.updateNodeContent(target.data);
 
-					this.deleteNodes(fulfilledNodesData, false, false);
+					this.deleteNodes(fulfilledNodesData, false, false, false);
 
 					if (target.data.fetched) {
 						insertChildrenIntoNode(fulfilledNodesData, target);

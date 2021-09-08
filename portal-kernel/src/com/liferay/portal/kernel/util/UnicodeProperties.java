@@ -54,6 +54,12 @@ public class UnicodeProperties extends HashMap<String, String> {
 		_safe = safe;
 	}
 
+	public UnicodeProperties(Map<String, String> map, boolean safe) {
+		super(map);
+
+		_safe = safe;
+	}
+
 	public void fastLoad(String props) {
 		if (Validator.isNull(props)) {
 			return;

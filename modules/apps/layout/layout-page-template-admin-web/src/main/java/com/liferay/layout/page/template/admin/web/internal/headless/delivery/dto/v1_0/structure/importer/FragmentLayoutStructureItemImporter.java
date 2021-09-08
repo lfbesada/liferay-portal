@@ -86,13 +86,15 @@ public class FragmentLayoutStructureItemImporter
 
 	@Override
 	public LayoutStructureItem addLayoutStructureItem(
-			Layout layout, LayoutStructure layoutStructure,
-			PageElement pageElement, String parentItemId, int position,
-			Set<String> warningMessages)
+			LayoutStructure layoutStructure,
+			LayoutStructureItemImporterContext
+				layoutStructureItemImporterContext,
+			PageElement pageElement, Set<String> warningMessages)
 		throws Exception {
 
 		FragmentEntryLink fragmentEntryLink = _addFragmentEntryLink(
-			layout, pageElement, position, warningMessages);
+			layoutStructureItemImporterContext.getLayout(), pageElement,
+			layoutStructureItemImporterContext.getPosition(), warningMessages);
 
 		if (fragmentEntryLink == null) {
 			return null;
@@ -100,39 +102,53 @@ public class FragmentLayoutStructureItemImporter
 
 		LayoutStructureItem layoutStructureItem =
 			layoutStructure.addFragmentStyledLayoutStructureItem(
-				fragmentEntryLink.getFragmentEntryLinkId(), parentItemId,
-				position);
+				fragmentEntryLink.getFragmentEntryLinkId(),
+				layoutStructureItemImporterContext.getParentItemId(),
+				layoutStructureItemImporterContext.getPosition());
 
 		Map<String, Object> definitionMap = getDefinitionMap(
 			pageElement.getDefinition());
 
 		if (definitionMap != null) {
-			Map<String, Object> fragmentConfigMap =
-				(Map<String, Object>)definitionMap.get("fragmentConfig");
 			Map<String, Object> fragmentStyleMap =
 				(Map<String, Object>)definitionMap.get("fragmentStyle");
 
-			if (MapUtil.isNotEmpty(fragmentConfigMap) ||
-				MapUtil.isNotEmpty(fragmentStyleMap)) {
+			int oldVersionCompareValue = Double.compare(
+				layoutStructureItemImporterContext.getPageDefinitionVersion(),
+				1.1);
 
-				JSONObject commonStylesJSONObject = toStylesJSONObject(
-					fragmentStyleMap);
-				JSONObject configStylesJSONObject = toStylesJSONObject(
-					fragmentConfigMap);
+			if (oldVersionCompareValue < 0) {
+				Map<String, Object> fragmentConfigMap =
+					(Map<String, Object>)definitionMap.get("fragmentConfig");
 
-				for (String key : commonStylesJSONObject.keySet()) {
-					if (Validator.isNull(
-							configStylesJSONObject.getString(key))) {
+				if (MapUtil.isNotEmpty(fragmentConfigMap) ||
+					MapUtil.isNotEmpty(fragmentStyleMap)) {
 
-						configStylesJSONObject.put(
-							key, commonStylesJSONObject.get(key));
+					JSONObject commonStylesJSONObject = toStylesJSONObject(
+						fragmentStyleMap);
+					JSONObject configStylesJSONObject = toStylesJSONObject(
+						fragmentConfigMap);
+
+					for (String key : commonStylesJSONObject.keySet()) {
+						if (Validator.isNull(
+								configStylesJSONObject.getString(key))) {
+
+							configStylesJSONObject.put(
+								key, commonStylesJSONObject.get(key));
+						}
 					}
-				}
 
+					JSONObject jsonObject = JSONUtil.put(
+						"styles",
+						JSONUtil.merge(
+							commonStylesJSONObject, configStylesJSONObject));
+
+					layoutStructureItem.updateItemConfig(jsonObject);
+				}
+			}
+			else if (fragmentStyleMap != null) {
 				JSONObject jsonObject = JSONUtil.put(
-					"styles",
-					JSONUtil.merge(
-						commonStylesJSONObject, configStylesJSONObject));
+					"styles", toStylesJSONObject(fragmentStyleMap));
 
 				layoutStructureItem.updateItemConfig(jsonObject);
 			}

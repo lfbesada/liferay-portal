@@ -208,6 +208,10 @@ definition {
 			value1 = "${individualUsageValue}");
 	}
 
+	macro assertInviteUsersButton {
+		AssertElementPresent(locator1 = "ACSettings#INVITE_USERS_BUTTON");
+	}
+
 	macro assertKeywordNotPresent {
 		for (var word : list "${keyword}") {
 			var key_KeywordName = "${word}";
@@ -306,10 +310,55 @@ definition {
 			value1 = "${userEmail}");
 	}
 
+	macro assertUserManagementDescription {
+		AssertElementPresent(locator1 = "ACSettings#USER_MANAGEMENT_DESCRIPTION");
+	}
+
+	macro assertUserManagementHeader {
+		AssertElementPresent(locator1 = "ACSettings#HEADER_USER_MANAGEMENT");
+	}
+
 	macro assertUserNotPresent {
 		AssertTextNotEquals(
 			locator1 = "ACSettings#USER_LIST_EMAIL",
 			value1 = "${userEmail}");
+	}
+
+	macro assertUserPermission {
+		for (var userEmail : list "${userEmail}") {
+			AssertElementPresent(
+				key_permissionType = "${permissionType}",
+				key_userEmail = "${userEmail}",
+				locator1 = "ACSettings#USER_ROLE_BY_EMAIL");
+		}
+	}
+
+	macro assertUsersListByEmail {
+		AssertElementPresent(locator1 = "ACSettings#USER_LIST_BY_EMAIL");
+	}
+
+	macro changeMultipleUsersPermissions {
+		for (var userEmail : list "${userEmail}") {
+			Click(
+				key_userEmail = "${userEmail}",
+				locator1 = "ACSettings#CHECKBOX_BY_EMAIL");
+		}
+
+		Click(
+			key_text = "Change Permissions",
+			locator1 = "Button#ANY");
+
+		Click(
+			key_text = "Select Permission",
+			locator1 = "Button#ANY");
+
+		Click(
+			key_siteRole = "${permissionType}",
+			locator1 = "ACSettings#SELECT_SITE_ROLE");
+
+		Button.clickSave();
+
+		Alert.viewSuccessMessage();
 	}
 
 	macro changeRetentionPeriodTo7Months {
@@ -324,6 +373,24 @@ definition {
 			value1 = "\ENTER");
 
 		Click(locator1 = "ACSettings#DELETE_CONFIRMATION_BUTTON");
+	}
+
+	macro changeUserRole {
+		Click(
+			key_userEmail = "${userEmail}",
+			locator1 = "ACSettings#EDIT_BUTTON_BY_EMAIL");
+
+		Click(
+			key_permissionType = "${permissionType}",
+			locator1 = "ACSettings#PERMISSION_DROPDOWN");
+
+		Click(
+			key_siteRole = "${newRole}",
+			locator1 = "ACSettings#SELECT_SITE_ROLE");
+
+		Button.clickSave();
+
+		Alert.viewSuccessMessage();
 	}
 
 	macro clickGenericAddOrConfirmationButton {
@@ -636,6 +703,22 @@ definition {
 
 	macro verifyCannotAddUser {
 		AssertElementNotPresent(locator1 = "ACSettings#INVITE_USERS_BUTTON");
+	}
+
+	macro viewDeleteNotAvailable {
+		AssertElementNotPresent(locator1 = "ACSettings#DELETE_USER");
+	}
+
+	macro viewEditnotAvailable {
+		AssertElementNotPresent(
+			key_text = "Edit",
+			locator1 = "Button#ANY");
+	}
+
+	macro viewUserNotSelectable {
+		AssertElementPresent(
+			locator1 = "ACSettings#USER_UNSELECTABLE",
+			userEmail = "${email}");
 	}
 
 }

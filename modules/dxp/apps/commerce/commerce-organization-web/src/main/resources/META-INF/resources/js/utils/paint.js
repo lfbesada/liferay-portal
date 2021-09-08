@@ -9,16 +9,17 @@
  * distribution rights of the Software.
  */
 
-import {event as d3event, linkHorizontal} from 'd3';
+import {event as d3event, linkHorizontal, select as d3select} from 'd3';
 
-import {formatItemDescription, formatItemName} from '.';
 import {
+	ACTION_KEYS,
+	COUNTER_KEYS_MAP,
 	NODE_BUTTON_WIDTH,
 	NODE_PADDING,
 	RECT_SIZES,
 	SYMBOLS_MAP,
 } from './constants';
-import {USER_INVITATION_ENABLED} from './flags';
+import {formatItemName, formatUserDescription, hasPermissions} from './index';
 
 export function appendIcon(node, symbol, size, className) {
 	return node
@@ -106,10 +107,72 @@ export function fillAddButtons(nodeEnter, spritemap, openModal) {
 
 	createAddActionButton(actionsWrapper, 'account', openModal, spritemap);
 	createAddActionButton(actionsWrapper, 'organization', openModal, spritemap);
+	createAddActionButton(actionsWrapper, 'user', openModal, spritemap);
+}
 
-	if (USER_INVITATION_ENABLED) {
-		createAddActionButton(actionsWrapper, 'user', openModal, spritemap);
+export function printDescription(d, element, spritemap) {
+	const descritionWrapper = d3select(element)
+		.append('g')
+		.attr('class', 'node-description');
+
+	if (d.data.type === 'user') {
+		descritionWrapper
+			.append('text')
+			.attr('class', 'node-description-content')
+			.text(formatUserDescription);
+
+		return;
 	}
+
+	const entities =
+		d.data.type === 'organization'
+			? ['organization', 'account', 'user']
+			: ['user'];
+
+	entities.reduce((x, nodeType) => {
+		const entityWrapper = descritionWrapper
+			.append('g')
+			.attr('class', `${nodeType}-wrapper`)
+			.attr('transform', `translate(${x}, 5)`);
+
+		appendIcon(
+			entityWrapper,
+			`${spritemap}#${SYMBOLS_MAP[nodeType]}`,
+			12,
+			'entity-icon'
+		);
+
+		const entityText = entityWrapper
+			.append('text')
+			.attr('class', 'entity-description')
+			.attr('x', 18)
+			.attr('y', 10)
+			.text(d.data[COUNTER_KEYS_MAP[nodeType]]);
+
+		if (nodeType !== 'organization' && d.data.type !== 'account') {
+			entityWrapper
+				.append('line')
+				.attr('class', 'entity-divider')
+				.attr('x1', -7)
+				.attr('x2', -7)
+				.attr('y1', -2)
+				.attr('y2', 12);
+		}
+
+		const textNode = entityText.node();
+		let textWidth = 0;
+
+		/*
+		 * getBBox method is not supported in JSDom tests.
+		 * The following condition is mandatory to make tests work.
+		 */
+
+		if (textNode.getBBox) {
+			textWidth = textNode.getBBox().width;
+		}
+
+		return x + textWidth + 32;
+	}, 64);
 }
 
 export function fillEntityNode(nodeEnter, spritemap, openMenu) {
@@ -139,12 +202,18 @@ export function fillEntityNode(nodeEnter, spritemap, openMenu) {
 
 	infos.append('text').attr('class', 'node-title').text(formatItemName);
 
-	infos
-		.append('text')
-		.attr('class', 'node-description')
-		.text(formatItemDescription);
+	infos.each((d, index, nodes) =>
+		printDescription(d, nodes[index], spritemap)
+	);
 
-	const menuWrapper = nodeEnter
+	const nodesWithMenu = nodeEnter.filter((chartItem) =>
+		hasPermissions(chartItem.data, [
+			ACTION_KEYS[chartItem.data.type].REMOVE,
+			ACTION_KEYS[chartItem.data.type].DELETE,
+		])
+	);
+
+	const menuWrapper = nodesWithMenu
 		.append('g')
 		.attr('class', 'node-menu-wrapper')
 		.attr('transform', (d) => {

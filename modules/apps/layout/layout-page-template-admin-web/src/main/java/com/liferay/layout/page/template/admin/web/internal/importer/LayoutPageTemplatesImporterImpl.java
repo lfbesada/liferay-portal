@@ -31,6 +31,7 @@ import com.liferay.headless.delivery.dto.v1_0.StyleBook;
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
 import com.liferay.layout.page.template.admin.web.internal.exception.DropzoneLayoutStructureItemException;
 import com.liferay.layout.page.template.admin.web.internal.headless.delivery.dto.v1_0.structure.importer.LayoutStructureItemImporter;
+import com.liferay.layout.page.template.admin.web.internal.headless.delivery.dto.v1_0.structure.importer.LayoutStructureItemImporterContext;
 import com.liferay.layout.page.template.admin.web.internal.headless.delivery.dto.v1_0.structure.importer.LayoutStructureItemImporterTracker;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateExportImportConstants;
@@ -51,6 +52,7 @@ import com.liferay.layout.page.template.validator.MasterPageValidator;
 import com.liferay.layout.page.template.validator.PageDefinitionValidator;
 import com.liferay.layout.page.template.validator.PageTemplateValidator;
 import com.liferay.layout.util.LayoutCopyHelper;
+import com.liferay.layout.util.constants.LayoutStructureConstants;
 import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
@@ -76,6 +78,7 @@ import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
 import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
@@ -166,8 +169,9 @@ public class LayoutPageTemplatesImporterImpl
 		Set<String> warningMessages = new HashSet<>();
 
 		_processPageElement(
-			layout, layoutStructure, pageElement, parentItemId, position,
-			warningMessages);
+			layout, layoutStructure,
+			LayoutStructureConstants.LATEST_PAGE_DEFINITION_VERSION,
+			pageElement, parentItemId, position, warningMessages);
 
 		List<FragmentEntryLink> fragmentEntryLinks = new ArrayList<>();
 
@@ -1059,13 +1063,16 @@ public class LayoutPageTemplatesImporterImpl
 			if ((pageElement.getType() == PageElement.Type.ROOT) &&
 				(pageElement.getPageElements() != null)) {
 
+				double pageDefinitionVersion = GetterUtil.getDouble(
+					pageDefinition.getVersion(), 1);
 				int position = 0;
 
 				for (PageElement childPageElement :
 						pageElement.getPageElements()) {
 
 					if (_processPageElement(
-							layout, layoutStructure, childPageElement,
+							layout, layoutStructure, pageDefinitionVersion,
+							childPageElement,
 							rootLayoutStructureItem.getItemId(), position,
 							warningMessages)) {
 
@@ -1088,8 +1095,8 @@ public class LayoutPageTemplatesImporterImpl
 
 	private boolean _processPageElement(
 			Layout layout, LayoutStructure layoutStructure,
-			PageElement pageElement, String parentItemId, int position,
-			Set<String> warningMessages)
+			double pageDefinitionVersion, PageElement pageElement,
+			String parentItemId, int position, Set<String> warningMessages)
 		throws Exception {
 
 		LayoutStructureItemImporter layoutStructureItemImporter =
@@ -1101,8 +1108,10 @@ public class LayoutPageTemplatesImporterImpl
 		if (layoutStructureItemImporter != null) {
 			layoutStructureItem =
 				layoutStructureItemImporter.addLayoutStructureItem(
-					layout, layoutStructure, pageElement, parentItemId,
-					position, warningMessages);
+					layoutStructure,
+					new LayoutStructureItemImporterContext(
+						layout, pageDefinitionVersion, parentItemId, position),
+					pageElement, warningMessages);
 		}
 		else if (pageElement.getType() == PageElement.Type.ROOT) {
 			layoutStructureItem = layoutStructure.getMainLayoutStructureItem();
@@ -1123,9 +1132,9 @@ public class LayoutPageTemplatesImporterImpl
 
 		for (PageElement childPageElement : pageElement.getPageElements()) {
 			if (_processPageElement(
-					layout, layoutStructure, childPageElement,
-					layoutStructureItem.getItemId(), childPosition,
-					warningMessages)) {
+					layout, layoutStructure, pageDefinitionVersion,
+					childPageElement, layoutStructureItem.getItemId(),
+					childPosition, warningMessages)) {
 
 				childPosition++;
 			}

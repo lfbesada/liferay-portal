@@ -162,7 +162,7 @@ public class ObjectFieldSerDes {
 
 			sb.append("\"");
 
-			sb.append(_escape(objectField.getType()));
+			sb.append(objectField.getType());
 
 			sb.append("\"");
 		}
@@ -340,7 +340,8 @@ public class ObjectFieldSerDes {
 			}
 			else if (Objects.equals(jsonParserFieldName, "type")) {
 				if (jsonParserFieldValue != null) {
-					objectField.setType((String)jsonParserFieldValue);
+					objectField.setType(
+						ObjectField.Type.create((String)jsonParserFieldValue));
 				}
 			}
 		}

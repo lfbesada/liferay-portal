@@ -15,6 +15,7 @@
 package com.liferay.remote.app.service.impl;
 
 import com.liferay.portal.aop.AopService;
+import com.liferay.portal.kernel.cluster.Clusterable;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
@@ -33,6 +34,7 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.remote.app.deployer.RemoteAppEntryDeployer;
 import com.liferay.remote.app.exception.DuplicateRemoteAppEntryException;
 import com.liferay.remote.app.model.RemoteAppEntry;
 import com.liferay.remote.app.service.base.RemoteAppEntryLocalServiceBaseImpl;
@@ -43,8 +45,15 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
+import javax.portlet.Portlet;
+
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Brian Wing Shun Chan
@@ -64,10 +73,9 @@ public class RemoteAppEntryLocalServiceImpl
 		throws PortalException {
 
 		User user = userLocalService.getUser(userId);
+		url = StringUtil.trim(url);
 
-		long companyId = user.getCompanyId();
-
-		validate(companyId, 0, url);
+		_validate(0, user.getCompanyId(), url);
 
 		long remoteAppEntryId = counterLocalService.increment();
 
@@ -75,13 +83,48 @@ public class RemoteAppEntryLocalServiceImpl
 			remoteAppEntryId);
 
 		remoteAppEntry.setUuid(serviceContext.getUuid());
-		remoteAppEntry.setCompanyId(companyId);
+		remoteAppEntry.setCompanyId(user.getCompanyId());
 		remoteAppEntry.setUserId(user.getUserId());
 		remoteAppEntry.setUserName(user.getFullName());
 		remoteAppEntry.setNameMap(nameMap);
 		remoteAppEntry.setUrl(url);
 
-		return remoteAppEntryPersistence.update(remoteAppEntry);
+		remoteAppEntry = remoteAppEntryPersistence.update(remoteAppEntry);
+
+		remoteAppEntryLocalService.deployRemoteAppEntry(remoteAppEntry);
+
+		return remoteAppEntry;
+	}
+
+	@Override
+	public RemoteAppEntry deleteRemoteAppEntry(long remoteAppEntryId)
+		throws PortalException {
+
+		RemoteAppEntry remoteAppEntry =
+			remoteAppEntryPersistence.findByPrimaryKey(remoteAppEntryId);
+
+		return deleteRemoteAppEntry(remoteAppEntry);
+	}
+
+	@Override
+	public RemoteAppEntry deleteRemoteAppEntry(RemoteAppEntry remoteAppEntry)
+		throws PortalException {
+
+		remoteAppEntryPersistence.remove(remoteAppEntry);
+
+		remoteAppEntryLocalService.undeployRemoteAppEntry(remoteAppEntry);
+
+		return remoteAppEntry;
+	}
+
+	@Clusterable
+	@Override
+	public void deployRemoteAppEntry(RemoteAppEntry remoteAppEntry) {
+		undeployRemoteAppEntry(remoteAppEntry);
+
+		_serviceRegistrations.put(
+			remoteAppEntry.getRemoteAppEntryId(),
+			_remoteAppEntryDeployer.deploy(remoteAppEntry));
 	}
 
 	@Override
@@ -89,41 +132,92 @@ public class RemoteAppEntryLocalServiceImpl
 			long companyId, String keywords, int start, int end, Sort sort)
 		throws PortalException {
 
-		SearchContext searchContext = buildSearchContext(
+		SearchContext searchContext = _buildSearchContext(
 			companyId, keywords, start, end, sort);
 
-		return search(searchContext);
+		Indexer<RemoteAppEntry> indexer =
+			IndexerRegistryUtil.nullSafeGetIndexer(RemoteAppEntry.class);
+
+		for (int i = 0; i < 10; i++) {
+			Hits hits = indexer.search(searchContext);
+
+			List<RemoteAppEntry> remoteAppEntries = _getRemoteAppEntries(hits);
+
+			if (remoteAppEntries != null) {
+				return remoteAppEntries;
+			}
+		}
+
+		throw new SearchException(
+			"Unable to fix the search index after 10 attempts");
 	}
 
 	@Override
 	public int searchCount(long companyId, String keywords)
 		throws PortalException {
 
-		SearchContext searchContext = buildSearchContext(
+		Indexer<RemoteAppEntry> indexer =
+			IndexerRegistryUtil.nullSafeGetIndexer(RemoteAppEntry.class);
+
+		SearchContext searchContext = _buildSearchContext(
 			companyId, keywords, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
 
-		return searchCount(searchContext);
+		return GetterUtil.getInteger(indexer.searchCount(searchContext));
+	}
+
+	@Override
+	public void setAopProxy(Object aopProxy) {
+		super.setAopProxy(aopProxy);
+
+		List<RemoteAppEntry> remoteAppEntries =
+			remoteAppEntryLocalService.getRemoteAppEntries(
+				QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+
+		for (RemoteAppEntry remoteAppEntry : remoteAppEntries) {
+			deployRemoteAppEntry(remoteAppEntry);
+		}
+	}
+
+	@Clusterable
+	@Override
+	public void undeployRemoteAppEntry(RemoteAppEntry remoteAppEntry) {
+		ServiceRegistration<Portlet> serviceRegistration =
+			_serviceRegistrations.remove(remoteAppEntry.getRemoteAppEntryId());
+
+		if (serviceRegistration != null) {
+			serviceRegistration.unregister();
+		}
 	}
 
 	@Indexable(type = IndexableType.REINDEX)
 	@Override
 	public RemoteAppEntry updateRemoteAppEntry(
-			long remoteAppEntryId, Map<Locale, String> nameMap, String url,
-			ServiceContext serviceContext)
+			long remoteAppEntryId, Map<Locale, String> nameMap, String url)
 		throws PortalException {
 
-		validate(serviceContext.getCompanyId(), remoteAppEntryId, url);
+		url = StringUtil.trim(url);
 
 		RemoteAppEntry remoteAppEntry =
 			remoteAppEntryPersistence.findByPrimaryKey(remoteAppEntryId);
 
+		_validate(remoteAppEntryId, remoteAppEntry.getCompanyId(), url);
+
 		remoteAppEntry.setNameMap(nameMap);
 		remoteAppEntry.setUrl(url);
 
-		return remoteAppEntryPersistence.update(remoteAppEntry);
+		remoteAppEntry = remoteAppEntryPersistence.update(remoteAppEntry);
+
+		remoteAppEntryLocalService.deployRemoteAppEntry(remoteAppEntry);
+
+		return remoteAppEntry;
 	}
 
-	protected SearchContext buildSearchContext(
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_bundleContext = bundleContext;
+	}
+
+	private SearchContext _buildSearchContext(
 		long companyId, String keywords, int start, int end, Sort sort) {
 
 		SearchContext searchContext = new SearchContext();
@@ -152,7 +246,7 @@ public class RemoteAppEntryLocalServiceImpl
 		return searchContext;
 	}
 
-	protected List<RemoteAppEntry> getRemoteAppEntries(Hits hits)
+	private List<RemoteAppEntry> _getRemoteAppEntries(Hits hits)
 		throws PortalException {
 
 		List<Document> documents = hits.toList();
@@ -186,40 +280,11 @@ public class RemoteAppEntryLocalServiceImpl
 		return remoteAppEntries;
 	}
 
-	protected List<RemoteAppEntry> search(SearchContext searchContext)
-		throws PortalException {
-
-		Indexer<RemoteAppEntry> indexer =
-			IndexerRegistryUtil.nullSafeGetIndexer(RemoteAppEntry.class);
-
-		for (int i = 0; i < 10; i++) {
-			Hits hits = indexer.search(searchContext);
-
-			List<RemoteAppEntry> remoteAppEntries = getRemoteAppEntries(hits);
-
-			if (remoteAppEntries != null) {
-				return remoteAppEntries;
-			}
-		}
-
-		throw new SearchException(
-			"Unable to fix the search index after 10 attempts");
-	}
-
-	protected int searchCount(SearchContext searchContext)
-		throws PortalException {
-
-		Indexer<RemoteAppEntry> indexer =
-			IndexerRegistryUtil.nullSafeGetIndexer(RemoteAppEntry.class);
-
-		return GetterUtil.getInteger(indexer.searchCount(searchContext));
-	}
-
-	protected void validate(long companyId, long remoteAppEntryId, String url)
+	private void _validate(long remoteAppEntryId, long companyId, String url)
 		throws PortalException {
 
 		RemoteAppEntry remoteAppEntry = remoteAppEntryPersistence.fetchByC_U(
-			companyId, StringUtil.trim(url));
+			companyId, url);
 
 		if ((remoteAppEntry != null) &&
 			(remoteAppEntry.getRemoteAppEntryId() != remoteAppEntryId)) {
@@ -227,5 +292,13 @@ public class RemoteAppEntryLocalServiceImpl
 			throw new DuplicateRemoteAppEntryException("Duplicate URL " + url);
 		}
 	}
+
+	private BundleContext _bundleContext;
+
+	@Reference
+	private RemoteAppEntryDeployer _remoteAppEntryDeployer;
+
+	private final Map<Long, ServiceRegistration<Portlet>>
+		_serviceRegistrations = new ConcurrentHashMap<>();
 
 }

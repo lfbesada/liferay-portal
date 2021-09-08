@@ -60,6 +60,7 @@ import com.liferay.commerce.util.CommerceShippingHelper;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.Message;
@@ -1949,9 +1950,14 @@ public class CommerceOrderLocalServiceImpl
 				public Void call() throws Exception {
 					Message message = new Message();
 
-					message.put("commerceOrderId", commerceOrderId);
-					message.put("paymentStatus", paymentStatus);
-					message.put("previousPaymentStatus", previousPaymentStatus);
+					message.setPayload(
+						JSONUtil.put(
+							"commerceOrderId", commerceOrderId
+						).put(
+							"paymentStatus", paymentStatus
+						).put(
+							"previousPaymentStatus", previousPaymentStatus
+						));
 
 					MessageBusUtil.sendMessage(
 						CommerceDestinationNames.PAYMENT_STATUS, message);

@@ -158,7 +158,9 @@ export const Rows = ({children, rows}) => {
 	}
 
 	return rows.map((row, index) => (
-		<div key={index}>{children({index, row})}</div>
+		<div className="ddm-row" key={index}>
+			{children({index, row})}
+		</div>
 	));
 };
 

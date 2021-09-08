@@ -16,6 +16,7 @@ package com.liferay.site.initializer.extender.internal;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import com.liferay.asset.list.service.AssetListEntryLocalService;
 import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
 import com.liferay.document.library.util.DLURLHelper;
 import com.liferay.dynamic.data.mapping.constants.DDMTemplateConstants;
@@ -39,6 +40,7 @@ import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.object.admin.rest.dto.v1_0.ObjectDefinition;
 import com.liferay.object.admin.rest.resource.v1_0.ObjectDefinitionResource;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -62,6 +64,7 @@ import com.liferay.portal.kernel.util.MimeTypesUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.vulcan.multipart.BinaryFile;
 import com.liferay.portal.vulcan.multipart.MultipartBody;
 import com.liferay.site.exception.InitializationException;
@@ -93,7 +96,8 @@ import org.osgi.framework.wiring.BundleWiring;
 public class BundleSiteInitializer implements SiteInitializer {
 
 	public BundleSiteInitializer(
-		Bundle bundle, DDMStructureLocalService ddmStructureLocalService,
+		AssetListEntryLocalService assetListEntryLocalService, Bundle bundle,
+		DDMStructureLocalService ddmStructureLocalService,
 		DDMTemplateLocalService ddmTemplateLocalService,
 		DefaultDDMStructureHelper defaultDDMStructureHelper,
 		DLURLHelper dlURLHelper,
@@ -111,6 +115,7 @@ public class BundleSiteInitializer implements SiteInitializer {
 		TaxonomyVocabularyResource.Factory taxonomyVocabularyResourceFactory,
 		UserLocalService userLocalService) {
 
+		_assetListEntryLocalService = assetListEntryLocalService;
 		_bundle = bundle;
 		_ddmStructureLocalService = ddmStructureLocalService;
 		_ddmTemplateLocalService = ddmTemplateLocalService;
@@ -176,10 +181,12 @@ public class BundleSiteInitializer implements SiteInitializer {
 				}
 			};
 
+			_addDDMStructures(serviceContext);
+
 			Map<String, String> documentsStringUtilReplaceValues =
 				_addDocuments(serviceContext);
 
-			_addDDMStructures(serviceContext);
+			_addAssetListEntries(serviceContext);
 			_addDDMTemplates(serviceContext);
 			_addFragmentEntries(serviceContext);
 			_addJournalArticles(
@@ -196,6 +203,92 @@ public class BundleSiteInitializer implements SiteInitializer {
 	@Override
 	public boolean isActive(long companyId) {
 		return true;
+	}
+
+	private void _addAssetListEntries(ServiceContext serviceContext)
+		throws Exception {
+
+		String json = _read("/site-initializer/asset-list-entries.json");
+
+		if (json == null) {
+			return;
+		}
+
+		JSONArray assetListJSONArray = JSONFactoryUtil.createJSONArray(
+			_read(json));
+
+		for (int i = 0; i < assetListJSONArray.length(); i++) {
+			JSONObject assetListJSONObject = assetListJSONArray.getJSONObject(
+				i);
+
+			_addAssetListEntry(assetListJSONObject, serviceContext);
+		}
+	}
+
+	private void _addAssetListEntry(
+			JSONObject assetListJSONObject, ServiceContext serviceContext)
+		throws Exception {
+
+		JSONObject unicodePropertiesJSONObject =
+			assetListJSONObject.getJSONObject("unicodeProperties");
+
+		DDMStructure ddmStructure = _ddmStructureLocalService.getStructure(
+			serviceContext.getScopeGroupId(),
+			_portal.getClassNameId(
+				unicodePropertiesJSONObject.getString("classNameIds")),
+			assetListJSONObject.getString("ddmStructureKey"));
+
+		Map<String, String> map = HashMapBuilder.put(
+			"anyAssetType",
+			String.valueOf(
+				_portal.getClassNameId(
+					unicodePropertiesJSONObject.getString("classNameIds")))
+		).put(
+			unicodePropertiesJSONObject.getString("anyClassType"),
+			String.valueOf(ddmStructure.getStructureId())
+		).put(
+			"classNameIds",
+			unicodePropertiesJSONObject.getString("classNameIds")
+		).put(
+			unicodePropertiesJSONObject.getString("classTypeIds"),
+			String.valueOf(ddmStructure.getStructureId())
+		).put(
+			"groupIds", String.valueOf(serviceContext.getScopeGroupId())
+		).build();
+
+		Object[] orderByObjects = JSONUtil.toObjectArray(
+			unicodePropertiesJSONObject.getJSONArray("orderBy"));
+
+		for (Object orderByObject : orderByObjects) {
+			JSONObject orderByJSONObject = (JSONObject)orderByObject;
+
+			map.put(
+				orderByJSONObject.getString("key"),
+				orderByJSONObject.getString("value"));
+		}
+
+		String[] assetTagNames = JSONUtil.toStringArray(
+			assetListJSONObject.getJSONArray("tags"));
+
+		for (int i = 0; i < assetTagNames.length; i++) {
+			map.put("queryValues" + i, assetTagNames[i]);
+
+			Object[] queryObjects = JSONUtil.toObjectArray(
+				unicodePropertiesJSONObject.getJSONArray("query"));
+
+			for (Object queryObject : queryObjects) {
+				JSONObject queryJSONObject = (JSONObject)queryObject;
+
+				map.put(
+					queryJSONObject.getString("key"),
+					queryJSONObject.getString("value"));
+			}
+		}
+
+		_assetListEntryLocalService.addDynamicAssetListEntry(
+			serviceContext.getUserId(), serviceContext.getScopeGroupId(),
+			assetListJSONObject.getString("title"),
+			String.valueOf(new UnicodeProperties(map, true)), serviceContext);
 	}
 
 	private void _addDDMStructures(ServiceContext serviceContext)
@@ -345,8 +438,10 @@ public class BundleSiteInitializer implements SiteInitializer {
 				values = Collections.singletonMap("document", json);
 			}
 
+			Document document = null;
+
 			if (documentFolderId != null) {
-				documentResource.postDocumentFolderDocument(
+				document = documentResource.postDocumentFolderDocument(
 					documentFolderId,
 					MultipartBody.of(
 						Collections.singletonMap(
@@ -358,7 +453,7 @@ public class BundleSiteInitializer implements SiteInitializer {
 						__ -> _objectMapper, values));
 			}
 			else {
-				Document document = documentResource.postSiteDocument(
+				document = documentResource.postSiteDocument(
 					serviceContext.getScopeGroupId(),
 					MultipartBody.of(
 						Collections.singletonMap(
@@ -368,29 +463,26 @@ public class BundleSiteInitializer implements SiteInitializer {
 								fileName, urlConnection.getInputStream(),
 								urlConnection.getContentLength())),
 						__ -> _objectMapper, values));
-
-				// TODO File name must include its parent folder names. Use a
-				// shortened version of the resource path.
-
-				String key = fileName;
-
-				FileEntry fileEntry = DLAppLocalServiceUtil.getFileEntry(
-					document.getId());
-
-				JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
-					JSONFactoryUtil.looseSerialize(fileEntry));
-
-				jsonObject.put("alt", StringPool.BLANK);
-
-				documentsStringUtilReplaceValues.put(
-					"DOCUMENT_JSON:" + key, jsonObject.toString());
-
-				documentsStringUtilReplaceValues.put(
-					"DOCUMENT_URL:" + key,
-					_dlURLHelper.getPreviewURL(
-						fileEntry, fileEntry.getFileVersion(), null,
-						StringPool.BLANK, false, false));
 			}
+
+			String key = resourcePath;
+
+			FileEntry fileEntry = DLAppLocalServiceUtil.getFileEntry(
+				document.getId());
+
+			JSONObject jsonObject = JSONFactoryUtil.createJSONObject(
+				JSONFactoryUtil.looseSerialize(fileEntry));
+
+			jsonObject.put("alt", StringPool.BLANK);
+
+			documentsStringUtilReplaceValues.put(
+				"DOCUMENT_JSON:" + key, jsonObject.toString());
+
+			documentsStringUtilReplaceValues.put(
+				"DOCUMENT_URL:" + key,
+				_dlURLHelper.getPreviewURL(
+					fileEntry, fileEntry.getFileVersion(), null,
+					StringPool.BLANK, false, false));
 		}
 
 		return documentsStringUtilReplaceValues;
@@ -676,6 +768,7 @@ public class BundleSiteInitializer implements SiteInitializer {
 
 	private static final ObjectMapper _objectMapper = new ObjectMapper();
 
+	private final AssetListEntryLocalService _assetListEntryLocalService;
 	private final Bundle _bundle;
 	private final ClassLoader _classLoader;
 	private final DDMStructureLocalService _ddmStructureLocalService;

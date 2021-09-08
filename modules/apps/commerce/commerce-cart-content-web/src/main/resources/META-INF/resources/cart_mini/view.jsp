@@ -107,10 +107,14 @@ request.setAttribute("view.jsp-portletURL", portletURL);
 				CPDefinition cpDefinition = commerceOrderItem.getCPDefinition();
 				%>
 
-				<liferay-ui:search-container-column-image
-					cssClass="thumbnail-section"
-					src="<%= commerceCartContentMiniDisplayContext.getCommerceOrderItemThumbnailSrc(commerceOrderItem) %>"
-				/>
+				<liferay-ui:search-container-column-text
+					cssClass="col-1 thumbnail-section"
+				>
+					<liferay-adaptive-media:img
+						class="img-fluid"
+						fileVersion="<%= commerceCartContentMiniDisplayContext.getCPInstanceImageFileVersion(commerceOrderItem) %>"
+					/>
+				</liferay-ui:search-container-column-text>
 
 				<liferay-ui:search-container-column-text
 					cssClass="autofit-col-expand"

@@ -181,12 +181,19 @@ definition {
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-9105 | Test Summary: [AC] It is allowed to create property name with special chars"
-	@ignore = "true"
 	@priority = "3"
 	test CanCreatePropertyNameWithSpecialChars {
+		ACUtils.launchAC();
 
-		// TODO LRAC-9105 CanCreatePropertyNameWithSpecialChars pending implementation
+		ACNavigation.goToSettings();
 
+		ACSettings.goToProperties();
+
+		ACProperties.addNewProperty(propertyName = "Name with special chars = @#$%&!");
+
+		ACSettings.goToProperties();
+
+		ACUtils.assertItemsName(itemList = "Name with special chars = @#$%&!");
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8144 | Test Summary: Properties management menu is present"
@@ -284,12 +291,43 @@ definition {
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-9112 | Test Summary: New properties generated IDs are not incremental"
-	@ignore = "true"
 	@priority = "4"
 	test NewPropertiesGeneratedIDsAreNotIncremental {
+		task ("Sign in AC") {
+			ACUtils.launchAC();
+		}
 
-		// TODO LRAC-9112 NewPropertiesGeneratedIDsAreNotIncremental pending implementation
+		task ("Go to AC Properties ") {
+			ACNavigation.goToSettings();
 
+			ACSettings.goToProperties();
+		}
+
+		task ("Add three new properties") {
+			for (var propertyNumber : list "1,2,3") {
+				ACProperties.addNewProperty(propertyName = "Name of property ${propertyNumber}");
+
+				ACSettings.goToProperties();
+			}
+		}
+
+		task ("Assert that the properties ID aren't incremental") {
+			var propertyID1 = ACSettings.getPropertyId(propertyName = "Name of property 1");
+			var propertyID2 = ACSettings.getPropertyId(propertyName = "Name of property 2");
+			var propertyID3 = ACSettings.getPropertyId(propertyName = "Name of property 3");
+
+			var differenceID2 = MathUtil.difference(value1 = "${propertyID2}", value2 = "${propertyID1}");
+
+			var differenceID3 = MathUtil.difference(value1 = "${propertyID3}", value2 = "${propertyID2}");
+
+			TestUtils.assertNotEquals(
+				actual = "${differenceID2}",
+				expected = "1");
+
+			TestUtils.assertNotEquals(
+				actual = "${differenceID3}",
+				expected = "1");
+		}
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-9104 | Test Summary: [AC] It is not allowed duplicated property name for a same data source or workspace"
@@ -369,12 +407,35 @@ definition {
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-9100 | Test Summary: [AC] Properties management menu can be accessed directly via URL"
-	@ignore = "true"
 	@priority = "3"
 	test PropertiesCanBeAccessedDirectlyViaURL {
+		var myProperty = "PropertyViaURL";
 
-		// TODO LRAC-9100 PropertiesCanBeAccessedDirectlyViaURL pending implementation
+		task ("Go to Settings and create a new property") {
+			ACUtils.launchAC();
 
+			ACNavigation.goToSettings();
+
+			ACSettings.goToProperties();
+
+			ACProperties.addNewProperty(propertyName = "${myProperty}");
+
+			ACProperties.assertNewCreatedProperty(propertyName = "${myProperty}");
+		}
+
+		task ("Get property URL") {
+			var propertyURL = Navigator.getCurrentURL();
+		}
+
+		task ("Exit Settings") {
+			ACNavigation.exitSettings();
+		}
+
+		task ("Go to property via URL") {
+			Open(locator1 = "${propertyURL}");
+
+			ACProperties.assertNewCreatedProperty(propertyName = "${myProperty}");
+		}
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8159 | Test Summary: The properties list in settings shows a list of all properties in the workspace"
@@ -408,12 +469,19 @@ definition {
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-9102 | Test Summary: Property with name too big"
-	@ignore = "true"
 	@priority = "3"
 	test PropertyCanHaveABigName {
+		ACUtils.launchAC();
 
-		// TODO LRAC-9102 PropertyCanHaveABigName pending implementation
+		ACNavigation.goToSettings();
 
+		ACSettings.goToProperties();
+
+		ACProperties.addNewProperty(propertyName = "This is a property with a big name to ckeck the limit of a name!!");
+
+		ACSettings.goToProperties();
+
+		ACUtils.assertItemsName(itemList = "This is a property with a big name to ckeck the limit of a name!!");
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-9109 | Test Summary: Property field is displayed in empty state when no property is available"

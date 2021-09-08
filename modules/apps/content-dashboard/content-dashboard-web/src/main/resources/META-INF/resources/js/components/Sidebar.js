@@ -43,7 +43,7 @@ const SidebarHeader = ({title}) => {
 				<ClayLayout.ContentCol>
 					<ClayButtonWithIcon
 						aria-label="Close"
-						className="text-secondary"
+						className="mt-n2 text-secondary"
 						displayType="unstyled"
 						onClick={onClose}
 						symbol="times"

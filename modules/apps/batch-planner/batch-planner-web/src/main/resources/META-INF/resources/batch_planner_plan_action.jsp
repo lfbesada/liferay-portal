@@ -30,7 +30,7 @@ BatchPlannerPlan batchPlannerPlan = (BatchPlannerPlan)resultRow.getObject();
 	showWhenSingleIcon="<%= true %>"
 >
 	<portlet:renderURL var="editURL">
-		<portlet:param name="mvcRenderCommandName" value="/batch_planner/edit_batch_planner_plan" />
+		<portlet:param name="mvcRenderCommandName" value='<%= batchPlannerPlan.isExport() ? "/batch_planner/edit_export_batch_planner_plan" : "/batch_planner/edit_import_batch_planner_plan" %>' />
 		<portlet:param name="redirect" value="<%= currentURL %>" />
 		<portlet:param name="batchPlannerPlanId" value="<%= String.valueOf(batchPlannerPlan.getBatchPlannerPlanId()) %>" />
 	</portlet:renderURL>

@@ -15,15 +15,18 @@ import {changeOrganizationParent} from '../data/accounts';
 import {updateOrganization} from '../data/organizations';
 import {
 	ACCOUNTS_PROPERTY_NAME,
+	ACTION_KEYS,
+	BRIEFS_KEYS_MAP,
+	COUNTER_KEYS_MAP,
 	DX,
 	DY,
-	ID_PROPERTY_NAME_DEFINITIONS,
 	MAX_NAME_LENGTH,
 	ORGANIZATIONS_PROPERTY_NAME,
 	RECT_SIZES,
 	USERS_PROPERTY_NAME_IN_ACCOUNT,
 	USERS_PROPERTY_NAME_IN_ORGANIZATION,
 } from './constants';
+import {PERMISSION_CHECK_ON_HEADLESS_API_ACTIONS} from './flags';
 
 let chartNodesCounter = 0;
 
@@ -33,19 +36,21 @@ export function formatItem(item, type) {
 	item.chartNodeNumber = ++chartNodesCounter;
 	item.chartNodeId = getChartNodeId(item);
 
-	if (type === 'account') {
-		item.children.push(
-			...item[USERS_PROPERTY_NAME_IN_ACCOUNT].map(formatUserChild)
-		);
-	}
+	const definitionsMap = [
+		[item[ORGANIZATIONS_PROPERTY_NAME], formatOrganizationChild],
+		[item[ACCOUNTS_PROPERTY_NAME], formatAccountChild],
+		[
+			item[USERS_PROPERTY_NAME_IN_ORGANIZATION] ||
+				item[USERS_PROPERTY_NAME_IN_ACCOUNT],
+			formatUserChild,
+		],
+	];
 
-	if (type === 'organization') {
-		item.children.push(
-			...item[ORGANIZATIONS_PROPERTY_NAME].map(formatOrganizationChild),
-			...item[ACCOUNTS_PROPERTY_NAME].map(formatAccountChild),
-			...item[USERS_PROPERTY_NAME_IN_ORGANIZATION].map(formatUserChild)
-		);
-	}
+	definitionsMap.forEach(([value, formatter]) => {
+		if (value) {
+			item.children.push(...value.map(formatter));
+		}
+	});
 
 	return item;
 }
@@ -155,7 +160,7 @@ export function insertAddButtons(root, selectedNodesIds) {
 		if (
 			selectedNodesIds.has(d.data.chartNodeId) &&
 			d.data.type !== 'user' &&
-			d.data.type !== 'account'
+			hasPermission(d.data, ACTION_KEYS[d.data.type].ADD_ENTITIES)
 		) {
 			showChildren(d);
 
@@ -194,11 +199,8 @@ export function insertAddButtons(root, selectedNodesIds) {
 
 export const tree = d3Tree().nodeSize([DX, DY]);
 
-export const getEntityId = (data) =>
-	data[ID_PROPERTY_NAME_DEFINITIONS[data.type]];
-
 export const getChartNodeId = (data) => {
-	if (!data.type || !data.id) {
+	if (!(data.id || data.id === 0) || !data.type) {
 		throw new Error(
 			`type or id properties not defined in entity: ${JSON.stringify(
 				data
@@ -210,46 +212,77 @@ export const getChartNodeId = (data) => {
 };
 
 export const formatRootData = (rootData) => {
+	if (Array.isArray(rootData)) {
+		const fakeRoot = {
+			[ORGANIZATIONS_PROPERTY_NAME]: rootData,
+			id: 0,
+		};
+
+		formatItem(fakeRoot, 'fakeRoot');
+		fakeRoot.fetched = true;
+
+		return fakeRoot;
+	}
+
 	formatItem(rootData, 'organization');
 	rootData.fetched = true;
 
 	return rootData;
 };
 
-export const formatOrganizationDescription = (d) => {
-	return `${d.data.numberOfOrganizations} ${Liferay.Language.get('org')} | ${
-		d.data.numberOfAccounts
-	} ${Liferay.Language.get('acc')} | ${
-		d.data.numberOfUsers
-	} ${Liferay.Language.get('users')}`;
-};
-
 export const formatAccountDescription = (d) => {
-	return `${d.data.numberOfUsers} ${Liferay.Language.get('users')}`;
+	return `${d.data[COUNTER_KEYS_MAP.user]} ${Liferay.Language.get('users')}`;
 };
 
-export const formatUserDescription = (d) => {
-	return d.data.jobTitle || Liferay.Language.get('user');
-};
-
-const formatDescriptionMap = {
-	account: formatAccountDescription,
-	organization: formatOrganizationDescription,
-	user: formatUserDescription,
-};
-
-export const formatItemName = (d) => {
-	const name = d.data.name || `${d.data.firstName} ${d.data.lastName}`;
-
-	if (name.length > MAX_NAME_LENGTH) {
-		return name.slice(0, MAX_NAME_LENGTH - 1).trim() + '…';
+export function hasPermission(data, actionKey) {
+	if (!PERMISSION_CHECK_ON_HEADLESS_API_ACTIONS) {
+		return true;
 	}
 
-	return name;
+	return Boolean(
+		data.actions &&
+			data.actions[actionKey] &&
+			data.actions[actionKey].href &&
+			data.actions[actionKey].method
+	);
+}
+
+export function hasPermissions(data, actionsKeys) {
+	return actionsKeys.reduce(
+		(result, key) => result && hasPermission(data, key),
+		true
+	);
+}
+
+export const formatUserDescription = (d) => {
+	const parentBriefsKey = BRIEFS_KEYS_MAP[d.parent.data.type];
+
+	const parentBrief = d.data[parentBriefsKey].find(
+		(parent) => Number(parent.id) === Number(d.parent.data.id)
+	);
+
+	let description = Liferay.Language.get('guest');
+
+	if (parentBrief?.roleBriefs?.length) {
+		description = trimString(parentBrief.roleBriefs[0].name, 'user');
+	}
+
+	if (parentBrief?.roleBriefs?.length > 1) {
+		description += ` (+${parentBrief.roleBriefs.length - 1})`;
+	}
+
+	return description;
 };
 
-export const formatItemDescription = (d) => {
-	return formatDescriptionMap[d.data.type](d);
+export const trimString = (string, nodeType) =>
+	string.length > MAX_NAME_LENGTH[nodeType]
+		? string.slice(0, MAX_NAME_LENGTH[nodeType] - 1).trim() + '…'
+		: string;
+
+export const formatItemName = (d) => {
+	const name = d.data.name || d.data.emailAddress;
+
+	return trimString(name, d.data.type);
 };
 
 export function getMinWidth(nodes) {
@@ -268,7 +301,7 @@ export function changeNodesParentOrganization(nodes, target) {
 			case 'organization':
 				movings.push(
 					updateOrganization(node.data.id, {
-						parentOrganization: {id: target.data.id},
+						parentOrganization: {id: Number(target.data.id)},
 					})
 				);
 				break;

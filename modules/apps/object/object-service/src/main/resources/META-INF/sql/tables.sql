@@ -58,7 +58,7 @@ create table ObjectField (
 	indexedLanguageId VARCHAR(75) null,
 	label STRING null,
 	name VARCHAR(75) null,
-	pluralLabel STRING null,
+	relationship BOOLEAN,
 	required BOOLEAN,
 	type_ VARCHAR(75) null
 );
@@ -141,5 +141,13 @@ create table ObjectRelationship (
 	userId LONG,
 	userName VARCHAR(75) null,
 	createDate DATE null,
-	modifiedDate DATE null
+	modifiedDate DATE null,
+	dbTableName VARCHAR(75) null,
+	label STRING null,
+	name VARCHAR(75) null,
+	objectDefinitionId1 LONG,
+	objectDefinitionId2 LONG,
+	objectFieldId1 LONG,
+	objectFieldId2 LONG,
+	type_ VARCHAR(75) null
 );

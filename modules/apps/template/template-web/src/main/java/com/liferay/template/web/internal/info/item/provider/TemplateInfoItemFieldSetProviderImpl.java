@@ -24,6 +24,7 @@ import com.liferay.info.localized.InfoLocalizedValue;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.template.info.item.provider.TemplateInfoItemFieldSetProvider;
 import com.liferay.template.web.internal.info.item.field.reader.TemplateInfoItemFieldReader;
@@ -99,7 +100,10 @@ public class TemplateInfoItemFieldSetProviderImpl
 
 		List<DDMTemplate> templates = _ddmTemplateLocalService.getTemplates(
 			serviceContext.getCompanyId(),
-			_portal.getAncestorSiteGroupIds(serviceContext.getScopeGroupId()),
+			ArrayUtil.append(
+				_portal.getAncestorSiteGroupIds(
+					serviceContext.getScopeGroupId()),
+				new long[] {serviceContext.getScopeGroupId()}),
 			new long[] {_portal.getClassNameId(className)},
 			new long[] {classPK},
 			_portal.getClassNameId(InfoItemFormProvider.class.getName()),

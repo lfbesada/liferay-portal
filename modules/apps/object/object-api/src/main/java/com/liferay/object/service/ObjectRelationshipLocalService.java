@@ -37,6 +37,8 @@ import com.liferay.portal.kernel.util.OrderByComparator;
 import java.io.Serializable;
 
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import org.osgi.annotation.versioning.ProviderType;
 
@@ -63,6 +65,10 @@ public interface ObjectRelationshipLocalService
 	 *
 	 * Never modify this interface directly. Add custom service methods to <code>com.liferay.object.service.impl.ObjectRelationshipLocalServiceImpl</code> and rerun ServiceBuilder to automatically copy the method declarations to this interface. Consume the object relationship local service via injection or a <code>org.osgi.util.tracker.ServiceTracker</code>. Use {@link ObjectRelationshipLocalServiceUtil} if injection and service tracking are not available.
 	 */
+	public ObjectRelationship addObjectRelationship(
+			long userId, Map<Locale, String> labelMap, String name,
+			long objectDefinitionId1, long objectDefinitionId2, String type)
+		throws PortalException;
 
 	/**
 	 * Adds the object relationship to the database. Also notifies the appropriate model listeners.
@@ -119,10 +125,12 @@ public interface ObjectRelationshipLocalService
 	 *
 	 * @param objectRelationship the object relationship
 	 * @return the object relationship that was removed
+	 * @throws PortalException
 	 */
 	@Indexable(type = IndexableType.DELETE)
 	public ObjectRelationship deleteObjectRelationship(
-		ObjectRelationship objectRelationship);
+			ObjectRelationship objectRelationship)
+		throws PortalException;
 
 	/**
 	 * @throws PortalException
@@ -265,6 +273,10 @@ public interface ObjectRelationshipLocalService
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<ObjectRelationship> getObjectRelationships(int start, int end);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<ObjectRelationship> getObjectRelationships(
+		long objectDefinitionId1, int start, int end);
 
 	/**
 	 * Returns the number of object relationships.

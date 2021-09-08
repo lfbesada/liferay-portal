@@ -25,7 +25,7 @@ exports[`SidebarPanelInfoView renders 1`] = `
         >
           <button
             aria-label="Close"
-            class="text-secondary btn btn-monospaced btn-unstyled"
+            class="mt-n2 text-secondary btn btn-monospaced btn-unstyled"
             type="button"
           >
             <svg
@@ -44,10 +44,10 @@ exports[`SidebarPanelInfoView renders 1`] = `
       class="sidebar-body"
     >
       <div
-        class="sidebar-section"
+        class="mb-2 sidebar-section"
       >
         <p
-          class="text-secondary"
+          class="mb-1 text-secondary"
         >
           Basic Web Content
         </p>
@@ -93,7 +93,7 @@ exports[`SidebarPanelInfoView renders 1`] = `
         </div>
       </div>
       <div
-        class="sidebar-dl sidebar-section sidebar-section--spaced"
+        class="sidebar-dl sidebar-section"
       >
         <span
           class="sticker sticker-user-icon user-icon-color-6 sticker-circle"
@@ -132,7 +132,7 @@ exports[`SidebarPanelInfoView renders 1`] = `
         </h5>
         <p>
           <span
-            class="label label-secondary"
+            class="label label-lg label-secondary"
           >
             <span
               class="label-item label-item-expand"
@@ -141,7 +141,7 @@ exports[`SidebarPanelInfoView renders 1`] = `
             </span>
           </span>
           <span
-            class="label label-secondary"
+            class="label label-lg label-secondary"
           >
             <span
               class="label-item label-item-expand"
@@ -150,7 +150,7 @@ exports[`SidebarPanelInfoView renders 1`] = `
             </span>
           </span>
           <span
-            class="label label-secondary"
+            class="label label-lg label-secondary"
           >
             <span
               class="label-item label-item-expand"
@@ -159,7 +159,7 @@ exports[`SidebarPanelInfoView renders 1`] = `
             </span>
           </span>
           <span
-            class="label label-secondary"
+            class="label label-lg label-secondary"
           >
             <span
               class="label-item label-item-expand"
@@ -168,7 +168,7 @@ exports[`SidebarPanelInfoView renders 1`] = `
             </span>
           </span>
           <span
-            class="label label-secondary"
+            class="label label-lg label-secondary"
           >
             <span
               class="label-item label-item-expand"
@@ -177,7 +177,7 @@ exports[`SidebarPanelInfoView renders 1`] = `
             </span>
           </span>
           <span
-            class="label label-secondary"
+            class="label label-lg label-secondary"
           >
             <span
               class="label-item label-item-expand"
@@ -186,7 +186,7 @@ exports[`SidebarPanelInfoView renders 1`] = `
             </span>
           </span>
           <span
-            class="label label-secondary"
+            class="label label-lg label-secondary"
           >
             <span
               class="label-item label-item-expand"
@@ -195,7 +195,7 @@ exports[`SidebarPanelInfoView renders 1`] = `
             </span>
           </span>
           <span
-            class="label label-secondary"
+            class="label label-lg label-secondary"
           >
             <span
               class="label-item label-item-expand"
@@ -215,7 +215,7 @@ exports[`SidebarPanelInfoView renders 1`] = `
         </h5>
         <p>
           <span
-            class="label label-secondary"
+            class="label label-lg label-secondary"
           >
             <span
               class="label-item label-item-expand"
@@ -224,7 +224,7 @@ exports[`SidebarPanelInfoView renders 1`] = `
             </span>
           </span>
           <span
-            class="label label-secondary"
+            class="label label-lg label-secondary"
           >
             <span
               class="label-item label-item-expand"

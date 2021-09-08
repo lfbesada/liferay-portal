@@ -22,7 +22,10 @@ import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ReleaseConstants;
+import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.ReleaseInfo;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -40,11 +43,19 @@ import java.sql.SQLException;
 
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.Comparator;
 import java.util.Dictionary;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
+import org.apache.commons.io.FileUtils;
 import org.apache.felix.cm.PersistenceManager;
 
 /**
@@ -60,10 +71,14 @@ public class UpgradeReport {
 	}
 
 	public void addErrorMessage(String loggerName, String message) {
-		List<String> errorMessages = _errorMessages.computeIfAbsent(
-			loggerName, key -> new ArrayList<>());
+		Map<String, Integer> errorMessages = _errorMessages.computeIfAbsent(
+			loggerName, key -> new ConcurrentHashMap<>());
 
-		errorMessages.add(message);
+		int occurrences = errorMessages.computeIfAbsent(message, key -> 0);
+
+		occurrences++;
+
+		errorMessages.put(message, occurrences);
 	}
 
 	public void addEventMessage(String loggerName, String message) {
@@ -74,18 +89,28 @@ public class UpgradeReport {
 	}
 
 	public void addWarningMessage(String loggerName, String message) {
-		List<String> warningMessages = _warningMessages.computeIfAbsent(
-			loggerName, key -> new ArrayList<>());
+		Map<String, Integer> warningMessages = _warningMessages.computeIfAbsent(
+			loggerName, key -> new ConcurrentHashMap<>());
 
-		warningMessages.add(message);
+		int count = warningMessages.computeIfAbsent(message, key -> 0);
+
+		count++;
+
+		warningMessages.put(message, count);
 	}
 
 	public void generateReport() {
 		try {
 			FileUtil.write(
 				_getReportFile(),
-				StringBundler.concat(
-					_getPortalVersions(), _getDialectInfo(), _getProperties()));
+				StringUtil.merge(
+					new String[] {
+						_getPortalVersions(), _getDialectInfo(),
+						_getProperties(), _getDLStorageSize(),
+						_getUpgradeProcessesContent(), _getLogEvents("errors"),
+						_getLogEvents("warnings")
+					},
+					StringPool.NEW_LINE + StringPool.NEW_LINE));
 		}
 		catch (IOException ioException) {
 			_log.error("Unable to generate the upgrade report");
@@ -118,7 +143,116 @@ public class UpgradeReport {
 
 		return StringBundler.concat(
 			"Using ", db.getDBType(), " version ", db.getMajorVersion(),
-			StringPool.PERIOD, db.getMinorVersion(), StringPool.NEW_LINE);
+			StringPool.PERIOD, db.getMinorVersion());
+	}
+
+	private String _getDLStorageSize() {
+		if (!StringUtil.endsWith(
+				PropsValues.DL_STORE_IMPL, "FileSystemStore")) {
+
+			return "Check your external repository to know the document " +
+				"library storage size";
+		}
+
+		if (_rootDir == null) {
+			return "Unable to determine the document library storage size " +
+				"because the property \"rootDir\" was not set\n";
+		}
+
+		double bytes = 0;
+
+		try {
+			bytes = FileUtils.sizeOfDirectory(new File(_rootDir));
+		}
+		catch (Exception exception) {
+			return exception.getMessage();
+		}
+
+		String[] dictionary = {"bytes", "KB", "MB", "GB", "TB", "PB"};
+
+		int index = 0;
+
+		for (index = 0; index < dictionary.length; index++) {
+			if (bytes < 1024) {
+				break;
+			}
+
+			bytes = bytes / 1024;
+		}
+
+		String size = StringBundler.concat(
+			String.format("%." + 2 + "f", bytes), StringPool.SPACE,
+			dictionary[index]);
+
+		return "The document library storage size is " + size;
+	}
+
+	private String _getLogEvents(String type) {
+		Set<Map.Entry<String, Map<String, Integer>>> entrySet;
+
+		if (type.equals("errors")) {
+			entrySet = _errorMessages.entrySet();
+		}
+		else {
+			entrySet = _warningMessages.entrySet();
+		}
+
+		if (entrySet.isEmpty()) {
+			return StringBundler.concat("No ", type, " thrown during upgrade");
+		}
+
+		StringBundler sb = new StringBundler();
+
+		sb.append(StringUtil.upperCaseFirstLetter(type));
+		sb.append(" thrown during upgrade process\n");
+
+		Stream<Map.Entry<String, Map<String, Integer>>> stream =
+			entrySet.stream();
+
+		Map<String, Map<String, Integer>> sortedErrors = stream.sorted(
+			Collections.reverseOrder(
+				Map.Entry.comparingByValue(
+					new Comparator<Map<String, Integer>>() {
+
+						@Override
+						public int compare(
+							Map<String, Integer> object1,
+							Map<String, Integer> object2) {
+
+							return Integer.compare(
+								object1.size(), object2.size());
+						}
+
+					}))
+		).collect(
+			Collectors.toMap(
+				Map.Entry::getKey, Map.Entry::getValue,
+				(object1, object2) -> object2, LinkedHashMap::new)
+		);
+
+		for (Map.Entry<String, Map<String, Integer>> entry :
+				sortedErrors.entrySet()) {
+
+			sb.append("Class name: ");
+			sb.append(entry.getKey());
+			sb.append(StringPool.NEW_LINE);
+
+			Map<String, Integer> value = _sort(entry.getValue());
+
+			for (Map.Entry<String, Integer> valueEntry : value.entrySet()) {
+				sb.append(StringPool.TAB);
+				sb.append(valueEntry.getValue());
+				sb.append(" occurrences of the following ");
+				sb.append(type);
+				sb.append(": ");
+				sb.append(valueEntry.getKey());
+				sb.append(StringPool.NEW_LINE);
+			}
+
+			sb.append(StringPool.NEW_LINE);
+		}
+
+		return sb.toString();
 	}
 
 	private String _getPortalVersions() {
@@ -133,8 +267,7 @@ public class UpgradeReport {
 			StringPool.NEW_LINE,
 			_getReleaseInfo(
 				ReleaseInfo.getBuildNumber(), latestSchemaVersion.toString(),
-				"expected"),
-			StringPool.NEW_LINE);
+				"expected"));
 	}
 
 	private String _getProperties() {
@@ -147,44 +280,41 @@ public class UpgradeReport {
 				Arrays.toString(PropsValues.LOCALES_ENABLED));
 		sb.append(StringPool.NEW_LINE);
 
-		String dlStore = PropsValues.DL_STORE_IMPL;
-
-		sb.append(PropsKeys.DL_STORE_IMPL + StringPool.EQUAL + dlStore);
+		sb.append(
+			PropsKeys.DL_STORE_IMPL + StringPool.EQUAL +
+				PropsValues.DL_STORE_IMPL);
 
 		sb.append(StringPool.NEW_LINE);
 
-		String rootDir = null;
-
-		if (dlStore.equals(
+		if (StringUtil.equals(
+				PropsValues.DL_STORE_IMPL,
 				"com.liferay.portal.store.file.system." +
 					"AdvancedFileSystemStore")) {
 
-			rootDir = _getRootDir(
+			_rootDir = _getRootDir(
 				_CONFIGURATION_PID_ADVANCED_FILE_SYSTEM_STORE);
 
-			if (rootDir == null) {
+			if (_rootDir == null) {
 				sb.append("The configuration \"rootDir\" is required. ");
 				sb.append("Configure it in ");
 				sb.append(_CONFIGURATION_PID_ADVANCED_FILE_SYSTEM_STORE);
 				sb.append(".config");
 			}
 		}
-		else if (dlStore.equals(
+		else if (StringUtil.equals(
+					PropsValues.DL_STORE_IMPL,
 					"com.liferay.portal.store.file.system.FileSystemStore")) {
 
-			rootDir = _getRootDir(_CONFIGURATION_PID_FILE_SYSTEM_STORE);
+			_rootDir = _getRootDir(_CONFIGURATION_PID_FILE_SYSTEM_STORE);
 
-			if (rootDir == null) {
-				sb.append("Using the default directory because the ");
-				sb.append("configuration \"rootDir\" was not set");
+			if (_rootDir == null) {
+				_rootDir = PropsValues.LIFERAY_HOME + "/data/document_library";
 			}
 		}
 
-		if (rootDir != null) {
-			sb.append("rootDir=" + rootDir);
+		if (_rootDir != null) {
+			sb.append("rootDir=" + _rootDir);
 		}
-
-		sb.append(StringPool.NEW_LINE);
 
 		return sb.toString();
 	}
@@ -283,6 +413,86 @@ public class UpgradeReport {
 		return null;
 	}
 
+	private String _getUpgradeProcessesContent() {
+		List<String> messages = _eventMessages.get(
+			UpgradeProcess.class.getName());
+
+		if (ListUtil.isEmpty(messages)) {
+			return "No upgrade processes registered";
+		}
+
+		StringBundler sb = new StringBundler();
+
+		sb.append("Top ");
+		sb.append(_UPGRADE_PROCESSES_COUNT);
+		sb.append(" longest running upgrade processes:\n");
+
+		Map<String, Integer> map = new HashMap<>();
+
+		for (String message : messages) {
+			int startIndex = message.indexOf("com.");
+
+			int endIndex = message.indexOf(StringPool.SPACE, startIndex);
+
+			String className = message.substring(startIndex, endIndex);
+
+			if (className.equals(PortalUpgradeProcess.class.getName())) {
+				continue;
+			}
+
+			startIndex = message.indexOf(StringPool.SPACE, endIndex + 1);
+
+			endIndex = message.indexOf(StringPool.SPACE, startIndex + 1);
+
+			map.put(
+				className,
+				GetterUtil.getInteger(message.substring(startIndex, endIndex)));
+		}
+
+		map = _sort(map);
+
+		int count = 0;
+
+		for (Map.Entry<String, Integer> entry : map.entrySet()) {
+			sb.append(StringPool.TAB);
+			sb.append(entry.getKey());
+			sb.append(" took ");
+			sb.append(entry.getValue());
+			sb.append(" ms to complete\n");
+
+			count++;
+
+			if (count >= _UPGRADE_PROCESSES_COUNT) {
+				break;
+			}
+		}
+
+		return sb.toString();
+	}
+
+	private Map<String, Integer> _sort(Map<String, Integer> map) {
+		Set<Map.Entry<String, Integer>> set = map.entrySet();
+
+		Stream<Map.Entry<String, Integer>> stream = set.stream();
+
+		return stream.sorted(
+			Collections.reverseOrder(
+				Map.Entry.comparingByValue(
+					new Comparator<Integer>() {
+
+						@Override
+						public int compare(Integer object1, Integer object2) {
+							return Integer.compare(object1, object2);
+						}
+
+					}))
+		).collect(
+			Collectors.toMap(
+				Map.Entry::getKey, Map.Entry::getValue,
+				(object1, object2) -> object2, LinkedHashMap::new)
+		);
+	}
+
 	private static final String _CONFIGURATION_PID_ADVANCED_FILE_SYSTEM_STORE =
 		"com.liferay.portal.store.file.system.configuration." +
 			"AdvancedFileSystemStoreConfiguration";
@@ -291,16 +501,19 @@ public class UpgradeReport {
 		"com.liferay.portal.store.file.system.configuration." +
 			"FileSystemStoreConfiguration";
 
+	private static final int _UPGRADE_PROCESSES_COUNT = 20;
+
 	private static final Log _log = LogFactoryUtil.getLog(UpgradeReport.class);
 
-	private final Map<String, ArrayList<String>> _errorMessages =
+	private final Map<String, Map<String, Integer>> _errorMessages =
 		new ConcurrentHashMap<>();
 	private final Map<String, ArrayList<String>> _eventMessages =
 		new ConcurrentHashMap<>();
 	private final int _initialBuildNumber;
 	private final String _initialSchemaVersion;
 	private final PersistenceManager _persistenceManager;
-	private final Map<String, ArrayList<String>> _warningMessages =
+	private String _rootDir;
+	private final Map<String, Map<String, Integer>> _warningMessages =
 		new ConcurrentHashMap<>();
 
 }

@@ -29,6 +29,7 @@ import com.liferay.commerce.model.CommerceShipmentItem;
 import com.liferay.commerce.service.base.CommerceShipmentLocalServiceBaseImpl;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.model.SystemEventConstants;
@@ -703,7 +704,8 @@ public class CommerceShipmentLocalServiceImpl
 				public Void call() throws Exception {
 					Message message = new Message();
 
-					message.put("commerceShipmentId", commerceShipmentId);
+					message.setPayload(
+						JSONUtil.put("commerceShipmentId", commerceShipmentId));
 
 					MessageBusUtil.sendMessage(
 						CommerceDestinationNames.SHIPMENT_STATUS, message);

@@ -61,9 +61,9 @@ definition {
 		CommerceNavigator.gotoEntry(entryName = "Diagram T-Shirt");
 	}
 
-	@description = "This is a test for COMMERCE-7020. UploadANotMappedNewImage"
+	@description = "This is a test for COMMERCE-7023. EditTheDefaultSettingForPinsCreation"
 	@priority = "3"
-	test UploadANotMappedNewImage {
+	test EditTheDefaultSettingForPinsCreation {
 		property portal.acceptance = "false";
 
 		CommerceNavigator.gotoPortlet(
@@ -89,8 +89,57 @@ definition {
 			key_image = "Commerce_Black",
 			locator1 = "CommerceEntry#VERIFY_IMAGE");
 
+		Click(
+			key_text = "Default Diameter",
+			locator1 = "Button#ANY");
+
 		AssertElementPresent(
-			key_image = "Commerce_Black",
+			key_radius = "10",
+			locator1 = "CommerceEntry#VERIFY_PIN_RADIUS");
+
+		CommerceEntry.verifyCostumRadiusWithCostumValue(key_list = "1,2,3,4,5");
+
+		AssertElementPresent(
+			key_radius = "15",
+			locator1 = "CommerceEntry#VERIFY_PIN_RADIUS");
+
+		CommerceEntry.verifyCostumRadiusWithDefaultValue();
+
+		CommerceEntry.changePinColor(color = "#FF0000");
+
+		AssertElementPresent(
+			key_strokeColor = "#FF0000",
+			locator1 = "CommerceEntry#VERIFY_PIN_COLOR_STROKE");
+
+		Button.clickPublish();
+	}
+
+	@description = "This is a test for COMMERCE-7020. UploadANotMappedNewImage"
+	@priority = "3"
+	test UploadANotMappedNewImage {
+		property portal.acceptance = "false";
+
+		CommerceNavigator.gotoPortlet(
+			category = "Product Management",
+			portlet = "Products");
+
+		CPCommerceCatalog.newProductsEntry(
+			productCatalog = "Master",
+			productName = "Diagram T-Shirt",
+			productType = "Diagram");
+
+		CommerceEntry.gotoMenuTab(menuTab = "Diagram");
+
+		CommerceProductImages.addDiagramImages(
+			imageTitles = "Black",
+			productType = "Diagram");
+
+		Button.clickPublish();
+
+		Alert.viewSuccessMessage();
+
+		AssertElementPresent(
+			key_image = "Commerce_Black.jpg",
 			locator1 = "CommerceEntry#VERIFY_IMAGE");
 
 		AssertElementNotPresent(

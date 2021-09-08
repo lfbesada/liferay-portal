@@ -456,6 +456,10 @@ public class LangBuilder {
 	private String _fixContraction(
 		String s, String contraction, String replacement) {
 
+		if (true) {
+			return s;
+		}
+
 		int i = s.indexOf(contraction);
 
 		if ((i != -1) && !Character.isLetterOrDigit(s.charAt(i - 1)) &&

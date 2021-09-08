@@ -9,21 +9,50 @@
  * distribution rights of the Software.
  */
 
-export const TRANSITIONS_DISABLED =
-	process.env.NODE_ENV === 'test' ? true : false;
-
-export const ID_PROPERTY_NAME_DEFINITIONS = {
-	account: 'id',
-	organization: 'id',
-	user: 'id',
+export const COUNTER_KEYS_MAP = {
+	account: 'numberOfAccounts',
+	organization: 'numberOfOrganizations',
+	user: 'numberOfUsers',
 };
 
+export const BRIEFS_KEYS_MAP = {
+	account: 'accountBriefs',
+	organization: 'organizationBriefs',
+};
+
+export const ACTION_KEYS = {
+	account: {
+		ADD_ENTITIES: 'update',
+		DELETE: 'delete',
+		MOVE: 'update',
+		REMOVE: 'update',
+	},
+	organization: {
+		ADD_ENTITIES: 'update',
+		DELETE: 'delete',
+		MOVE: 'update',
+		REMOVE: 'update',
+	},
+	user: {
+		ADD_ENTITIES: 'update',
+		DELETE: 'delete',
+		REMOVE: 'update',
+	},
+};
+
+export const TRANSITIONS_DISABLED = process.env.NODE_ENV === 'test';
 export const TRANSITION_TIME = 800;
+
 export const ORGANIZATIONS_PROPERTY_NAME = 'childOrganizations';
 export const ACCOUNTS_PROPERTY_NAME = 'organizationAccounts';
 export const USERS_PROPERTY_NAME_IN_ORGANIZATION = 'userAccounts';
-export const USERS_PROPERTY_NAME_IN_ACCOUNT = 'accountUsers';
-export const MAX_NAME_LENGTH = 16;
+export const USERS_PROPERTY_NAME_IN_ACCOUNT = 'accountUserAccounts';
+
+export const MAX_NAME_LENGTH = {
+	account: 16,
+	organization: 18,
+	user: 14,
+};
 
 export const VIEWS = [
 	{
@@ -48,13 +77,13 @@ export const RECT_SIZES = {
 		height: 64,
 		width: 260,
 	},
+	fakeRoot: {
+		height: 56,
+		width: 240,
+	},
 	organization: {
 		height: 72,
 		width: 280,
-	},
-	root: {
-		height: 56,
-		width: 240,
 	},
 	user: {
 		height: 56,
@@ -80,3 +109,6 @@ export const SYMBOLS_MAP = {
 	organization: 'organizations',
 	user: 'user',
 };
+
+export const ORGANIZATIONS_ROLE_TYPE_ID = 3;
+export const ACCOUNTS_ROLE_TYPE_ID = 6;

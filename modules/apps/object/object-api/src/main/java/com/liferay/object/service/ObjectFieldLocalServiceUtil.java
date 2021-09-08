@@ -72,6 +72,15 @@ public class ObjectFieldLocalServiceUtil {
 		return getService().addObjectField(objectField);
 	}
 
+	public static ObjectField addRelationshipObjectField(
+			long userId, long objectDefinitionId,
+			Map<java.util.Locale, String> labelMap, String name)
+		throws PortalException {
+
+		return getService().addRelationshipObjectField(
+			userId, objectDefinitionId, labelMap, name);
+	}
+
 	public static ObjectField addSystemObjectField(
 			long userId, long objectDefinitionId, String dbColumnName,
 			boolean indexed, boolean indexedAsKeyword, String indexedLanguageId,

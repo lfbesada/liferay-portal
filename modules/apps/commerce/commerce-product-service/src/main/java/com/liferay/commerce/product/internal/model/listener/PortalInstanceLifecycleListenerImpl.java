@@ -23,6 +23,7 @@ import com.liferay.portal.instance.lifecycle.BasePortalInstanceLifecycleListener
 import com.liferay.portal.instance.lifecycle.PortalInstanceLifecycleListener;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.image.ImageToolUtil;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.messaging.Message;
@@ -72,9 +73,10 @@ public class PortalInstanceLifecycleListenerImpl
 
 				Message message = new Message();
 
-				message.put(
-					"commerceCatalogId",
-					commerceCatalog.getCommerceCatalogId());
+				message.setPayload(
+					JSONUtil.put(
+						"commerceCatalogId",
+						commerceCatalog.getCommerceCatalogId()));
 
 				MessageBusUtil.sendMessage(
 					CommerceDestinationNames.BASE_PRICE_LIST, message);

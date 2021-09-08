@@ -23,7 +23,6 @@ import com.liferay.info.collection.provider.FilteredInfoCollectionProvider;
 import com.liferay.info.collection.provider.InfoCollectionProvider;
 import com.liferay.info.collection.provider.RelatedInfoItemCollectionProvider;
 import com.liferay.info.filter.InfoFilter;
-import com.liferay.info.filter.InfoFilterProvider;
 import com.liferay.info.item.ClassPKInfoItemIdentifier;
 import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.InfoItemIdentifier;
@@ -122,15 +121,10 @@ public class InfoCollectionProviderLayoutListRetriever
 		collectionQuery.setPagination(paginationOptional.orElse(null));
 
 		if (infoCollectionProvider instanceof FilteredInfoCollectionProvider) {
-			FilteredInfoCollectionProvider<Object, InfoFilter>
-				filteredInfoCollectionProvider =
-					(FilteredInfoCollectionProvider<Object, InfoFilter>)
-						infoCollectionProvider;
+			Optional<Map<String, InfoFilter>> infoFiltersOptional =
+				layoutListRetrieverContext.getInfoFiltersOptional();
 
-			collectionQuery.setInfoFilter(
-				_getInfoFilter(
-					filteredInfoCollectionProvider,
-					layoutListRetrieverContext));
+			collectionQuery.setInfoFilters(infoFiltersOptional.orElse(null));
 		}
 
 		InfoPage<?> infoPage = infoCollectionProvider.getCollectionInfoPage(
@@ -198,21 +192,46 @@ public class InfoCollectionProviderLayoutListRetriever
 		}
 
 		if (infoCollectionProvider instanceof FilteredInfoCollectionProvider) {
-			FilteredInfoCollectionProvider<Object, InfoFilter>
-				filteredInfoCollectionProvider =
-					(FilteredInfoCollectionProvider<Object, InfoFilter>)
-						infoCollectionProvider;
+			Optional<Map<String, InfoFilter>> infoFiltersOptional =
+				layoutListRetrieverContext.getInfoFiltersOptional();
 
-			collectionQuery.setInfoFilter(
-				_getInfoFilter(
-					filteredInfoCollectionProvider,
-					layoutListRetrieverContext));
+			collectionQuery.setInfoFilters(infoFiltersOptional.orElse(null));
 		}
 
 		InfoPage<?> infoPage = infoCollectionProvider.getCollectionInfoPage(
 			collectionQuery);
 
 		return infoPage.getTotalCount();
+	}
+
+	@Override
+	public List<InfoFilter> getSupportedInfoFilters(
+		KeyListObjectReference keyListObjectReference) {
+
+		InfoCollectionProvider<Object> infoCollectionProvider =
+			_infoItemServiceTracker.getInfoItemService(
+				InfoCollectionProvider.class, keyListObjectReference.getKey());
+
+		if (infoCollectionProvider == null) {
+			infoCollectionProvider = _infoItemServiceTracker.getInfoItemService(
+				RelatedInfoItemCollectionProvider.class,
+				keyListObjectReference.getKey());
+		}
+
+		if (infoCollectionProvider == null) {
+			return Collections.emptyList();
+		}
+
+		if (infoCollectionProvider instanceof FilteredInfoCollectionProvider) {
+			FilteredInfoCollectionProvider<Object>
+				filteredInfoCollectionProvider =
+					(FilteredInfoCollectionProvider<Object>)
+						infoCollectionProvider;
+
+			return filteredInfoCollectionProvider.getSupportedInfoFilters();
+		}
+
+		return Collections.emptyList();
 	}
 
 	private AssetEntry _getAssetEntryOptional(Object contextObject) {
@@ -256,32 +275,6 @@ public class InfoCollectionProviderLayoutListRetriever
 
 		return _assetEntryLocalService.fetchEntry(
 			className, classPKInfoItemIdentifier.getClassPK());
-	}
-
-	private InfoFilter _getInfoFilter(
-		FilteredInfoCollectionProvider<Object, InfoFilter>
-			filteredInfoCollectionProvider,
-		LayoutListRetrieverContext layoutListRetrieverContext) {
-
-		Optional<Map<String, String[]>> filterValuesOptional =
-			layoutListRetrieverContext.getFilterValues();
-
-		Map<String, String[]> filterValues = filterValuesOptional.orElse(null);
-
-		if (filterValues == null) {
-			return null;
-		}
-
-		InfoFilterProvider<?> infoFilterProvider =
-			_infoItemServiceTracker.getFirstInfoItemService(
-				InfoFilterProvider.class,
-				filteredInfoCollectionProvider.getInfoFilterClassName());
-
-		if (infoFilterProvider != null) {
-			return null;
-		}
-
-		return infoFilterProvider.create(filterValues);
 	}
 
 	private String _getModelClassName(Object contextObject) {

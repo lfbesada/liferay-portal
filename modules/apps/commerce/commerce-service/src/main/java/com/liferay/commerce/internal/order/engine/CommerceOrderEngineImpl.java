@@ -58,6 +58,7 @@ import com.liferay.commerce.service.CommerceShippingMethodLocalService;
 import com.liferay.commerce.subscription.CommerceSubscriptionEntryHelperUtil;
 import com.liferay.commerce.util.CommerceShippingHelper;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.messaging.Message;
 import com.liferay.portal.kernel.messaging.MessageBusUtil;
 import com.liferay.portal.kernel.model.User;
@@ -451,9 +452,13 @@ public class CommerceOrderEngineImpl implements CommerceOrderEngine {
 
 					Message message = new Message();
 
-					message.put(
-						"commerceOrderId", commerceOrder.getCommerceOrderId());
-					message.put("orderStatus", commerceOrder.getOrderStatus());
+					message.setPayload(
+						JSONUtil.put(
+							"commerceOrderId",
+							commerceOrder.getCommerceOrderId()
+						).put(
+							"orderStatus", commerceOrder.getOrderStatus()
+						));
 
 					MessageBusUtil.sendMessage(
 						CommerceDestinationNames.ORDER_STATUS, message);

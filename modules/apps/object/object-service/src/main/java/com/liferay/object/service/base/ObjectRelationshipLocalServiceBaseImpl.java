@@ -145,11 +145,13 @@ public abstract class ObjectRelationshipLocalServiceBaseImpl
 	 *
 	 * @param objectRelationship the object relationship
 	 * @return the object relationship that was removed
+	 * @throws PortalException
 	 */
 	@Indexable(type = IndexableType.DELETE)
 	@Override
 	public ObjectRelationship deleteObjectRelationship(
-		ObjectRelationship objectRelationship) {
+			ObjectRelationship objectRelationship)
+		throws PortalException {
 
 		return objectRelationshipPersistence.remove(objectRelationship);
 	}

@@ -17,12 +17,13 @@ import React, {useEffect, useLayoutEffect, useRef, useState} from 'react';
 import ChartContext from './ChartContext';
 import D3OrganizationChart from './D3OrganizationChart';
 import ManagementBar from './ManagementBar/ManagementBar';
-import {getOrganization} from './data/organizations';
+import {getOrganization, getOrganizations} from './data/organizations';
 import MenuProvider from './menu/MenuProvider';
 import ModalProvider from './modals/ModalProvider';
 import {VIEWS} from './utils/constants';
 
-function OrganizationChartApp({rootOrganizationId, spritemap, templatesURL}) {
+import '../style/main.scss';
+function OrganizationChart({pageSize, rootOrganizationId, spritemap}) {
 	const [modalActive, updateModalActive] = useState(false);
 	const [modalData, updateModalData] = useState(null);
 	const [currentView, updateCurrentView] = useState(VIEWS[0]);
@@ -37,8 +38,15 @@ function OrganizationChartApp({rootOrganizationId, spritemap, templatesURL}) {
 	const zoomInRef = useRef(null);
 
 	useEffect(() => {
-		getOrganization(rootOrganizationId).then(updateRootData);
-	}, [rootOrganizationId]);
+		if (Number(rootOrganizationId)) {
+			getOrganization(rootOrganizationId).then(updateRootData);
+		}
+		else {
+			getOrganizations(pageSize).then((jsonResponse) =>
+				updateRootData(jsonResponse.items)
+			);
+		}
+	}, [rootOrganizationId, pageSize]);
 
 	useLayoutEffect(() => {
 		if (rootData && chartSVGRef.current) {
@@ -75,14 +83,13 @@ function OrganizationChartApp({rootOrganizationId, spritemap, templatesURL}) {
 		}
 
 		return () => chartInstanceRef.current?.cleanUp();
-	}, [rootData, spritemap]);
+	}, [pageSize, rootData, spritemap]);
 
 	return (
 		<ChartContext.Provider
 			value={{
 				chartInstanceRef,
 				currentView,
-				templatesURL,
 				updateCurrentView,
 			}}
 		>
@@ -133,14 +140,15 @@ function OrganizationChartApp({rootOrganizationId, spritemap, templatesURL}) {
 	);
 }
 
-OrganizationChartApp.propTypes = {
-	rootOrganizationId: PropTypes.number.isRequired,
-	spritemap: PropTypes.string.isRequired,
-	templatesURL: PropTypes.shape({
-		accountsDetailsPage: PropTypes.string.isRequired,
-		organizationsDetailsPage: PropTypes.string.isRequired,
-		usersDetailsPage: PropTypes.string.isRequired,
-	}),
+OrganizationChart.defaultProps = {
+	pageSize: 10,
+	rootOrganizationId: 0,
 };
 
-export default OrganizationChartApp;
+OrganizationChart.propTypes = {
+	pageSize: PropTypes.number,
+	rootOrganizationId: PropTypes.number,
+	spritemap: PropTypes.string.isRequired,
+};
+
+export default OrganizationChart;

@@ -51,6 +51,13 @@ public class ImageStorageUpgradeProcess extends UpgradeProcess {
 			(Image image) -> {
 				String fileName = _getFileName(image);
 
+				if (!store.hasFile(
+						CompanyConstants.SYSTEM, _REPOSITORY_ID, fileName,
+						StringPool.BLANK)) {
+
+					return;
+				}
+
 				try (InputStream inputStream = store.getFileAsStream(
 						CompanyConstants.SYSTEM, _REPOSITORY_ID, fileName,
 						StringPool.BLANK)) {

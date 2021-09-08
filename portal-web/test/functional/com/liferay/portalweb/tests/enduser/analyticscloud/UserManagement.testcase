@@ -15,6 +15,8 @@ definition {
 	tearDown {
 		var testPortalInstance = PropsUtil.get("test.portal.instance");
 
+		ACUtils.tearDownDXP();
+
 		if ("${testPortalInstance}" == "true") {
 			PortalInstances.tearDownCP();
 		}
@@ -203,8 +205,6 @@ definition {
 	@priority = "4"
 	test MemberCannotChangeUserPermissions {
 		task ("Go to AC and Login as user with member role") {
-			ACUtils.launchAC();
-
 			ACWorkspace.signOut();
 
 			ACLogin.loginAs(
@@ -212,7 +212,7 @@ definition {
 				password = "test");
 		}
 
-		task ("Go to Data Sources") {
+		task ("Go to User Management") {
 			ACWorkspace.openWorkspace();
 
 			ACNavigation.goToSettings();
@@ -377,30 +377,118 @@ definition {
 	}
 
 	@description = "Automation ID: LRAC-9092 | Test Summary: Owner can change user permissions"
-	@ignore = "true"
 	@priority = "5"
 	test OwnerCanChangeUserPermissions {
+		var userEmail = "ac@liferay.com";
 
-		// TODO LRAC-9092 OwnerCanChangeUserPermissions
+		task ("Login with another Owner User") {
+			ACWorkspace.signOut();
 
+			ACLogin.loginAs(
+				emailAddress = "bryan.cheung@faro.io",
+				password = "test");
+
+			ACWorkspace.openWorkspace();
+		}
+
+		task ("Go to User Management") {
+			ACNavigation.goToSettings();
+
+			ACSettings.goToUserManagement();
+		}
+
+		task ("Invite user") {
+			ACSettings.addUser(userInvite = "${userEmail}");
+		}
+
+		task ("Change user permission") {
+			ACSettings.changeUserRole(
+				newRole = "Administrator",
+				permissionType = "Member",
+				userEmail = "${userEmail}");
+		}
+
+		task ("Assert user permission") {
+			ACSettings.assertUserPermission(
+				permissionType = "Administrator",
+				userEmail = "${userEmail}");
+		}
 	}
 
 	@description = "Automation ID: LRAC-9091 | Test Summary: Owner can remove data sources"
-	@ignore = "true"
 	@priority = "5"
 	test OwnerCanRemoveDataSources {
+		task ("Connect DXP to AC") {
+			ACSettings.takeTokenFromAnalyticsCloud();
 
-		// TODO LRAC-9091 OwnerCanRemoveDataSources
+			TestCase.setUpPortalInstance();
 
+			ACUtils.launchDXP();
+
+			var propertyName = ACDXPSettings.connectDXPtoAnalyticsCloud();
+		}
+
+		task ("Get the Data Source name") {
+			var dataSource = StringUtil.replace("${propertyName}", " Combined Property", "");
+		}
+
+		task ("Go to AC and login with another Owner User") {
+			ACUtils.launchAC(emailAddress = "bryan.cheung@faro.io");
+		}
+
+		task ("Delete the data source and check if it has been deleted") {
+			ACSettings.deleteDataSource(dataSourceName = "${dataSource}");
+
+			AssertElementNotPresent(
+				itemName = "${dataSource}",
+				locator1 = "ACSettings#ITEM_ON_LIST");
+		}
 	}
 
 	@description = "Automation ID: LRAC-9088 | Test Summary: Select and change an admin + member to admins"
-	@ignore = "true"
 	@priority = "3"
 	test SelectandChangeAnAdminAndMemberToAdmins {
+		var firstUser = "ac@liferay.com";
+		var secondUser = "ac2@liferay.com";
 
-		// TODO LRAC-9088 SelectandChangeAnAdminAndMemberToAdmins
+		task ("Go to User Management") {
+			ACNavigation.goToSettings();
 
+			ACSettings.goToUserManagement();
+		}
+
+		task ("Invite user") {
+			for (var users : list "${firstUser},${secondUser}") {
+				ACSettings.addUser(userInvite = "${users}");
+			}
+		}
+
+		task ("Change user permission") {
+			ACSettings.changeUserRole(
+				newRole = "Administrator",
+				permissionType = "Member",
+				userEmail = "${firstUser}");
+		}
+
+		task ("Assert user permission") {
+			ACSettings.assertUserPermission(
+				permissionType = "Administrator",
+				userEmail = "${firstUser}");
+		}
+
+		task ("Change user permission") {
+			ACSettings.changeMultipleUsersPermissions(
+				permissionType = "Member",
+				userEmail = "${firstUser},${secondUser}");
+		}
+
+		task ("Assert user permission") {
+			for (var users : list "${firstUser},${secondUser}") {
+				ACSettings.assertUserPermission(
+					permissionType = "Member",
+					userEmail = "${users}");
+			}
+		}
 	}
 
 	@description = "Automation ID: LRAC-9087 | Test Summary: Select and change an admin + member to members"
@@ -437,6 +525,84 @@ definition {
 
 		// TODO LRAC-9081 UserOnlySeeInvitedPropertiesOrOwnedProperties
 
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-9044 | Test Summary: Users list can be ordered"
+	@priority = "3"
+	test UsersListCanBeOrdered {
+		task ("Go to User Management") {
+			ACNavigation.goToSettings();
+
+			ACSettings.goToUserManagement();
+		}
+
+		task ("Change the order to desc") {
+			ACUtils.orderArrow(type = "descending");
+		}
+
+		task ("Assert that the first item on the list was changed") {
+			AssertElementPresent(
+				key_index = "1",
+				key_KeywordName = "test test",
+				locator1 = "ACSettings#KEYWORD_NAME_BY_INDEX");
+
+			AssertElementPresent(
+				key_index = "5",
+				key_KeywordName = "bryan cheung",
+				locator1 = "ACSettings#KEYWORD_NAME_BY_INDEX");
+		}
+
+		task ("Change the order do asc") {
+			ACUtils.orderArrow(type = "ascending");
+		}
+
+		task ("Assert that the first item on the list was changed") {
+			AssertElementPresent(
+				key_index = "1",
+				key_KeywordName = "bryan cheung",
+				locator1 = "ACSettings#KEYWORD_NAME_BY_INDEX");
+
+			AssertElementPresent(
+				key_index = "5",
+				key_KeywordName = "Test Test",
+				locator1 = "ACSettings#KEYWORD_NAME_BY_INDEX");
+		}
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-9045	 | Test Summary: Users list can be paginated"
+	@priority = "3"
+	test UsersListCanBePaginated {
+		task ("Go to User Management") {
+			ACNavigation.goToSettings();
+
+			ACSettings.goToUserManagement();
+		}
+
+		task ("Invite user") {
+			ACSettings.addUser(userInvite = "ac@liferay.com");
+		}
+
+		task ("Select the 5 Items in Pagination") {
+			ACUtils.changePagination(itemsPerPage = "5");
+		}
+
+		task ("View only 5 users are shown in page 1") {
+			for (var emailList : list "bryan.cheung@faro.io,corbin.murakami@faro.io,michelle.hoshi@faro.io,test@faro.io,ac@liferay.com") {
+				ACSettings.assertUsersListByEmail(userEmail = "${emailList}");
+			}
+
+			AssertElementNotPresent(
+				locator1 = "ACSettings#USER_LIST_BY_EMAIL",
+				userEmail = "test@liferay.com");
+		}
+
+		task ("Navigate to the page 2") {
+			ACUtils.checkAnyPage(pageNumber = "2");
+		}
+
+		task ("View the test@liferay.com is shown in page 2") {
+			ACSettings.assertUsersListByEmail(userEmail = "test@liferay.com");
+		}
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8142 | Test Summary: Users list can be searched"

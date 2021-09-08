@@ -95,6 +95,8 @@ public class CommerceMessagingConfigurator {
 		Dictionary<String, Object> dictionary =
 			HashMapDictionaryBuilder.<String, Object>put(
 				"destination.name", destination.getName()
+			).put(
+				"destination.webhook.required.company.id", 0
 			).build();
 
 		return bundleContext.registerService(

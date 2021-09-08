@@ -12,13 +12,25 @@
 import {USERS_PROPERTY_NAME_IN_ACCOUNT} from '../utils/constants';
 import {fetchFromHeadless} from '../utils/fetch';
 
-const ACCOUNTS_MOVING_ENDPOINT = `/o/account-rest/v1.0/organizations/move-accounts`;
-const ACCOUNTS_ROOT_ENDPOINT = '/o/account-rest/v1.0/accounts';
+const ACCOUNTS_MOVING_ENDPOINT =
+	'/o/headless-admin-user/v1.0/organizations/move-accounts';
+const ACCOUNTS_ROOT_ENDPOINT = '/o/headless-admin-user/v1.0/accounts';
 
-export function getAccounts(query) {
+export function getAccounts(query, organizationIds = []) {
 	const url = new URL(ACCOUNTS_ROOT_ENDPOINT, themeDisplay.getPortalURL());
 
-	url.searchParams.append('search', query);
+	if (query) {
+		url.searchParams.append('search', query);
+	}
+
+	if (organizationIds.length) {
+		url.searchParams.append(
+			'filter',
+			`${organizationIds
+				.map((id) => `(organizationIds eq '${id}')`)
+				.join(' or ')}`
+		);
+	}
 
 	return fetchFromHeadless(url);
 }
@@ -58,7 +70,7 @@ export function getAccount(id) {
 	return fetchFromHeadless(accountUrl);
 }
 
-export function updateAccountDetails(id, details) {
+export function updateAccount(id, details) {
 	const url = new URL(
 		`${ACCOUNTS_ROOT_ENDPOINT}/${id}`,
 		themeDisplay.getPortalURL()
@@ -67,5 +79,17 @@ export function updateAccountDetails(id, details) {
 	return fetchFromHeadless(url, {
 		body: JSON.stringify(details),
 		method: 'PATCH',
+	});
+}
+
+export function createAccount(name, organizationIds) {
+	const url = new URL(ACCOUNTS_ROOT_ENDPOINT, themeDisplay.getPortalURL());
+
+	return fetchFromHeadless(url, {
+		body: JSON.stringify({
+			name,
+			organizationIds,
+		}),
+		method: 'POST',
 	});
 }

@@ -69,7 +69,7 @@ public class ObjectFieldResourceImpl
 				objectField.getIndexedLanguageId(),
 				LocalizedMapUtil.getLocalizedMap(objectField.getLabel()),
 				objectField.getName(), objectField.getRequired(),
-				objectField.getType()));
+				objectField.getTypeAsString()));
 	}
 
 	@Override
@@ -84,7 +84,7 @@ public class ObjectFieldResourceImpl
 				objectField.getIndexedLanguageId(),
 				LocalizedMapUtil.getLocalizedMap(objectField.getLabel()),
 				objectField.getName(), objectField.getRequired(),
-				objectField.getType()));
+				objectField.getTypeAsString()));
 	}
 
 	@Reference

@@ -180,7 +180,6 @@ public abstract class BaseObjectFieldResourceTestCase {
 
 		objectField.setIndexedLanguageId(regex);
 		objectField.setName(regex);
-		objectField.setType(regex);
 
 		String json = ObjectFieldSerDes.toJSON(objectField);
 
@@ -190,7 +189,6 @@ public abstract class BaseObjectFieldResourceTestCase {
 
 		Assert.assertEquals(regex, objectField.getIndexedLanguageId());
 		Assert.assertEquals(regex, objectField.getName());
-		Assert.assertEquals(regex, objectField.getType());
 	}
 
 	@Test
@@ -890,11 +888,8 @@ public abstract class BaseObjectFieldResourceTestCase {
 		}
 
 		if (entityFieldName.equals("type")) {
-			sb.append("'");
-			sb.append(String.valueOf(objectField.getType()));
-			sb.append("'");
-
-			return sb.toString();
+			throw new IllegalArgumentException(
+				"Invalid entity field " + entityFieldName);
 		}
 
 		throw new IllegalArgumentException(
@@ -949,7 +944,6 @@ public abstract class BaseObjectFieldResourceTestCase {
 				listTypeDefinitionId = RandomTestUtil.randomLong();
 				name = StringUtil.toLowerCase(RandomTestUtil.randomString());
 				required = RandomTestUtil.randomBoolean();
-				type = StringUtil.toLowerCase(RandomTestUtil.randomString());
 			}
 		};
 	}

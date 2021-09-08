@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.service.permission.OrganizationPermissionUtil;
 import com.liferay.portal.kernel.service.permission.PortalPermissionUtil;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -165,6 +166,17 @@ public class CommerceOrganizationDisplayContext {
 		}
 
 		return portletURL;
+	}
+
+	public Organization getRootOrganization() throws PortalException {
+		String rootOrganizationIdString = getRootOrganizationId();
+
+		if (rootOrganizationIdString.isEmpty()) {
+			return null;
+		}
+
+		return _organizationService.fetchOrganization(
+			GetterUtil.getLong(rootOrganizationIdString));
 	}
 
 	public String getRootOrganizationId() {

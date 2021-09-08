@@ -16,29 +16,33 @@ import ClayModal from '@clayui/modal';
 import ClayMultiSelect from '@clayui/multi-select';
 import classNames from 'classnames';
 import {openToast} from 'frontend-js-web';
-import React, {useEffect, useState} from 'react';
+import React, {useContext, useEffect, useState} from 'react';
 
-import {addUsersToOrganization} from '../data/organizations';
-import {getAllUserRoles, getUsersByEmails} from '../data/users';
-import {USER_ROLES_DEFINITION_ENABLED} from '../utils/flags';
+import ChartContext from '../ChartContext';
+import {
+	addUserEmailsToAccount,
+	addUserEmailsToOrganization,
+	getAccountRoles,
+	getOrganizationRoles,
+} from '../data/users';
 
 export default function InviteUserModal({closeModal, observer, parentData}) {
 	const [emailsQuery, setEmailsQuery] = useState('');
 	const [selectedEmails, setSelectedEmails] = useState([]);
+	const {chartInstanceRef} = useContext(ChartContext);
 
 	const [selectedRoleIds, setSelectedRoleIds] = useState([]);
 	const [roles, setRoles] = useState([]);
 	const [errors, setErrors] = useState([]);
 
 	useEffect(() => {
-		if (USER_ROLES_DEFINITION_ENABLED) {
-			getAllUserRoles().then((roles) => {
-				const organizationRoles = roles.items.filter(
-					(role) => role.roleType === 'organization'
-				);
+		if (parentData) {
+			const getRoles =
+				parentData.type === 'organization'
+					? getOrganizationRoles()
+					: getAccountRoles(parentData.id);
 
-				setRoles(organizationRoles);
-			});
+			getRoles.then(setRoles);
 		}
 	}, [parentData]);
 
@@ -47,43 +51,37 @@ export default function InviteUserModal({closeModal, observer, parentData}) {
 			.map((email) => email.emailAddress)
 			.sort();
 
-		getUsersByEmails(typedEmails)
-			.then((response) => {
-				const fetchedUsers = new Map();
+		if (emailsQuery) {
+			typedEmails.push(emailsQuery);
+		}
 
-				response.items.forEach((user) => {
-					fetchedUsers.set(user.emailAddress, user);
+		const inviteUser =
+			parentData.type === 'organization'
+				? addUserEmailsToOrganization
+				: addUserEmailsToAccount;
+
+		inviteUser(parentData.id, selectedRoleIds.join(','), typedEmails)
+			.then((users) => {
+				openToast({
+					message: Liferay.Util.sub(
+						Liferay.Language.get('x-users-were-added-to-x'),
+						users.length,
+						parentData.name
+					),
+					type: 'success',
 				});
 
-				const userIds = [];
-				const errorMessages = [];
+				chartInstanceRef.current.addNodes(users, 'user', parentData);
 
-				typedEmails.forEach((typedEmail) => {
-					if (fetchedUsers.has(typedEmail)) {
-						userIds.push(fetchedUsers.get(typedEmail).id);
-					}
-					else {
-						errorMessages.push(
-							Liferay.Util.sub(
-								Liferay.Language.get('x-not-found'),
-								typedEmail
-							)
-						);
-					}
+				chartInstanceRef.current.updateNodeContent({
+					...parentData,
+					numberOfUsers: parentData.numberOfUsers + users.length,
 				});
 
-				setErrors(errorMessages);
-
-				return userIds;
+				closeModal();
 			})
-			.then((usersIds) => {
-				if (usersIds.length) {
-					addUsersToOrganization(
-						usersIds,
-						parentData,
-						selectedRoleIds
-					);
-				}
+			.catch((error) => {
+				setErrors([error.title]);
 			});
 	}
 
@@ -99,6 +97,7 @@ export default function InviteUserModal({closeModal, observer, parentData}) {
 				>
 					<label htmlFor="inviteUsersEmailInput">
 						{Liferay.Language.get('email')}
+
 						<ClayIcon
 							className="ml-1 reference-mark"
 							symbol="asterisk"
@@ -116,34 +115,7 @@ export default function InviteUserModal({closeModal, observer, parentData}) {
 									value: 'emailAddress',
 								}}
 								onChange={setEmailsQuery}
-								onItemsChange={(emails) => {
-									const organizationEmails = new Set(
-										parentData.userAccounts.map(
-											(user) => user.emailAddress
-										)
-									);
-									const filteredEmails = emails.filter(
-										(email) => {
-											if (organizationEmails.has(email)) {
-												openToast({
-													message: Liferay.Util.sub(
-														Liferay.Language.get(
-															'x-is-already-a-user-of-x'
-														),
-														email,
-														parentData.name
-													),
-													type: 'danger',
-												});
-
-												return false;
-											}
-
-											return true;
-										}
-									);
-									setSelectedEmails(filteredEmails);
-								}}
+								onItemsChange={setSelectedEmails}
 								placeholder={Liferay.Language.get(
 									'users-emails'
 								)}
@@ -151,46 +123,45 @@ export default function InviteUserModal({closeModal, observer, parentData}) {
 						</ClayInput.GroupItem>
 					</ClayInput.Group>
 				</ClayForm.Group>
-				{USER_ROLES_DEFINITION_ENABLED && (
-					<ClayForm.Group
-						className={classNames(errors.length && 'has-error')}
-					>
-						<label htmlFor="inviteUsersRoleInput">
-							{Liferay.Language.get('roles')}
-							<ClayIcon
-								className="ml-1 reference-mark"
-								symbol="asterisk"
-							/>
-						</label>
 
-						<ClaySelectBox
-							id="inviteUsersRoleInput"
-							items={roles.map((role) => ({
-								label: role.name,
-								value: role.id,
-							}))}
-							multiple
-							onSelectChange={setSelectedRoleIds}
-							size={5}
-							value={selectedRoleIds}
+				<ClayForm.Group
+					className={classNames(errors.length && 'has-error')}
+				>
+					<label htmlFor="inviteUsersRoleInput">
+						{Liferay.Language.get('roles')}
+						<ClayIcon
+							className="ml-1 reference-mark"
+							symbol="asterisk"
 						/>
+					</label>
 
-						<ClayInput.Group>
-							<ClayInput.GroupItem>
-								{!!errors.length && (
-									<ClayForm.FeedbackGroup>
-										{errors.map((error, i) => (
-											<ClayForm.FeedbackItem key={i}>
-												<ClayForm.FeedbackIndicator symbol="info-circle" />
-												{error}
-											</ClayForm.FeedbackItem>
-										))}
-									</ClayForm.FeedbackGroup>
-								)}
-							</ClayInput.GroupItem>
-						</ClayInput.Group>
-					</ClayForm.Group>
-				)}
+					<ClaySelectBox
+						id="inviteUsersRoleInput"
+						items={roles.map((role) => ({
+							label: role.name,
+							value: role.id,
+						}))}
+						multiple
+						onSelectChange={setSelectedRoleIds}
+						size={5}
+						value={selectedRoleIds}
+					/>
+
+					<ClayInput.Group>
+						<ClayInput.GroupItem>
+							{!!errors.length && (
+								<ClayForm.FeedbackGroup>
+									{errors.map((error, i) => (
+										<ClayForm.FeedbackItem key={i}>
+											<ClayForm.FeedbackIndicator symbol="info-circle" />
+											{error}
+										</ClayForm.FeedbackItem>
+									))}
+								</ClayForm.FeedbackGroup>
+							)}
+						</ClayInput.GroupItem>
+					</ClayInput.Group>
+				</ClayForm.Group>
 			</ClayModal.Body>
 
 			<ClayModal.Footer
