@@ -96,12 +96,6 @@ public class ObjectRelationshipCacheModel
 		sb.append(createDate);
 		sb.append(", modifiedDate=");
 		sb.append(modifiedDate);
-		sb.append(", dbTableName=");
-		sb.append(dbTableName);
-		sb.append(", label=");
-		sb.append(label);
-		sb.append(", name=");
-		sb.append(name);
 		sb.append(", objectDefinitionId1=");
 		sb.append(objectDefinitionId1);
 		sb.append(", objectDefinitionId2=");
@@ -110,6 +104,12 @@ public class ObjectRelationshipCacheModel
 		sb.append(objectFieldId1);
 		sb.append(", objectFieldId2=");
 		sb.append(objectFieldId2);
+		sb.append(", dbTableName=");
+		sb.append(dbTableName);
+		sb.append(", label=");
+		sb.append(label);
+		sb.append(", name=");
+		sb.append(name);
 		sb.append(", type=");
 		sb.append(type);
 		sb.append("}");
@@ -156,6 +156,11 @@ public class ObjectRelationshipCacheModel
 			objectRelationshipImpl.setModifiedDate(new Date(modifiedDate));
 		}
 
+		objectRelationshipImpl.setObjectDefinitionId1(objectDefinitionId1);
+		objectRelationshipImpl.setObjectDefinitionId2(objectDefinitionId2);
+		objectRelationshipImpl.setObjectFieldId1(objectFieldId1);
+		objectRelationshipImpl.setObjectFieldId2(objectFieldId2);
+
 		if (dbTableName == null) {
 			objectRelationshipImpl.setDBTableName("");
 		}
@@ -176,11 +181,6 @@ public class ObjectRelationshipCacheModel
 		else {
 			objectRelationshipImpl.setName(name);
 		}
-
-		objectRelationshipImpl.setObjectDefinitionId1(objectDefinitionId1);
-		objectRelationshipImpl.setObjectDefinitionId2(objectDefinitionId2);
-		objectRelationshipImpl.setObjectFieldId1(objectFieldId1);
-		objectRelationshipImpl.setObjectFieldId2(objectFieldId2);
 
 		if (type == null) {
 			objectRelationshipImpl.setType("");
@@ -207,9 +207,6 @@ public class ObjectRelationshipCacheModel
 		userName = objectInput.readUTF();
 		createDate = objectInput.readLong();
 		modifiedDate = objectInput.readLong();
-		dbTableName = objectInput.readUTF();
-		label = objectInput.readUTF();
-		name = objectInput.readUTF();
 
 		objectDefinitionId1 = objectInput.readLong();
 
@@ -218,6 +215,9 @@ public class ObjectRelationshipCacheModel
 		objectFieldId1 = objectInput.readLong();
 
 		objectFieldId2 = objectInput.readLong();
+		dbTableName = objectInput.readUTF();
+		label = objectInput.readUTF();
+		name = objectInput.readUTF();
 		type = objectInput.readUTF();
 	}
 
@@ -248,6 +248,14 @@ public class ObjectRelationshipCacheModel
 		objectOutput.writeLong(createDate);
 		objectOutput.writeLong(modifiedDate);
 
+		objectOutput.writeLong(objectDefinitionId1);
+
+		objectOutput.writeLong(objectDefinitionId2);
+
+		objectOutput.writeLong(objectFieldId1);
+
+		objectOutput.writeLong(objectFieldId2);
+
 		if (dbTableName == null) {
 			objectOutput.writeUTF("");
 		}
@@ -269,14 +277,6 @@ public class ObjectRelationshipCacheModel
 			objectOutput.writeUTF(name);
 		}
 
-		objectOutput.writeLong(objectDefinitionId1);
-
-		objectOutput.writeLong(objectDefinitionId2);
-
-		objectOutput.writeLong(objectFieldId1);
-
-		objectOutput.writeLong(objectFieldId2);
-
 		if (type == null) {
 			objectOutput.writeUTF("");
 		}
@@ -293,13 +293,13 @@ public class ObjectRelationshipCacheModel
 	public String userName;
 	public long createDate;
 	public long modifiedDate;
-	public String dbTableName;
-	public String label;
-	public String name;
 	public long objectDefinitionId1;
 	public long objectDefinitionId2;
 	public long objectFieldId1;
 	public long objectFieldId2;
+	public String dbTableName;
+	public String label;
+	public String name;
 	public String type;
 
 }

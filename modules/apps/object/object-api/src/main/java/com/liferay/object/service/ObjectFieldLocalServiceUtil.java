@@ -243,6 +243,12 @@ public class ObjectFieldLocalServiceUtil {
 		return getService().fetchObjectField(objectFieldId);
 	}
 
+	public static ObjectField fetchObjectField(
+		long objectDefinitionId, String name) {
+
+		return getService().fetchObjectField(objectDefinitionId, name);
+	}
+
 	/**
 	 * Returns the object field with the matching UUID and company.
 	 *

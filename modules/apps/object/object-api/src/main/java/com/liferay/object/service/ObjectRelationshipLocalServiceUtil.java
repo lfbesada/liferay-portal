@@ -46,12 +46,12 @@ public class ObjectRelationshipLocalServiceUtil {
 	 * Never modify this class directly. Add custom service methods to <code>com.liferay.object.service.impl.ObjectRelationshipLocalServiceImpl</code> and rerun ServiceBuilder to regenerate this class.
 	 */
 	public static ObjectRelationship addObjectRelationship(
-			long userId, Map<java.util.Locale, String> labelMap, String name,
-			long objectDefinitionId1, long objectDefinitionId2, String type)
+			long userId, long objectDefinitionId1, long objectDefinitionId2,
+			Map<java.util.Locale, String> labelMap, String name, String type)
 		throws PortalException {
 
 		return getService().addObjectRelationship(
-			userId, labelMap, name, objectDefinitionId1, objectDefinitionId2,
+			userId, objectDefinitionId1, objectDefinitionId2, labelMap, name,
 			type);
 	}
 

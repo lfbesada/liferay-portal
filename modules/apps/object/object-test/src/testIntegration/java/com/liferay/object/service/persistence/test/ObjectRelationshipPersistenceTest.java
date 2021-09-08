@@ -26,6 +26,8 @@ import com.liferay.portal.kernel.dao.orm.DynamicQueryFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.ProjectionFactoryUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.RestrictionsFactoryUtil;
+import com.liferay.portal.kernel.dao.orm.Session;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.transaction.Propagation;
@@ -137,12 +139,6 @@ public class ObjectRelationshipPersistenceTest {
 
 		newObjectRelationship.setModifiedDate(RandomTestUtil.nextDate());
 
-		newObjectRelationship.setDBTableName(RandomTestUtil.randomString());
-
-		newObjectRelationship.setLabel(RandomTestUtil.randomString());
-
-		newObjectRelationship.setName(RandomTestUtil.randomString());
-
 		newObjectRelationship.setObjectDefinitionId1(RandomTestUtil.nextLong());
 
 		newObjectRelationship.setObjectDefinitionId2(RandomTestUtil.nextLong());
@@ -150,6 +146,12 @@ public class ObjectRelationshipPersistenceTest {
 		newObjectRelationship.setObjectFieldId1(RandomTestUtil.nextLong());
 
 		newObjectRelationship.setObjectFieldId2(RandomTestUtil.nextLong());
+
+		newObjectRelationship.setDBTableName(RandomTestUtil.randomString());
+
+		newObjectRelationship.setLabel(RandomTestUtil.randomString());
+
+		newObjectRelationship.setName(RandomTestUtil.randomString());
 
 		newObjectRelationship.setType(RandomTestUtil.randomString());
 
@@ -185,15 +187,6 @@ public class ObjectRelationshipPersistenceTest {
 				existingObjectRelationship.getModifiedDate()),
 			Time.getShortTimestamp(newObjectRelationship.getModifiedDate()));
 		Assert.assertEquals(
-			existingObjectRelationship.getDBTableName(),
-			newObjectRelationship.getDBTableName());
-		Assert.assertEquals(
-			existingObjectRelationship.getLabel(),
-			newObjectRelationship.getLabel());
-		Assert.assertEquals(
-			existingObjectRelationship.getName(),
-			newObjectRelationship.getName());
-		Assert.assertEquals(
 			existingObjectRelationship.getObjectDefinitionId1(),
 			newObjectRelationship.getObjectDefinitionId1());
 		Assert.assertEquals(
@@ -205,6 +198,15 @@ public class ObjectRelationshipPersistenceTest {
 		Assert.assertEquals(
 			existingObjectRelationship.getObjectFieldId2(),
 			newObjectRelationship.getObjectFieldId2());
+		Assert.assertEquals(
+			existingObjectRelationship.getDBTableName(),
+			newObjectRelationship.getDBTableName());
+		Assert.assertEquals(
+			existingObjectRelationship.getLabel(),
+			newObjectRelationship.getLabel());
+		Assert.assertEquals(
+			existingObjectRelationship.getName(),
+			newObjectRelationship.getName());
 		Assert.assertEquals(
 			existingObjectRelationship.getType(),
 			newObjectRelationship.getType());
@@ -243,6 +245,25 @@ public class ObjectRelationshipPersistenceTest {
 	}
 
 	@Test
+	public void testCountByODI1_N() throws Exception {
+		_persistence.countByODI1_N(RandomTestUtil.nextLong(), "");
+
+		_persistence.countByODI1_N(0L, "null");
+
+		_persistence.countByODI1_N(0L, (String)null);
+	}
+
+	@Test
+	public void testCountByODI1_ODI2_N_T() throws Exception {
+		_persistence.countByODI1_ODI2_N_T(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(), "", "");
+
+		_persistence.countByODI1_ODI2_N_T(0L, 0L, "null", "null");
+
+		_persistence.countByODI1_ODI2_N_T(0L, 0L, (String)null, (String)null);
+	}
+
+	@Test
 	public void testFindByPrimaryKeyExisting() throws Exception {
 		ObjectRelationship newObjectRelationship = addObjectRelationship();
 
@@ -271,9 +292,9 @@ public class ObjectRelationshipPersistenceTest {
 			"ObjectRelationship", "mvccVersion", true, "uuid", true,
 			"objectRelationshipId", true, "companyId", true, "userId", true,
 			"userName", true, "createDate", true, "modifiedDate", true,
-			"dbTableName", true, "label", true, "name", true,
 			"objectDefinitionId1", true, "objectDefinitionId2", true,
-			"objectFieldId1", true, "objectFieldId2", true, "type", true);
+			"objectFieldId1", true, "objectFieldId2", true, "dbTableName", true,
+			"label", true, "name", true, "type", true);
 	}
 
 	@Test
@@ -499,6 +520,71 @@ public class ObjectRelationshipPersistenceTest {
 		Assert.assertEquals(0, result.size());
 	}
 
+	@Test
+	public void testResetOriginalValues() throws Exception {
+		ObjectRelationship newObjectRelationship = addObjectRelationship();
+
+		_persistence.clearCache();
+
+		_assertOriginalValues(
+			_persistence.findByPrimaryKey(
+				newObjectRelationship.getPrimaryKey()));
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromDatabase()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(true);
+	}
+
+	@Test
+	public void testResetOriginalValuesWithDynamicQueryLoadFromSession()
+		throws Exception {
+
+		_testResetOriginalValuesWithDynamicQuery(false);
+	}
+
+	private void _testResetOriginalValuesWithDynamicQuery(boolean clearSession)
+		throws Exception {
+
+		ObjectRelationship newObjectRelationship = addObjectRelationship();
+
+		if (clearSession) {
+			Session session = _persistence.openSession();
+
+			session.flush();
+
+			session.clear();
+		}
+
+		DynamicQuery dynamicQuery = DynamicQueryFactoryUtil.forClass(
+			ObjectRelationship.class, _dynamicQueryClassLoader);
+
+		dynamicQuery.add(
+			RestrictionsFactoryUtil.eq(
+				"objectRelationshipId",
+				newObjectRelationship.getObjectRelationshipId()));
+
+		List<ObjectRelationship> result = _persistence.findWithDynamicQuery(
+			dynamicQuery);
+
+		_assertOriginalValues(result.get(0));
+	}
+
+	private void _assertOriginalValues(ObjectRelationship objectRelationship) {
+		Assert.assertEquals(
+			Long.valueOf(objectRelationship.getObjectDefinitionId1()),
+			ReflectionTestUtil.<Long>invoke(
+				objectRelationship, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "objectDefinitionId1"));
+		Assert.assertEquals(
+			objectRelationship.getName(),
+			ReflectionTestUtil.invoke(
+				objectRelationship, "getColumnOriginalValue",
+				new Class<?>[] {String.class}, "name"));
+	}
+
 	protected ObjectRelationship addObjectRelationship() throws Exception {
 		long pk = RandomTestUtil.nextLong();
 
@@ -518,12 +604,6 @@ public class ObjectRelationshipPersistenceTest {
 
 		objectRelationship.setModifiedDate(RandomTestUtil.nextDate());
 
-		objectRelationship.setDBTableName(RandomTestUtil.randomString());
-
-		objectRelationship.setLabel(RandomTestUtil.randomString());
-
-		objectRelationship.setName(RandomTestUtil.randomString());
-
 		objectRelationship.setObjectDefinitionId1(RandomTestUtil.nextLong());
 
 		objectRelationship.setObjectDefinitionId2(RandomTestUtil.nextLong());
@@ -531,6 +611,12 @@ public class ObjectRelationshipPersistenceTest {
 		objectRelationship.setObjectFieldId1(RandomTestUtil.nextLong());
 
 		objectRelationship.setObjectFieldId2(RandomTestUtil.nextLong());
+
+		objectRelationship.setDBTableName(RandomTestUtil.randomString());
+
+		objectRelationship.setLabel(RandomTestUtil.randomString());
+
+		objectRelationship.setName(RandomTestUtil.randomString());
 
 		objectRelationship.setType(RandomTestUtil.randomString());
 

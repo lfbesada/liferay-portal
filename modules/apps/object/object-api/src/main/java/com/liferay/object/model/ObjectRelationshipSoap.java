@@ -41,13 +41,13 @@ public class ObjectRelationshipSoap implements Serializable {
 		soapModel.setUserName(model.getUserName());
 		soapModel.setCreateDate(model.getCreateDate());
 		soapModel.setModifiedDate(model.getModifiedDate());
-		soapModel.setDBTableName(model.getDBTableName());
-		soapModel.setLabel(model.getLabel());
-		soapModel.setName(model.getName());
 		soapModel.setObjectDefinitionId1(model.getObjectDefinitionId1());
 		soapModel.setObjectDefinitionId2(model.getObjectDefinitionId2());
 		soapModel.setObjectFieldId1(model.getObjectFieldId1());
 		soapModel.setObjectFieldId2(model.getObjectFieldId2());
+		soapModel.setDBTableName(model.getDBTableName());
+		soapModel.setLabel(model.getLabel());
+		soapModel.setName(model.getName());
 		soapModel.setType(model.getType());
 
 		return soapModel;
@@ -175,30 +175,6 @@ public class ObjectRelationshipSoap implements Serializable {
 		_modifiedDate = modifiedDate;
 	}
 
-	public String getDBTableName() {
-		return _dbTableName;
-	}
-
-	public void setDBTableName(String dbTableName) {
-		_dbTableName = dbTableName;
-	}
-
-	public String getLabel() {
-		return _label;
-	}
-
-	public void setLabel(String label) {
-		_label = label;
-	}
-
-	public String getName() {
-		return _name;
-	}
-
-	public void setName(String name) {
-		_name = name;
-	}
-
 	public long getObjectDefinitionId1() {
 		return _objectDefinitionId1;
 	}
@@ -231,6 +207,30 @@ public class ObjectRelationshipSoap implements Serializable {
 		_objectFieldId2 = objectFieldId2;
 	}
 
+	public String getDBTableName() {
+		return _dbTableName;
+	}
+
+	public void setDBTableName(String dbTableName) {
+		_dbTableName = dbTableName;
+	}
+
+	public String getLabel() {
+		return _label;
+	}
+
+	public void setLabel(String label) {
+		_label = label;
+	}
+
+	public String getName() {
+		return _name;
+	}
+
+	public void setName(String name) {
+		_name = name;
+	}
+
 	public String getType() {
 		return _type;
 	}
@@ -247,13 +247,13 @@ public class ObjectRelationshipSoap implements Serializable {
 	private String _userName;
 	private Date _createDate;
 	private Date _modifiedDate;
-	private String _dbTableName;
-	private String _label;
-	private String _name;
 	private long _objectDefinitionId1;
 	private long _objectDefinitionId2;
 	private long _objectFieldId1;
 	private long _objectFieldId2;
+	private String _dbTableName;
+	private String _label;
+	private String _name;
 	private String _type;
 
 }

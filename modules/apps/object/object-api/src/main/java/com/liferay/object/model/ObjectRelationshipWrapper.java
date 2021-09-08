@@ -51,13 +51,13 @@ public class ObjectRelationshipWrapper
 		attributes.put("userName", getUserName());
 		attributes.put("createDate", getCreateDate());
 		attributes.put("modifiedDate", getModifiedDate());
-		attributes.put("dbTableName", getDBTableName());
-		attributes.put("label", getLabel());
-		attributes.put("name", getName());
 		attributes.put("objectDefinitionId1", getObjectDefinitionId1());
 		attributes.put("objectDefinitionId2", getObjectDefinitionId2());
 		attributes.put("objectFieldId1", getObjectFieldId1());
 		attributes.put("objectFieldId2", getObjectFieldId2());
+		attributes.put("dbTableName", getDBTableName());
+		attributes.put("label", getLabel());
+		attributes.put("name", getName());
 		attributes.put("type", getType());
 
 		return attributes;
@@ -114,24 +114,6 @@ public class ObjectRelationshipWrapper
 			setModifiedDate(modifiedDate);
 		}
 
-		String dbTableName = (String)attributes.get("dbTableName");
-
-		if (dbTableName != null) {
-			setDBTableName(dbTableName);
-		}
-
-		String label = (String)attributes.get("label");
-
-		if (label != null) {
-			setLabel(label);
-		}
-
-		String name = (String)attributes.get("name");
-
-		if (name != null) {
-			setName(name);
-		}
-
 		Long objectDefinitionId1 = (Long)attributes.get("objectDefinitionId1");
 
 		if (objectDefinitionId1 != null) {
@@ -154,6 +136,24 @@ public class ObjectRelationshipWrapper
 
 		if (objectFieldId2 != null) {
 			setObjectFieldId2(objectFieldId2);
+		}
+
+		String dbTableName = (String)attributes.get("dbTableName");
+
+		if (dbTableName != null) {
+			setDBTableName(dbTableName);
+		}
+
+		String label = (String)attributes.get("label");
+
+		if (label != null) {
+			setLabel(label);
+		}
+
+		String name = (String)attributes.get("name");
+
+		if (name != null) {
+			setName(name);
 		}
 
 		String type = (String)attributes.get("type");

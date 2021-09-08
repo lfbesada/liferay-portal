@@ -209,6 +209,62 @@ public interface ObjectRelationshipModel
 	public void setModifiedDate(Date modifiedDate);
 
 	/**
+	 * Returns the object definition id1 of this object relationship.
+	 *
+	 * @return the object definition id1 of this object relationship
+	 */
+	public long getObjectDefinitionId1();
+
+	/**
+	 * Sets the object definition id1 of this object relationship.
+	 *
+	 * @param objectDefinitionId1 the object definition id1 of this object relationship
+	 */
+	public void setObjectDefinitionId1(long objectDefinitionId1);
+
+	/**
+	 * Returns the object definition id2 of this object relationship.
+	 *
+	 * @return the object definition id2 of this object relationship
+	 */
+	public long getObjectDefinitionId2();
+
+	/**
+	 * Sets the object definition id2 of this object relationship.
+	 *
+	 * @param objectDefinitionId2 the object definition id2 of this object relationship
+	 */
+	public void setObjectDefinitionId2(long objectDefinitionId2);
+
+	/**
+	 * Returns the object field id1 of this object relationship.
+	 *
+	 * @return the object field id1 of this object relationship
+	 */
+	public long getObjectFieldId1();
+
+	/**
+	 * Sets the object field id1 of this object relationship.
+	 *
+	 * @param objectFieldId1 the object field id1 of this object relationship
+	 */
+	public void setObjectFieldId1(long objectFieldId1);
+
+	/**
+	 * Returns the object field id2 of this object relationship.
+	 *
+	 * @return the object field id2 of this object relationship
+	 */
+	public long getObjectFieldId2();
+
+	/**
+	 * Sets the object field id2 of this object relationship.
+	 *
+	 * @param objectFieldId2 the object field id2 of this object relationship
+	 */
+	public void setObjectFieldId2(long objectFieldId2);
+
+	/**
 	 * Returns the db table name of this object relationship.
 	 *
 	 * @return the db table name of this object relationship
@@ -336,62 +392,6 @@ public interface ObjectRelationshipModel
 	 * @param name the name of this object relationship
 	 */
 	public void setName(String name);
-
-	/**
-	 * Returns the object definition id1 of this object relationship.
-	 *
-	 * @return the object definition id1 of this object relationship
-	 */
-	public long getObjectDefinitionId1();
-
-	/**
-	 * Sets the object definition id1 of this object relationship.
-	 *
-	 * @param objectDefinitionId1 the object definition id1 of this object relationship
-	 */
-	public void setObjectDefinitionId1(long objectDefinitionId1);
-
-	/**
-	 * Returns the object definition id2 of this object relationship.
-	 *
-	 * @return the object definition id2 of this object relationship
-	 */
-	public long getObjectDefinitionId2();
-
-	/**
-	 * Sets the object definition id2 of this object relationship.
-	 *
-	 * @param objectDefinitionId2 the object definition id2 of this object relationship
-	 */
-	public void setObjectDefinitionId2(long objectDefinitionId2);
-
-	/**
-	 * Returns the object field id1 of this object relationship.
-	 *
-	 * @return the object field id1 of this object relationship
-	 */
-	public long getObjectFieldId1();
-
-	/**
-	 * Sets the object field id1 of this object relationship.
-	 *
-	 * @param objectFieldId1 the object field id1 of this object relationship
-	 */
-	public void setObjectFieldId1(long objectFieldId1);
-
-	/**
-	 * Returns the object field id2 of this object relationship.
-	 *
-	 * @return the object field id2 of this object relationship
-	 */
-	public long getObjectFieldId2();
-
-	/**
-	 * Sets the object field id2 of this object relationship.
-	 *
-	 * @param objectFieldId2 the object field id2 of this object relationship
-	 */
-	public void setObjectFieldId2(long objectFieldId2);
 
 	/**
 	 * Returns the type of this object relationship.

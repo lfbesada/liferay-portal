@@ -89,10 +89,11 @@ public class ObjectRelationshipModelImpl
 		{"objectRelationshipId", Types.BIGINT}, {"companyId", Types.BIGINT},
 		{"userId", Types.BIGINT}, {"userName", Types.VARCHAR},
 		{"createDate", Types.TIMESTAMP}, {"modifiedDate", Types.TIMESTAMP},
-		{"dbTableName", Types.VARCHAR}, {"label", Types.VARCHAR},
-		{"name", Types.VARCHAR}, {"objectDefinitionId1", Types.BIGINT},
+		{"objectDefinitionId1", Types.BIGINT},
 		{"objectDefinitionId2", Types.BIGINT}, {"objectFieldId1", Types.BIGINT},
-		{"objectFieldId2", Types.BIGINT}, {"type_", Types.VARCHAR}
+		{"objectFieldId2", Types.BIGINT}, {"dbTableName", Types.VARCHAR},
+		{"label", Types.VARCHAR}, {"name", Types.VARCHAR},
+		{"type_", Types.VARCHAR}
 	};
 
 	public static final Map<String, Integer> TABLE_COLUMNS_MAP =
@@ -107,18 +108,18 @@ public class ObjectRelationshipModelImpl
 		TABLE_COLUMNS_MAP.put("userName", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("createDate", Types.TIMESTAMP);
 		TABLE_COLUMNS_MAP.put("modifiedDate", Types.TIMESTAMP);
-		TABLE_COLUMNS_MAP.put("dbTableName", Types.VARCHAR);
-		TABLE_COLUMNS_MAP.put("label", Types.VARCHAR);
-		TABLE_COLUMNS_MAP.put("name", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("objectDefinitionId1", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("objectDefinitionId2", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("objectFieldId1", Types.BIGINT);
 		TABLE_COLUMNS_MAP.put("objectFieldId2", Types.BIGINT);
+		TABLE_COLUMNS_MAP.put("dbTableName", Types.VARCHAR);
+		TABLE_COLUMNS_MAP.put("label", Types.VARCHAR);
+		TABLE_COLUMNS_MAP.put("name", Types.VARCHAR);
 		TABLE_COLUMNS_MAP.put("type_", Types.VARCHAR);
 	}
 
 	public static final String TABLE_SQL_CREATE =
-		"create table ObjectRelationship (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,objectRelationshipId LONG not null primary key,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,dbTableName VARCHAR(75) null,label STRING null,name VARCHAR(75) null,objectDefinitionId1 LONG,objectDefinitionId2 LONG,objectFieldId1 LONG,objectFieldId2 LONG,type_ VARCHAR(75) null)";
+		"create table ObjectRelationship (mvccVersion LONG default 0 not null,uuid_ VARCHAR(75) null,objectRelationshipId LONG not null primary key,companyId LONG,userId LONG,userName VARCHAR(75) null,createDate DATE null,modifiedDate DATE null,objectDefinitionId1 LONG,objectDefinitionId2 LONG,objectFieldId1 LONG,objectFieldId2 LONG,dbTableName VARCHAR(75) null,label STRING null,name VARCHAR(75) null,type_ VARCHAR(75) null)";
 
 	public static final String TABLE_SQL_DROP = "drop table ObjectRelationship";
 
@@ -144,26 +145,38 @@ public class ObjectRelationshipModelImpl
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long OBJECTDEFINITIONID1_COLUMN_BITMASK = 2L;
+	public static final long NAME_COLUMN_BITMASK = 2L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long OBJECTDEFINITIONID2_COLUMN_BITMASK = 4L;
+	public static final long OBJECTDEFINITIONID1_COLUMN_BITMASK = 4L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long UUID_COLUMN_BITMASK = 8L;
+	public static final long OBJECTDEFINITIONID2_COLUMN_BITMASK = 8L;
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
+	 */
+	@Deprecated
+	public static final long TYPE_COLUMN_BITMASK = 16L;
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link #getColumnBitmask(String)}
+	 */
+	@Deprecated
+	public static final long UUID_COLUMN_BITMASK = 32L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
 	 *		#getColumnBitmask(String)}
 	 */
 	@Deprecated
-	public static final long OBJECTRELATIONSHIPID_COLUMN_BITMASK = 16L;
+	public static final long OBJECTRELATIONSHIPID_COLUMN_BITMASK = 64L;
 
 	/**
 	 * @deprecated As of Athanasius (7.3.x), with no direct replacement
@@ -202,13 +215,13 @@ public class ObjectRelationshipModelImpl
 		model.setUserName(soapModel.getUserName());
 		model.setCreateDate(soapModel.getCreateDate());
 		model.setModifiedDate(soapModel.getModifiedDate());
-		model.setDBTableName(soapModel.getDBTableName());
-		model.setLabel(soapModel.getLabel());
-		model.setName(soapModel.getName());
 		model.setObjectDefinitionId1(soapModel.getObjectDefinitionId1());
 		model.setObjectDefinitionId2(soapModel.getObjectDefinitionId2());
 		model.setObjectFieldId1(soapModel.getObjectFieldId1());
 		model.setObjectFieldId2(soapModel.getObjectFieldId2());
+		model.setDBTableName(soapModel.getDBTableName());
+		model.setLabel(soapModel.getLabel());
+		model.setName(soapModel.getName());
 		model.setType(soapModel.getType());
 
 		return model;
@@ -414,22 +427,6 @@ public class ObjectRelationshipModelImpl
 			(BiConsumer<ObjectRelationship, Date>)
 				ObjectRelationship::setModifiedDate);
 		attributeGetterFunctions.put(
-			"dbTableName", ObjectRelationship::getDBTableName);
-		attributeSetterBiConsumers.put(
-			"dbTableName",
-			(BiConsumer<ObjectRelationship, String>)
-				ObjectRelationship::setDBTableName);
-		attributeGetterFunctions.put("label", ObjectRelationship::getLabel);
-		attributeSetterBiConsumers.put(
-			"label",
-			(BiConsumer<ObjectRelationship, String>)
-				ObjectRelationship::setLabel);
-		attributeGetterFunctions.put("name", ObjectRelationship::getName);
-		attributeSetterBiConsumers.put(
-			"name",
-			(BiConsumer<ObjectRelationship, String>)
-				ObjectRelationship::setName);
-		attributeGetterFunctions.put(
 			"objectDefinitionId1", ObjectRelationship::getObjectDefinitionId1);
 		attributeSetterBiConsumers.put(
 			"objectDefinitionId1",
@@ -453,6 +450,22 @@ public class ObjectRelationshipModelImpl
 			"objectFieldId2",
 			(BiConsumer<ObjectRelationship, Long>)
 				ObjectRelationship::setObjectFieldId2);
+		attributeGetterFunctions.put(
+			"dbTableName", ObjectRelationship::getDBTableName);
+		attributeSetterBiConsumers.put(
+			"dbTableName",
+			(BiConsumer<ObjectRelationship, String>)
+				ObjectRelationship::setDBTableName);
+		attributeGetterFunctions.put("label", ObjectRelationship::getLabel);
+		attributeSetterBiConsumers.put(
+			"label",
+			(BiConsumer<ObjectRelationship, String>)
+				ObjectRelationship::setLabel);
+		attributeGetterFunctions.put("name", ObjectRelationship::getName);
+		attributeSetterBiConsumers.put(
+			"name",
+			(BiConsumer<ObjectRelationship, String>)
+				ObjectRelationship::setName);
 		attributeGetterFunctions.put("type", ObjectRelationship::getType);
 		attributeSetterBiConsumers.put(
 			"type",
@@ -638,6 +651,86 @@ public class ObjectRelationshipModelImpl
 
 	@JSON
 	@Override
+	public long getObjectDefinitionId1() {
+		return _objectDefinitionId1;
+	}
+
+	@Override
+	public void setObjectDefinitionId1(long objectDefinitionId1) {
+		if (_columnOriginalValues == Collections.EMPTY_MAP) {
+			_setColumnOriginalValues();
+		}
+
+		_objectDefinitionId1 = objectDefinitionId1;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getColumnOriginalValue(String)}
+	 */
+	@Deprecated
+	public long getOriginalObjectDefinitionId1() {
+		return GetterUtil.getLong(
+			this.<Long>getColumnOriginalValue("objectDefinitionId1"));
+	}
+
+	@JSON
+	@Override
+	public long getObjectDefinitionId2() {
+		return _objectDefinitionId2;
+	}
+
+	@Override
+	public void setObjectDefinitionId2(long objectDefinitionId2) {
+		if (_columnOriginalValues == Collections.EMPTY_MAP) {
+			_setColumnOriginalValues();
+		}
+
+		_objectDefinitionId2 = objectDefinitionId2;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getColumnOriginalValue(String)}
+	 */
+	@Deprecated
+	public long getOriginalObjectDefinitionId2() {
+		return GetterUtil.getLong(
+			this.<Long>getColumnOriginalValue("objectDefinitionId2"));
+	}
+
+	@JSON
+	@Override
+	public long getObjectFieldId1() {
+		return _objectFieldId1;
+	}
+
+	@Override
+	public void setObjectFieldId1(long objectFieldId1) {
+		if (_columnOriginalValues == Collections.EMPTY_MAP) {
+			_setColumnOriginalValues();
+		}
+
+		_objectFieldId1 = objectFieldId1;
+	}
+
+	@JSON
+	@Override
+	public long getObjectFieldId2() {
+		return _objectFieldId2;
+	}
+
+	@Override
+	public void setObjectFieldId2(long objectFieldId2) {
+		if (_columnOriginalValues == Collections.EMPTY_MAP) {
+			_setColumnOriginalValues();
+		}
+
+		_objectFieldId2 = objectFieldId2;
+	}
+
+	@JSON
+	@Override
 	public String getDBTableName() {
 		if (_dbTableName == null) {
 			return "";
@@ -785,84 +878,13 @@ public class ObjectRelationshipModelImpl
 		_name = name;
 	}
 
-	@JSON
-	@Override
-	public long getObjectDefinitionId1() {
-		return _objectDefinitionId1;
-	}
-
-	@Override
-	public void setObjectDefinitionId1(long objectDefinitionId1) {
-		if (_columnOriginalValues == Collections.EMPTY_MAP) {
-			_setColumnOriginalValues();
-		}
-
-		_objectDefinitionId1 = objectDefinitionId1;
-	}
-
 	/**
 	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
 	 *             #getColumnOriginalValue(String)}
 	 */
 	@Deprecated
-	public long getOriginalObjectDefinitionId1() {
-		return GetterUtil.getLong(
-			this.<Long>getColumnOriginalValue("objectDefinitionId1"));
-	}
-
-	@JSON
-	@Override
-	public long getObjectDefinitionId2() {
-		return _objectDefinitionId2;
-	}
-
-	@Override
-	public void setObjectDefinitionId2(long objectDefinitionId2) {
-		if (_columnOriginalValues == Collections.EMPTY_MAP) {
-			_setColumnOriginalValues();
-		}
-
-		_objectDefinitionId2 = objectDefinitionId2;
-	}
-
-	/**
-	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
-	 *             #getColumnOriginalValue(String)}
-	 */
-	@Deprecated
-	public long getOriginalObjectDefinitionId2() {
-		return GetterUtil.getLong(
-			this.<Long>getColumnOriginalValue("objectDefinitionId2"));
-	}
-
-	@JSON
-	@Override
-	public long getObjectFieldId1() {
-		return _objectFieldId1;
-	}
-
-	@Override
-	public void setObjectFieldId1(long objectFieldId1) {
-		if (_columnOriginalValues == Collections.EMPTY_MAP) {
-			_setColumnOriginalValues();
-		}
-
-		_objectFieldId1 = objectFieldId1;
-	}
-
-	@JSON
-	@Override
-	public long getObjectFieldId2() {
-		return _objectFieldId2;
-	}
-
-	@Override
-	public void setObjectFieldId2(long objectFieldId2) {
-		if (_columnOriginalValues == Collections.EMPTY_MAP) {
-			_setColumnOriginalValues();
-		}
-
-		_objectFieldId2 = objectFieldId2;
+	public String getOriginalName() {
+		return getColumnOriginalValue("name");
 	}
 
 	@JSON
@@ -883,6 +905,15 @@ public class ObjectRelationshipModelImpl
 		}
 
 		_type = type;
+	}
+
+	/**
+	 * @deprecated As of Athanasius (7.3.x), replaced by {@link
+	 *             #getColumnOriginalValue(String)}
+	 */
+	@Deprecated
+	public String getOriginalType() {
+		return getColumnOriginalValue("type_");
 	}
 
 	@Override
@@ -1024,13 +1055,13 @@ public class ObjectRelationshipModelImpl
 		objectRelationshipImpl.setUserName(getUserName());
 		objectRelationshipImpl.setCreateDate(getCreateDate());
 		objectRelationshipImpl.setModifiedDate(getModifiedDate());
-		objectRelationshipImpl.setDBTableName(getDBTableName());
-		objectRelationshipImpl.setLabel(getLabel());
-		objectRelationshipImpl.setName(getName());
 		objectRelationshipImpl.setObjectDefinitionId1(getObjectDefinitionId1());
 		objectRelationshipImpl.setObjectDefinitionId2(getObjectDefinitionId2());
 		objectRelationshipImpl.setObjectFieldId1(getObjectFieldId1());
 		objectRelationshipImpl.setObjectFieldId2(getObjectFieldId2());
+		objectRelationshipImpl.setDBTableName(getDBTableName());
+		objectRelationshipImpl.setLabel(getLabel());
+		objectRelationshipImpl.setName(getName());
 		objectRelationshipImpl.setType(getType());
 
 		objectRelationshipImpl.resetOriginalValues();
@@ -1059,12 +1090,6 @@ public class ObjectRelationshipModelImpl
 			this.<Date>getColumnOriginalValue("createDate"));
 		objectRelationshipImpl.setModifiedDate(
 			this.<Date>getColumnOriginalValue("modifiedDate"));
-		objectRelationshipImpl.setDBTableName(
-			this.<String>getColumnOriginalValue("dbTableName"));
-		objectRelationshipImpl.setLabel(
-			this.<String>getColumnOriginalValue("label"));
-		objectRelationshipImpl.setName(
-			this.<String>getColumnOriginalValue("name"));
 		objectRelationshipImpl.setObjectDefinitionId1(
 			this.<Long>getColumnOriginalValue("objectDefinitionId1"));
 		objectRelationshipImpl.setObjectDefinitionId2(
@@ -1073,6 +1098,12 @@ public class ObjectRelationshipModelImpl
 			this.<Long>getColumnOriginalValue("objectFieldId1"));
 		objectRelationshipImpl.setObjectFieldId2(
 			this.<Long>getColumnOriginalValue("objectFieldId2"));
+		objectRelationshipImpl.setDBTableName(
+			this.<String>getColumnOriginalValue("dbTableName"));
+		objectRelationshipImpl.setLabel(
+			this.<String>getColumnOriginalValue("label"));
+		objectRelationshipImpl.setName(
+			this.<String>getColumnOriginalValue("name"));
 		objectRelationshipImpl.setType(
 			this.<String>getColumnOriginalValue("type_"));
 
@@ -1196,6 +1227,16 @@ public class ObjectRelationshipModelImpl
 			objectRelationshipCacheModel.modifiedDate = Long.MIN_VALUE;
 		}
 
+		objectRelationshipCacheModel.objectDefinitionId1 =
+			getObjectDefinitionId1();
+
+		objectRelationshipCacheModel.objectDefinitionId2 =
+			getObjectDefinitionId2();
+
+		objectRelationshipCacheModel.objectFieldId1 = getObjectFieldId1();
+
+		objectRelationshipCacheModel.objectFieldId2 = getObjectFieldId2();
+
 		objectRelationshipCacheModel.dbTableName = getDBTableName();
 
 		String dbTableName = objectRelationshipCacheModel.dbTableName;
@@ -1219,16 +1260,6 @@ public class ObjectRelationshipModelImpl
 		if ((name != null) && (name.length() == 0)) {
 			objectRelationshipCacheModel.name = null;
 		}
-
-		objectRelationshipCacheModel.objectDefinitionId1 =
-			getObjectDefinitionId1();
-
-		objectRelationshipCacheModel.objectDefinitionId2 =
-			getObjectDefinitionId2();
-
-		objectRelationshipCacheModel.objectFieldId1 = getObjectFieldId1();
-
-		objectRelationshipCacheModel.objectFieldId2 = getObjectFieldId2();
 
 		objectRelationshipCacheModel.type = getType();
 
@@ -1338,14 +1369,14 @@ public class ObjectRelationshipModelImpl
 	private Date _createDate;
 	private Date _modifiedDate;
 	private boolean _setModifiedDate;
-	private String _dbTableName;
-	private String _label;
-	private String _labelCurrentLanguageId;
-	private String _name;
 	private long _objectDefinitionId1;
 	private long _objectDefinitionId2;
 	private long _objectFieldId1;
 	private long _objectFieldId2;
+	private String _dbTableName;
+	private String _label;
+	private String _labelCurrentLanguageId;
+	private String _name;
 	private String _type;
 
 	public <T> T getColumnValue(String columnName) {
@@ -1386,13 +1417,13 @@ public class ObjectRelationshipModelImpl
 		_columnOriginalValues.put("userName", _userName);
 		_columnOriginalValues.put("createDate", _createDate);
 		_columnOriginalValues.put("modifiedDate", _modifiedDate);
-		_columnOriginalValues.put("dbTableName", _dbTableName);
-		_columnOriginalValues.put("label", _label);
-		_columnOriginalValues.put("name", _name);
 		_columnOriginalValues.put("objectDefinitionId1", _objectDefinitionId1);
 		_columnOriginalValues.put("objectDefinitionId2", _objectDefinitionId2);
 		_columnOriginalValues.put("objectFieldId1", _objectFieldId1);
 		_columnOriginalValues.put("objectFieldId2", _objectFieldId2);
+		_columnOriginalValues.put("dbTableName", _dbTableName);
+		_columnOriginalValues.put("label", _label);
+		_columnOriginalValues.put("name", _name);
 		_columnOriginalValues.put("type_", _type);
 	}
 
@@ -1434,19 +1465,19 @@ public class ObjectRelationshipModelImpl
 
 		columnBitmasks.put("modifiedDate", 128L);
 
-		columnBitmasks.put("dbTableName", 256L);
+		columnBitmasks.put("objectDefinitionId1", 256L);
 
-		columnBitmasks.put("label", 512L);
+		columnBitmasks.put("objectDefinitionId2", 512L);
 
-		columnBitmasks.put("name", 1024L);
+		columnBitmasks.put("objectFieldId1", 1024L);
 
-		columnBitmasks.put("objectDefinitionId1", 2048L);
+		columnBitmasks.put("objectFieldId2", 2048L);
 
-		columnBitmasks.put("objectDefinitionId2", 4096L);
+		columnBitmasks.put("dbTableName", 4096L);
 
-		columnBitmasks.put("objectFieldId1", 8192L);
+		columnBitmasks.put("label", 8192L);
 
-		columnBitmasks.put("objectFieldId2", 16384L);
+		columnBitmasks.put("name", 16384L);
 
 		columnBitmasks.put("type_", 32768L);
 
