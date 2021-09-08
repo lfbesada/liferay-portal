@@ -117,4 +117,26 @@ definition {
 		Click(locator1 = "ACSidebar#PROPERTY_NAME");
 	}
 
+	@summary = "Delete a member inside a property"
+	macro deleteUserFromProperty {
+		var userEmail = "${emailAddress}";
+
+		Click(locator1 = "ACSidebar#PROPERTY_SEARCH");
+
+			Type(
+				locator1 = "ACSidebar#PROPERTY_SEARCH",
+				value1 = "${userEmail}");
+
+			KeyPress(
+				locator1 = "ACSidebar#PROPERTY_SEARCH",
+				value1 = "\ENTER");
+
+			Click(
+				key_itemName = "${userEmail}",
+				locator1 = "AppBuilder#VERTICAL_ELLIPSIS_BUTTON");
+
+			MenuItem.clickNoError(menuItem = "Delete");
+
+			Click(locator1 = "ACSettings#DELETE_CONFIRMATION_BUTTON");
+	}
 }
