@@ -533,7 +533,6 @@ public class CommercePriceModifierLocalServiceImpl
 			ServiceContext serviceContext = new ServiceContext();
 
 			serviceContext.setCommand(Constants.UPDATE);
-
 			serviceContext.setScopeGroupId(commercePriceModifier.getGroupId());
 
 			commercePriceModifierLocalService.updateStatus(
@@ -569,7 +568,6 @@ public class CommercePriceModifierLocalServiceImpl
 				ServiceContext serviceContext = new ServiceContext();
 
 				serviceContext.setCommand(Constants.UPDATE);
-
 				serviceContext.setScopeGroupId(
 					commercePriceModifier.getGroupId());
 
