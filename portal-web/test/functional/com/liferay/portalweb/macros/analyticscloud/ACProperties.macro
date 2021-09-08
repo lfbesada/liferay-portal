@@ -139,4 +139,13 @@ definition {
 
 			Click(locator1 = "ACSettings#DELETE_CONFIRMATION_BUTTON");
 	}
+
+	@summary = "Asserts property not present"
+	macro assertPropertyNotPresent {
+		ACUtils.searchBar(searchItem = "${propertyName}");
+
+		AssertElementNotPresent(
+			locator1 = "ACSettings#PROPERTIES_ASSET_TITLE_LIST",
+			value1 = "${propertyName}");
+	}
 }
