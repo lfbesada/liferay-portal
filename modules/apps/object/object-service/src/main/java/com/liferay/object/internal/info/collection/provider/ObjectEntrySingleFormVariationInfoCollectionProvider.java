@@ -229,13 +229,13 @@ public class ObjectEntrySingleFormVariationInfoCollectionProvider
 	private List<SelectInfoFieldType.Option> _getOptions(
 		ObjectField objectField) {
 
+		List<SelectInfoFieldType.Option> options = new ArrayList<>();
+
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
 		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
 			serviceContext.getLocale(), getClass());
-
-		List<SelectInfoFieldType.Option> options = new ArrayList<>();
 
 		options.add(
 			new SelectInfoFieldType.Option(
