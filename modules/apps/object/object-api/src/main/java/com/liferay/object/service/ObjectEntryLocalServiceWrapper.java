@@ -425,6 +425,17 @@ public class ObjectEntryLocalServiceWrapper
 			uuid, groupId);
 	}
 
+	@Override
+	public java.util.List<com.liferay.object.model.ObjectEntry>
+			getOneToManyRelatedObjectEntries(
+				long groupId, long objectRelationshipId, long primaryKey,
+				int start, int end)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _objectEntryLocalService.getOneToManyRelatedObjectEntries(
+			groupId, objectRelationshipId, primaryKey, start, end);
+	}
+
 	/**
 	 * Returns the OSGi service identifier.
 	 *
