@@ -669,18 +669,9 @@ definition {
 
 	}
 
-	@description = "Automation ID: LRAC-9079 | Test Summary: An user not logged in accessing the AC URL by passing workspace parameter"
-	@ignore = "true"
+	@description = "Automation ID: LRAC-9082 | Test Summary: A user lost access to a given property (because the admin removed the user's access of the system)"
 	@priority = "3"
-	test UserNotLoggedAccessACURLPassingWorkspaceParameter {
-
-		// TODO LRAC-9079 UserNotLoggedAccessACURLPassingWorkspaceParameter
-
-	}
-
-	@description = "Automation ID: LRAC-9081 | Test Summary: A user (independent of user role) should only see the properties they are invited to by the AC admin or the properties which the user is owner"
-	@priority = "3"
-	test UserOnlySeeInvitedPropertiesOrOwnedProperties {
+	test UserLostAccessToProperty {
 		task ("Go to settings then go to properties") {
 			ACNavigation.goToSettings();
 
@@ -844,6 +835,15 @@ definition {
 		task ("View the test@liferay.com is shown in page 2") {
 			ACSettings.assertUsersListByEmail(userEmail = "test@liferay.com");
 		}
+	}
+
+	@description = "Automation ID: LRAC-9079 | Test Summary: An user not logged in accessing the AC URL by passing workspace parameter"
+	@ignore = "true"
+	@priority = "3"
+	test UserNotLoggedAccessACURLPassingWorkspaceParameter {
+
+		// TODO LRAC-9079 UserNotLoggedAccessACURLPassingWorkspaceParameter
+
 	}
 
 	@description = "Feature ID: Legacy | Automation ID: LRAC-8142 | Test Summary: Users list can be searched"
