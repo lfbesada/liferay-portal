@@ -199,11 +199,13 @@ public class UpgradeReport {
 			tableName -> {
 				int initialCount = _initialTableCounts.getOrDefault(
 					tableName, -1);
-				int finalCount = finalTableCounts.getOrDefault(tableName, -1);
 
 				String initialRows =
 					(initialCount >= 0) ? String.valueOf(initialCount) :
 						StringPool.DASH;
+
+				int finalCount = finalTableCounts.getOrDefault(tableName, -1);
+
 				String finalRows =
 					(finalCount >= 0) ? String.valueOf(finalCount) :
 						StringPool.DASH;
