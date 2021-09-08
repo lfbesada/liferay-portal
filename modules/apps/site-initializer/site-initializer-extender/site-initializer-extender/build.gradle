@@ -9,7 +9,6 @@ dependencies {
 	compileOnly project(":apps:asset:asset-list-api")
 	compileOnly project(":apps:document-library:document-library-api")
 	compileOnly project(":apps:dynamic-data-mapping:dynamic-data-mapping-api")
-	compileOnly project(":apps:external-reference:external-reference-api")
 	compileOnly project(":apps:fragment:fragment-api")
 	compileOnly project(":apps:headless:headless-admin-taxonomy:headless-admin-taxonomy-api")
 	compileOnly project(":apps:headless:headless-delivery:headless-delivery-api")
@@ -18,6 +17,5 @@ dependencies {
 	compileOnly project(":apps:portal-vulcan:portal-vulcan-api")
 	compileOnly project(":apps:site:site-api")
 	compileOnly project(":apps:style-book:style-book-api")
-	compileOnly project(":core:petra:petra-function")
 	compileOnly project(":core:petra:petra-string")
 }
