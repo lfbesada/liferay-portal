@@ -74,7 +74,6 @@ import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.vulcan.multipart.BinaryFile;
 import com.liferay.portal.vulcan.multipart.MultipartBody;
 import com.liferay.portal.vulcan.pagination.Page;
-import com.liferay.portal.vulcan.permission.Permission;
 import com.liferay.site.exception.InitializationException;
 import com.liferay.site.initializer.SiteInitializer;
 import com.liferay.style.book.zip.processor.StyleBookEntryZipProcessor;
@@ -717,21 +716,17 @@ public class BundleSiteInitializer implements SiteInitializer {
 		}
 
 		for (String resourcePath : resourcePaths) {
-			if (resourcePath.endsWith("/") ||
-				resourcePath.contains("permissions")) {
-
+			if (resourcePath.endsWith("/")) {
 				continue;
 			}
 
-			String taxonomyCategoryString = _read(resourcePath);
+			String json = _read(resourcePath);
 
-			TaxonomyCategory taxonomyCategory = TaxonomyCategory.toDTO(
-				taxonomyCategoryString);
+			TaxonomyCategory taxonomyCategory = TaxonomyCategory.toDTO(json);
 
 			if (taxonomyCategory == null) {
 				_log.error(
-					"Unable to transform taxonomy category from JSON: " +
-						taxonomyCategoryString);
+					"Unable to transform taxonomy category from JSON: " + json);
 
 				continue;
 			}
@@ -745,13 +740,6 @@ public class BundleSiteInitializer implements SiteInitializer {
 					parentCategoryId, serviceContext, taxonomyCategory);
 			}
 
-			String permissionsResourcePath = StringUtil.replace(
-				resourcePath, ".json", "-permissions.json");
-
-			_addTaxonomyCategoryPermissions(
-				taxonomyCategory.getId(), permissionsResourcePath,
-				serviceContext);
-
 			String categoriesResourcePath = StringUtil.replace(
 				resourcePath, ".json", "/");
 
@@ -761,39 +749,6 @@ public class BundleSiteInitializer implements SiteInitializer {
 					serviceContext, vocabularyId);
 			}
 		}
-	}
-
-	private void _addTaxonomyCategoryPermissions(
-			String parentCategoryId, String parentResourcePath,
-			ServiceContext serviceContext)
-		throws Exception {
-
-		TaxonomyCategoryResource.Builder taxonomyCategoryResourceBuilder =
-			_taxonomyCategoryResourceFactory.create();
-
-		TaxonomyCategoryResource taxonomyCategoryResource =
-			taxonomyCategoryResourceBuilder.user(
-				serviceContext.fetchUser()
-			).build();
-
-		String taxonomyCategoryPermissionsString = _read(parentResourcePath);
-
-		JSONArray jsonArray = JSONFactoryUtil.createJSONArray(
-			taxonomyCategoryPermissionsString);
-
-		Permission[] permissions = JSONUtil.toArray(
-			jsonArray,
-			jsonObject -> new Permission() {
-				{
-					actionIds = JSONUtil.toStringArray(
-						jsonObject.getJSONArray("actionIds"));
-					roleName = jsonObject.getString("roleName");
-				}
-			},
-			_log, Permission.class);
-
-		taxonomyCategoryResource.putTaxonomyCategoryPermission(
-			parentCategoryId, permissions);
 	}
 
 	private TaxonomyCategory _addTaxonomyCategoryTaxonomyCategory(
@@ -866,15 +821,15 @@ public class BundleSiteInitializer implements SiteInitializer {
 				continue;
 			}
 
-			String taxonomyVocabularyString = _read(resourcePath);
+			String json = _read(resourcePath);
 
 			TaxonomyVocabulary taxonomyVocabulary = TaxonomyVocabulary.toDTO(
-				taxonomyVocabularyString);
+				json);
 
 			if (taxonomyVocabulary == null) {
 				_log.error(
 					"Unable to transform taxonomy vocabulary from JSON: " +
-						taxonomyVocabularyString);
+						json);
 
 				continue;
 			}
