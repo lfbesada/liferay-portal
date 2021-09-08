@@ -11,5 +11,6 @@
 			"key": "Segment",
 			"value": "Habitational"
 		}
-	]
+	],
+	"viewableBy": "Anyone"
 }

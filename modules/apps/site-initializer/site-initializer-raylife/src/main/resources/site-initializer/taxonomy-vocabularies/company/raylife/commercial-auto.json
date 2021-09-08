@@ -1,4 +1,5 @@
 {
 	"externalReferenceCode": "RAYCAT0020",
-	"name": "Commercial Auto"
+	"name": "Commercial Auto",
+	"viewableBy": "Anyone"
 }
