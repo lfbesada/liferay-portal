@@ -553,10 +553,8 @@ public class ObjectDefinitionLocalServiceImpl
 		_validateScope(scope);
 		_validateVersion(system, version);
 
-		long objectDefinitionId = counterLocalService.increment();
-
 		ObjectDefinition objectDefinition = objectDefinitionPersistence.create(
-			objectDefinitionId);
+			counterLocalService.increment());
 
 		objectDefinition.setCompanyId(user.getCompanyId());
 		objectDefinition.setUserId(user.getUserId());
@@ -586,7 +584,7 @@ public class ObjectDefinitionLocalServiceImpl
 			for (ObjectField objectField : objectFields) {
 				if (system) {
 					_objectFieldLocalService.addSystemObjectField(
-						userId, objectDefinitionId,
+						userId, objectDefinition.getObjectDefinitionId(),
 						objectField.getDBColumnName(), objectField.getIndexed(),
 						objectField.getIndexedAsKeyword(),
 						objectField.getIndexedLanguageId(),
@@ -596,7 +594,8 @@ public class ObjectDefinitionLocalServiceImpl
 				else {
 					_objectFieldLocalService.addCustomObjectField(
 						userId, objectField.getListTypeDefinitionId(),
-						objectDefinitionId, objectField.getIndexed(),
+						objectDefinition.getObjectDefinitionId(),
+						objectField.getIndexed(),
 						objectField.getIndexedAsKeyword(),
 						objectField.getIndexedLanguageId(),
 						objectField.getLabelMap(), objectField.getName(),

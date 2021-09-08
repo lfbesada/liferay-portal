@@ -29,8 +29,6 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -84,7 +82,7 @@ public class ObjectFieldLocalServiceImpl
 
 		if (objectDefinition.isApproved()) {
 			runSQL(
-				_getAlterTableAddColumnSQL(
+				DynamicObjectDefinitionTable.getAlterTableAddColumnSQL(
 					dbTableName, objectField.getDBColumnName(), type));
 		}
 
@@ -117,7 +115,7 @@ public class ObjectFieldLocalServiceImpl
 
 		if (objectDefinition.isApproved()) {
 			runSQL(
-				_getAlterTableAddColumnSQL(
+				DynamicObjectDefinitionTable.getAlterTableAddColumnSQL(
 					dbTableName, objectField.getDBColumnName(), "Long"));
 		}
 
@@ -145,6 +143,11 @@ public class ObjectFieldLocalServiceImpl
 			userId, 0, objectDefinitionId, dbColumnName,
 			objectDefinition.getDBTableName(), indexed, indexedAsKeyword,
 			indexedLanguageId, labelMap, name, false, required, type);
+	}
+
+	@Override
+	public ObjectField fetchObjectField(long objectDefinitionId, String name) {
+		return objectFieldPersistence.fetchByODI_N(objectDefinitionId, name);
 	}
 
 	@Override
@@ -256,25 +259,6 @@ public class ObjectFieldLocalServiceImpl
 		return objectFieldPersistence.update(objectField);
 	}
 
-	/**
-	 * @see com.liferay.portal.kernel.upgrade.UpgradeProcess#AlterTableAddColumn
-	 */
-	private String _getAlterTableAddColumnSQL(
-		String tableName, String columnName, String type) {
-
-		String sql = StringBundler.concat(
-			"alter table ", tableName, " add ", columnName, StringPool.SPACE,
-			DynamicObjectDefinitionTable.getDataType(type),
-			DynamicObjectDefinitionTable.getSQLColumnNull(type),
-			StringPool.SEMICOLON);
-
-		if (_log.isDebugEnabled()) {
-			_log.debug("SQL: " + sql);
-		}
-
-		return sql;
-	}
-
 	private void _validateIndexed(
 			boolean indexed, boolean indexedAsKeyword, String indexedLanguageId,
 			String type)
@@ -348,9 +332,6 @@ public class ObjectFieldLocalServiceImpl
 			throw new DuplicateObjectFieldException("Duplicate name " + name);
 		}
 	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		ObjectFieldLocalServiceImpl.class);
 
 	@Reference
 	private ObjectDefinitionPersistence _objectDefinitionPersistence;

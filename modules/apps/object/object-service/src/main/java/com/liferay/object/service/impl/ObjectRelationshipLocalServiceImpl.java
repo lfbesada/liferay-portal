@@ -15,19 +15,22 @@
 package com.liferay.object.service.impl;
 
 import com.liferay.object.constants.ObjectRelationshipConstants;
+import com.liferay.object.exception.DuplicateObjectRelationshipException;
 import com.liferay.object.exception.ObjectRelationshipNameException;
 import com.liferay.object.exception.ObjectRelationshipTypeException;
+import com.liferay.object.internal.petra.sql.dsl.DynamicObjectDefinitionTable;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectRelationship;
-import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.object.service.base.ObjectRelationshipLocalServiceBaseImpl;
 import com.liferay.object.service.persistence.ObjectDefinitionPersistence;
+import com.liferay.object.service.persistence.ObjectFieldPersistence;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -52,18 +55,15 @@ public class ObjectRelationshipLocalServiceImpl
 
 	@Override
 	public ObjectRelationship addObjectRelationship(
-			long userId, Map<Locale, String> labelMap, String name,
-			long objectDefinitionId1, long objectDefinitionId2, String type)
+			long userId, long objectDefinitionId1, long objectDefinitionId2,
+			Map<Locale, String> labelMap, String name, String type)
 		throws PortalException {
 
-		name = StringUtil.trim(StringUtil.toLowerCase(name));
-
-		_validate(name, objectDefinitionId1, objectDefinitionId2, type);
-
-		long objectRelationshipId = counterLocalService.increment();
+		_validate(objectDefinitionId1, objectDefinitionId2, name, type);
 
 		ObjectRelationship objectRelationship =
-			objectRelationshipPersistence.create(objectRelationshipId);
+			objectRelationshipPersistence.create(
+				counterLocalService.increment());
 
 		User user = _userLocalService.getUser(userId);
 
@@ -71,10 +71,10 @@ public class ObjectRelationshipLocalServiceImpl
 		objectRelationship.setUserId(user.getUserId());
 		objectRelationship.setUserName(user.getFullName());
 
-		objectRelationship.setLabelMap(labelMap);
-		objectRelationship.setName(name);
 		objectRelationship.setObjectDefinitionId1(objectDefinitionId1);
 		objectRelationship.setObjectDefinitionId2(objectDefinitionId2);
+		objectRelationship.setLabelMap(labelMap);
+		objectRelationship.setName(name);
 		objectRelationship.setType(type);
 
 		objectRelationship = objectRelationshipPersistence.update(
@@ -85,7 +85,7 @@ public class ObjectRelationshipLocalServiceImpl
 				type, ObjectRelationshipConstants.TYPE_MANY_TO_ONE)) {
 
 			ObjectField objectField = _addObjectField(
-				userId, name, objectDefinitionId1);
+				user, name, objectDefinitionId1);
 
 			objectRelationship.setObjectFieldId1(
 				objectField.getObjectFieldId());
@@ -96,7 +96,7 @@ public class ObjectRelationshipLocalServiceImpl
 				type, ObjectRelationshipConstants.TYPE_ONE_TO_MANY)) {
 
 			ObjectField objectField = _addObjectField(
-				userId, name, objectDefinitionId2);
+				user, name, objectDefinitionId2);
 
 			objectRelationship.setObjectFieldId2(
 				objectField.getObjectFieldId());
@@ -157,37 +157,113 @@ public class ObjectRelationshipLocalServiceImpl
 	}
 
 	private ObjectField _addObjectField(
-			long userId, String name, long objectDefinitionId)
+			User user, String name, long objectDefinitionId)
 		throws PortalException {
+
+		ObjectField objectField = _objectFieldPersistence.create(
+			counterLocalService.increment());
+
+		objectField.setCompanyId(user.getCompanyId());
+		objectField.setUserId(user.getUserId());
+		objectField.setUserName(user.getFullName());
+		objectField.setListTypeDefinitionId(0);
+		objectField.setObjectDefinitionId(objectDefinitionId);
 
 		ObjectDefinition objectDefinition =
 			_objectDefinitionPersistence.findByPrimaryKey(objectDefinitionId);
 
-		return _objectFieldLocalService.addRelationshipObjectField(
-			userId, objectDefinitionId, objectDefinition.getLabelMap(), name);
+		String dbColumnName = StringBundler.concat(
+			"r_", name, "_", objectDefinition.getPKObjectFieldName());
+
+		objectField.setDBColumnName(dbColumnName);
+
+		String dbTableName = objectDefinition.getDBTableName();
+
+		if (objectDefinition.isApproved()) {
+			dbTableName = objectDefinition.getExtensionDBTableName();
+		}
+
+		objectField.setDBTableName(dbTableName);
+
+		objectField.setIndexed(false);
+		objectField.setIndexedAsKeyword(false);
+		objectField.setIndexedLanguageId(null);
+		objectField.setLabelMap(
+			objectDefinition.getLabelMap(), LocaleUtil.getSiteDefault());
+		objectField.setName(dbColumnName);
+		objectField.setRelationship(true);
+		objectField.setRequired(false);
+		objectField.setType("Long");
+
+		objectField = _objectFieldPersistence.update(objectField);
+
+		if (objectDefinition.isApproved()) {
+			runSQL(
+				DynamicObjectDefinitionTable.getAlterTableAddColumnSQL(
+					dbTableName, objectField.getDBColumnName(), "Long"));
+		}
+
+		return objectField;
 	}
 
 	private void _validate(
-			String name, long objectDefinitionId1, long objectDefinitionId2,
+			long objectDefinitionId1, long objectDefinitionId2, String name,
 			String type)
 		throws PortalException {
 
-		// TODO
-
 		if (Validator.isNull(name)) {
-			throw new ObjectRelationshipNameException();
+			throw new ObjectRelationshipNameException("Name is null");
 		}
 
-		if (Validator.isNull(type)) {
-			throw new ObjectRelationshipTypeException();
+		char[] nameCharArray = name.toCharArray();
+
+		for (char c : nameCharArray) {
+			if (!Validator.isChar(c) && !Validator.isDigit(c)) {
+				throw new ObjectRelationshipNameException(
+					"Name must only contain letters and digits");
+			}
 		}
 
-		if (objectDefinitionId1 == objectDefinitionId2) {
+		if (!Character.isLowerCase(nameCharArray[0])) {
+			throw new ObjectRelationshipNameException(
+				"The first character of a name must be a lower case letter");
+		}
 
-			// Also check that two object definitions never have more than one
-			// type of relationship
+		if (nameCharArray.length > 41) {
+			throw new ObjectRelationshipNameException(
+				"Names must be less than 41 characters");
+		}
 
-			throw new PortalException();
+		ObjectRelationship objectRelationship =
+			objectRelationshipPersistence.fetchByODI1_N(
+				objectDefinitionId1, name);
+
+		if (objectRelationship != null) {
+			throw new DuplicateObjectRelationshipException(
+				"Duplicate name " + name);
+		}
+
+		if (!Objects.equals(
+				type, ObjectRelationshipConstants.TYPE_MANY_TO_MANY) &&
+			!Objects.equals(
+				type, ObjectRelationshipConstants.TYPE_MANY_TO_ONE) &&
+			!Objects.equals(
+				type, ObjectRelationshipConstants.TYPE_ONE_TO_MANY) &&
+			!Objects.equals(
+				type, ObjectRelationshipConstants.TYPE_ONE_TO_ONE)) {
+
+			throw new ObjectRelationshipTypeException("Invalid type " + type);
+		}
+
+		if (Objects.equals(type, ObjectRelationshipConstants.TYPE_ONE_TO_ONE)) {
+			int count = objectRelationshipPersistence.countByODI1_ODI2_N_T(
+				objectDefinitionId2, objectDefinitionId1, name,
+				ObjectRelationshipConstants.TYPE_ONE_TO_ONE);
+
+			if (count > 0) {
+				throw new ObjectRelationshipTypeException(
+					"Inverse one to one type already exists");
+			}
 		}
 	}
 
@@ -195,7 +271,7 @@ public class ObjectRelationshipLocalServiceImpl
 	private ObjectDefinitionPersistence _objectDefinitionPersistence;
 
 	@Reference
-	private ObjectFieldLocalService _objectFieldLocalService;
+	private ObjectFieldPersistence _objectFieldPersistence;
 
 	@Reference
 	private UserLocalService _userLocalService;

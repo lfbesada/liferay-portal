@@ -9,7 +9,6 @@
 		<Logger level="INFO" name="com.liferay.object.internal.search.spi.model.query.contributor.ObjectEntryModelPreFilterContributor" />
 		<Logger level="INFO" name="com.liferay.object.model.impl.ObjectEntryImpl" />
 		<Logger level="INFO" name="com.liferay.object.service.impl.ObjectDefinitionLocalServiceImpl" />
-		<Logger level="INFO" name="com.liferay.object.service.impl.ObjectFieldLocalServiceImpl" />
 		<Logger level="INFO" name="com.liferay.object.service.impl.ObjectEntryLocalServiceImpl" />
 	</Loggers>
 </Configuration>

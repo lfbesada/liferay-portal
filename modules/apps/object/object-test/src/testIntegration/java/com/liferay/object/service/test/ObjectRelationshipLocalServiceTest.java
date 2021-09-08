@@ -19,19 +19,21 @@ import com.liferay.object.constants.ObjectDefinitionConstants;
 import com.liferay.object.constants.ObjectRelationshipConstants;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectField;
-import com.liferay.object.service.ObjectDefinitionLocalServiceUtil;
-import com.liferay.object.service.ObjectRelationshipLocalServiceUtil;
+import com.liferay.object.service.ObjectDefinitionLocalService;
+import com.liferay.object.service.ObjectFieldLocalService;
+import com.liferay.object.service.ObjectRelationshipLocalService;
 import com.liferay.object.util.LocalizedMapUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.Collections;
 
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
-import org.junit.Ignore;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -50,7 +52,7 @@ public class ObjectRelationshipLocalServiceTest {
 	@Before
 	public void setUp() throws Exception {
 		_objectDefinition1 =
-			ObjectDefinitionLocalServiceUtil.addCustomObjectDefinition(
+			_objectDefinitionLocalService.addCustomObjectDefinition(
 				TestPropsValues.getUserId(),
 				LocalizedMapUtil.getLocalizedMap("Able"), "Able", null, null,
 				LocalizedMapUtil.getLocalizedMap("Ables"),
@@ -58,12 +60,12 @@ public class ObjectRelationshipLocalServiceTest {
 				Collections.<ObjectField>emptyList());
 
 		_objectDefinition1 =
-			ObjectDefinitionLocalServiceUtil.publishCustomObjectDefinition(
+			_objectDefinitionLocalService.publishCustomObjectDefinition(
 				TestPropsValues.getUserId(),
 				_objectDefinition1.getObjectDefinitionId());
 
 		_objectDefinition2 =
-			ObjectDefinitionLocalServiceUtil.addCustomObjectDefinition(
+			_objectDefinitionLocalService.addCustomObjectDefinition(
 				TestPropsValues.getUserId(),
 				LocalizedMapUtil.getLocalizedMap("Baker"), "Baker", null, null,
 				LocalizedMapUtil.getLocalizedMap("Bakers"),
@@ -71,20 +73,28 @@ public class ObjectRelationshipLocalServiceTest {
 				Collections.<ObjectField>emptyList());
 
 		_objectDefinition2 =
-			ObjectDefinitionLocalServiceUtil.publishCustomObjectDefinition(
+			_objectDefinitionLocalService.publishCustomObjectDefinition(
 				TestPropsValues.getUserId(),
 				_objectDefinition2.getObjectDefinitionId());
 	}
 
-	@Ignore
 	@Test
 	public void testAddObjectRelationship() throws Exception {
-		ObjectRelationshipLocalServiceUtil.addObjectRelationship(
+		_objectRelationshipLocalService.addObjectRelationship(
 			TestPropsValues.getUserId(),
-			LocalizedMapUtil.getLocalizedMap("xyz"), "xyz",
 			_objectDefinition1.getObjectDefinitionId(),
 			_objectDefinition2.getObjectDefinitionId(),
+			LocalizedMapUtil.getLocalizedMap("Marriage"), "marriage",
 			ObjectRelationshipConstants.TYPE_ONE_TO_ONE);
+
+		Assert.assertNotNull(
+			_objectFieldLocalService.fetchObjectField(
+				_objectDefinition1.getObjectDefinitionId(),
+				"r_marriage_" + _objectDefinition1.getPKObjectFieldName()));
+		Assert.assertNotNull(
+			_objectFieldLocalService.fetchObjectField(
+				_objectDefinition2.getObjectDefinitionId(),
+				"r_marriage_" + _objectDefinition2.getPKObjectFieldName()));
 	}
 
 	@DeleteAfterTestRun
@@ -92,5 +102,14 @@ public class ObjectRelationshipLocalServiceTest {
 
 	@DeleteAfterTestRun
 	private ObjectDefinition _objectDefinition2;
+
+	@Inject
+	private ObjectDefinitionLocalService _objectDefinitionLocalService;
+
+	@Inject
+	private ObjectFieldLocalService _objectFieldLocalService;
+
+	@Inject
+	private ObjectRelationshipLocalService _objectRelationshipLocalService;
 
 }
