@@ -33,6 +33,24 @@ definition {
 		ACUtils.tearDownAC();
 	}
 
+	@description = "Feature ID: Legacy | Automation ID: LRAC-9220 | Test Summary: Create a segment with behavior of commenting on a blog"
+	@ignore = "true"
+	@priority = "4"
+	test CanCreateWebBehaviorSegmentCommentingBlog {
+
+		// TODO LRAC-9220 CanCreateWebBehaviorSegmentCommentingBlog pending implementation
+
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-9221 | Test Summary: Create a Web Behavior criteria at least/at most times"
+	@ignore = "true"
+	@priority = "4"
+	test CanCreateWebBehaviorSegmentCriteriaLeastMostTimes {
+
+		// TODO LRAC-9221 CanCreateWebBehaviorSegmentCriteriaLeastMostTimes pending implementation
+
+	}
+
 	@description = "Create a segment with behavior of downloading a document"
 	@priority = "5"
 	test CanCreateWebBehaviorSegmentDownloadingDocument {
@@ -117,6 +135,15 @@ definition {
 		AssertElementPresent(
 			key_userName = "ac ac",
 			locator1 = "ACSegments#SEGMENT_MEMBERS");
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-9222 | Test Summary: Create a Web Behavior since X days"
+	@ignore = "true"
+	@priority = "4"
+	test CanCreateWebBehaviorSegmentSinceXdays {
+
+		// TODO LRAC-9222 CanCreateWebBehaviorSegmentSinceXdays pending implementation
+
 	}
 
 	@description = "Create a Web Behavior Segment Submitting a Form"
@@ -219,6 +246,33 @@ definition {
 		AssertElementPresent(
 			key_userName = "ac ac",
 			locator1 = "ACSegments#SEGMENT_MEMBERS");
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-9216 | Test Summary: Add segment using a web behavior 'after' some time"
+	@ignore = "true"
+	@priority = "4"
+	test CanCreateWebBehaviorSegmentUsingAfter {
+
+		// TODO LRAC-9216 CanCreateWebBehaviorSegmentUsingAfter pending implementation
+
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-9217 | Test Summary: Add segment using a web behavior 'before' some time"
+	@ignore = "true"
+	@priority = "4"
+	test CanCreateWebBehaviorSegmentUsingBefore {
+
+		// TODO LRAC-9217 CanCreateWebBehaviorSegmentUsingBefore pending implementation
+
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-9218 | Test Summary: Add segment using a web behavior 'between' some time"
+	@ignore = "true"
+	@priority = "4"
+	test CanCreateWebBehaviorSegmentUsingBetween {
+
+		// TODO LRAC-9218 CanCreateWebBehaviorSegmentUsingBetween pending implementation
+
 	}
 
 	@description = "Add segment using a web behavior 'ever' done"
@@ -379,6 +433,15 @@ definition {
 			value1 = "There are no items found.");
 	}
 
+	@description = "Feature ID: Legacy | Automation ID: LRAC-9219 | Test Summary: Add segment using a web behavior 'on' some time"
+	@ignore = "true"
+	@priority = "4"
+	test CanCreateWebBehaviorSegmentUsingOn {
+
+		// TODO LRAC-9219 CanCreateWebBehaviorSegmentUsingOn pending implementation
+
+	}
+
 	@description = "Add segment using a web behavior 'since' some time"
 	@priority = "5"
 	test CanCreateWebBehaviorSegmentUsingSince {
@@ -465,6 +528,24 @@ definition {
 			locator1 = "ACSegments#SEGMENT_MEMBERS");
 	}
 
+	@description = "Feature ID: Legacy | Automation ID: LRAC-9223 | Test Summary: Create a Web Behavior Segment of Viewing a Blog"
+	@ignore = "true"
+	@priority = "4"
+	test CanCreateWebBehaviorSegmentViewingBlog {
+
+		// TODO LRAC-9223 CanCreateWebBehaviorSegmentViewingBlog pending implementation
+
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-9224 | Test Summary: Create a Web Behavior Segment of Viewing Document & Media in a Topic"
+	@ignore = "true"
+	@priority = "4"
+	test CanCreateWebBehaviorSegmentViewingDM {
+
+		// TODO LRAC-9224 CanCreateWebBehaviorSegmentViewingDM pending implementation
+
+	}
+
 	@description = "Create a segment with behavior of viewing a form"
 	@priority = "5"
 	test CanCreateWebBehaviorSegmentViewingForm {
@@ -541,6 +622,24 @@ definition {
 		AssertElementPresent(
 			key_userName = "ac ac",
 			locator1 = "ACSegments#SEGMENT_MEMBERS");
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-9225 | Test Summary: Create a Web Behavior Segment of Viewing a Page"
+	@ignore = "true"
+	@priority = "4"
+	test CanCreateWebBehaviorSegmentViewingPage {
+
+		// TODO LRAC-9225 CanCreateWebBehaviorSegmentViewingPage pending implementation
+
+	}
+
+	@description = "Feature ID: Legacy | Automation ID: LRAC-9226 | Test Summary: Create a Web Behavior Segment of Viewing a Web Content"
+	@ignore = "true"
+	@priority = "4"
+	test CanCreateWebBehaviorSegmentViewingWC {
+
+		// TODO LRAC-9226 CanCreateWebBehaviorSegmentViewingWC pending implementation
+
 	}
 
 }
