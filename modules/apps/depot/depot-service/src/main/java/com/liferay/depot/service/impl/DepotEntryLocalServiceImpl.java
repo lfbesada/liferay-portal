@@ -23,7 +23,6 @@ import com.liferay.depot.model.DepotEntryGroupRel;
 import com.liferay.depot.service.DepotAppCustomizationLocalService;
 import com.liferay.depot.service.base.DepotEntryLocalServiceBaseImpl;
 import com.liferay.depot.service.persistence.DepotEntryGroupRelPersistence;
-import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.GroupKeyException;
@@ -162,9 +161,7 @@ public class DepotEntryLocalServiceImpl extends DepotEntryLocalServiceBaseImpl {
 
 		if (_isStaged(depotEntryPersistence.fetchByPrimaryKey(depotEntryId))) {
 			throw new DepotEntryStagedException(
-				StringBundler.concat(
-					"Depot entry ", depotEntryId, " is staged. Please unstage ",
-					"the depot entry before deleting it."));
+				"Unstage depot entry " + depotEntryId + " before deleting it");
 		}
 
 		return super.deleteDepotEntry(depotEntryId);
