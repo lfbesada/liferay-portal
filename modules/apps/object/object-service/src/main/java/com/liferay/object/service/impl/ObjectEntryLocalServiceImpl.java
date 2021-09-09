@@ -297,7 +297,7 @@ public class ObjectEntryLocalServiceImpl
 			_objectRelationshipPersistence.findByPrimaryKey(
 				objectRelationshipId);
 
-		DynamicObjectDefinitionTable dynamicObjectDefinitionTable2 =
+		DynamicObjectDefinitionTable dynamicObjectDefinitionTable =
 			_getDynamicObjectDefinitionTable(
 				objectRelationship.getObjectDefinitionId2());
 
@@ -315,11 +315,11 @@ public class ObjectEntryLocalServiceImpl
 
 		if (Objects.equals(
 				objectField.getDBTableName(),
-				dynamicObjectDefinitionTable2.getName())) {
+				dynamicObjectDefinitionTable.getName())) {
 
 			column =
 				(Column<DynamicObjectDefinitionTable, Long>)
-					dynamicObjectDefinitionTable2.getColumn(
+					dynamicObjectDefinitionTable.getColumn(
 						objectField.getDBColumnName());
 		}
 		else {
@@ -339,23 +339,23 @@ public class ObjectEntryLocalServiceImpl
 		if (PermissionThreadLocal.getPermissionChecker() != null) {
 			predicate = predicate.and(
 				_inlineSQLHelper.getPermissionWherePredicate(
-					dynamicObjectDefinitionTable2.getName(),
-					dynamicObjectDefinitionTable2.getPrimaryKeyColumn()));
+					dynamicObjectDefinitionTable.getName(),
+					dynamicObjectDefinitionTable.getPrimaryKeyColumn()));
 		}
 
 		DSLQuery dslQuery = DSLQueryFactoryUtil.selectDistinct(
 			ObjectEntryTable.INSTANCE
 		).from(
-			dynamicObjectDefinitionTable2
+			dynamicObjectDefinitionTable
 		).innerJoinON(
 			ObjectEntryTable.INSTANCE,
 			ObjectEntryTable.INSTANCE.objectEntryId.eq(
-				dynamicObjectDefinitionTable2.getPrimaryKeyColumn())
+				dynamicObjectDefinitionTable.getPrimaryKeyColumn())
 		).innerJoinON(
 			extensionDynamicObjectDefinitionTable,
 			extensionDynamicObjectDefinitionTable.getPrimaryKeyColumn(
 			).eq(
-				dynamicObjectDefinitionTable2.getPrimaryKeyColumn()
+				dynamicObjectDefinitionTable.getPrimaryKeyColumn()
 			)
 		).where(
 			predicate
