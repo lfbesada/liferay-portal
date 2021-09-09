@@ -289,7 +289,7 @@ public class ObjectEntryLocalServiceImpl
 
 	@Override
 	public List<ObjectEntry> getOneToManyRelatedObjectEntries(
-			long groupId, long primaryKey, long objectRelationshipId, int start,
+			long groupId, long objectRelationshipId, long primaryKey, int start,
 			int end)
 		throws PortalException {
 
