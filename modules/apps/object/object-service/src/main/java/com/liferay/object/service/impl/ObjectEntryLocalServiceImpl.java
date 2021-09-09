@@ -300,16 +300,11 @@ public class ObjectEntryLocalServiceImpl
 		DynamicObjectDefinitionTable dynamicObjectDefinitionTable =
 			_getDynamicObjectDefinitionTable(
 				objectRelationship.getObjectDefinitionId2());
-
 		DynamicObjectDefinitionTable extensionDynamicObjectDefinitionTable =
 			_getExtensionDynamicObjectDefinitionTable(
 				objectRelationship.getObjectDefinitionId2());
-
 		ObjectField objectField = _objectFieldPersistence.fetchByPrimaryKey(
 			objectRelationship.getObjectFieldId2());
-
-		Predicate predicate = ObjectEntryTable.INSTANCE.objectDefinitionId.eq(
-			objectRelationship.getObjectDefinitionId2());
 
 		Column<DynamicObjectDefinitionTable, Long> column = null;
 
@@ -329,12 +324,14 @@ public class ObjectEntryLocalServiceImpl
 						objectField.getDBColumnName());
 		}
 
-		if (column != null) {
-			predicate = predicate.and(column.eq(primaryKey));
-		}
-
-		predicate = predicate.and(
-			ObjectEntryTable.INSTANCE.groupId.eq(groupId));
+		Predicate predicate = ObjectEntryTable.INSTANCE.groupId.eq(
+			groupId
+		).and(
+			ObjectEntryTable.INSTANCE.objectDefinitionId.eq(
+				objectRelationship.getObjectDefinitionId2())
+		).and(
+			column.eq(primaryKey)
+		);
 
 		if (PermissionThreadLocal.getPermissionChecker() != null) {
 			predicate = predicate.and(
@@ -364,7 +361,7 @@ public class ObjectEntryLocalServiceImpl
 		);
 
 		if (_log.isDebugEnabled()) {
-			_log.debug(dslQuery);
+			_log.debug("Get one to many related object entries: " + dslQuery);
 		}
 
 		return objectEntryPersistence.dslQuery(dslQuery);
