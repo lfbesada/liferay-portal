@@ -71,6 +71,15 @@ public class SiteNavigationMenuItemServiceImpl
 	}
 
 	@Override
+	public List<Long> getSiteNavigationMenuItemParentIds(
+		long siteNavigationMenuId, String typeSettings) {
+
+		return siteNavigationMenuItemLocalService.
+			getSiteNavigationMenuItemParentIds(
+				siteNavigationMenuId, typeSettings);
+	}
+
+	@Override
 	public List<SiteNavigationMenuItem> getSiteNavigationMenuItems(
 		long siteNavigationMenuId) {
 
