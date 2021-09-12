@@ -1,0 +1,15 @@
+<?xml version="1.0"?>
+
+<custom-sql>
+	<sql id="com.liferay.site.navigation.service.persistence.SiteNavigationMenuItemFinder.findParentIdByM_TS">
+		<![CDATA[
+			SELECT
+				DISTINCT SiteNavigationMenuItem.parentSiteNavigationMenuItemId
+			FROM
+				SiteNavigationMenuItem
+			WHERE
+				(SiteNavigationMenuItem.siteNavigationMenuId = ?) AND
+				(SiteNavigationMenuItem.typeSettings LIKE ?)
+		]]>
+	</sql>
+</custom-sql>
