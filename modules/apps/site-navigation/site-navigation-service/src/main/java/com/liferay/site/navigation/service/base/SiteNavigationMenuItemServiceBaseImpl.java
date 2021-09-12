@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.site.navigation.model.SiteNavigationMenuItem;
 import com.liferay.site.navigation.service.SiteNavigationMenuItemService;
 import com.liferay.site.navigation.service.SiteNavigationMenuItemServiceUtil;
+import com.liferay.site.navigation.service.persistence.SiteNavigationMenuItemFinder;
 import com.liferay.site.navigation.service.persistence.SiteNavigationMenuItemPersistence;
 import com.liferay.site.navigation.service.persistence.SiteNavigationMenuPersistence;
 
@@ -146,6 +147,9 @@ public abstract class SiteNavigationMenuItemServiceBaseImpl
 	@Reference
 	protected SiteNavigationMenuItemPersistence
 		siteNavigationMenuItemPersistence;
+
+	@Reference
+	protected SiteNavigationMenuItemFinder siteNavigationMenuItemFinder;
 
 	@Reference
 	protected com.liferay.counter.kernel.service.CounterLocalService
