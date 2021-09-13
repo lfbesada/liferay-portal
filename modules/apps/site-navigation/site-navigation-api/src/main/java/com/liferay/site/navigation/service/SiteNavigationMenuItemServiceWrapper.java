@@ -75,6 +75,15 @@ public class SiteNavigationMenuItemServiceWrapper
 	}
 
 	@Override
+	public java.util.List<Long> getSiteNavigationMenuItemParentIds(
+		long siteNavigationMenuId, String typeSettings) {
+
+		return _siteNavigationMenuItemService.
+			getSiteNavigationMenuItemParentIds(
+				siteNavigationMenuId, typeSettings);
+	}
+
+	@Override
 	public java.util.List<SiteNavigationMenuItem> getSiteNavigationMenuItems(
 		long siteNavigationMenuId) {
 

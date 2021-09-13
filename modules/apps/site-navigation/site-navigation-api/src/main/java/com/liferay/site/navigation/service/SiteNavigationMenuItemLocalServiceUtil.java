@@ -339,6 +339,13 @@ public class SiteNavigationMenuItemLocalServiceUtil {
 			uuid, groupId);
 	}
 
+	public static List<Long> getSiteNavigationMenuItemParentIds(
+		long siteNavigationMenuId, String typeSettings) {
+
+		return getService().getSiteNavigationMenuItemParentIds(
+			siteNavigationMenuId, typeSettings);
+	}
+
 	/**
 	 * Returns a range of all the site navigation menu items.
 	 *
