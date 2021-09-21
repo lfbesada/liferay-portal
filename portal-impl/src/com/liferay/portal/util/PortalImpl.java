@@ -8434,9 +8434,19 @@ public class PortalImpl implements Portal {
 
 		boolean useGroupVirtualHostname = false;
 
+		String defaultVirtualHostName = _LOCALHOST;
+
+		Company company = themeDisplay.getCompany();
+
+		if ((company != null) &&
+			Validator.isNotNull(company.getVirtualHostname())) {
+
+			defaultVirtualHostName = company.getVirtualHostname();
+		}
+
 		if (canonicalURL ||
 			!StringUtil.equalsIgnoreCase(
-				themeDisplay.getServerName(), _LOCALHOST)) {
+				themeDisplay.getServerName(), defaultVirtualHostName)) {
 
 			useGroupVirtualHostname = true;
 		}
@@ -8462,7 +8472,8 @@ public class PortalImpl implements Portal {
 			String portalDomain = themeDisplay.getPortalDomain();
 
 			if (!virtualHostnames.isEmpty() &&
-				(canonicalURL || !virtualHostnames.containsKey(_LOCALHOST))) {
+				(canonicalURL ||
+				 !virtualHostnames.containsKey(defaultVirtualHostName))) {
 
 				if (!controlPanel) {
 					if (canonicalURL) {
@@ -8472,7 +8483,8 @@ public class PortalImpl implements Portal {
 							path = PropsValues.WIDGET_SERVLET_MAPPING;
 						}
 
-						if (!virtualHostnames.containsKey(_LOCALHOST) &&
+						if (!virtualHostnames.containsKey(
+								defaultVirtualHostName) &&
 							!_containsHostname(
 								virtualHostnames, portalDomain)) {
 
@@ -8518,7 +8530,8 @@ public class PortalImpl implements Portal {
 						}
 
 						if (virtualHostnames.isEmpty() ||
-							virtualHostnames.containsKey(_LOCALHOST)) {
+							virtualHostnames.containsKey(
+								defaultVirtualHostName)) {
 
 							LayoutSet curLayoutSet =
 								LayoutSetLocalServiceUtil.getLayoutSet(
@@ -8531,20 +8544,15 @@ public class PortalImpl implements Portal {
 					}
 
 					if (virtualHostnames.isEmpty() ||
-						virtualHostnames.containsKey(_LOCALHOST)) {
+						virtualHostnames.containsKey(defaultVirtualHostName)) {
 
 						virtualHostnames = TreeMapBuilder.put(
-							() -> {
-								Company company = themeDisplay.getCompany();
-
-								return company.getVirtualHostname();
-							},
-							StringPool.BLANK
+							company::getVirtualHostname, StringPool.BLANK
 						).build();
 					}
 
 					if (canonicalURL ||
-						!virtualHostnames.containsKey(_LOCALHOST)) {
+						!virtualHostnames.containsKey(defaultVirtualHostName)) {
 
 						String virtualHostname = getCanonicalDomain(
 							virtualHostnames, portalDomain);
