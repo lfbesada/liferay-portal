@@ -119,12 +119,32 @@ public class EditStyleBookEntryDisplayContext {
 					"name",
 					LanguageUtil.get(_themeDisplay.getLocale(), "masters")
 				).put(
-					"options", _getPageMasterOptionJSONObject()
+					"options",
+					_getOptionJSONObject(
+						LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT)
 				),
 				JSONUtil.put(
 					"name", LanguageUtil.get(_themeDisplay.getLocale(), "pages")
 				).put(
 					"options", _getPageOptionJSONObject()
+				),
+				JSONUtil.put(
+					"name",
+					LanguageUtil.get(
+						_themeDisplay.getLocale(), "page-templates")
+				).put(
+					"options",
+					_getOptionJSONObject(
+						LayoutPageTemplateEntryTypeConstants.TYPE_BASIC)
+				),
+				JSONUtil.put(
+					"name",
+					LanguageUtil.get(
+						_themeDisplay.getLocale(), "display-page-templates")
+				).put(
+					"options",
+					_getOptionJSONObject(
+						LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE)
 				))
 		).put(
 			"publishURL", _getActionURL("/style_book/publish_style_book_entry")
@@ -194,12 +214,11 @@ public class EditStyleBookEntryDisplayContext {
 		);
 	}
 
-	private JSONObject _getPageMasterOptionJSONObject() {
+	private JSONObject _getOptionJSONObject(int layoutType) {
 		int total =
 			LayoutPageTemplateEntryServiceUtil.
 				getLayoutPageTemplateEntriesCount(
-					_themeDisplay.getScopeGroupId(),
-					LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT);
+					_themeDisplay.getScopeGroupId(), layoutType);
 
 		int numItems = 4;
 
@@ -209,9 +228,7 @@ public class EditStyleBookEntryDisplayContext {
 
 		List<LayoutPageTemplateEntry> layoutPageTemplateEntries =
 			LayoutPageTemplateEntryServiceUtil.getLayoutPageTemplateEntries(
-				_themeDisplay.getScopeGroupId(),
-				LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT, 0,
-				numItems,
+				_themeDisplay.getScopeGroupId(), layoutType, 0, numItems,
 				new LayoutPageTemplateEntryModifiedDateComparator(false));
 
 		return JSONUtil.put(
