@@ -100,17 +100,6 @@ public class EditStyleBookEntryDisplayContext {
 					styleBookEntry.getFrontendTokensValues());
 			}
 		).put(
-			"initialPreviewLayout", _getInitialPreviewLayoutJSONObject()
-		).put(
-			"layoutsTreeURL",
-			() -> {
-				ResourceURL resourceURL = _renderResponse.createResourceURL();
-
-				resourceURL.setResourceID("/style_book/layouts_tree");
-
-				return resourceURL.toString();
-			}
-		).put(
 			"namespace", _renderResponse.getNamespace()
 		).put(
 			"previewOptions",
