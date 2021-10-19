@@ -19,8 +19,13 @@ import com.liferay.frontend.token.definition.FrontendTokenDefinition;
 import com.liferay.frontend.token.definition.FrontendTokenDefinitionRegistry;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.layout.item.selector.criterion.LayoutItemSelectorCriterion;
+import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
+import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
+import com.liferay.layout.page.template.service.LayoutPageTemplateEntryServiceUtil;
+import com.liferay.layout.page.template.util.comparator.LayoutPageTemplateEntryModifiedDateComparator;
 import com.liferay.layout.util.comparator.LayoutModifiedDateComparator;
 import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -109,7 +114,13 @@ public class EditStyleBookEntryDisplayContext {
 			"namespace", _renderResponse.getNamespace()
 		).put(
 			"previewOptions",
-			JSONUtil.put(
+			JSONUtil.putAll(
+				JSONUtil.put(
+					"name",
+					LanguageUtil.get(_themeDisplay.getLocale(), "masters")
+				).put(
+					"options", _getPageMasterOptionJSONObject()
+				),
 				JSONUtil.put(
 					"name", LanguageUtil.get(_themeDisplay.getLocale(), "pages")
 				).put(
@@ -183,6 +194,53 @@ public class EditStyleBookEntryDisplayContext {
 		);
 	}
 
+	private JSONObject _getPageMasterOptionJSONObject() {
+		int total =
+			LayoutPageTemplateEntryServiceUtil.
+				getLayoutPageTemplateEntriesCount(
+					_themeDisplay.getScopeGroupId(),
+					LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT);
+
+		int numItems = 4;
+
+		if (total < numItems) {
+			numItems = total;
+		}
+
+		List<LayoutPageTemplateEntry> layoutPageTemplateEntries =
+			LayoutPageTemplateEntryServiceUtil.getLayoutPageTemplateEntries(
+				_themeDisplay.getScopeGroupId(),
+				LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT, 0,
+				numItems,
+				new LayoutPageTemplateEntryModifiedDateComparator(false));
+
+		return JSONUtil.put(
+			"itemSelectorURL", StringPool.BLANK
+		).put(
+			"numItems", String.valueOf(numItems)
+		).put(
+			"options",
+			() -> {
+				Stream<LayoutPageTemplateEntry>
+					layoutPageTemplateEntriesStream =
+						layoutPageTemplateEntries.stream();
+
+				return JSONUtil.putAll(
+					layoutPageTemplateEntriesStream.map(
+						layoutPageTemplateEntry -> JSONUtil.put(
+							"name", layoutPageTemplateEntry.getName()
+						).put(
+							"URL", _getPreviewURL(layoutPageTemplateEntry)
+						)
+					).toArray(
+						JSONObject[]::new
+					));
+			}
+		).put(
+			"total", String.valueOf(total)
+		);
+	}
+
 	private JSONObject _getPageOptionJSONObject() {
 		int total = LayoutLocalServiceUtil.getLayoutsCount(
 			_themeDisplay.getScopeGroupId());
@@ -241,6 +299,22 @@ public class EditStyleBookEntryDisplayContext {
 
 			return HttpUtil.addParameter(
 				layoutURL, "styleBookEntryPreview", true);
+		}
+		catch (PortalException portalException) {
+			_log.error(portalException.getMessage(), portalException);
+		}
+
+		return null;
+	}
+
+	private String _getPreviewURL(
+		LayoutPageTemplateEntry layoutPageTemplateEntry) {
+
+		try {
+			Layout layout = LayoutLocalServiceUtil.getLayout(
+				layoutPageTemplateEntry.getPlid());
+
+			return _getPreviewURL(layout);
 		}
 		catch (PortalException portalException) {
 			_log.error(portalException.getMessage(), portalException);
