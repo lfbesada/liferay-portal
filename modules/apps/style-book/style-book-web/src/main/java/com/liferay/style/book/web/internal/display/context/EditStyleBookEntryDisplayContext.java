@@ -48,6 +48,7 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.style.book.model.StyleBookEntry;
 import com.liferay.style.book.service.StyleBookEntryLocalServiceUtil;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
@@ -193,9 +194,20 @@ public class EditStyleBookEntryDisplayContext {
 			numItems = total;
 		}
 
-		List<Layout> layouts = LayoutLocalServiceUtil.getLayouts(
-			_themeDisplay.getScopeGroupId(), false, 0, numItems,
-			new LayoutModifiedDateComparator(false));
+		List<Layout> layouts = new ArrayList<>();
+
+		layouts.addAll(
+			LayoutLocalServiceUtil.getLayouts(
+				_themeDisplay.getScopeGroupId(), false, 0, numItems,
+				new LayoutModifiedDateComparator(false)));
+
+		if (layouts.size() > total) {
+			layouts.addAll(
+				LayoutLocalServiceUtil.getLayouts(
+					_themeDisplay.getScopeGroupId(), true, 0,
+					numItems - layouts.size(),
+					new LayoutModifiedDateComparator(false)));
+		}
 
 		return JSONUtil.put(
 			"itemSelectorURL",
