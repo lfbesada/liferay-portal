@@ -14,6 +14,7 @@
 
 package com.liferay.style.book.web.internal.display.context;
 
+import com.liferay.asset.display.page.item.selector.criterion.AssetDisplayPageSelectorCriterion;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.frontend.token.definition.FrontendTokenDefinition;
 import com.liferay.frontend.token.definition.FrontendTokenDefinitionRegistry;
@@ -212,6 +213,22 @@ public class EditStyleBookEntryDisplayContext {
 		);
 	}
 
+	private String _getItemSelectorURL(int layoutType) {
+		if (layoutType ==
+				LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE) {
+
+			PortletURL itemSelectorURL = _itemSelector.getItemSelectorURL(
+				RequestBackedPortletURLFactoryUtil.create(_httpServletRequest),
+				_themeDisplay.getScopeGroup(), _themeDisplay.getScopeGroupId(),
+				_renderResponse.getNamespace() + "selectPreviewItem",
+				new AssetDisplayPageSelectorCriterion());
+
+			return itemSelectorURL.toString();
+		}
+
+		return StringPool.BLANK;
+	}
+
 	private JSONObject _getOptionJSONObject(int layoutType) {
 		int total =
 			LayoutPageTemplateEntryServiceUtil.
@@ -230,7 +247,7 @@ public class EditStyleBookEntryDisplayContext {
 				new LayoutPageTemplateEntryModifiedDateComparator(false));
 
 		return JSONUtil.put(
-			"itemSelectorURL", StringPool.BLANK
+			"itemSelectorURL", _getItemSelectorURL(layoutType)
 		).put(
 			"recentLayouts",
 			() -> {
