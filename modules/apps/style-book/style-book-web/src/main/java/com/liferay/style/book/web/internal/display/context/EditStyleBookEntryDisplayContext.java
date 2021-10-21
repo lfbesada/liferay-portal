@@ -19,6 +19,7 @@ import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.frontend.token.definition.FrontendTokenDefinition;
 import com.liferay.frontend.token.definition.FrontendTokenDefinitionRegistry;
 import com.liferay.item.selector.ItemSelector;
+import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
 import com.liferay.layout.item.selector.criterion.LayoutItemSelectorCriterion;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
@@ -58,6 +59,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.stream.Stream;
 
+import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
@@ -224,6 +226,20 @@ public class EditStyleBookEntryDisplayContext {
 				new AssetDisplayPageSelectorCriterion());
 
 			return itemSelectorURL.toString();
+		}
+		else if (layoutType ==
+					LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT) {
+
+			return PortletURLBuilder.create(
+				PortalUtil.getControlPanelPortletURL(
+					_httpServletRequest, LayoutAdminPortletKeys.GROUP_PAGES,
+					PortletRequest.RENDER_PHASE)
+			).setMVCPath(
+				"/select_master_layout.jsp"
+			).setParameter(
+				"eventName",
+				_renderResponse.getNamespace() + "selectPreviewItem"
+			).buildString();
 		}
 
 		return StringPool.BLANK;
