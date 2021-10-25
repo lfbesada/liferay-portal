@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<root available-locales="en_US" default-locale="en_US" version="1.0">
+	<dynamic-element index-type="keyword" instance-id="2D8LdBbz" name="Title" type="text">
+		<dynamic-content language-id="en_US"><![CDATA[Cocker Spaniel: a sensitive dog]]></dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="keyword" instance-id="rDvJ4CN6" name="Subtitle" type="text">
+		<dynamic-content language-id="en_US"><![CDATA[The Cocker Spaniel is primarily a beloved companion dog breed, though they remain a capable bird dog at heart. Beautiful to look at–and labor-intensive to groom–the Cocker's amenable, cheerful disposition also makes them a treat to have in the family.]]></dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="text" instance-id="bMNTozJr" name="MainImage" type="image">
+		<dynamic-content language-id="en_US">
+			<![CDATA[[$DOCUMENT_JSON:/site-initializer/documents/group/dogs/Cocker Spaniel.jpg$]]]>
+		</dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="text" instance-id="f65XxYew" name="Body" type="rich_text">
+		<dynamic-content language-id="en_US"><![CDATA[<p>The well-bred Cocker Spaniel has a sweet temperament. He is affectionate and cuddly and loves to participate in family activites. He is playful, alert, and active, enjoying any exercise from a brisk walk to hunting in the field.</p><p>The Cocker is known to be a sensitive dog, mentally and physically. He has a "soft" personality and does not respond well to harsh treatment, sometimes turning to growling or snapping when he's in pain or afraid. Early socialization and training is essential to teach the Cocker appropriate canine manners. He needs to be handled carefully and kindly to bring out the best in his personality.</p>]]></dynamic-content>
+	</dynamic-element>
+</root>

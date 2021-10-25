@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<root available-locales="en_US" default-locale="en_US" version="1.0">
+	<dynamic-element index-type="keyword" instance-id="2D8LdBbz" name="Title" type="text">
+		<dynamic-content language-id="en_US"><![CDATA[Samoyed]]></dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="keyword" instance-id="rDvJ4CN6" name="Subtitle" type="text">
+		<dynamic-content language-id="en_US"><![CDATA[Originally bred to hunt, haul sledges, and herd reindeer, the Samoyed dog breed proved a valuable companion for northwestern Siberia's Samoyede people. Among the breed's duties: pack hiking, tracking, and warming their owners by sleeping on top of them at night.]]></dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="text" instance-id="bMNTozJr" name="MainImage" type="image">
+		<dynamic-content language-id="en_US">
+			<![CDATA[[$DOCUMENT_JSON:/site-initializer/documents/group/dogs/Samoyed.jpg$]]]>
+		</dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="text" instance-id="f65XxYew" name="Body" type="rich_text">
+		<dynamic-content language-id="en_US"><![CDATA[<p>As a working breed, Samoyeds can be strong-willed at times, but above all they remain friendly, gentle, and devoted family dogs. They're affectionate with almost everyone, so long as new people don't mind some shedding and stray hairs on their clothes.</p><p>DogTime recommends this dog bed to give a good night's sleep to your medium-sized Samoyed. You should also pick up this dog de-shedder for your high shedding pup!</p>]]></dynamic-content>
+	</dynamic-element>
+</root>

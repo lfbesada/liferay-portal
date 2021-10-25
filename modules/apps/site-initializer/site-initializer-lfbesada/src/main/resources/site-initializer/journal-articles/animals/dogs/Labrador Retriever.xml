@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<root available-locales="en_US" default-locale="en_US" version="1.0">
+	<dynamic-element index-type="keyword" instance-id="2D8LdBbz" name="Title" type="text">
+		<dynamic-content language-id="en_US"><![CDATA[Labrador Retriever]]></dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="keyword" instance-id="rDvJ4CN6" name="Subtitle" type="text">
+		<dynamic-content language-id="en_US"><![CDATA[The Labrador Retriever was bred to be both a friendly companion and a useful working dog breed. Historically, they earned their keep as fishermen's helpers: hauling nets, fetching ropes, and retrieving fish from the chilly North Atlantic.]]></dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="text" instance-id="bMNTozJr" name="MainImage" type="image">
+		<dynamic-content language-id="en_US">
+			<![CDATA[[$DOCUMENT_JSON:/site-initializer/documents/group/dogs/Labrador Retriever.jpg$]]]>
+		</dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="text" instance-id="f65XxYew" name="Body" type="rich_text">
+		<dynamic-content language-id="en_US"><![CDATA[<p>Historically, they earned their keep as fishermen's helpers: hauling nets, fetching ropes, and retrieving fish from the chilly North Atlantic.</p><p>Today's Lab is as good-natured and hardworking as their ancestors, and they're also America's most popular breed. Modern Labs work as retrievers for hunters, assistance dogs, show competitors, and search and rescue dogs, among other canine jobs.</p>]]></dynamic-content>
+	</dynamic-element>
+</root>

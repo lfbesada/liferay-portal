@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<root available-locales="en_US" default-locale="en_US" version="1.0">
+	<dynamic-element index-type="keyword" instance-id="2D8LdBbz" name="Title" type="text">
+		<dynamic-content language-id="en_US"><![CDATA[Pug]]></dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="keyword" instance-id="rDvJ4CN6" name="Subtitle" type="text">
+		<dynamic-content language-id="en_US"><![CDATA[The Pug is often described as a lot of dog in a small space. These sturdy, compact dogs are a part of the American Kennel Club's Toy group, and are known as the clowns of the canine world because they have a great sense of humor and like to show off.]]></dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="text" instance-id="bMNTozJr" name="MainImage" type="image">
+		<dynamic-content language-id="en_US">
+			<![CDATA[[$DOCUMENT_JSON:/site-initializer/documents/group/dogs/Pug.jpg$]]]>
+		</dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="text" instance-id="f65XxYew" name="Body" type="rich_text">
+		<dynamic-content language-id="en_US"><![CDATA[<p>Even though these are purebred dogs, you may find them in the care of shelters or rescue groups. Remember to adopt! Don't shop if you want to bring a dog home.</p><p>Originally bred to be lap dogs, Pugs thrive on human companionship. They're highly sensitive, and though they can make for great apartment pets, they will not appreciate being left home alone for long hours of the day. Although these pups have a stubborn side, especially when it comes to house training, they're playful, affectionate dogs who will get along well even with novice pet parents. If you're looking for a loving, easygoing pal, this may be the breed for you!</p>]]></dynamic-content>
+	</dynamic-element>
+</root>

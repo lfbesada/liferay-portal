@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<root available-locales="en_US" default-locale="en_US" version="1.0">
+	<dynamic-element index-type="keyword" instance-id="2D8LdBbz" name="Title" type="text">
+		<dynamic-content language-id="en_US"><![CDATA[Siberian Husky]]></dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="keyword" instance-id="rDvJ4CN6" name="Subtitle" type="text">
+		<dynamic-content language-id="en_US"><![CDATA[The Siberian Husky dog breed has a beautiful, thick coat that comes in a multitude of colors and markings. Their blue or multi-colored eyes and striking facial masks only add to the appeal of this breed, which originated in Siberia.]]></dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="text" instance-id="bMNTozJr" name="MainImage" type="image">
+		<dynamic-content language-id="en_US">
+			<![CDATA[[$DOCUMENT_JSON:/site-initializer/documents/group/dogs/Siberian Husky.jpg$]]]>
+		</dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="text" instance-id="f65XxYew" name="Body" type="rich_text">
+		<dynamic-content language-id="en_US"><![CDATA[<p>It is easy to see why many are drawn to the Siberian's wolf-like looks, but beware because this athletic, intelligent dog can act independently and challenge first-time dog parents. Huskies also put the "H" in Houdini and need a yard with a high fence that goes all the way into the ground to prevent escapes. Giving your Husky enough exercise may prove easier said than done; though, it'll reduce boredom and unwanted behaviors, like escape attempts.</p><p>It's important to remember that dogs of any breed can suffer from health issues throughout their lives. A good pet insurance plan can help you prepare to give your dog the care they need at any age.</p>]]></dynamic-content>
+	</dynamic-element>
+</root>

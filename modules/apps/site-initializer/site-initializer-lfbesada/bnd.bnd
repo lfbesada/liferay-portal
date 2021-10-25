@@ -1,0 +1,6 @@
+Bundle-Name: Liferay Site Initializer LFBesada
+Bundle-SymbolicName: com.liferay.site.initializer.lfbesada
+Bundle-Version: 1.0.0
+Liferay-Site-Initializer-Name: LFBesada
+Provide-Capability: liferay.site.initializer
+Web-ContextPath: /site-initializer-lfbesada

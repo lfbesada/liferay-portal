@@ -1,0 +1,10 @@
+{
+	"contentSubtype": {
+		"subtypeKey": "ANIMAL"
+	},
+	"contentType": {
+		"className": "com.liferay.journal.model.JournalArticle"
+	},
+	"defaultTemplate": true,
+	"name": "Animal"
+}

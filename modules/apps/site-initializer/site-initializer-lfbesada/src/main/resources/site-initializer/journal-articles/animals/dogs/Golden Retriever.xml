@@ -1,0 +1,18 @@
+<?xml version="1.0"?>
+
+<root available-locales="en_US" default-locale="en_US" version="1.0">
+	<dynamic-element index-type="keyword" instance-id="2D8LdBbz" name="Title" type="text">
+		<dynamic-content language-id="en_US"><![CDATA[Golden Retriever]]></dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="keyword" instance-id="rDvJ4CN6" name="Subtitle" type="text">
+		<dynamic-content language-id="en_US"><![CDATA[The Golden Retriever is one of the most popular dog breeds in the United States. The breed's friendly, tolerant attitude makes them great family pets, and their intelligence makes them highly capable working dogs.]]></dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="text" instance-id="bMNTozJr" name="MainImage" type="image">
+		<dynamic-content language-id="en_US">
+			<![CDATA[[$DOCUMENT_JSON:/site-initializer/documents/group/dogs/Golden Retriever.jpg$]]]>
+		</dynamic-content>
+	</dynamic-element>
+	<dynamic-element index-type="text" instance-id="f65XxYew" name="Body" type="rich_text">
+		<dynamic-content language-id="en_US"><![CDATA[<p>Golden Retrievers excel at retrieving game for hunters, tracking, sniffing out contraband for law enforcement, and as therapy and service dogs. They're also natural athletes and do well in dog sports such as agility and competitive obedience.</p><p>These dogs are fairly easy to train and get along in just about any home or family. They're great with kids and very protective of their humans. If you want a loyal, loving, and smart companion, then you should consider adopting one of these pups into your pack.</p>]]></dynamic-content>
+	</dynamic-element>
+</root>
