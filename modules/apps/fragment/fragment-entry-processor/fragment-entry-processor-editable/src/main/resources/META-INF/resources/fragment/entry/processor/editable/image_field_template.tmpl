@@ -1,9 +1,14 @@
 [#if .vars["field_name"]??]
-	[#if .vars["field_name"]?is_hash]
-		[#if .vars["field_name"].url??]
-			${.vars["field_name"].url}
+	[#if templateUtil.isSupplier(.vars["field_name"])]
+		[#assign fieldValue=.vars["field_name"].get()]
+	[#else]
+		[#assign fieldValue=.vars["field_name"]]
+	[/#if]
+	[#if fieldValue?is_hash]
+		[#if fieldValue.url??]
+			${fieldValue.url}
 		[/#if]
-	[#elseif .vars["field_name"]?is_string]
-		${.vars["field_name"]}
+	[#elseif fieldValue?is_string]
+		${fieldValue}
 	[/#if]
 [/#if]

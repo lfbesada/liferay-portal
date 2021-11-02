@@ -1,8 +1,13 @@
 [#if .vars["field_name"]??]
-    [#if .vars["field_name"]?is_hash]
-        [#if .vars["field_name"].infoItemReference??]
-			[#if .vars["field_name"].infoItemReference.className?ends_with("FileEntry") && .vars["field_name"].infoItemReference.infoItemIdentifier.classPK??]
-				${.vars["field_name"].infoItemReference.infoItemIdentifier.classPK}
+	[#if templateUtil.isSupplier(.vars["field_name"])]
+		[#assign fieldValue=.vars["field_name"].get()]
+	[#else]
+		[#assign fieldValue=.vars["field_name"]]
+	[/#if]
+    [#if fieldValue?is_hash]
+        [#if fieldValue.infoItemReference??]
+			[#if fieldValue.infoItemReference.className?ends_with("FileEntry") && fieldValue.infoItemReference.infoItemIdentifier.classPK??]
+				${fieldValue.infoItemReference.infoItemIdentifier.classPK}
 			[/#if]
         [/#if]
     [/#if]

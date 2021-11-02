@@ -1,3 +1,8 @@
 [#if .vars["field_name"]??]
-	${.vars["field_name"]}
+	[#if templateUtil.isSupplier(.vars["field_name"])]
+		[#assign fieldValue=.vars["field_name"].get()]
+	[#else]
+		[#assign fieldValue=.vars["field_name"]]
+	[/#if]
+	${fieldValue}
 [/#if]
