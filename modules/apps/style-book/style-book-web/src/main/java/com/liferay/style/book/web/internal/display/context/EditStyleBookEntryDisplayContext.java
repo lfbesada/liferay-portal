@@ -221,10 +221,12 @@ public class EditStyleBookEntryDisplayContext {
 	}
 
 	private JSONObject _getOptionJSONObject(int layoutType) {
+		Group group = _getPreviewItemsGroup();
+
 		int total =
 			LayoutPageTemplateEntryServiceUtil.
 				getLayoutPageTemplateEntriesCount(
-					_themeDisplay.getScopeGroupId(), layoutType);
+					group.getGroupId(), layoutType);
 
 		int numItems = 4;
 
@@ -234,7 +236,7 @@ public class EditStyleBookEntryDisplayContext {
 
 		List<LayoutPageTemplateEntry> layoutPageTemplateEntries =
 			LayoutPageTemplateEntryServiceUtil.getLayoutPageTemplateEntries(
-				_themeDisplay.getScopeGroupId(), layoutType, 0, numItems,
+				group.getGroupId(), layoutType, 0, numItems,
 				new LayoutPageTemplateEntryModifiedDateComparator(false));
 
 		return JSONUtil.put(
@@ -286,8 +288,9 @@ public class EditStyleBookEntryDisplayContext {
 	}
 
 	private JSONObject _getPageOptionJSONObject() {
-		int total = LayoutLocalServiceUtil.getLayoutsCount(
-			_themeDisplay.getScopeGroupId());
+		Group group = _getPreviewItemsGroup();
+
+		int total = LayoutLocalServiceUtil.getLayoutsCount(group.getGroupId());
 
 		int numItems = 4;
 
@@ -296,7 +299,7 @@ public class EditStyleBookEntryDisplayContext {
 		}
 
 		List<Layout> layouts = LayoutLocalServiceUtil.getLayouts(
-			_themeDisplay.getScopeGroupId(), 0, numItems,
+			group.getGroupId(), 0, numItems,
 			new LayoutModifiedDateComparator(false));
 
 		return JSONUtil.put(
@@ -312,8 +315,7 @@ public class EditStyleBookEntryDisplayContext {
 				PortletURL itemSelectorURL = _itemSelector.getItemSelectorURL(
 					RequestBackedPortletURLFactoryUtil.create(
 						_httpServletRequest),
-					_themeDisplay.getScopeGroup(),
-					_themeDisplay.getScopeGroupId(),
+					group, group.getGroupId(),
 					_renderResponse.getNamespace() + "selectPreviewItem",
 					layoutItemSelectorCriterion);
 
@@ -340,6 +342,12 @@ public class EditStyleBookEntryDisplayContext {
 		).put(
 			"totalLayouts", total
 		);
+	}
+
+	private Group _getPreviewItemsGroup() {
+		Layout layout = _themeDisplay.getLayout();
+
+		return layout.getGroup();
 	}
 
 	private String _getPreviewURL(Layout layout) {
