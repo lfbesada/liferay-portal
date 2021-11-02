@@ -14,6 +14,7 @@
 
 package com.liferay.layout.page.template.item.selector.web.internal;
 
+import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.info.item.InfoItemClassDetails;
 import com.liferay.info.item.InfoItemFormVariation;
 import com.liferay.info.item.InfoItemServiceTracker;
@@ -23,6 +24,7 @@ import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.ItemSelectorView;
 import com.liferay.item.selector.ItemSelectorViewDescriptor;
 import com.liferay.item.selector.ItemSelectorViewDescriptorRenderer;
+import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.item.selector.LayoutPageTemplateEntryItemSelectorReturnType;
 import com.liferay.layout.page.template.item.selector.criterion.LayoutPageTemplateEntryItemSelectorCriterion;
@@ -38,6 +40,7 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -398,6 +401,16 @@ public class LayoutPageTemplateEntryItemSelectorView
 
 			searchContainer.setOrderByType(orderByType);
 
+			Group scopeGroup = _themeDisplay.getScopeGroup();
+
+			if (scopeGroup.hasLocalOrRemoteStagingGroup() &&
+				scopeGroup.isStagedPortlet(
+					ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET)) {
+
+				scopeGroup = StagingUtil.getStagingGroup(
+					_themeDisplay.getScopeGroupId());
+			}
+
 			String keywords = ParamUtil.getString(
 				_httpServletRequest, "keywords");
 
@@ -405,29 +418,29 @@ public class LayoutPageTemplateEntryItemSelectorView
 				searchContainer.setResults(
 					_layoutPageTemplateEntryService.
 						getLayoutPageTemplateEntries(
-							_themeDisplay.getScopeGroupId(), _layoutType,
+							scopeGroup.getGroupId(), _layoutType,
 							searchContainer.getStart(),
 							searchContainer.getEnd(),
 							searchContainer.getOrderByComparator()));
 				searchContainer.setTotal(
 					_layoutPageTemplateEntryService.
 						getLayoutPageTemplateEntriesCount(
-							_themeDisplay.getScopeGroupId(), _layoutType));
+							scopeGroup.getGroupId(), _layoutType));
 			}
 			else {
 				searchContainer.setResults(
 					_layoutPageTemplateEntryService.
 						getLayoutPageTemplateEntries(
-							_themeDisplay.getScopeGroupId(), keywords,
-							_layoutType, WorkflowConstants.STATUS_ANY,
+							scopeGroup.getGroupId(), keywords, _layoutType,
+							WorkflowConstants.STATUS_ANY,
 							searchContainer.getStart(),
 							searchContainer.getEnd(),
 							searchContainer.getOrderByComparator()));
 				searchContainer.setTotal(
 					_layoutPageTemplateEntryService.
 						getLayoutPageTemplateEntriesCount(
-							_themeDisplay.getScopeGroupId(), keywords,
-							_layoutType, WorkflowConstants.STATUS_ANY));
+							scopeGroup.getGroupId(), keywords, _layoutType,
+							WorkflowConstants.STATUS_ANY));
 			}
 
 			return searchContainer;
