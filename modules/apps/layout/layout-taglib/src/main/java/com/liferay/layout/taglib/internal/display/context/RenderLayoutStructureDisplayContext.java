@@ -449,6 +449,8 @@ public class RenderLayoutStructureDisplayContext {
 
 		if (!Objects.equals(layout.getType(), LayoutConstants.TYPE_PORTLET)) {
 			defaultFragmentRendererContext.setFieldValues(_fieldValues);
+			defaultFragmentRendererContext.setFieldValueSuppliers(
+				_fieldValueSuppliers);
 			defaultFragmentRendererContext.setMode(_mode);
 			defaultFragmentRendererContext.setPreviewClassNameId(
 				_getPreviewClassNameId());
