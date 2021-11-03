@@ -110,6 +110,8 @@ public class EditStyleBookEntryDisplayContext {
 		).put(
 			"initialPreviewLayout", _getInitialPreviewLayoutJSONObject()
 		).put(
+			"isStagingSite", _isStagingSite()
+		).put(
 			"layoutsTreeURL",
 			() -> {
 				ResourceURL resourceURL = _renderResponse.createResourceURL();
@@ -460,6 +462,14 @@ public class EditStyleBookEntryDisplayContext {
 		Theme theme = layoutSet.getTheme();
 
 		return theme.getName();
+	}
+
+	private boolean _isStagingSite() {
+		Layout layout = _themeDisplay.getLayout();
+
+		Group layoutGroup = layout.getGroup();
+
+		return layoutGroup.isStagingGroup();
 	}
 
 	private void _setViewAttributes() {
