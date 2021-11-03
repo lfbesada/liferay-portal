@@ -14,7 +14,6 @@
 
 package com.liferay.layout.page.template.item.selector.web.internal;
 
-import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.info.item.InfoItemClassDetails;
 import com.liferay.info.item.InfoItemFormVariation;
 import com.liferay.info.item.InfoItemServiceTracker;
@@ -24,7 +23,6 @@ import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.ItemSelectorView;
 import com.liferay.item.selector.ItemSelectorViewDescriptor;
 import com.liferay.item.selector.ItemSelectorViewDescriptorRenderer;
-import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.item.selector.LayoutPageTemplateEntryItemSelectorReturnType;
 import com.liferay.layout.page.template.item.selector.criterion.LayoutPageTemplateEntryItemSelectorCriterion;
@@ -40,7 +38,6 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -109,12 +106,23 @@ public class LayoutPageTemplateEntryItemSelectorView
 			PortletURL portletURL, String itemSelectedEventName, boolean search)
 		throws IOException, ServletException {
 
+		long groupId =
+			layoutPageTemplateEntryItemSelectorCriterion.getGroupId();
+
+		if (groupId <= 0) {
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)servletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+			groupId = themeDisplay.getScopeGroupId();
+		}
+
 		_itemSelectorViewDescriptorRenderer.renderHTML(
 			servletRequest, servletResponse,
 			layoutPageTemplateEntryItemSelectorCriterion, portletURL,
 			itemSelectedEventName, search,
 			new LayoutPageTemplateEntryItemSelectorViewDescriptor(
-				(HttpServletRequest)servletRequest,
+				groupId, (HttpServletRequest)servletRequest,
 				layoutPageTemplateEntryItemSelectorCriterion.getLayoutType(),
 				portletURL));
 	}
@@ -342,9 +350,10 @@ public class LayoutPageTemplateEntryItemSelectorView
 		implements ItemSelectorViewDescriptor<LayoutPageTemplateEntry> {
 
 		public LayoutPageTemplateEntryItemSelectorViewDescriptor(
-			HttpServletRequest httpServletRequest, int layoutType,
+			long groupId, HttpServletRequest httpServletRequest, int layoutType,
 			PortletURL portletURL) {
 
+			_groupId = groupId;
 			_httpServletRequest = httpServletRequest;
 			_layoutType = layoutType;
 			_portletURL = portletURL;
@@ -401,16 +410,6 @@ public class LayoutPageTemplateEntryItemSelectorView
 
 			searchContainer.setOrderByType(orderByType);
 
-			Group scopeGroup = _themeDisplay.getScopeGroup();
-
-			if (scopeGroup.hasLocalOrRemoteStagingGroup() &&
-				scopeGroup.isStagedPortlet(
-					ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET)) {
-
-				scopeGroup = StagingUtil.getStagingGroup(
-					_themeDisplay.getScopeGroupId());
-			}
-
 			String keywords = ParamUtil.getString(
 				_httpServletRequest, "keywords");
 
@@ -418,20 +417,19 @@ public class LayoutPageTemplateEntryItemSelectorView
 				searchContainer.setResults(
 					_layoutPageTemplateEntryService.
 						getLayoutPageTemplateEntries(
-							scopeGroup.getGroupId(), _layoutType,
-							searchContainer.getStart(),
+							_groupId, _layoutType, searchContainer.getStart(),
 							searchContainer.getEnd(),
 							searchContainer.getOrderByComparator()));
 				searchContainer.setTotal(
 					_layoutPageTemplateEntryService.
 						getLayoutPageTemplateEntriesCount(
-							scopeGroup.getGroupId(), _layoutType));
+							_groupId, _layoutType));
 			}
 			else {
 				searchContainer.setResults(
 					_layoutPageTemplateEntryService.
 						getLayoutPageTemplateEntries(
-							scopeGroup.getGroupId(), keywords, _layoutType,
+							_groupId, keywords, _layoutType,
 							WorkflowConstants.STATUS_ANY,
 							searchContainer.getStart(),
 							searchContainer.getEnd(),
@@ -439,7 +437,7 @@ public class LayoutPageTemplateEntryItemSelectorView
 				searchContainer.setTotal(
 					_layoutPageTemplateEntryService.
 						getLayoutPageTemplateEntriesCount(
-							scopeGroup.getGroupId(), keywords, _layoutType,
+							_groupId, keywords, _layoutType,
 							WorkflowConstants.STATUS_ANY));
 			}
 
@@ -461,6 +459,7 @@ public class LayoutPageTemplateEntryItemSelectorView
 			return true;
 		}
 
+		private final long _groupId;
 		private final HttpServletRequest _httpServletRequest;
 		private final int _layoutType;
 		private final PortletRequest _portletRequest;
