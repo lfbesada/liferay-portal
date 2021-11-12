@@ -163,9 +163,8 @@ public class DisplayPageSiteNavigationMenuItemType
 		itemSelectorCriterion.setDesiredItemSelectorReturnTypes(
 			new InfoItemItemSelectorReturnType());
 		itemSelectorCriterion.setItemType(
-			"com.liferay.asset.kernel.model.AssetCategory"
+			"com.liferay.journal.model.JournalArticle"
 		);
-		itemSelectorCriterion.setMultiSelection(true);
 
 		PortletURL infoItemSelectorURL = _itemSelector.getItemSelectorURL(
 			RequestBackedPortletURLFactoryUtil.create(httpServletRequest),
