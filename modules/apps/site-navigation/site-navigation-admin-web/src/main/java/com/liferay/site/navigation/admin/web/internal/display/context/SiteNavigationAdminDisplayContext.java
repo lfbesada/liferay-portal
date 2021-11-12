@@ -42,6 +42,7 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.site.navigation.admin.constants.SiteNavigationAdminPortletKeys;
+import com.liferay.site.navigation.admin.web.internal.configuration.FFSiteNavigationAdminConfigurationUtil;
 import com.liferay.site.navigation.admin.web.internal.security.permission.resource.SiteNavigationMenuPermission;
 import com.liferay.site.navigation.admin.web.internal.util.SiteNavigationMenuPortletUtil;
 import com.liferay.site.navigation.model.SiteNavigationMenu;
@@ -301,6 +302,9 @@ public class SiteNavigationAdminDisplayContext {
 
 				return themeDisplay.getLanguageId();
 			}
+		).put(
+			"multipleSelectionEnabled",
+			FFSiteNavigationAdminConfigurationUtil.multipleSelectionEnabled()
 		).put(
 			"redirect", PortalUtil.getCurrentURL(_liferayPortletRequest)
 		).put(
