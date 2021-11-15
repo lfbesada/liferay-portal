@@ -101,6 +101,10 @@ public class DisplayPageTypeSiteNavigationMenuItemType
 					new InfoItemReference(
 						_infoItemClassDetails.getClassName(), classPK));
 
+			if (layoutDisplayPageObjectProvider == null) {
+				return false;
+			}
+
 			siteNavigationMenuItemElement.addAttribute(
 				"display-page-class-name",
 				_infoItemClassDetails.getClassName());
