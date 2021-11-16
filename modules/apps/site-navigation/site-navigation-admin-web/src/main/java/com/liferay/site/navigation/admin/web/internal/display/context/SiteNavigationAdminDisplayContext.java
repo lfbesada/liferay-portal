@@ -418,6 +418,9 @@ public class SiteNavigationAdminDisplayContext {
 					return addURL.toString();
 				}
 			).put(
+				"addTitle",
+				siteNavigationMenuItemType.getAddTitle(themeDisplay.getLocale())
+			).put(
 				"href", _getAddURL(siteNavigationMenuItemType)
 			).put(
 				"itemSelector", siteNavigationMenuItemType.isItemSelector()
