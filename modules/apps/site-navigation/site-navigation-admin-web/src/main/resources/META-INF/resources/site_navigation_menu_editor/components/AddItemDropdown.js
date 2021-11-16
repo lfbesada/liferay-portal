@@ -91,9 +91,7 @@ export const AddItemDropDown = ({trigger}) => {
 											});
 										},
 										selectEventName: `${portletNamespace}selectItem`,
-										title: Liferay.Language.get(
-											'select-item'
-										),
+										title: data.addTitle,
 										url: data.href,
 									});
 								}
@@ -103,7 +101,7 @@ export const AddItemDropDown = ({trigger}) => {
 											destroyOnHide: true,
 										},
 										id: `${portletNamespace}addMenuItem`,
-										title: label,
+										title: data.addTitle,
 										uri: data.href,
 									});
 								}
