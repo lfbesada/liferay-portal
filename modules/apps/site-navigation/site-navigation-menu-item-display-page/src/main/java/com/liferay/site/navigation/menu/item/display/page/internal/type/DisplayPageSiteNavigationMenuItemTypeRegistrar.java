@@ -23,13 +23,16 @@ import com.liferay.item.selector.ItemSelector;
 import com.liferay.layout.display.page.LayoutDisplayPageProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageProviderTracker;
 import com.liferay.layout.page.template.info.item.capability.DisplayPageInfoItemCapability;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.site.navigation.menu.item.display.page.internal.configuration.FFDisplayPageSiteNavigationMenuItemConfigurationUtil;
 import com.liferay.site.navigation.type.SiteNavigationMenuItemType;
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.servlet.ServletContext;
 
@@ -75,15 +78,8 @@ public class DisplayPageSiteNavigationMenuItemTypeRegistrar {
 				infoItemClassDetails.getClassName(),
 				bundleContext.registerService(
 					SiteNavigationMenuItemType.class,
-					new DisplayPageTypeSiteNavigationMenuItemType(
-						_assetDisplayPageFriendlyURLProvider,
-						new DisplayPageTypeContext(
-							infoItemClassDetails,
-							_infoItemServiceTracker.getFirstInfoItemService(
-								InfoItemFormVariationsProvider.class,
-								infoItemClassDetails.getClassName()),
-							layoutDisplayPageProvider),
-						_itemSelector, _jspRenderer, _portal, _servletContext),
+					_getDisplayPageTypeSiteNavigationMenuItemType(
+						infoItemClassDetails, layoutDisplayPageProvider),
 					HashMapDictionaryBuilder.<String, Object>put(
 						"service.ranking:Integer", ranking
 					).put(
@@ -102,6 +98,51 @@ public class DisplayPageSiteNavigationMenuItemTypeRegistrar {
 
 			serviceRegistration.unregister();
 		}
+	}
+
+	private DisplayPageTypeSiteNavigationMenuItemType
+		_getDisplayPageTypeSiteNavigationMenuItemType(
+			InfoItemClassDetails infoItemClassDetails,
+			LayoutDisplayPageProvider<?> layoutDisplayPageProvider) {
+
+		if (Objects.equals(
+				infoItemClassDetails.getClassName(),
+				"com.liferay.asset.kernel.model.AssetCategory")) {
+
+			return new DisplayPageTypeSiteNavigationMenuItemType(
+				_assetDisplayPageFriendlyURLProvider,
+				new DisplayPageTypeContext(
+					infoItemClassDetails,
+					_infoItemServiceTracker.getFirstInfoItemService(
+						InfoItemFormVariationsProvider.class,
+						infoItemClassDetails.getClassName()),
+					layoutDisplayPageProvider),
+				_itemSelector, _jspRenderer, _portal, _servletContext) {
+
+				@Override
+				public String getAddTitle(Locale locale) {
+					return LanguageUtil.format(
+						locale, "select-x",
+						LanguageUtil.get(locale, "categories"));
+				}
+
+				@Override
+				public boolean isMultiSelection() {
+					return true;
+				}
+
+			};
+		}
+
+		return new DisplayPageTypeSiteNavigationMenuItemType(
+			_assetDisplayPageFriendlyURLProvider,
+			new DisplayPageTypeContext(
+				infoItemClassDetails,
+				_infoItemServiceTracker.getFirstInfoItemService(
+					InfoItemFormVariationsProvider.class,
+					infoItemClassDetails.getClassName()),
+				layoutDisplayPageProvider),
+			_itemSelector, _jspRenderer, _portal, _servletContext);
 	}
 
 	@Reference
