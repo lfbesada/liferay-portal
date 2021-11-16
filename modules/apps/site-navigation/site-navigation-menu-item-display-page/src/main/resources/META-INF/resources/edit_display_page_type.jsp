@@ -83,6 +83,8 @@ PortletURL infoItemSelectorURL = itemSelector.getItemSelectorURL(RequestBackedPo
 			"getItemTypeURL", displayPageTypeSiteNavigationMenuTypeDisplayContext.getItemTypeURL(liferayPortletResponse)
 		).put(
 			"itemSelectorURL", infoItemSelectorURL.toString()
+		).put(
+			"modalTitle", displayPageTypeSiteNavigationMenuTypeDisplayContext.getModalTitle(locale)
 		).build()
 	%>'
 	cssClass="mb-4"

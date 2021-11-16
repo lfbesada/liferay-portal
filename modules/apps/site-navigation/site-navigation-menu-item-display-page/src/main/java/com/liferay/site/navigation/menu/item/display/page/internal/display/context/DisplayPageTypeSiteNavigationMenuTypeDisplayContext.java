@@ -18,6 +18,7 @@ import com.liferay.info.item.InfoItemFormVariation;
 import com.liferay.info.item.provider.InfoItemFormVariationsProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
@@ -29,6 +30,8 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.site.navigation.constants.SiteNavigationWebKeys;
 import com.liferay.site.navigation.menu.item.display.page.internal.type.DisplayPageTypeContext;
 import com.liferay.site.navigation.model.SiteNavigationMenuItem;
+
+import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -151,6 +154,11 @@ public class DisplayPageTypeSiteNavigationMenuTypeDisplayContext {
 		itemTypeURL.setResourceID("/navigation_menu/get_item_type");
 
 		return itemTypeURL.toString();
+	}
+
+	public String getModalTitle(Locale locale) {
+		return LanguageUtil.format(
+			locale, "select-x", _displayPageTypeContext.getLabel(locale));
 	}
 
 	public String getOriginalTitle() {
