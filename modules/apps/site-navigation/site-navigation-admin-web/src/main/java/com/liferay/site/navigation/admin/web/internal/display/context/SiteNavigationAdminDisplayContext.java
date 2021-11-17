@@ -115,6 +115,21 @@ public class SiteNavigationAdminDisplayContext {
 					siteNavigationMenuItemType.getLabel(
 						themeDisplay.getLocale())));
 
+		return DropdownItemList.forEach(
+			siteNavigationMenuItemTypes,
+			siteNavigationMenuItemType -> {
+				DropdownItem dropdownItem = new DropdownItem();
+
+				_applyDropdownItem(
+					dropdownItem, siteNavigationMenuItemType,
+					themeDisplay);
+
+				return dropdownItem;
+			}
+		);
+
+		return DropdownItemList.of();
+
 		return new DropdownItemList() {
 			{
 				for (SiteNavigationMenuItemType siteNavigationMenuItemType :
