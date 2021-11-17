@@ -15,7 +15,7 @@
 package com.liferay.site.navigation.admin.web.internal.display.context;
 
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
 import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
@@ -36,6 +36,7 @@ import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.JavaConstants;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -56,11 +57,10 @@ import com.liferay.site.navigation.type.SiteNavigationMenuItemTypeRegistry;
 import com.liferay.staging.StagingGroupHelper;
 import com.liferay.staging.StagingGroupHelperUtil;
 
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
-import java.util.stream.Stream;
 
 import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
@@ -100,39 +100,33 @@ public class SiteNavigationAdminDisplayContext {
 			new DefaultSiteNavigationMenuItemTypeContext(
 				themeDisplay.getScopeGroup());
 
-		DropdownItemListBuilder.DropdownItemListWrapper
-			dropdownItemListWrapper =
-				new DropdownItemListBuilder.DropdownItemListWrapper();
-
 		List<SiteNavigationMenuItemType> siteNavigationMenuItemTypes =
-			_siteNavigationMenuItemTypeRegistry.
-				getSiteNavigationMenuItemTypes();
+			ListUtil.filter(
+				_siteNavigationMenuItemTypeRegistry.
+					getSiteNavigationMenuItemTypes(),
+				siteNavigationMenuItemType ->
+					siteNavigationMenuItemType.isAvailable(
+						siteNavigationMenuItemTypeContext));
 
-		Stream<SiteNavigationMenuItemType> siteNavigationMenuItemTypesStream =
-			siteNavigationMenuItemTypes.stream();
-
-		siteNavigationMenuItemTypes = siteNavigationMenuItemTypesStream.filter(
-			siteNavigationMenuItemType ->
-				siteNavigationMenuItemType.isAvailable(
-					siteNavigationMenuItemTypeContext)
-		).sorted(
+		Collections.sort(
+			siteNavigationMenuItemTypes,
 			Comparator.comparing(
 				siteNavigationMenuItemType ->
 					siteNavigationMenuItemType.getLabel(
-						themeDisplay.getLocale()))
-		).collect(
-			Collectors.toList()
-		);
+						themeDisplay.getLocale())));
 
-		for (SiteNavigationMenuItemType siteNavigationMenuItemType :
-				siteNavigationMenuItemTypes) {
+		return new DropdownItemList() {
+			{
+				for (SiteNavigationMenuItemType siteNavigationMenuItemType :
+						siteNavigationMenuItemTypes) {
 
-			dropdownItemListWrapper = dropdownItemListWrapper.add(
-				dropdownItem -> _applyDropdownItem(
-					dropdownItem, siteNavigationMenuItemType, themeDisplay));
-		}
-
-		return dropdownItemListWrapper.build();
+					add(
+						dropdownItem -> _applyDropdownItem(
+							dropdownItem, siteNavigationMenuItemType,
+							themeDisplay));
+				}
+			}
+		};
 	}
 
 	public String getDisplayStyle() {
