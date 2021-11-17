@@ -79,21 +79,25 @@ public class AddDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 			typeSettingsUnicodeProperties.setProperty(
 				"classNameId", String.valueOf(classNameId));
 			typeSettingsUnicodeProperties.setProperty(
-				"classTypeId", String.valueOf(ParamUtil.getLong(actionRequest, "classTypeId")));
+				"classTypeId",
+				String.valueOf(
+					ParamUtil.getLong(actionRequest, "classTypeId")));
 			typeSettingsUnicodeProperties.setProperty(
 				"classPK", String.valueOf(classPK));
-			typeSettingsUnicodeProperties.setProperty("title", ParamUtil.getString(actionRequest, "title"));
-			typeSettingsUnicodeProperties.setProperty("type", ParamUtil.getString(actionRequest, "type"));
+			typeSettingsUnicodeProperties.setProperty(
+				"title", ParamUtil.getString(actionRequest, "title"));
+			typeSettingsUnicodeProperties.setProperty(
+				"type", ParamUtil.getString(actionRequest, "type"));
 
 			ServiceContext serviceContext = ServiceContextFactory.getInstance(
 				actionRequest);
 
 			try {
 				_siteNavigationMenuItemService.addSiteNavigationMenuItem(
-					themeDisplay.getScopeGroupId(), ParamUtil.getLong(actionRequest, "siteNavigationMenuId"), 0,
+					themeDisplay.getScopeGroupId(),
+					ParamUtil.getLong(actionRequest, "siteNavigationMenuId"), 0,
 					siteNavigationMenuItemType,
-					typeSettingsUnicodeProperties.toString(),
-					serviceContext);
+					typeSettingsUnicodeProperties.toString(), serviceContext);
 			}
 			catch (SiteNavigationMenuItemNameException
 						siteNavigationMenuItemNameException) {
