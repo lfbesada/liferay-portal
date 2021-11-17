@@ -73,31 +73,24 @@ public class AddDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 			ThemeDisplay themeDisplay =
 				(ThemeDisplay)actionRequest.getAttribute(WebKeys.THEME_DISPLAY);
 
-			long classTypeId = ParamUtil.getLong(actionRequest, "classTypeId");
-
-			long siteNavigationMenuId = ParamUtil.getLong(
-				actionRequest, "siteNavigationMenuId");
-			String title = ParamUtil.getString(actionRequest, "title");
-			String type = ParamUtil.getString(actionRequest, "type");
-
 			UnicodeProperties typeSettingsUnicodeProperties =
 				new UnicodeProperties(true);
 
 			typeSettingsUnicodeProperties.setProperty(
 				"classNameId", String.valueOf(classNameId));
 			typeSettingsUnicodeProperties.setProperty(
-				"classTypeId", String.valueOf(classTypeId));
+				"classTypeId", String.valueOf(ParamUtil.getLong(actionRequest, "classTypeId")));
 			typeSettingsUnicodeProperties.setProperty(
 				"classPK", String.valueOf(classPK));
-			typeSettingsUnicodeProperties.setProperty("title", title);
-			typeSettingsUnicodeProperties.setProperty("type", type);
+			typeSettingsUnicodeProperties.setProperty("title", ParamUtil.getString(actionRequest, "title"));
+			typeSettingsUnicodeProperties.setProperty("type", ParamUtil.getString(actionRequest, "type"));
 
 			ServiceContext serviceContext = ServiceContextFactory.getInstance(
 				actionRequest);
 
 			try {
 				_siteNavigationMenuItemService.addSiteNavigationMenuItem(
-					themeDisplay.getScopeGroupId(), siteNavigationMenuId, 0,
+					themeDisplay.getScopeGroupId(), ParamUtil.getLong(actionRequest, "siteNavigationMenuId"), 0,
 					siteNavigationMenuItemType,
 					typeSettingsUnicodeProperties.toString(),
 					serviceContext);
