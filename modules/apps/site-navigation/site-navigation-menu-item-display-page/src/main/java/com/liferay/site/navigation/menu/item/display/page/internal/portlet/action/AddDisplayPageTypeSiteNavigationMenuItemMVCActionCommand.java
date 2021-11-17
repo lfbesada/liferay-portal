@@ -70,9 +70,6 @@ public class AddDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 		if ((classNameId > 0) && (classPK > 0) &&
 			Validator.isNotNull(siteNavigationMenuItemType)) {
 
-			ServiceContext serviceContext = ServiceContextFactory.getInstance(
-				actionRequest);
-
 			ThemeDisplay themeDisplay =
 				(ThemeDisplay)actionRequest.getAttribute(WebKeys.THEME_DISPLAY);
 
@@ -94,6 +91,9 @@ public class AddDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 				"classPK", String.valueOf(classPK));
 			typeSettingsUnicodeProperties.setProperty("title", title);
 			typeSettingsUnicodeProperties.setProperty("type", type);
+
+			ServiceContext serviceContext = ServiceContextFactory.getInstance(
+				actionRequest);
 
 			try {
 				_siteNavigationMenuItemService.addSiteNavigationMenuItem(
