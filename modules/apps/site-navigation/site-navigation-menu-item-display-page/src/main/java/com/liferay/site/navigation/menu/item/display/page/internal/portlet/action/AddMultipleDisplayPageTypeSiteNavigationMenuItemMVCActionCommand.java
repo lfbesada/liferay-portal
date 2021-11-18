@@ -83,24 +83,29 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 				(ThemeDisplay)actionRequest.getAttribute(WebKeys.THEME_DISPLAY);
 
 			try {
-				List<InfoItemItemSelectorReturnItem> items = JSONUtil.toList(
-					JSONFactoryUtil.createJSONArray(
-						ParamUtil.getString(actionRequest, "items")),
-					itemJSONObject -> {
-						if (!Objects.equals(
-								itemJSONObject.getLong("className"),
-								siteNavigationMenuItemType)) {
+				List<InfoItemItemSelectorReturnItem>
+					infoItemItemSelectorReturnItems = JSONUtil.toList(
+						JSONFactoryUtil.createJSONArray(
+							ParamUtil.getString(actionRequest, "items")),
+						itemJSONObject -> {
+							if (!Objects.equals(
+									itemJSONObject.getLong("className"),
+									siteNavigationMenuItemType)) {
 
-							return null;
-						}
+								return null;
+							}
 
-						return new InfoItemItemSelectorReturnItem(
-							itemJSONObject);
-					});
+							return new InfoItemItemSelectorReturnItem(
+								itemJSONObject);
+						});
 
-				for (InfoItemItemSelectorReturnItem item : items) {
+				for (InfoItemItemSelectorReturnItem
+						infoItemItemSelectorReturnItem :
+							infoItemItemSelectorReturnItems) {
+
 					_addSiteNavigationMenuItem(
-						themeDisplay.getScopeGroupId(), item, 0, serviceContext,
+						themeDisplay.getScopeGroupId(),
+						infoItemItemSelectorReturnItem, 0, serviceContext,
 						siteNavigationMenuId, siteNavigationMenuItemType);
 				}
 			}
