@@ -34,8 +34,10 @@ import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.site.navigation.admin.constants.SiteNavigationAdminPortletKeys;
+import com.liferay.site.navigation.model.SiteNavigationMenuItem;
 import com.liferay.site.navigation.service.SiteNavigationMenuItemService;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Objects;
 
@@ -98,7 +100,7 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 
 				for (InfoItemItemSelectorReturnItem item : items) {
 					_addSiteNavigationMenuItem(
-						themeDisplay.getScopeGroupId(), item, serviceContext,
+						themeDisplay.getScopeGroupId(), item, 0, serviceContext,
 						siteNavigationMenuId, siteNavigationMenuItemType);
 				}
 			}
@@ -146,6 +148,10 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 			_type = jsonObject.getString("type");
 		}
 
+		public List<InfoItemItemSelectorReturnItem> getChildren() {
+			return _children;
+		}
+
 		public String getClassName() {
 			return _className;
 		}
@@ -172,6 +178,10 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 
 		public String getType() {
 			return _type;
+		}
+
+		public void setChildren(List<InfoItemItemSelectorReturnItem> children) {
+			_children = children;
 		}
 
 		public void setClassName(String className) {
@@ -202,6 +212,8 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 			_type = type;
 		}
 
+		private List<InfoItemItemSelectorReturnItem> _children =
+			new ArrayList<>();
 		private String _className;
 		private long _classNameId;
 		private long _classPK;
@@ -215,8 +227,8 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 	private void _addSiteNavigationMenuItem(
 			long groupId,
 			InfoItemItemSelectorReturnItem infoItemItemSelectorReturnItem,
-			ServiceContext serviceContext, long siteNavigationMenuId,
-			String siteNavigationMenuItemType)
+			long parentSiteNavigationMenuItemId, ServiceContext serviceContext,
+			long siteNavigationMenuId, String siteNavigationMenuItemType)
 		throws PortalException {
 
 		UnicodeProperties typeSettingsUnicodeProperties = new UnicodeProperties(
@@ -238,9 +250,22 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 		typeSettingsUnicodeProperties.setProperty(
 			"title", infoItemItemSelectorReturnItem.getTitle());
 
-		_siteNavigationMenuItemService.addSiteNavigationMenuItem(
-			groupId, siteNavigationMenuId, 0L, siteNavigationMenuItemType,
-			typeSettingsUnicodeProperties.toString(), serviceContext);
+		SiteNavigationMenuItem siteNavigationMenuItem =
+			_siteNavigationMenuItemService.addSiteNavigationMenuItem(
+				groupId, siteNavigationMenuId, parentSiteNavigationMenuItemId,
+				siteNavigationMenuItemType,
+				typeSettingsUnicodeProperties.toString(), serviceContext);
+
+		for (InfoItemItemSelectorReturnItem
+				childInfoItemItemSelectorReturnItem :
+					infoItemItemSelectorReturnItem.getChildren()) {
+
+			_addSiteNavigationMenuItem(
+				groupId, childInfoItemItemSelectorReturnItem,
+				siteNavigationMenuItem.getSiteNavigationMenuItemId(),
+				serviceContext, siteNavigationMenuId,
+				siteNavigationMenuItemType);
+		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
