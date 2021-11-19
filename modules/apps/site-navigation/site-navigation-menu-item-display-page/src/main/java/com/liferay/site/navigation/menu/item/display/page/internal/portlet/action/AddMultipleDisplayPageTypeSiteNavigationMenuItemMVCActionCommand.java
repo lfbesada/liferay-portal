@@ -83,25 +83,10 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 				(ThemeDisplay)actionRequest.getAttribute(WebKeys.THEME_DISPLAY);
 
 			try {
-				List<InfoItemItemSelectorReturnItem>
-					infoItemItemSelectorReturnItems = JSONUtil.toList(
-						JSONFactoryUtil.createJSONArray(
-							ParamUtil.getString(actionRequest, "items")),
-						itemJSONObject -> {
-							if (!Objects.equals(
-									itemJSONObject.getString("className"),
-									siteNavigationMenuItemType)) {
-
-								return null;
-							}
-
-							return new InfoItemItemSelectorReturnItem(
-								itemJSONObject);
-						});
-
 				for (InfoItemItemSelectorReturnItem
 						infoItemItemSelectorReturnItem :
-							infoItemItemSelectorReturnItems) {
+							getInfoItemItemSelectorReturnItems(
+								actionRequest, siteNavigationMenuItemType)) {
 
 					_addSiteNavigationMenuItem(
 						themeDisplay.getScopeGroupId(),
@@ -117,7 +102,7 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 				jsonObject.put(
 					"errorMessage",
 					LanguageUtil.get(
-						_portal.getHttpServletRequest(actionRequest),
+						portal.getHttpServletRequest(actionRequest),
 						"an-unexpected-error-occurred"));
 			}
 		}
@@ -133,13 +118,39 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 			jsonObject.put(
 				"errorMessage",
 				LanguageUtil.get(
-					_portal.getHttpServletRequest(actionRequest),
+					portal.getHttpServletRequest(actionRequest),
 					"an-unexpected-error-occurred"));
 		}
 
 		JSONPortletResponseUtil.writeJSON(
 			actionRequest, actionResponse, jsonObject);
 	}
+
+	protected List<InfoItemItemSelectorReturnItem>
+			getInfoItemItemSelectorReturnItems(
+				ActionRequest actionRequest, String siteNavigationMenuItemType)
+		throws Exception {
+
+		return JSONUtil.toList(
+			JSONFactoryUtil.createJSONArray(
+				ParamUtil.getString(actionRequest, "items")),
+			itemJSONObject -> {
+				if (!Objects.equals(
+						itemJSONObject.getString("className"),
+						siteNavigationMenuItemType)) {
+
+					return null;
+				}
+
+				return new InfoItemItemSelectorReturnItem(itemJSONObject);
+			});
+	}
+
+	@Reference
+	protected Portal portal;
+
+	@Reference
+	protected SiteNavigationMenuItemService siteNavigationMenuItemService;
 
 	protected class InfoItemItemSelectorReturnItem {
 
@@ -256,7 +267,7 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 			"title", infoItemItemSelectorReturnItem.getTitle());
 
 		SiteNavigationMenuItem siteNavigationMenuItem =
-			_siteNavigationMenuItemService.addSiteNavigationMenuItem(
+			siteNavigationMenuItemService.addSiteNavigationMenuItem(
 				groupId, siteNavigationMenuId, parentSiteNavigationMenuItemId,
 				siteNavigationMenuItemType,
 				typeSettingsUnicodeProperties.toString(), serviceContext);
@@ -275,11 +286,5 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand.class);
-
-	@Reference
-	private Portal _portal;
-
-	@Reference
-	private SiteNavigationMenuItemService _siteNavigationMenuItemService;
 
 }
