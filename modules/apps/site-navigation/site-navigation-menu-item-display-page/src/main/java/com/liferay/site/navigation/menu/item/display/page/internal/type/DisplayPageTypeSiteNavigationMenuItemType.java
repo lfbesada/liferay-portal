@@ -131,19 +131,10 @@ public class DisplayPageTypeSiteNavigationMenuItemType
 	public PortletURL getAddURL(
 		RenderRequest renderRequest, RenderResponse renderResponse) {
 
-		String actionName =
-			"/navigation_menu/add_display_page_type_site_navigation_menu_item";
-
-		if (isMultiSelection()) {
-			actionName =
-				"/navigation_menu" +
-					"/add_multiple_display_page_type_site_navigation_menu_item";
-		}
-
 		return PortletURLBuilder.createActionURL(
 			renderResponse
 		).setActionName(
-			actionName
+			getAddActionName()
 		).setParameter(
 			"siteNavigationMenuItemType", getType()
 		).buildPortletURL();
@@ -345,6 +336,16 @@ public class DisplayPageTypeSiteNavigationMenuItemType
 		_jspRenderer.renderJSP(
 			_servletContext, httpServletRequest, httpServletResponse,
 			"/edit_display_page_type.jsp");
+	}
+
+	protected String getAddActionName() {
+		if (isMultiSelection()) {
+			return "/navigation_menu" +
+				"/add_multiple_display_page_type_site_navigation_menu_item";
+		}
+
+		return "/navigation_menu" +
+			"/add_display_page_type_site_navigation_menu_item";
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
