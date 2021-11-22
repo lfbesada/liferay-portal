@@ -31,6 +31,7 @@ import com.liferay.site.navigation.admin.constants.SiteNavigationAdminPortletKey
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -141,8 +142,16 @@ public class AddMultipleAssetCategorySiteNavigationMenuItemsMVCActionCommand
 			return Collections.emptyList();
 		}
 
-		List<InfoItemItemSelectorReturnItem> children = 
-			itemsByParentCategoryIdMap.get(parentCategoryId);
+		List<InfoItemItemSelectorReturnItem> children = ListUtil.sort(
+			itemsByParentCategoryIdMap.get(parentCategoryId),
+			Comparator.comparing(
+				infoItemItemSelectorReturnItem -> {
+					AssetCategory assetCategory =
+						_assetCategoryLocalService.fetchAssetCategory(
+							infoItemItemSelectorReturnItem.getClassPK());
+
+					return assetCategory.getName();
+				}));
 
 		for (InfoItemItemSelectorReturnItem infoItemItemSelectorReturnItem :
 				children) {
