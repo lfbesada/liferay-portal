@@ -14,10 +14,21 @@
 
 package com.liferay.site.navigation.menu.item.display.page.internal.portlet.action;
 
+import com.liferay.asset.kernel.model.AssetCategory;
+import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.site.navigation.admin.constants.SiteNavigationAdminPortletKeys;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Map;
+import java.util.stream.Collectors;
+import java.util.stream.Stream;
+
+import javax.portlet.ActionRequest;
+
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Lourdes Fernández Besada
@@ -32,4 +43,44 @@ import org.osgi.service.component.annotations.Component;
 )
 public class AddMultipleAssetCategorySiteNavigationMenuItemsMVCActionCommand
 	extends AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand {
+
+	@Override
+	protected List<InfoItemItemSelectorReturnItem>
+			getInfoItemItemSelectorReturnItems(
+				ActionRequest actionRequest, String siteNavigationMenuItemType)
+		throws Exception {
+
+		List<InfoItemItemSelectorReturnItem> infoItemItemSelectorReturnItems =
+			super.getInfoItemItemSelectorReturnItems(
+				actionRequest, siteNavigationMenuItemType);
+
+		Stream<InfoItemItemSelectorReturnItem> stream =
+			infoItemItemSelectorReturnItems.stream();
+
+		Map<Long, List<InfoItemItemSelectorReturnItem>>
+			itemsByVocabularyIdMap = stream.collect(
+				Collectors.groupingBy(
+					infoItemItemSelectorReturnItem -> {
+						AssetCategory assetCategory =
+							_assetCategoryLocalService.fetchAssetCategory(
+								infoItemItemSelectorReturnItem.getClassPK());
+
+						return assetCategory.getVocabularyId();
+					},
+					Collectors.toList()));
+
+		List<InfoItemItemSelectorReturnItem> itemsHierarchy = new ArrayList<>();
+
+		for(List<InfoItemItemSelectorReturnItem> vocabularyItems
+			: itemsByVocabularyIdMap.values()) {
+			itemsHierarchy.addAll(vocabularyItems);
+		}
+
+		return itemsHierarchy;
+	}
+	
+
+	@Reference
+	private AssetCategoryLocalService _assetCategoryLocalService;
+
 }
