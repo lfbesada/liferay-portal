@@ -131,6 +131,12 @@ public class DisplayPageSiteNavigationMenuItemTypeRegistrar {
 					return true;
 				}
 
+				@Override
+				protected String getAddActionName() {
+					return "/navigation_menu/add_multiple_asset_category" +
+						"_site_navigation_menu_item";
+				}
+
 			};
 		}
 
