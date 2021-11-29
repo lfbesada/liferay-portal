@@ -21,6 +21,8 @@ import com.liferay.layout.admin.kernel.model.LayoutTypePortletConstants;
 import com.liferay.petra.lang.CentralizedThreadLocal;
 import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
 import com.liferay.petra.sql.dsl.query.DSLQuery;
+import com.liferay.petra.sql.dsl.query.FromStep;
+import com.liferay.petra.sql.dsl.query.GroupByStep;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.bean.BeanReference;
@@ -49,6 +51,7 @@ import com.liferay.portal.kernel.model.LayoutPrototype;
 import com.liferay.portal.kernel.model.LayoutReference;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
+import com.liferay.portal.kernel.model.LayoutTable;
 import com.liferay.portal.kernel.model.LayoutType;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.PortalPreferenceValueTable;
@@ -2113,6 +2116,36 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 	}
 
 	@Override
+	public List<Layout> getPublishedLayouts(
+		long groupId, int start, int end,
+		OrderByComparator<Layout> orderByComparator) {
+
+		GroupByStep groupByStep = _getPublishedPagesDLSQuery(
+			groupId, DSLQueryFactoryUtil.select(LayoutTable.INSTANCE));
+
+		return dslQuery(
+			groupByStep.orderBy(
+				orderByStep -> {
+					if (orderByComparator == null) {
+						return orderByStep.orderBy(
+							LayoutTable.INSTANCE.priority.ascending());
+					}
+
+					return orderByStep.orderBy(
+						LayoutTable.INSTANCE, orderByComparator);
+				}
+			).limit(
+				start, end
+			));
+	}
+
+	@Override
+	public int getPublishedLayoutsCount(long groupId) {
+		return dslQueryCount(
+			_getPublishedPagesDLSQuery(groupId, DSLQueryFactoryUtil.count()));
+	}
+
+	@Override
 	public List<Layout> getScopeGroupLayouts(long parentGroupId)
 		throws PortalException {
 
@@ -3649,6 +3682,24 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		return newFriendlyURLMap;
 	}
 
+	private Long[] _getDraftLayoutsClassPKs(long groupId) {
+		List<Long> layoutPKs = dslQuery(
+			DSLQueryFactoryUtil.select(
+				LayoutTable.INSTANCE.classPK
+			).from(
+				LayoutTable.INSTANCE
+			).where(
+				LayoutTable.INSTANCE.groupId.eq(
+					groupId
+				).and(
+					LayoutTable.INSTANCE.classNameId.eq(
+						_classNameLocalService.getClassNameId(Layout.class))
+				)
+			));
+
+		return layoutPKs.toArray(new Long[0]);
+	}
+
 	private long _getParentPlid(
 		long groupId, boolean privateLayout, long parentLayoutId) {
 
@@ -3664,6 +3715,55 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		}
 
 		return parentLayout.getPlid();
+	}
+
+	private Long[] _getPublishedDraftLayoutsClassPKs(long groupId) {
+		List<Long> layoutPKs = dslQuery(
+			DSLQueryFactoryUtil.select(
+				LayoutTable.INSTANCE.classPK
+			).from(
+				LayoutTable.INSTANCE
+			).where(
+				LayoutTable.INSTANCE.groupId.eq(
+					groupId
+				).and(
+					LayoutTable.INSTANCE.classNameId.eq(
+						_classNameLocalService.getClassNameId(Layout.class)
+					).and(
+						LayoutTable.INSTANCE.typeSettings.like(
+							"%published=true%")
+					)
+				)
+			));
+
+		return layoutPKs.toArray(new Long[0]);
+	}
+
+	private GroupByStep _getPublishedPagesDLSQuery(
+		long groupId, FromStep fromStep) {
+
+		return fromStep.from(
+			LayoutTable.INSTANCE
+		).where(
+			LayoutTable.INSTANCE.groupId.eq(
+				groupId
+			).and(
+				LayoutTable.INSTANCE.system.eq(false)
+			).and(
+				LayoutTable.INSTANCE.type.notIn(
+					new String[] {
+						LayoutConstants.TYPE_COLLECTION,
+						LayoutConstants.TYPE_CONTENT
+					}
+				).or(
+					LayoutTable.INSTANCE.plid.notIn(
+						_getDraftLayoutsClassPKs(groupId))
+				).or(
+					LayoutTable.INSTANCE.plid.in(
+						_getPublishedDraftLayoutsClassPKs(groupId))
+				).withParentheses()
+			)
+		);
 	}
 
 	private Sort _getSortFromComparator(
