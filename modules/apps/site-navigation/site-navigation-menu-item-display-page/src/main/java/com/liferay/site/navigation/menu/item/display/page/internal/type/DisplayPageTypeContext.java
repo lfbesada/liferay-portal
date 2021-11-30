@@ -19,11 +19,14 @@ import com.liferay.info.item.InfoItemReference;
 import com.liferay.info.item.InfoItemServiceTracker;
 import com.liferay.info.item.provider.InfoItemDetailsProvider;
 import com.liferay.info.item.provider.InfoItemFormVariationsProvider;
+import com.liferay.layout.display.page.LayoutDisplayPageMultiSelectionProvider;
+import com.liferay.layout.display.page.LayoutDisplayPageMultiSelectionProviderTracker;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageProviderTracker;
 
 import java.util.Locale;
+import java.util.Optional;
 
 /**
  * @author Lourdes Fernández Besada
@@ -32,10 +35,14 @@ public class DisplayPageTypeContext {
 
 	public DisplayPageTypeContext(
 		String className, InfoItemServiceTracker infoItemServiceTracker,
+		LayoutDisplayPageMultiSelectionProviderTracker
+			layoutDisplayPageMultiSelectionProviderTracker,
 		LayoutDisplayPageProviderTracker layoutDisplayPageProviderTracker) {
 
 		_className = className;
 		_infoItemServiceTracker = infoItemServiceTracker;
+		_layoutDisplayPageMultiSelectionProviderTracker =
+			layoutDisplayPageMultiSelectionProviderTracker;
 		_layoutDisplayPageProviderTracker = layoutDisplayPageProviderTracker;
 	}
 
@@ -86,6 +93,18 @@ public class DisplayPageTypeContext {
 		return infoItemClassDetails.getLabel(locale);
 	}
 
+	public Optional<LayoutDisplayPageMultiSelectionProvider<?>>
+		getLayoutDisplayPageMultiSelectionProviderOptional() {
+
+		if (_layoutDisplayPageMultiSelectionProvider == null) {
+			_layoutDisplayPageMultiSelectionProvider =
+				_layoutDisplayPageMultiSelectionProviderTracker.
+					getLayoutDisplayPageMultiSelectionProvider(_className);
+		}
+
+		return Optional.ofNullable(_layoutDisplayPageMultiSelectionProvider);
+	}
+
 	public LayoutDisplayPageObjectProvider<?>
 		getLayoutDisplayPageObjectProvider(long classPK) {
 
@@ -112,10 +131,22 @@ public class DisplayPageTypeContext {
 		return _layoutDisplayPageProvider;
 	}
 
+	public boolean isMultiSelection() {
+		if (_layoutDisplayPageMultiSelectionProvider != null) {
+			return true;
+		}
+
+		return false;
+	}
+
 	private final String _className;
 	private InfoItemClassDetails _infoItemClassDetails;
 	private InfoItemFormVariationsProvider<?> _infoItemFormVariationsProvider;
 	private final InfoItemServiceTracker _infoItemServiceTracker;
+	private LayoutDisplayPageMultiSelectionProvider<?>
+		_layoutDisplayPageMultiSelectionProvider;
+	private final LayoutDisplayPageMultiSelectionProviderTracker
+		_layoutDisplayPageMultiSelectionProviderTracker;
 	private LayoutDisplayPageProvider<?> _layoutDisplayPageProvider;
 	private final LayoutDisplayPageProviderTracker
 		_layoutDisplayPageProviderTracker;
