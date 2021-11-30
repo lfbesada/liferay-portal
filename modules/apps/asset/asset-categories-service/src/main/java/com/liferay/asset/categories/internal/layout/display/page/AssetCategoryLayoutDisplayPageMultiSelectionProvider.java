@@ -35,6 +35,7 @@ import com.liferay.portlet.asset.util.comparator.AssetVocabularyGroupLocalizedTi
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Comparator;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
@@ -161,8 +162,18 @@ public class AssetCategoryLayoutDisplayPageMultiSelectionProvider
 			return Collections.emptyList();
 		}
 
-		List<InfoItemReferenceMetadata> children =
-			itemsByParentCategoryIdMap.get(parentCategoryId);
+		List<InfoItemReferenceMetadata> children = ListUtil.sort(
+			itemsByParentCategoryIdMap.get(parentCategoryId),
+			Comparator.comparing(
+				infoItemReferenceMetadata -> {
+					AssetCategory assetCategory =
+						_assetCategoryLocalService.fetchAssetCategory(
+							_getClassPK(
+								infoItemReferenceMetadata.
+									getInfoItemReference()));
+
+					return assetCategory.getName();
+				}));
 
 		for (InfoItemReferenceMetadata infoItemReferenceMetadata : children) {
 			Map<String, Object> data = infoItemReferenceMetadata.getData();
