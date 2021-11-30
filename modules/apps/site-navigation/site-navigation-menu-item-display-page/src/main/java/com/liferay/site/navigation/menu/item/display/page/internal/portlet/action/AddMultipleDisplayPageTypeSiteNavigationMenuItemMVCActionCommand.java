@@ -14,7 +14,10 @@
 
 package com.liferay.site.navigation.menu.item.display.page.internal.portlet.action;
 
+import com.liferay.info.item.InfoItemHierarchicalReference;
 import com.liferay.info.item.InfoItemReference;
+import com.liferay.layout.display.page.LayoutDisplayPageMultiSelectionProvider;
+import com.liferay.layout.display.page.LayoutDisplayPageMultiSelectionProviderTracker;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -84,7 +87,7 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 				(ThemeDisplay)actionRequest.getAttribute(WebKeys.THEME_DISPLAY);
 
 			try {
-				List<InfoItemItemSelectorReturnItem>
+				List<? extends InfoItemHierarchicalReference>
 					infoItemItemSelectorReturnItems = JSONUtil.toList(
 						JSONFactoryUtil.createJSONArray(
 							ParamUtil.getString(actionRequest, "items")),
@@ -100,14 +103,26 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 								itemJSONObject);
 						});
 
-				for (InfoItemItemSelectorReturnItem
-						infoItemItemSelectorReturnItem :
-							infoItemItemSelectorReturnItems) {
+				LayoutDisplayPageMultiSelectionProvider<?>
+					layoutDisplayPageMultiSelectionProvider =
+						_layoutDisplayPageMultiSelectionProviderTracker.
+							getLayoutDisplayPageMultiSelectionProvider(
+								siteNavigationMenuItemType);
+
+				if (layoutDisplayPageMultiSelectionProvider != null) {
+					infoItemItemSelectorReturnItems =
+						layoutDisplayPageMultiSelectionProvider.getSortedList(
+							infoItemItemSelectorReturnItems);
+				}
+
+				for (InfoItemReference infoItemReference :
+						infoItemItemSelectorReturnItems) {
 
 					_addSiteNavigationMenuItem(
 						themeDisplay.getScopeGroupId(),
-						infoItemItemSelectorReturnItem, 0, serviceContext,
-						siteNavigationMenuId, siteNavigationMenuItemType);
+						(InfoItemItemSelectorReturnItem)infoItemReference, 0,
+						serviceContext, siteNavigationMenuId,
+						siteNavigationMenuItemType);
 				}
 			}
 			catch (PortalException portalException) {
@@ -142,7 +157,8 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 			actionRequest, actionResponse, jsonObject);
 	}
 
-	protected class InfoItemItemSelectorReturnItem extends InfoItemReference {
+	protected class InfoItemItemSelectorReturnItem
+		extends InfoItemHierarchicalReference {
 
 		public InfoItemItemSelectorReturnItem(JSONObject jsonObject) {
 			super(
@@ -156,10 +172,6 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 			_subtype = jsonObject.getString("subtype");
 			_title = jsonObject.getString("title");
 			_type = jsonObject.getString("type");
-		}
-
-		public List<InfoItemItemSelectorReturnItem> getChildren() {
-			return _children;
 		}
 
 		public String getClassName() {
@@ -188,10 +200,6 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 
 		public String getType() {
 			return _type;
-		}
-
-		public void setChildren(List<InfoItemItemSelectorReturnItem> children) {
-			_children = children;
 		}
 
 		public void setClassName(String className) {
@@ -266,12 +274,13 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 				siteNavigationMenuItemType,
 				typeSettingsUnicodeProperties.toString(), serviceContext);
 
-		for (InfoItemItemSelectorReturnItem
-				childInfoItemItemSelectorReturnItem :
-					infoItemItemSelectorReturnItem.getChildren()) {
+		for (InfoItemHierarchicalReference childInfoItemHierarchicalReference :
+				infoItemItemSelectorReturnItem.getChildren()) {
 
 			_addSiteNavigationMenuItem(
-				groupId, childInfoItemItemSelectorReturnItem,
+				groupId,
+				(InfoItemItemSelectorReturnItem)
+					childInfoItemHierarchicalReference,
 				siteNavigationMenuItem.getSiteNavigationMenuItemId(),
 				serviceContext, siteNavigationMenuId,
 				siteNavigationMenuItemType);
@@ -280,6 +289,10 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand.class);
+
+	@Reference
+	private LayoutDisplayPageMultiSelectionProviderTracker
+		_layoutDisplayPageMultiSelectionProviderTracker;
 
 	@Reference
 	private Portal _portal;
