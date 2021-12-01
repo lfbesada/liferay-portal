@@ -117,10 +117,14 @@ definition {
 
 		IFrame.selectConfigurationFrame();
 
+		var buttonText = "Add";
+
 		if ("${item}" == "Page") {
 			NavigationMenusAdmin._addItemPage(
 				pageNames = "${pageNames}",
 				privacy = "${privacy}");
+
+			var buttonText = "Select";
 		}
 
 		if ("${item}" == "Display Page") {
@@ -142,7 +146,7 @@ definition {
 
 		if ("${item}" != "Display Page") {
 			MouseOver(
-				key_text = "Add",
+				key_text = "${buttonText}",
 				locator1 = "Button#ANY");
 
 			Button.clickAdd();
