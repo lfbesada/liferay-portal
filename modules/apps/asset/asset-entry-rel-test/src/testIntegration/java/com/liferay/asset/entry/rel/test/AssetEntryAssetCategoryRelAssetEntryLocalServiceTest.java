@@ -17,7 +17,7 @@ package com.liferay.asset.entry.rel.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetVocabulary;
-import com.liferay.asset.kernel.service.AssetCategoryServiceUtil;
+import com.liferay.asset.kernel.service.AssetCategoryLocalServiceUtil;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.test.util.AssetTestUtil;
 import com.liferay.portal.kernel.model.Group;
@@ -162,7 +162,7 @@ public class AssetEntryAssetCategoryRelAssetEntryLocalServiceTest {
 			null);
 
 		List<AssetCategory> assetCategories =
-			AssetCategoryServiceUtil.getCategories(
+			AssetCategoryLocalServiceUtil.getCategories(
 				User.class.getName(), _user.getUserId());
 
 		Assert.assertEquals(
