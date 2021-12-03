@@ -59,7 +59,11 @@ public class AssetEntryAssetCategoryRelAssetEntryLocalServiceTest {
 		_group = GroupTestUtil.addGroup();
 		_user = UserTestUtil.addUser();
 
-		_assetVocabulary = AssetTestUtil.addVocabulary(_group.getGroupId());
+		_creatorUser = UserTestUtil.addGroupUser(
+			_group, RoleConstants.SITE_MEMBER);
+
+		_assetVocabulary = AssetTestUtil.addVocabulary(
+			_group.getGroupId(), _creatorUser.getUserId());
 
 		for (int i = 0; i < _assetCategoryIds.length; i++) {
 			_assetCategoryIds[i] = _addAssetCategory(_group, _assetVocabulary);
@@ -84,7 +88,8 @@ public class AssetEntryAssetCategoryRelAssetEntryLocalServiceTest {
 		throws Exception {
 
 		AssetCategory assetCategory = AssetTestUtil.addCategory(
-			group.getGroupId(), assetVocabulary.getVocabularyId());
+			group.getGroupId(), assetVocabulary.getVocabularyId(),
+			_creatorUser.getUserId());
 
 		_assetCategories.add(assetCategory);
 
@@ -116,6 +121,9 @@ public class AssetEntryAssetCategoryRelAssetEntryLocalServiceTest {
 
 	@DeleteAfterTestRun
 	private AssetVocabulary _assetVocabulary;
+
+	@DeleteAfterTestRun
+	private User _creatorUser;
 
 	@DeleteAfterTestRun
 	private Group _group;
