@@ -32,7 +32,6 @@ import com.liferay.petra.reflect.GenericUtil;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.site.navigation.menu.item.display.page.internal.configuration.FFDisplayPageSiteNavigationMenuItemConfigurationUtil;
 import com.liferay.site.navigation.menu.item.display.page.internal.type.DisplayPageTypeContext;
 import com.liferay.site.navigation.menu.item.display.page.internal.type.DisplayPageTypeSiteNavigationMenuItemType;
 import com.liferay.site.navigation.type.SiteNavigationMenuItemType;
@@ -138,12 +137,6 @@ public class DisplayPageSiteNavigationMenuItemTypeProviderTrackerImpl {
 
 			InfoItemFormProvider<?> infoItemFormProvider =
 				_bundleContext.getService(serviceReference);
-
-			if (!FFDisplayPageSiteNavigationMenuItemConfigurationUtil.
-					displayPageTypesEnabled()) {
-
-				return infoItemFormProvider;
-			}
 
 			String className = GenericUtil.getGenericClassName(
 				infoItemFormProvider);
