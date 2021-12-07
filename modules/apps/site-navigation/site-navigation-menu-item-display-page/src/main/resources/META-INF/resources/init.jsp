@@ -31,7 +31,6 @@ page import="com.liferay.portal.kernel.util.HashMapBuilder" %><%@
 page import="com.liferay.portal.kernel.util.HtmlUtil" %><%@
 page import="com.liferay.portal.kernel.util.Validator" %><%@
 page import="com.liferay.site.navigation.menu.item.display.page.internal.constants.SiteNavigationMenuItemTypeDisplayPageWebKeys" %><%@
-page import="com.liferay.site.navigation.menu.item.display.page.internal.display.context.DisplayPageSiteNavigationMenuTypeDisplayContext" %><%@
 page import="com.liferay.site.navigation.menu.item.display.page.internal.display.context.DisplayPageTypeSiteNavigationMenuTypeDisplayContext" %>
 
 <%@ page import="javax.portlet.PortletURL" %>
