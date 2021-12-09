@@ -47,6 +47,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.test.rule.Inject;
@@ -126,6 +127,51 @@ public class LayoutCopyHelperTest {
 
 		Assert.assertEquals(assetCategory, assetCategories.get(0));
 		Assert.assertEquals(assetTag, assetTags.get(0));
+	}
+
+	@Test
+	public void testCopyContentLayoutFromDraft() throws Exception {
+		Layout sourceLayout1 = _addContentLayout();
+
+		Layout sourceDraftLayout1 = sourceLayout1.fetchDraftLayout();
+
+		Assert.assertNotNull(sourceDraftLayout1);
+
+		Assert.assertEquals(
+			"false",
+			sourceDraftLayout1.getTypeSettingsProperty("published", "false"));
+
+		Layout targetLayout1 = _addContentLayout();
+
+		_layoutCopyHelper.copyLayout(sourceDraftLayout1, targetLayout1);
+
+		sourceDraftLayout1 = _layoutLocalService.fetchLayout(
+			_portal.getClassNameId(Layout.class), sourceLayout1.getPlid());
+
+		Assert.assertEquals(
+			"true",
+			sourceDraftLayout1.getTypeSettingsProperty("published", "false"));
+
+		Layout sourceLayout2 = _addContentLayout();
+
+		Layout sourceDraftLayout2 = sourceLayout2.fetchDraftLayout();
+
+		Assert.assertNotNull(sourceDraftLayout2);
+
+		Assert.assertEquals(
+			"false",
+			sourceDraftLayout2.getTypeSettingsProperty("published", "false"));
+
+		Layout targetLayout2 = _addContentLayout();
+
+		_layoutCopyHelper.copyLayout(0, sourceDraftLayout2, targetLayout2);
+
+		sourceDraftLayout2 = _layoutLocalService.fetchLayout(
+			_portal.getClassNameId(Layout.class), sourceLayout2.getPlid());
+
+		Assert.assertEquals(
+			"false",
+			sourceDraftLayout2.getTypeSettingsProperty("published", "false"));
 	}
 
 	@Test
@@ -378,6 +424,9 @@ public class LayoutCopyHelperTest {
 	@Inject
 	private LayoutPageTemplateStructureLocalService
 		_layoutPageTemplateStructureLocalService;
+
+	@Inject
+	private Portal _portal;
 
 	@Inject(
 		filter = "javax.portlet.name=" + LayoutPortletKeys.LAYOUT_TEST_PORTLET
