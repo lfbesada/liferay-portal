@@ -111,7 +111,7 @@ public class LayoutCopyHelperImpl implements LayoutCopyHelper {
 		};
 
 		Callable<Layout> callable = new CopyLayoutCallable(
-			consumer, sourceLayout, targetLayout);
+			consumer, sourceLayout, targetLayout, true);
 
 		boolean copyLayout = CopyLayoutThreadLocal.isCopyLayout();
 
@@ -151,7 +151,7 @@ public class LayoutCopyHelperImpl implements LayoutCopyHelper {
 		};
 
 		Callable<Layout> callable = new CopyLayoutCallable(
-			consumer, sourceLayout, targetLayout);
+			consumer, sourceLayout, targetLayout, false);
 
 		boolean copyLayout = CopyLayoutThreadLocal.isCopyLayout();
 
@@ -954,7 +954,7 @@ public class LayoutCopyHelperImpl implements LayoutCopyHelper {
 				_sourceLayout.getTypeSettings()
 			).build();
 
-			if (_sourceLayout.isDraftLayout()) {
+			if (_publishSourceLayout && _sourceLayout.isDraftLayout()) {
 				unicodeProperties.put("published", Boolean.TRUE.toString());
 
 				_layoutLocalService.updateLayout(
@@ -980,15 +980,17 @@ public class LayoutCopyHelperImpl implements LayoutCopyHelper {
 		}
 
 		private CopyLayoutCallable(
-			Consumer<Layout> consumer, Layout sourceLayout,
-			Layout targetLayout) {
+			Consumer<Layout> consumer, Layout sourceLayout, Layout targetLayout,
+			boolean publishSourceLayout) {
 
 			_consumer = consumer;
 			_sourceLayout = sourceLayout;
 			_targetLayout = targetLayout;
+			_publishSourceLayout = publishSourceLayout;
 		}
 
 		private final Consumer<Layout> _consumer;
+		private final boolean _publishSourceLayout;
 		private final Layout _sourceLayout;
 		private final Layout _targetLayout;
 
