@@ -14,6 +14,9 @@
 
 package com.liferay.layout.display.page;
 
+import com.liferay.info.item.InfoItemReferenceMetadata;
+
+import java.util.List;
 import java.util.Locale;
 
 /**
@@ -24,5 +27,11 @@ public interface LayoutDisplayPageMultiSelectionProvider<T> {
 	public String getClassName();
 
 	public String getPluralLabel(Locale locale);
+
+	public default List<InfoItemReferenceMetadata> process(
+		List<InfoItemReferenceMetadata> list) {
+
+		return list;
+	}
 
 }
