@@ -36,6 +36,7 @@ import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.site.navigation.admin.constants.SiteNavigationAdminPortletKeys;
+import com.liferay.site.navigation.model.SiteNavigationMenuItem;
 import com.liferay.site.navigation.service.SiteNavigationMenuItemService;
 
 import java.util.List;
@@ -123,7 +124,7 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 
 					_addSiteNavigationMenuItem(
 						themeDisplay.getScopeGroupId(),
-						infoItemReferenceMetadata, serviceContext,
+						infoItemReferenceMetadata, 0, serviceContext,
 						siteNavigationMenuId, siteNavigationMenuItemType);
 				}
 			}
@@ -161,8 +162,8 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 
 	private void _addSiteNavigationMenuItem(
 			long groupId, InfoItemReferenceMetadata infoItemReferenceMetadata,
-			ServiceContext serviceContext, long siteNavigationMenuId,
-			String siteNavigationMenuItemType)
+			long parentSiteNavigationMenuItemId, ServiceContext serviceContext,
+			long siteNavigationMenuId, String siteNavigationMenuItemType)
 		throws PortalException {
 
 		UnicodeProperties typeSettingsUnicodeProperties = new UnicodeProperties(
@@ -187,9 +188,28 @@ public class AddMultipleDisplayPageTypeSiteNavigationMenuItemMVCActionCommand
 		typeSettingsUnicodeProperties.setProperty(
 			"title", String.valueOf(data.get("title")));
 
-		_siteNavigationMenuItemService.addSiteNavigationMenuItem(
-			groupId, siteNavigationMenuId, 0L, siteNavigationMenuItemType,
-			typeSettingsUnicodeProperties.toString(), serviceContext);
+		SiteNavigationMenuItem siteNavigationMenuItem =
+			_siteNavigationMenuItemService.addSiteNavigationMenuItem(
+				groupId, siteNavigationMenuId, parentSiteNavigationMenuItemId,
+				siteNavigationMenuItemType,
+				typeSettingsUnicodeProperties.toString(), serviceContext);
+
+		if (!data.containsKey("children") ||
+			!(data.get("children") instanceof List)) {
+
+			return;
+		}
+
+		List<InfoItemReferenceMetadata> children =
+			(List<InfoItemReferenceMetadata>)data.get("children");
+
+		for (InfoItemReferenceMetadata child : children) {
+			_addSiteNavigationMenuItem(
+				groupId, child,
+				siteNavigationMenuItem.getSiteNavigationMenuItemId(),
+				serviceContext, siteNavigationMenuId,
+				siteNavigationMenuItemType);
+		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
