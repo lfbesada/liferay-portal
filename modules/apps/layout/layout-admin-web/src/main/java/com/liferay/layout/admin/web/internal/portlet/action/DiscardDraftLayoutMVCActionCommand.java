@@ -31,6 +31,7 @@ import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.transaction.Transactional;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -122,14 +123,19 @@ public class DiscardDraftLayoutMVCActionCommand
 			themeDisplay.getPermissionChecker(), layout.getPlid(),
 			ActionKeys.VIEW);
 
+		boolean publishedLayout = GetterUtil.getBoolean(
+			draftLayout.getTypeSettingsProperty("published"));
+
 		draftLayout = _layoutCopyHelper.copyLayout(layout, draftLayout);
 
-		ServiceContext serviceContext = ServiceContextFactory.getInstance(
-			Layout.class.getName(), actionRequest);
+		if (publishedLayout) {
+			ServiceContext serviceContext = ServiceContextFactory.getInstance(
+				Layout.class.getName(), actionRequest);
 
-		_layoutLocalService.updateStatus(
-			themeDisplay.getUserId(), draftLayout.getPlid(),
-			WorkflowConstants.STATUS_APPROVED, serviceContext);
+			_layoutLocalService.updateStatus(
+				themeDisplay.getUserId(), draftLayout.getPlid(),
+				WorkflowConstants.STATUS_APPROVED, serviceContext);
+		}
 
 		sendRedirect(actionRequest, actionResponse);
 	}
