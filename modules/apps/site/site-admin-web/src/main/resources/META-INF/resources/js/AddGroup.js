@@ -53,8 +53,21 @@ export default function ({namespace}) {
 					});
 				}
 				else {
+					const {field, message} = response.error;
+
+					if (field) {
+						const fieldElement = document.getElementById(
+							`${namespace}${field}`
+						);
+
+						fieldElement?.parentElement.classList.remove(
+							'has-success'
+						);
+						fieldElement?.parentElement.classList.add('has-error');
+					}
+
 					Liferay.Util.openToast({
-						message: response.error,
+						message,
 						type: 'danger',
 					});
 
