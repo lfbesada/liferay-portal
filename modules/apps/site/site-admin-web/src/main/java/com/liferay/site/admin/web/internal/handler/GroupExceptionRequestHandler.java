@@ -23,7 +23,6 @@ import com.liferay.portal.kernel.exception.DuplicateGroupException;
 import com.liferay.portal.kernel.exception.GroupInheritContentException;
 import com.liferay.portal.kernel.exception.GroupKeyException;
 import com.liferay.portal.kernel.exception.GroupParentException;
-import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -59,6 +58,7 @@ public class GroupExceptionRequestHandler {
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
+		String errorFieldName = StringPool.BLANK;
 		String errorMessage = null;
 
 		if (exception instanceof AssetCategoryException) {
@@ -98,6 +98,7 @@ public class GroupExceptionRequestHandler {
 				"unable-to-exceed-maximum-number-of-allowed-sites");
 		}
 		else if (exception instanceof DuplicateGroupException) {
+			errorFieldName = "name";
 			errorMessage = LanguageUtil.get(
 				themeDisplay.getRequest(), "please-enter-a-unique-name");
 		}
@@ -107,6 +108,7 @@ public class GroupExceptionRequestHandler {
 				"this-site-cannot-inherit-content-from-its-parent-site");
 		}
 		else if (exception instanceof GroupKeyException) {
+			errorFieldName = "name";
 			errorMessage = _handleGroupKeyException(actionRequest);
 		}
 		else if (exception instanceof GroupParentException.MustNotBeOwnParent) {
@@ -122,10 +124,15 @@ public class GroupExceptionRequestHandler {
 			_log.error(exception.getMessage());
 		}
 
-		JSONObject jsonObject = JSONUtil.put("error", errorMessage);
-
 		JSONPortletResponseUtil.writeJSON(
-			actionRequest, actionResponse, jsonObject);
+			actionRequest, actionResponse,
+			JSONUtil.put(
+				"error",
+				JSONUtil.put(
+					"field", errorFieldName
+				).put(
+					"message", errorMessage
+				)));
 	}
 
 	private String _handleGroupKeyException(ActionRequest actionRequest) {
