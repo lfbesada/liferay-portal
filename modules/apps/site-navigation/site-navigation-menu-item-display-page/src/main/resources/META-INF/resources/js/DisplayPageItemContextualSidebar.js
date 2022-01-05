@@ -153,6 +153,17 @@ function DisplayPageItemContextualSidebar({
 				</ClayForm.Group>
 			)}
 
+			{!!selectedItem.data.length &&
+				selectedItem.data.map(({title, value}) => (
+					<ClayForm.Group key={title}>
+						<div className="list-group">
+							<p className="list-group-title">{title}</p>
+
+							<p className="list-group-text">{value}</p>
+						</div>
+					</ClayForm.Group>
+				))}
+
 			<FormValues namespace={namespace} selectedItem={selectedItem} />
 		</>
 	);
@@ -164,6 +175,7 @@ DisplayPageItemContextualSidebar.propTypes = {
 		classNameId: PropTypes.string,
 		classPK: PropTypes.string,
 		classTypeId: PropTypes.string,
+		data: PropTypes.array,
 		title: PropTypes.string,
 		type: PropTypes.string,
 	}).isRequired,
@@ -224,6 +236,7 @@ FormValues.propTypes = {
 		classNameId: PropTypes.string,
 		classPK: PropTypes.string,
 		classTypeId: PropTypes.string,
+		data: PropTypes.array,
 		title: PropTypes.string,
 		type: PropTypes.string,
 	}).isRequired,
