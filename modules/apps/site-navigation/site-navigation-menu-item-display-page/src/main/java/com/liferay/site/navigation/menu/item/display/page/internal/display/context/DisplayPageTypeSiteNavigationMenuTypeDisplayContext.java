@@ -237,7 +237,7 @@ public class DisplayPageTypeSiteNavigationMenuTypeDisplayContext {
 	}
 
 	public String getDefaultLanguageId() {
-		return LocaleUtil.toLanguageId(LocaleUtil.getMostRelevantLocale());
+		return "en-US";
 	}
 
 	public String getItemSubtype() {
