@@ -374,6 +374,14 @@ public class DisplayPageTypeSiteNavigationMenuTypeDisplayContext {
 		return _useCustomName;
 	}
 
+	public boolean showWarningMessage() {
+		if (_getLayoutDisplayPageObjectProvider() == null) {
+			return true;
+		}
+
+		return false;
+	}
+
 	private LayoutDisplayPageObjectProvider<?>
 		_getLayoutDisplayPageObjectProvider() {
 

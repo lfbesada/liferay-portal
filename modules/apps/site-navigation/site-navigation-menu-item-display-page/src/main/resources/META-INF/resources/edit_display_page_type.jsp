@@ -56,6 +56,8 @@ DisplayPageTypeSiteNavigationMenuTypeDisplayContext displayPageTypeSiteNavigatio
 					).put(
 						"namespace", liferayPortletResponse.getNamespace()
 					).put(
+						"showWarningMessage", displayPageTypeSiteNavigationMenuTypeDisplayContext.showWarningMessage()
+					).put(
 						"useCustomName", displayPageTypeSiteNavigationMenuTypeDisplayContext.isUseCustomName()
 					).build()
 				%>'
