@@ -31,6 +31,8 @@ DisplayPageTypeSiteNavigationMenuTypeDisplayContext displayPageTypeSiteNavigatio
 					).put(
 						"defaultLanguageId", displayPageTypeSiteNavigationMenuTypeDisplayContext.getDefaultLanguageId()
 					).put(
+						"editItemURL", displayPageTypeSiteNavigationMenuTypeDisplayContext.getEditItemURL(request)
+					).put(
 						"item",
 						HashMapBuilder.<String, Object>put(
 							"classNameId", displayPageTypeSiteNavigationMenuTypeDisplayContext.getClassNameId()
