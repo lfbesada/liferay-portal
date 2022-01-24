@@ -16,6 +16,7 @@ package com.liferay.site.navigation.menu.item.display.page.internal.type.provide
 
 import com.liferay.asset.display.page.portlet.AssetDisplayPageFriendlyURLProvider;
 import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
+import com.liferay.info.display.url.provider.InfoEditURLProviderTracker;
 import com.liferay.info.item.InfoItemServiceTracker;
 import com.liferay.info.item.capability.InfoItemCapability;
 import com.liferay.info.item.provider.InfoItemCapabilitiesProvider;
@@ -88,6 +89,9 @@ public class DisplayPageSiteNavigationMenuItemTypeProviderTrackerImpl {
 
 	@Reference
 	private DisplayPageInfoItemCapability _displayPageInfoItemCapability;
+
+	@Reference
+	private InfoEditURLProviderTracker _infoEditURLProviderTracker;
 
 	@Reference
 	private InfoItemServiceTracker _infoItemServiceTracker;
@@ -180,8 +184,8 @@ public class DisplayPageSiteNavigationMenuItemTypeProviderTrackerImpl {
 								_layoutDisplayPageInfoItemFieldValuesProviderTracker,
 								_layoutDisplayPageMultiSelectionProviderTracker,
 								_layoutDisplayPageProviderTracker),
-							_itemSelector, _jspRenderer, _portal,
-							_servletContext),
+							_infoEditURLProviderTracker, _itemSelector,
+							_jspRenderer, _portal, _servletContext),
 						HashMapDictionaryBuilder.<String, Object>put(
 							"service.ranking:Integer", "300"
 						).put(

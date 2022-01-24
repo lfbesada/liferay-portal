@@ -15,6 +15,8 @@
 package com.liferay.site.navigation.menu.item.display.page.internal.display.context;
 
 import com.liferay.asset.display.page.portlet.AssetDisplayPageFriendlyURLProvider;
+import com.liferay.info.display.url.provider.InfoEditURLProvider;
+import com.liferay.info.display.url.provider.InfoEditURLProviderTracker;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldValue;
 import com.liferay.info.item.InfoItemFieldValues;
@@ -79,6 +81,10 @@ public class DisplayPageTypeSiteNavigationMenuTypeDisplayContext {
 			(DisplayPageTypeContext)httpServletRequest.getAttribute(
 				SiteNavigationMenuItemTypeDisplayPageWebKeys.
 					DISPLAY_PAGE_TYPE_CONTEXT);
+		_infoEditURLProviderTracker =
+			(InfoEditURLProviderTracker)httpServletRequest.getAttribute(
+				SiteNavigationMenuItemTypeDisplayPageWebKeys.
+					INFO_EDIT_URL_PROVIDER_TRACKER);
 		_itemSelector = (ItemSelector)httpServletRequest.getAttribute(
 			SiteNavigationMenuItemTypeDisplayPageWebKeys.ITEM_SELECTOR);
 		_siteNavigationMenuItem =
@@ -245,6 +251,29 @@ public class DisplayPageTypeSiteNavigationMenuTypeDisplayContext {
 
 	public String getDefaultLanguageId() {
 		return LocaleUtil.toLanguageId(LocaleUtil.getMostRelevantLocale());
+	}
+
+	public String getEditItemURL(HttpServletRequest httpServletRequest)
+		throws Exception {
+
+		InfoEditURLProvider<Object> infoEditURLProvider =
+			_infoEditURLProviderTracker.getInfoEditURLProvider(
+				_displayPageTypeContext.getClassName());
+
+		if (infoEditURLProvider == null) {
+			return StringPool.BLANK;
+		}
+
+		LayoutDisplayPageObjectProvider<?> layoutDisplayPageObjectProvider =
+			_getLayoutDisplayPageObjectProvider();
+
+		if (layoutDisplayPageObjectProvider == null) {
+			return StringPool.BLANK;
+		}
+
+		return infoEditURLProvider.getURL(
+			layoutDisplayPageObjectProvider.getDisplayObject(),
+			httpServletRequest);
 	}
 
 	public String getItemSubtype() {
@@ -417,6 +446,7 @@ public class DisplayPageTypeSiteNavigationMenuTypeDisplayContext {
 	private Long _classTypeId;
 	private final DisplayPageTypeContext _displayPageTypeContext;
 	private Boolean _hasDisplayPage;
+	private final InfoEditURLProviderTracker _infoEditURLProviderTracker;
 	private final ItemSelector _itemSelector;
 	private LayoutDisplayPageObjectProvider<?> _layoutDisplayPageObjectProvider;
 	private JSONObject _localizedNamesJSONObject;

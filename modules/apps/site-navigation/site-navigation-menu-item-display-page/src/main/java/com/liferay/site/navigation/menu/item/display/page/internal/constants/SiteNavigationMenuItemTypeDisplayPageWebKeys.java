@@ -25,6 +25,9 @@ public class SiteNavigationMenuItemTypeDisplayPageWebKeys {
 	public static final String DISPLAY_PAGE_TYPE_CONTEXT =
 		"DISPLAY_PAGE_TYPE_CONTEXT";
 
+	public static final String INFO_EDIT_URL_PROVIDER_TRACKER =
+		"INFO_ITEM_SERVICE_TRACKER";
+
 	public static final String INFO_ITEM_SERVICE_TRACKER =
 		"INFO_ITEM_SERVICE_TRACKER";
 

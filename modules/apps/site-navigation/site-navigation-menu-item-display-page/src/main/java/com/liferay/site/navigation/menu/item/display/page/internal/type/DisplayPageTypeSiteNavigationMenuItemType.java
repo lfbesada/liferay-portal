@@ -17,6 +17,7 @@ package com.liferay.site.navigation.menu.item.display.page.internal.type;
 import com.liferay.asset.display.page.portlet.AssetDisplayPageFriendlyURLProvider;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.frontend.taglib.servlet.taglib.util.JSPRenderer;
+import com.liferay.info.display.url.provider.InfoEditURLProviderTracker;
 import com.liferay.item.selector.ItemSelector;
 import com.liferay.item.selector.criteria.InfoItemItemSelectorReturnType;
 import com.liferay.item.selector.criteria.info.item.criterion.InfoItemItemSelectorCriterion;
@@ -76,12 +77,14 @@ public class DisplayPageTypeSiteNavigationMenuItemType
 	public DisplayPageTypeSiteNavigationMenuItemType(
 		AssetDisplayPageFriendlyURLProvider assetDisplayPageFriendlyURLProvider,
 		DisplayPageTypeContext displayPageTypeContext,
+		InfoEditURLProviderTracker infoEditURLProviderTracker,
 		ItemSelector itemSelector, JSPRenderer jspRenderer, Portal portal,
 		ServletContext servletContext) {
 
 		_assetDisplayPageFriendlyURLProvider =
 			assetDisplayPageFriendlyURLProvider;
 		_displayPageTypeContext = displayPageTypeContext;
+		_infoEditURLProviderTracker = infoEditURLProviderTracker;
 		_itemSelector = itemSelector;
 		_jspRenderer = jspRenderer;
 		_portal = portal;
@@ -479,6 +482,10 @@ public class DisplayPageTypeSiteNavigationMenuItemType
 				DISPLAY_PAGE_TYPE_CONTEXT,
 			_displayPageTypeContext);
 		httpServletRequest.setAttribute(
+			SiteNavigationMenuItemTypeDisplayPageWebKeys.
+				INFO_EDIT_URL_PROVIDER_TRACKER,
+			_infoEditURLProviderTracker);
+		httpServletRequest.setAttribute(
 			SiteNavigationMenuItemTypeDisplayPageWebKeys.ITEM_SELECTOR,
 			_itemSelector);
 		httpServletRequest.setAttribute(
@@ -496,6 +503,7 @@ public class DisplayPageTypeSiteNavigationMenuItemType
 	private final AssetDisplayPageFriendlyURLProvider
 		_assetDisplayPageFriendlyURLProvider;
 	private final DisplayPageTypeContext _displayPageTypeContext;
+	private final InfoEditURLProviderTracker _infoEditURLProviderTracker;
 	private final ItemSelector _itemSelector;
 	private final JSPRenderer _jspRenderer;
 	private final Portal _portal;
