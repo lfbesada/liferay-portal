@@ -89,12 +89,7 @@ public class SiteNavigationMenuPortletUtil {
 						siteNavigationMenuItemId, siteNavigationMenuId,
 						siteNavigationMenuItemTypeRegistry, themeDisplay)
 				).put(
-					"parentSiteNavigationMenuItemId",
-					parentSiteNavigationMenuItemId
-				).put(
-					"siteNavigationMenuItemId", siteNavigationMenuItemId
-				).put(
-					"statusIcon",
+					"icon",
 					() -> {
 						if (siteNavigationMenuItemType != null) {
 							return siteNavigationMenuItemType.getStatusIcon(
@@ -103,6 +98,11 @@ public class SiteNavigationMenuPortletUtil {
 
 						return StringPool.BLANK;
 					}
+				).put(
+					"parentSiteNavigationMenuItemId",
+					parentSiteNavigationMenuItemId
+				).put(
+					"siteNavigationMenuItemId", siteNavigationMenuItemId
 				).put(
 					"title",
 					() -> {

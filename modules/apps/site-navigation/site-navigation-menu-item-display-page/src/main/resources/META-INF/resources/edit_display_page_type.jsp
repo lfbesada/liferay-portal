@@ -56,6 +56,8 @@ DisplayPageTypeSiteNavigationMenuTypeDisplayContext displayPageTypeSiteNavigatio
 					).put(
 						"namespace", liferayPortletResponse.getNamespace()
 					).put(
+						"hasDisplayPage", displayPageTypeSiteNavigationMenuTypeDisplayContext.hasDisplayPage()
+					).put(
 						"useCustomName", displayPageTypeSiteNavigationMenuTypeDisplayContext.isUseCustomName()
 					).build()
 				%>'
