@@ -260,6 +260,26 @@ public class DisplayPageTypeSiteNavigationMenuItemType
 	}
 
 	@Override
+	public String getStatusIcon(SiteNavigationMenuItem siteNavigationMenuItem) {
+		UnicodeProperties typeSettingsUnicodeProperties =
+			UnicodePropertiesBuilder.fastLoad(
+				siteNavigationMenuItem.getTypeSettings()
+			).build();
+
+		LayoutDisplayPageObjectProvider<?> layoutDisplayPageObjectProvider =
+			_displayPageTypeContext.getLayoutDisplayPageObjectProvider(
+				GetterUtil.getLong(
+					typeSettingsUnicodeProperties.get("classPK")));
+
+		if (layoutDisplayPageObjectProvider == null) {
+			return "warning-full";
+		}
+
+		return SiteNavigationMenuItemType.super.getStatusIcon(
+			siteNavigationMenuItem);
+	}
+
+	@Override
 	public String getSubtitle(
 		SiteNavigationMenuItem siteNavigationMenuItem, Locale locale) {
 
