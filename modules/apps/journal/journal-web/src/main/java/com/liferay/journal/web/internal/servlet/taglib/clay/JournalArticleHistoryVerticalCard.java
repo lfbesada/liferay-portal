@@ -27,6 +27,8 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.service.UserLocalServiceUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.trash.TrashHelper;
@@ -126,6 +128,11 @@ public class JournalArticleHistoryVerticalCard extends BaseVerticalCard {
 	@Override
 	public String getTitle() {
 		return HtmlUtil.escape(_article.getTitle(themeDisplay.getLocale()));
+	}
+
+	@Override
+	protected User getUser() {
+		return UserLocalServiceUtil.fetchUser(_article.getStatusByUserId());
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
