@@ -69,13 +69,7 @@ public abstract class BaseVerticalCard
 
 	@Override
 	public String getStickerCssClass() {
-		if (!(baseModel instanceof AuditedModel)) {
-			return StringPool.BLANK;
-		}
-
-		AuditedModel auditedModel = (AuditedModel)baseModel;
-
-		User user = UserLocalServiceUtil.fetchUser(auditedModel.getUserId());
+		User user = getUser();
 
 		if (user == null) {
 			return StringPool.BLANK;
@@ -86,13 +80,7 @@ public abstract class BaseVerticalCard
 
 	@Override
 	public String getStickerIcon() {
-		if (!(baseModel instanceof AuditedModel)) {
-			return StringPool.BLANK;
-		}
-
-		AuditedModel auditedModel = (AuditedModel)baseModel;
-
-		User user = UserLocalServiceUtil.fetchUser(auditedModel.getUserId());
+		User user = getUser();
 
 		if (user == null) {
 			return StringPool.BLANK;
@@ -108,14 +96,7 @@ public abstract class BaseVerticalCard
 	@Override
 	public String getStickerImageSrc() {
 		try {
-			if (!(baseModel instanceof AuditedModel)) {
-				return StringPool.BLANK;
-			}
-
-			AuditedModel auditedModel = (AuditedModel)baseModel;
-
-			User user = UserLocalServiceUtil.fetchUser(
-				auditedModel.getUserId());
+			User user = getUser();
 
 			if (user == null) {
 				return StringPool.BLANK;
@@ -139,6 +120,16 @@ public abstract class BaseVerticalCard
 	@Override
 	public String getStickerShape() {
 		return "circle";
+	}
+
+	protected User getUser() {
+		if (!(baseModel instanceof AuditedModel)) {
+			return null;
+		}
+
+		AuditedModel auditedModel = (AuditedModel)baseModel;
+
+		return UserLocalServiceUtil.fetchUser(auditedModel.getUserId());
 	}
 
 	protected final RenderRequest renderRequest;
