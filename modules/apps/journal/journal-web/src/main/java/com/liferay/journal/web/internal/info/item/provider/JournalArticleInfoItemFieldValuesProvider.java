@@ -246,6 +246,12 @@ public class JournalArticleInfoItemFieldValuesProvider
 							webImage));
 				}
 			}
+			else {
+				journalArticleFieldValues.add(
+					new InfoFieldValue<>(
+						JournalArticleInfoItemFields.authorNameInfoField,
+						journalArticle.getUserName()));
+			}
 
 			User lastEditorUser = _userLocalService.fetchUser(
 				journalArticle.getStatusByUserId());
@@ -268,6 +274,12 @@ public class JournalArticleInfoItemFieldValuesProvider
 								lastEditorProfileImageInfoField,
 							webImage));
 				}
+			}
+			else {
+				journalArticleFieldValues.add(
+					new InfoFieldValue<>(
+						JournalArticleInfoItemFields.lastEditorNameInfoField,
+						journalArticle.getStatusByUserName()));
 			}
 
 			journalArticleFieldValues.add(
