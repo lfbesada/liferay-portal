@@ -15,6 +15,9 @@
 package com.liferay.journal.internal.search.spi.model.query.contributor;
 
 import com.liferay.dynamic.data.mapping.util.DDMIndexer;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
@@ -86,13 +89,29 @@ public class JournalArticleModelPreFilterContributor
 			long[] groupIds = searchContext.getGroupIds();
 
 			if (ArrayUtil.isNotEmpty(groupIds)) {
-				locale = _portal.getSiteDefaultLocale(groupIds[0]);
+				try {
+					locale = _portal.getSiteDefaultLocale(groupIds[0]);
+				}
+				catch (PortalException portalException) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(
+							portalException.getMessage(), portalException);
+					}
+				}
 			}
 
-			QueryFilter queryFilter = _ddmIndexer.createFieldValueQueryFilter(
-				ddmStructureFieldName, ddmStructureFieldValue, locale);
+			try {
+				QueryFilter queryFilter =
+					_ddmIndexer.createFieldValueQueryFilter(
+						ddmStructureFieldName, ddmStructureFieldValue, locale);
 
-			booleanFilter.add(queryFilter, BooleanClauseOccur.MUST);
+				booleanFilter.add(queryFilter, BooleanClauseOccur.MUST);
+			}
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception.getMessage(), exception);
+				}
+			}
 		}
 
 		String ddmStructureKey = (String)searchContext.getAttribute(
@@ -178,6 +197,9 @@ public class JournalArticleModelPreFilterContributor
 		return booleanFilter.add(
 			classTypeIdsTermsFilter, BooleanClauseOccur.MUST);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		JournalArticleModelPreFilterContributor.class);
 
 	@Reference
 	private DDMIndexer _ddmIndexer;
