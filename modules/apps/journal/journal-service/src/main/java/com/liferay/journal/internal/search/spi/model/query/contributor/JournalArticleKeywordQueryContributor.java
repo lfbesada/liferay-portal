@@ -19,7 +19,6 @@ import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.BooleanQuery;
 import com.liferay.portal.kernel.search.ExpandoQueryContributor;
 import com.liferay.portal.kernel.search.Field;
-import com.liferay.portal.kernel.search.Query;
 import com.liferay.portal.kernel.search.QueryConfig;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.generic.BooleanQueryImpl;
@@ -32,10 +31,7 @@ import com.liferay.portal.search.spi.model.query.contributor.helper.KeywordQuery
 
 import java.io.Serializable;
 
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.LinkedHashMap;
-import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -93,7 +89,7 @@ public class JournalArticleKeywordQueryContributor
 		queryConfig.addHighlightFieldNames(localizedFieldNames);
 	}
 
-	private Map<String, Query> _addLocalizedFields(
+	private void _addLocalizedFields(
 			BooleanQuery booleanQuery, String field, String value, boolean like,
 			SearchContext searchContext)
 		throws Exception {
@@ -102,15 +98,9 @@ public class JournalArticleKeywordQueryContributor
 			_searchLocalizationHelper.getLocalizedFieldNames(
 				new String[] {field}, searchContext);
 
-		Map<String, Query> queries = new HashMap<>();
-
 		for (String localizedFieldName : localizedFieldNames) {
-			Query query = booleanQuery.addTerm(localizedFieldName, value, like);
-
-			queries.put(field, query);
+			booleanQuery.addTerm(localizedFieldName, value, like);
 		}
-
-		return queries;
 	}
 
 	private void _addLocalizedQuery(
@@ -127,7 +117,7 @@ public class JournalArticleKeywordQueryContributor
 		booleanQuery.add(localizedQuery, booleanClauseOccur);
 	}
 
-	private Map<String, Query> _addSearchExpando(
+	private void _addSearchExpando(
 			BooleanQuery booleanQuery, SearchContext searchContext,
 			String keywords)
 		throws Exception {
@@ -135,17 +125,15 @@ public class JournalArticleKeywordQueryContributor
 		_expandoQueryContributor.contribute(
 			keywords, booleanQuery,
 			new String[] {JournalArticle.class.getName()}, searchContext);
-
-		return new HashMap<>();
 	}
 
-	private Map<String, Query> _addSearchLocalizedTerm(
+	private void _addSearchLocalizedTerm(
 			BooleanQuery searchQuery, SearchContext searchContext, String field,
 			boolean like)
 		throws Exception {
 
 		if (Validator.isBlank(field)) {
-			return Collections.emptyMap();
+			return;
 		}
 
 		String value = GetterUtil.getString(searchContext.getAttribute(field));
@@ -155,34 +143,29 @@ public class JournalArticleKeywordQueryContributor
 		}
 
 		if (Validator.isBlank(value)) {
-			return Collections.emptyMap();
+			return;
 		}
-
-		Map<String, Query> queries = null;
 
 		if (Validator.isBlank(searchContext.getKeywords())) {
 			BooleanQuery localizedQuery = new BooleanQueryImpl();
 
-			queries = _addLocalizedFields(
+			_addLocalizedFields(
 				localizedQuery, field, value, like, searchContext);
 
 			_addLocalizedQuery(searchQuery, localizedQuery, searchContext);
 		}
 		else {
-			queries = _addLocalizedFields(
-				searchQuery, field, value, like, searchContext);
+			_addLocalizedFields(searchQuery, field, value, like, searchContext);
 		}
-
-		return queries;
 	}
 
-	private Query _addSearchTerm(
+	private void _addSearchTerm(
 			BooleanQuery searchQuery, SearchContext searchContext, String field,
 			boolean like)
 		throws Exception {
 
 		if (Validator.isNull(field)) {
-			return null;
+			return;
 		}
 
 		String value = null;
@@ -206,7 +189,7 @@ public class JournalArticleKeywordQueryContributor
 		if (Validator.isNotNull(value) &&
 			(searchContext.getFacet(field) != null)) {
 
-			return null;
+			return;
 		}
 
 		if (Validator.isNull(value)) {
@@ -214,19 +197,15 @@ public class JournalArticleKeywordQueryContributor
 		}
 
 		if (Validator.isNull(value)) {
-			return null;
+			return;
 		}
-
-		Query query = null;
 
 		if (searchContext.isAndSearch()) {
-			query = searchQuery.addRequiredTerm(field, value, like);
+			searchQuery.addRequiredTerm(field, value, like);
 		}
 		else {
-			query = searchQuery.addTerm(field, value, like);
+			searchQuery.addTerm(field, value, like);
 		}
-
-		return query;
 	}
 
 	@Reference
