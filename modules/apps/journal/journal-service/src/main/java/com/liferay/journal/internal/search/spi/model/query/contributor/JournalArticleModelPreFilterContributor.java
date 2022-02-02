@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
-import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.search.filter.QueryFilter;
 import com.liferay.portal.kernel.search.filter.TermsFilter;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -74,7 +73,17 @@ public class JournalArticleModelPreFilterContributor
 				Field.CLASS_NAME_ID, classNameId.toString());
 		}
 
-		addSearchClassTypeIds(booleanFilter, searchContext);
+		long[] classTypeIds = searchContext.getClassTypeIds();
+
+		if (!ArrayUtil.isEmpty(classTypeIds)) {
+			TermsFilter classTypeIdsTermsFilter = new TermsFilter(
+				Field.CLASS_TYPE_ID);
+
+			classTypeIdsTermsFilter.addValues(
+				ArrayUtil.toStringArray(classTypeIds));
+
+			booleanFilter.add(classTypeIdsTermsFilter, BooleanClauseOccur.MUST);
+		}
 
 		String ddmStructureFieldName = (String)searchContext.getAttribute(
 			"ddmStructureFieldName");
@@ -177,25 +186,6 @@ public class JournalArticleModelPreFilterContributor
 		dateRangeFilterBuilder.setIncludeUpper(false);
 
 		booleanFilter.add(dateRangeFilterBuilder.build());
-	}
-
-	protected Filter addSearchClassTypeIds(
-		BooleanFilter booleanFilter, SearchContext searchContext) {
-
-		long[] classTypeIds = searchContext.getClassTypeIds();
-
-		if (ArrayUtil.isEmpty(classTypeIds)) {
-			return null;
-		}
-
-		TermsFilter classTypeIdsTermsFilter = new TermsFilter(
-			Field.CLASS_TYPE_ID);
-
-		classTypeIdsTermsFilter.addValues(
-			ArrayUtil.toStringArray(classTypeIds));
-
-		return booleanFilter.add(
-			classTypeIdsTermsFilter, BooleanClauseOccur.MUST);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
