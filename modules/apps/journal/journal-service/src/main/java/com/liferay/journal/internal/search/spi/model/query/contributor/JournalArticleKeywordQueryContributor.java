@@ -27,13 +27,11 @@ import com.liferay.portal.kernel.search.QueryConfig;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.generic.BooleanQueryImpl;
 import com.liferay.portal.kernel.util.GetterUtil;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.localization.SearchLocalizationHelper;
+import com.liferay.portal.search.query.QueryHelper;
 import com.liferay.portal.search.spi.model.query.contributor.KeywordQueryContributor;
 import com.liferay.portal.search.spi.model.query.contributor.helper.KeywordQueryContributorHelper;
-
-import java.io.Serializable;
 
 import java.util.LinkedHashMap;
 
@@ -59,17 +57,20 @@ public class JournalArticleKeywordQueryContributor
 		SearchContext searchContext =
 			keywordQueryContributorHelper.getSearchContext();
 
-		_addSearchTerm(booleanQuery, searchContext, Field.ARTICLE_ID, false);
-		_addSearchTerm(booleanQuery, searchContext, Field.CLASS_PK, false);
+		_queryHelper.addSearchTerm(
+			booleanQuery, searchContext, Field.ARTICLE_ID, false);
+		_queryHelper.addSearchTerm(
+			booleanQuery, searchContext, Field.CLASS_PK, false);
 		_addSearchLocalizedTerm(
 			booleanQuery, searchContext, Field.CONTENT, false);
 		_addSearchLocalizedTerm(
 			booleanQuery, searchContext, Field.DESCRIPTION, false);
-		_addSearchTerm(
+		_queryHelper.addSearchTerm(
 			booleanQuery, searchContext, Field.ENTRY_CLASS_PK, false);
 		_addSearchLocalizedTerm(
 			booleanQuery, searchContext, Field.TITLE, false);
-		_addSearchTerm(booleanQuery, searchContext, Field.USER_NAME, false);
+		_queryHelper.addSearchTerm(
+			booleanQuery, searchContext, Field.USER_NAME, false);
 
 		LinkedHashMap<String, Object> params =
 			(LinkedHashMap<String, Object>)searchContext.getAttribute("params");
@@ -164,54 +165,6 @@ public class JournalArticleKeywordQueryContributor
 		}
 	}
 
-	private void _addSearchTerm(
-		BooleanQuery searchQuery, SearchContext searchContext, String field,
-		boolean like) {
-
-		if (Validator.isNull(field)) {
-			return;
-		}
-
-		String value = null;
-
-		Serializable serializable = searchContext.getAttribute(field);
-
-		if (serializable != null) {
-			Class<?> clazz = serializable.getClass();
-
-			if (clazz.isArray()) {
-				value = StringUtil.merge((Object[])serializable);
-			}
-			else {
-				value = GetterUtil.getString(serializable);
-			}
-		}
-		else {
-			value = GetterUtil.getString(serializable);
-		}
-
-		if (Validator.isNotNull(value) &&
-			(searchContext.getFacet(field) != null)) {
-
-			return;
-		}
-
-		if (Validator.isNull(value)) {
-			value = searchContext.getKeywords();
-		}
-
-		if (Validator.isNull(value)) {
-			return;
-		}
-
-		if (searchContext.isAndSearch()) {
-			searchQuery.addRequiredTerm(field, value, like);
-		}
-		else {
-			_addTerm(searchQuery, field, value, like);
-		}
-	}
-
 	private void _addTerm(
 		BooleanQuery booleanQuery, String field, String value, boolean like) {
 
@@ -234,6 +187,9 @@ public class JournalArticleKeywordQueryContributor
 
 	@Reference
 	private ExpandoQueryContributor _expandoQueryContributor;
+
+	@Reference
+	private QueryHelper _queryHelper;
 
 	@Reference
 	private SearchLocalizationHelper _searchLocalizationHelper;
