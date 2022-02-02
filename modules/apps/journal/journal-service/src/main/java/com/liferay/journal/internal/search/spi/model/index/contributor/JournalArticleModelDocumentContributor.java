@@ -68,6 +68,8 @@ public class JournalArticleModelDocumentContributor
 
 		document.addKeywordSortable(Field.ARTICLE_ID, articleId);
 
+		document.addKeyword(Field.UUID, journalArticle.getUuid());
+
 		DDMStructure ddmStructure = _ddmStructureLocalService.fetchStructure(
 			_portal.getSiteGroupId(journalArticle.getGroupId()),
 			_portal.getClassNameId(JournalArticle.class),
