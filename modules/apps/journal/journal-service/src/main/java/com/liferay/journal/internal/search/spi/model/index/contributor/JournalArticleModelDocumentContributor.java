@@ -68,6 +68,11 @@ public class JournalArticleModelDocumentContributor
 
 		document.addKeywordSortable(Field.ARTICLE_ID, articleId);
 
+		DDMStructure ddmStructure = _ddmStructureLocalService.fetchStructure(
+			_portal.getSiteGroupId(journalArticle.getGroupId()),
+			_portal.getClassNameId(JournalArticle.class),
+			journalArticle.getDDMStructureKey(), true);
+
 		Localization localization = LocalizationUtil.getLocalization();
 
 		String[] contentAvailableLanguageIds =
@@ -75,7 +80,7 @@ public class JournalArticleModelDocumentContributor
 
 		for (String contentAvailableLanguageId : contentAvailableLanguageIds) {
 			String content = _extractDDMContent(
-				journalArticle, contentAvailableLanguageId);
+				journalArticle, ddmStructure, contentAvailableLanguageId);
 
 			document.addText(
 				localization.getLocalizedName(
@@ -174,16 +179,11 @@ public class JournalArticleModelDocumentContributor
 			}
 		}
 
-		_addDDMStructureAttributes(document, journalArticle);
+		_addDDMStructureAttributes(journalArticle, ddmStructure, document);
 	}
 
 	private void _addDDMStructureAttributes(
-		Document document, JournalArticle article) {
-
-		DDMStructure ddmStructure = _ddmStructureLocalService.fetchStructure(
-			_portal.getSiteGroupId(article.getGroupId()),
-			_portal.getClassNameId(JournalArticle.class),
-			article.getDDMStructureKey(), true);
+		JournalArticle article, DDMStructure ddmStructure, Document document) {
 
 		if (ddmStructure == null) {
 			return;
@@ -214,12 +214,7 @@ public class JournalArticleModelDocumentContributor
 	}
 
 	private String _extractDDMContent(
-		JournalArticle article, String languageId) {
-
-		DDMStructure ddmStructure = _ddmStructureLocalService.fetchStructure(
-			_portal.getSiteGroupId(article.getGroupId()),
-			_portal.getClassNameId(JournalArticle.class),
-			article.getDDMStructureKey(), true);
+		JournalArticle article, DDMStructure ddmStructure, String languageId) {
 
 		if (ddmStructure == null) {
 			return StringPool.BLANK;
