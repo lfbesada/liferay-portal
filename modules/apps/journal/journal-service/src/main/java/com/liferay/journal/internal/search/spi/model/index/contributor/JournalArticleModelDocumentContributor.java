@@ -24,7 +24,9 @@ import com.liferay.journal.internal.util.JournalUtil;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.util.JournalConverter;
 import com.liferay.petra.string.CharPool;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.Document;
@@ -153,11 +155,23 @@ public class JournalArticleModelDocumentContributor
 		}
 
 		for (String titleAvailableLanguageId : titleAvailableLanguageIds) {
-			document.addKeywordSortable(
-				localization.getLocalizedName(
-					"urlTitle", titleAvailableLanguageId),
-				journalArticle.getUrlTitle(
-					LocaleUtil.fromLanguageId(titleAvailableLanguageId)));
+			try {
+				document.addKeywordSortable(
+					localization.getLocalizedName(
+						"urlTitle", titleAvailableLanguageId),
+					journalArticle.getUrlTitle(
+						LocaleUtil.fromLanguageId(titleAvailableLanguageId)));
+			}
+			catch (PortalException portalException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						StringBundler.concat(
+							"Unable to obtain friendlyUrl article id:",
+							journalArticle.getId(), " languageId:",
+							titleAvailableLanguageId),
+						portalException);
+				}
+			}
 		}
 
 		_addDDMStructureAttributes(document, journalArticle);
