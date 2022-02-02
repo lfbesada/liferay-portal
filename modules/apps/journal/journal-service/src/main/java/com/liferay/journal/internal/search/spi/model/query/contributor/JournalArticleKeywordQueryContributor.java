@@ -74,8 +74,10 @@ public class JournalArticleKeywordQueryContributor
 			String expandoAttributes = (String)params.get("expandoAttributes");
 
 			if (Validator.isNotNull(expandoAttributes)) {
-				_addSearchExpando(
-					booleanQuery, searchContext, expandoAttributes);
+				_expandoQueryContributor.contribute(
+					expandoAttributes, booleanQuery,
+					new String[] {JournalArticle.class.getName()},
+					searchContext);
 			}
 		}
 
@@ -115,16 +117,6 @@ public class JournalArticleKeywordQueryContributor
 		}
 
 		booleanQuery.add(localizedQuery, booleanClauseOccur);
-	}
-
-	private void _addSearchExpando(
-			BooleanQuery booleanQuery, SearchContext searchContext,
-			String keywords)
-		throws Exception {
-
-		_expandoQueryContributor.contribute(
-			keywords, booleanQuery,
-			new String[] {JournalArticle.class.getName()}, searchContext);
 	}
 
 	private void _addSearchLocalizedTerm(
