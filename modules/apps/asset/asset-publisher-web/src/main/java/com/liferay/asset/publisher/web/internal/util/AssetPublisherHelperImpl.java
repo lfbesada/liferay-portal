@@ -556,35 +556,56 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 		AssetRenderer<?> assetRenderer, AssetEntry assetEntry,
 		boolean viewInContext) {
 
-		PortletURL redirectURL = PortletURLBuilder.createRenderURL(
-			liferayPortletResponse
-		).setParameter(
-			"assetEntryId", assetEntry.getEntryId()
-		).setParameter(
-			"cur", ParamUtil.getInteger(liferayPortletRequest, "cur")
-		).setParameter(
-			"delta",
-			() -> {
-				int delta = ParamUtil.getInteger(
-					liferayPortletRequest, "delta");
+		return getAssetViewURL(
+			liferayPortletRequest, liferayPortletResponse,
+			assetEntry.getAssetRenderer(), assetEntry, viewInContext, true);
+	}
 
-				if (delta > 0) {
-					return delta;
-				}
-
-				return null;
-			}
-		).setParameter(
-			"resetCur", ParamUtil.getBoolean(liferayPortletRequest, "resetCur")
-		).buildPortletURL();
+	@Override
+	public String getAssetViewURL(
+		LiferayPortletRequest liferayPortletRequest,
+		LiferayPortletResponse liferayPortletResponse,
+		AssetRenderer<?> assetRenderer, AssetEntry assetEntry,
+		boolean viewInContext, boolean includeParams) {
 
 		PortletURL viewFullContentURL = PortletURLBuilder.create(
 			getBaseAssetViewURL(
 				liferayPortletRequest, liferayPortletResponse, assetRenderer,
 				assetEntry)
-		).setRedirect(
-			redirectURL
 		).buildPortletURL();
+
+		if (includeParams) {
+			PortletURL redirectURL = PortletURLBuilder.createRenderURL(
+				liferayPortletResponse
+			).setParameter(
+				"assetEntryId", assetEntry.getEntryId()
+			).setParameter(
+				"cur", ParamUtil.getInteger(liferayPortletRequest, "cur")
+			).setParameter(
+				"delta",
+				() -> {
+					int delta = ParamUtil.getInteger(
+						liferayPortletRequest, "delta");
+
+					if (delta > 0) {
+						return delta;
+					}
+
+					return null;
+				}
+			).setParameter(
+				"resetCur",
+				ParamUtil.getBoolean(liferayPortletRequest, "resetCur")
+			).buildPortletURL();
+
+			viewFullContentURL = PortletURLBuilder.create(
+				getBaseAssetViewURL(
+					liferayPortletRequest, liferayPortletResponse,
+					assetRenderer, assetEntry)
+			).setRedirect(
+				redirectURL
+			).buildPortletURL();
+		}
 
 		String viewURL = null;
 
@@ -596,7 +617,7 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 					liferayPortletRequest, liferayPortletResponse,
 					noSuchEntryRedirect);
 
-				if (Validator.isNotNull(viewURL) &&
+				if (includeParams && Validator.isNotNull(viewURL) &&
 					!Objects.equals(viewURL, noSuchEntryRedirect)) {
 
 					viewURL = _http.setParameter(
@@ -877,6 +898,27 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 		}
 
 		return key;
+	}
+
+	@Override
+	public boolean hasPortletFriendlyURL(
+		String currentURL, String friendlyURL, boolean viewSingleAsset,
+		boolean assetLinkBehaviorShowFullContent) {
+
+		if (assetLinkBehaviorShowFullContent) {
+			if (viewSingleAsset) {
+				String currentUrlRemoveParams = currentURL.substring(
+					0, currentURL.indexOf("?"));
+
+				if (friendlyURL.contains(currentUrlRemoveParams)) {
+					return true;
+				}
+			}
+
+			return false;
+		}
+
+		return true;
 	}
 
 	@Activate
