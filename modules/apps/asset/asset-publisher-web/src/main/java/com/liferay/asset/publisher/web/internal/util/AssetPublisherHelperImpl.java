@@ -34,6 +34,7 @@ import com.liferay.asset.publisher.util.AssetPublisherHelper;
 import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherWebConfiguration;
 import com.liferay.asset.publisher.web.internal.constants.AssetPublisherSelectionStyleConstants;
 import com.liferay.asset.util.AssetHelper;
+import com.liferay.journal.constants.JournalArticleConstants;
 import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -905,20 +906,34 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 		String currentURL, String friendlyURL, boolean viewSingleAsset,
 		boolean assetLinkBehaviorShowFullContent) {
 
-		if (assetLinkBehaviorShowFullContent) {
-			if (viewSingleAsset) {
-				String currentUrlRemoveParams = currentURL.substring(
-					0, currentURL.indexOf("?"));
+		if (!assetLinkBehaviorShowFullContent) {
+			return true;
+		}
 
-				if (friendlyURL.contains(currentUrlRemoveParams)) {
-					return true;
-				}
-			}
-
+		if (!viewSingleAsset) {
 			return false;
 		}
 
-		return true;
+		String currentUrlWithoutParams = currentURL.substring(
+			0, currentURL.indexOf("?"));
+
+		String normalizedFriendlyURL = friendlyURL;
+
+		if (normalizedFriendlyURL.endsWith(StringPool.SLASH)) {
+			normalizedFriendlyURL =
+				normalizedFriendlyURL.substring(
+					0, normalizedFriendlyURL.length() - 1);
+		}
+
+		normalizedFriendlyURL =
+			JournalArticleConstants.CANONICAL_URL_SEPARATOR +
+				normalizedFriendlyURL;
+
+		if (normalizedFriendlyURL.endsWith(currentUrlWithoutParams)) {
+			return true;
+		}
+
+		return false;
 	}
 
 	@Activate
