@@ -160,7 +160,7 @@ public interface AssetPublisherHelper {
 
 	public String getScopeId(Group group, long scopeGroupId);
 
-	public default boolean hasPortletFriendlyURL(
+	public default boolean hasDisplayPageFriendlyURL(
 		String currentURL, String friendlyURL, boolean viewSingleAsset,
 		boolean assetLinkBehaviorShowFullContent) {
 

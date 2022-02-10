@@ -902,7 +902,7 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 	}
 
 	@Override
-	public boolean hasPortletFriendlyURL(
+	public boolean hasDisplayPageFriendlyURL(
 		String currentURL, String friendlyURL, boolean viewSingleAsset,
 		boolean assetLinkBehaviorShowFullContent) {
 
@@ -920,9 +920,8 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 		String normalizedFriendlyURL = friendlyURL;
 
 		if (normalizedFriendlyURL.endsWith(StringPool.SLASH)) {
-			normalizedFriendlyURL =
-				normalizedFriendlyURL.substring(
-					0, normalizedFriendlyURL.length() - 1);
+			normalizedFriendlyURL = normalizedFriendlyURL.substring(
+				0, normalizedFriendlyURL.length() - 1);
 		}
 
 		normalizedFriendlyURL =
