@@ -17,14 +17,9 @@ package com.liferay.journal.internal.search;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.journal.configuration.JournalServiceConfiguration;
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.journal.model.JournalArticleResource;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.service.JournalArticleResourceLocalService;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
-import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
-import com.liferay.portal.kernel.dao.orm.Property;
-import com.liferay.portal.kernel.dao.orm.PropertyFactoryUtil;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
@@ -41,7 +36,6 @@ import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
-import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -225,9 +219,6 @@ public class JournalArticleIndexer extends BaseIndexer<JournalArticle> {
 
 	@Override
 	protected void doReindex(String[] ids) throws Exception {
-		long companyId = GetterUtil.getLong(ids[0]);
-
-		_reindexArticles(companyId);
 	}
 
 	protected boolean isIndexAllArticleVersions() {
@@ -311,82 +302,6 @@ public class JournalArticleIndexer extends BaseIndexer<JournalArticle> {
 		}
 
 		return latestIndexableArticle;
-	}
-
-	private void _reindexArticles(long companyId) throws Exception {
-		IndexableActionableDynamicQuery indexableActionableDynamicQuery;
-
-		if (isIndexAllArticleVersions()) {
-			indexableActionableDynamicQuery =
-				_journalArticleLocalService.
-					getIndexableActionableDynamicQuery();
-
-			indexableActionableDynamicQuery.setAddCriteriaMethod(
-				dynamicQuery -> {
-					Property property = PropertyFactoryUtil.forName(
-						"classNameId");
-
-					dynamicQuery.add(
-						property.ne(
-							_portal.getClassNameId(DDMStructure.class)));
-				});
-			indexableActionableDynamicQuery.setInterval(
-				_batchIndexingHelper.getBulkSize(
-					JournalArticle.class.getName()));
-			indexableActionableDynamicQuery.setPerformActionMethod(
-				(JournalArticle article) -> {
-					try {
-						indexableActionableDynamicQuery.addDocuments(
-							getDocument(article));
-					}
-					catch (PortalException portalException) {
-						if (_log.isWarnEnabled()) {
-							_log.warn(
-								"Unable to index journal article " +
-									article.getId(),
-								portalException);
-						}
-					}
-				});
-		}
-		else {
-			indexableActionableDynamicQuery =
-				_journalArticleResourceLocalService.
-					getIndexableActionableDynamicQuery();
-
-			indexableActionableDynamicQuery.setInterval(
-				_batchIndexingHelper.getBulkSize(
-					JournalArticleResource.class.getName()));
-
-			indexableActionableDynamicQuery.setPerformActionMethod(
-				(JournalArticleResource articleResource) -> {
-					JournalArticle latestIndexableArticle =
-						_fetchLatestIndexableArticleVersion(
-							articleResource.getResourcePrimKey());
-
-					if (latestIndexableArticle == null) {
-						return;
-					}
-
-					try {
-						indexableActionableDynamicQuery.addDocuments(
-							getDocument(latestIndexableArticle));
-					}
-					catch (PortalException portalException) {
-						if (_log.isWarnEnabled()) {
-							_log.warn(
-								"Unable to index journal article " +
-									latestIndexableArticle.getId(),
-								portalException);
-						}
-					}
-				});
-		}
-
-		indexableActionableDynamicQuery.setCompanyId(companyId);
-		indexableActionableDynamicQuery.setSearchEngineId(getSearchEngineId());
-
-		indexableActionableDynamicQuery.performActions();
 	}
 
 	private void _reindexEveryVersionOfResourcePrimKey(long resourcePrimKey)
