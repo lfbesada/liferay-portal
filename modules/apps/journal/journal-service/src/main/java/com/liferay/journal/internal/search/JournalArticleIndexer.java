@@ -24,7 +24,6 @@ import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.service.JournalArticleResourceLocalService;
 import com.liferay.journal.util.JournalContent;
 import com.liferay.journal.util.JournalConverter;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery;
 import com.liferay.portal.kernel.dao.orm.Property;
@@ -34,7 +33,6 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.search.BaseIndexer;
-import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.IndexWriterHelper;
@@ -50,9 +48,7 @@ import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermi
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Html;
 import com.liferay.portal.kernel.util.ListUtil;
-import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.search.batch.BatchIndexingHelper;
 import com.liferay.portal.search.index.IndexStatusManager;
@@ -168,48 +164,7 @@ public class JournalArticleIndexer extends BaseIndexer<JournalArticle> {
 		Document document, Locale locale, String snippet,
 		PortletRequest portletRequest, PortletResponse portletResponse) {
 
-		Locale defaultLocale = LocaleUtil.fromLanguageId(
-			document.get("defaultLanguageId"));
-
-		Locale snippetLocale = getSnippetLocale(document, locale);
-
-		String localizedTitleName = Field.getLocalizedName(locale, Field.TITLE);
-
-		if ((snippetLocale == null) &&
-			(document.getField(localizedTitleName) == null)) {
-
-			snippetLocale = defaultLocale;
-		}
-		else {
-			snippetLocale = locale;
-		}
-
-		String title = document.get(
-			snippetLocale, Field.SNIPPET + StringPool.UNDERLINE + Field.TITLE,
-			Field.TITLE);
-
-		if (Validator.isBlank(title) && !snippetLocale.equals(defaultLocale)) {
-			title = document.get(
-				defaultLocale,
-				Field.SNIPPET + StringPool.UNDERLINE + Field.TITLE,
-				Field.TITLE);
-		}
-
-		String content = _getDDMContentSummary(
-			document, snippetLocale, portletRequest, portletResponse);
-
-		if (Validator.isBlank(content) &&
-			!snippetLocale.equals(defaultLocale)) {
-
-			content = _getDDMContentSummary(
-				document, defaultLocale, portletRequest, portletResponse);
-		}
-
-		Summary summary = new Summary(snippetLocale, title, content);
-
-		summary.setMaxContentLength(200);
-
-		return summary;
+		return null;
 	}
 
 	@Override
@@ -341,40 +296,6 @@ public class JournalArticleIndexer extends BaseIndexer<JournalArticle> {
 		}
 
 		return latestIndexableArticle;
-	}
-
-	private String _getDDMContentSummary(
-		Document document, Locale snippetLocale, PortletRequest portletRequest,
-		PortletResponse portletResponse) {
-
-		String content = StringPool.BLANK;
-
-		if ((portletRequest == null) || (portletResponse == null)) {
-			return content;
-		}
-
-		try {
-			content = document.get(
-				snippetLocale,
-				Field.SNIPPET + StringPool.UNDERLINE + Field.DESCRIPTION,
-				Field.DESCRIPTION);
-
-			if (!Validator.isBlank(content)) {
-				return content;
-			}
-
-			content = document.get(
-				snippetLocale,
-				Field.SNIPPET + StringPool.UNDERLINE + Field.CONTENT,
-				Field.CONTENT);
-		}
-		catch (Exception exception) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(exception, exception);
-			}
-		}
-
-		return content;
 	}
 
 	private void _reindexEveryVersionOfResourcePrimKey(long resourcePrimKey)
