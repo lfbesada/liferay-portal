@@ -33,7 +33,6 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.search.BaseIndexer;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -96,8 +95,10 @@ public class IndexerClausesTest {
 	}
 
 	@Test
-	public void testBaseIndexer() throws Exception {
-		Assert.assertTrue(journalArticleIndexer instanceof BaseIndexer);
+	public void testDefaultIndexer1() throws Exception {
+		Assert.assertEquals(
+			"class com.liferay.portal.search.internal.indexer.DefaultIndexer",
+			String.valueOf(journalArticleIndexer.getClass()));
 
 		addJournalArticle("Gamma Article");
 		addJournalArticle("Omega Article");
@@ -117,7 +118,7 @@ public class IndexerClausesTest {
 	}
 
 	@Test
-	public void testDefaultIndexer() throws Exception {
+	public void testDefaultIndexer2() throws Exception {
 		Assert.assertEquals(
 			"class com.liferay.portal.search.internal.indexer.DefaultIndexer",
 			String.valueOf(blogsEntryIndexer.getClass()));
@@ -244,7 +245,9 @@ public class IndexerClausesTest {
 	@Inject
 	protected BlogsEntryLocalService blogsEntryLocalService;
 
-	@Inject(filter = "component.name=*.JournalArticleIndexer")
+	@Inject(
+		filter = "indexer.class.name=com.liferay.journal.model.JournalArticle"
+	)
 	protected Indexer<JournalArticle> journalArticleIndexer;
 
 	@Inject
