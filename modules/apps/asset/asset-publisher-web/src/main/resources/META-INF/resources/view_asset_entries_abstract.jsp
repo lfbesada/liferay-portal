@@ -323,6 +323,7 @@ for (AssetEntry assetEntry : assetEntryResult.getAssetEntries()) {
 							target="_blank"
 							title="<%= title %>"
 							types="<%= assetPublisherDisplayContext.getSocialBookmarksTypes() %>"
+							url="<%= assetPublisherHelper.getAssetShareURL(liferayPortletRequest, liferayPortletResponse, assetEntry, assetPublisherDisplayContext.isAssetLinkBehaviorShowFullContent(), true, false) %>"
 							urlImpl="<%= assetPublisherHelper.getBaseAssetViewURL(liferayPortletRequest, liferayPortletResponse, assetRenderer, assetEntry) %>"
 						/>
 					</clay:content-col>

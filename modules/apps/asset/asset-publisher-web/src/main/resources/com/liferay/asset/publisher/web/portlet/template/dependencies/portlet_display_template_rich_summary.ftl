@@ -14,9 +14,11 @@
 
 		assetRenderer = entry.getAssetRenderer()
 
+		assetLinkBehaviorShowFullContent = stringUtil.equals(assetLinkBehavior, "showFullContent")
+
 		entryTitle = htmlUtil.escape(assetRenderer.getTitle(locale))
 
-		viewURL = assetPublisherHelper.getAssetViewURL(renderRequest, renderResponse, assetRenderer, entry, !stringUtil.equals(assetLinkBehavior, "showFullContent"))
+		viewURL = assetPublisherHelper.getAssetViewURL(renderRequest, renderResponse, assetRenderer, entry, !assetLinkBehaviorShowFullContent)
 	/>
 
 	<div class="asset-abstract">
@@ -177,7 +179,7 @@
 	<#if getterUtil.getBoolean(enableRelatedAssets)>
 		<@liferay_asset["asset-links"]
 			assetEntryId=entry.getEntryId()
-			viewInContext=!stringUtil.equals(assetLinkBehavior, "showFullContent")
+			viewInContext=!assetLinkBehaviorShowFullContent
 		/>
 	</#if>
 </#macro>
@@ -190,6 +192,7 @@
 		target="_blank"
 		title=entry.getTitle(locale)
 		types="${socialBookmarksTypes}"
-		url=viewURL
+		url=assetPublisherHelper.getAssetShareURL(renderRequest, renderResponse, entry, assetLinkBehaviorShowFullContent, !assetLinkBehaviorShowFullContent, false)
+		urlImpl=assetPublisherHelper.getBaseAssetViewURL(renderRequest, renderResponse, assetRenderer, entry)
 	/>
 </#macro>
