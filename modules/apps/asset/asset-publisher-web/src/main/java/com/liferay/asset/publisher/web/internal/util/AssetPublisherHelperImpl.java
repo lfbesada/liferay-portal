@@ -1262,6 +1262,22 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 			return true;
 		}
 
+		if (!Objects.equals(
+				assetEntry.getClassNameId(),
+				_portal.getClassNameId(JournalArticle.class))) {
+
+			return false;
+		}
+
+		AssetRenderer<JournalArticle> assetRenderer =
+			(AssetRenderer<JournalArticle>)assetEntry.getAssetRenderer();
+
+		JournalArticle article = assetRenderer.getAssetObject();
+
+		if (Validator.isNotNull(article.getLayoutUuid())) {
+			return true;
+		}
+
 		return false;
 	}
 
