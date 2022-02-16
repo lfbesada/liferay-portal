@@ -588,87 +588,9 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 		AssetRenderer<?> assetRenderer, AssetEntry assetEntry,
 		boolean viewInContext) {
 
-		return getAssetViewURL(
+		return _getAssetViewURL(
 			liferayPortletRequest, liferayPortletResponse,
 			assetEntry.getAssetRenderer(), assetEntry, viewInContext, true);
-	}
-
-	@Override
-	public String getAssetViewURL(
-		LiferayPortletRequest liferayPortletRequest,
-		LiferayPortletResponse liferayPortletResponse,
-		AssetRenderer<?> assetRenderer, AssetEntry assetEntry,
-		boolean viewInContext, boolean includeParams) {
-
-		PortletURL viewFullContentURL = PortletURLBuilder.create(
-			getBaseAssetViewURL(
-				liferayPortletRequest, liferayPortletResponse, assetRenderer,
-				assetEntry)
-		).buildPortletURL();
-
-		if (includeParams) {
-			PortletURL redirectURL = PortletURLBuilder.createRenderURL(
-				liferayPortletResponse
-			).setParameter(
-				"assetEntryId", assetEntry.getEntryId()
-			).setParameter(
-				"cur", ParamUtil.getInteger(liferayPortletRequest, "cur")
-			).setParameter(
-				"delta",
-				() -> {
-					int delta = ParamUtil.getInteger(
-						liferayPortletRequest, "delta");
-
-					if (delta > 0) {
-						return delta;
-					}
-
-					return null;
-				}
-			).setParameter(
-				"resetCur",
-				ParamUtil.getBoolean(liferayPortletRequest, "resetCur")
-			).buildPortletURL();
-
-			viewFullContentURL = PortletURLBuilder.create(
-				getBaseAssetViewURL(
-					liferayPortletRequest, liferayPortletResponse,
-					assetRenderer, assetEntry)
-			).setRedirect(
-				redirectURL
-			).buildPortletURL();
-		}
-
-		String viewURL = null;
-
-		if (viewInContext) {
-			try {
-				String noSuchEntryRedirect = viewFullContentURL.toString();
-
-				viewURL = assetRenderer.getURLViewInContext(
-					liferayPortletRequest, liferayPortletResponse,
-					noSuchEntryRedirect);
-
-				if (includeParams && Validator.isNotNull(viewURL) &&
-					!Objects.equals(viewURL, noSuchEntryRedirect)) {
-
-					viewURL = _http.setParameter(
-						viewURL, "redirect",
-						_portal.getCurrentURL(liferayPortletRequest));
-				}
-			}
-			catch (Exception exception) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(exception);
-				}
-			}
-		}
-
-		if (Validator.isNull(viewURL)) {
-			viewURL = viewFullContentURL.toString();
-		}
-
-		return viewURL;
 	}
 
 	@Override
@@ -932,40 +854,6 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 		return key;
 	}
 
-	@Override
-	public boolean hasDisplayPageFriendlyURL(
-		String currentURL, String friendlyURL, boolean viewSingleAsset,
-		boolean assetLinkBehaviorShowFullContent) {
-
-		if (!assetLinkBehaviorShowFullContent) {
-			return true;
-		}
-
-		if (!viewSingleAsset) {
-			return false;
-		}
-
-		String currentUrlWithoutParams = currentURL.substring(
-			0, currentURL.indexOf("?"));
-
-		String normalizedFriendlyURL = friendlyURL;
-
-		if (normalizedFriendlyURL.endsWith(StringPool.SLASH)) {
-			normalizedFriendlyURL = normalizedFriendlyURL.substring(
-				0, normalizedFriendlyURL.length() - 1);
-		}
-
-		normalizedFriendlyURL =
-			JournalArticleConstants.CANONICAL_URL_SEPARATOR +
-				normalizedFriendlyURL;
-
-		if (normalizedFriendlyURL.endsWith(currentUrlWithoutParams)) {
-			return true;
-		}
-
-		return false;
-	}
-
 	@Activate
 	@Modified
 	protected void activate(Map<String, Object> properties)
@@ -1225,6 +1113,83 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 		return assetEntryResults;
 	}
 
+	private String _getAssetViewURL(
+		LiferayPortletRequest liferayPortletRequest,
+		LiferayPortletResponse liferayPortletResponse,
+		AssetRenderer<?> assetRenderer, AssetEntry assetEntry,
+		boolean viewInContext, boolean includeParams) {
+
+		PortletURL viewFullContentURL = PortletURLBuilder.create(
+			getBaseAssetViewURL(
+				liferayPortletRequest, liferayPortletResponse, assetRenderer,
+				assetEntry)
+		).buildPortletURL();
+
+		if (includeParams) {
+			PortletURL redirectURL = PortletURLBuilder.createRenderURL(
+				liferayPortletResponse
+			).setParameter(
+				"assetEntryId", assetEntry.getEntryId()
+			).setParameter(
+				"cur", ParamUtil.getInteger(liferayPortletRequest, "cur")
+			).setParameter(
+				"delta",
+				() -> {
+					int delta = ParamUtil.getInteger(
+						liferayPortletRequest, "delta");
+
+					if (delta > 0) {
+						return delta;
+					}
+
+					return null;
+				}
+			).setParameter(
+				"resetCur",
+				ParamUtil.getBoolean(liferayPortletRequest, "resetCur")
+			).buildPortletURL();
+
+			viewFullContentURL = PortletURLBuilder.create(
+				getBaseAssetViewURL(
+					liferayPortletRequest, liferayPortletResponse,
+					assetRenderer, assetEntry)
+			).setRedirect(
+				redirectURL
+			).buildPortletURL();
+		}
+
+		String viewURL = null;
+
+		if (viewInContext) {
+			try {
+				String noSuchEntryRedirect = viewFullContentURL.toString();
+
+				viewURL = assetRenderer.getURLViewInContext(
+					liferayPortletRequest, liferayPortletResponse,
+					noSuchEntryRedirect);
+
+				if (includeParams && Validator.isNotNull(viewURL) &&
+					!Objects.equals(viewURL, noSuchEntryRedirect)) {
+
+					viewURL = _http.setParameter(
+						viewURL, "redirect",
+						_portal.getCurrentURL(liferayPortletRequest));
+				}
+			}
+			catch (Exception exception) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(exception);
+				}
+			}
+		}
+
+		if (Validator.isNull(viewURL)) {
+			viewURL = viewFullContentURL.toString();
+		}
+
+		return viewURL;
+	}
+
 	private long[] _getSegmentsEntryIds(PortletRequest portletRequest) {
 		ThemeDisplay themeDisplay = (ThemeDisplay)portletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -1275,6 +1240,39 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 		JournalArticle article = assetRenderer.getAssetObject();
 
 		if (Validator.isNotNull(article.getLayoutUuid())) {
+			return true;
+		}
+
+		return false;
+	}
+
+	private boolean _hasDisplayPageFriendlyURL(
+		String currentURL, String friendlyURL, boolean viewSingleAsset,
+		boolean assetLinkBehaviorShowFullContent) {
+
+		if (!assetLinkBehaviorShowFullContent) {
+			return true;
+		}
+
+		if (!viewSingleAsset) {
+			return false;
+		}
+
+		String currentUrlWithoutParams = currentURL.substring(
+			0, currentURL.indexOf("?"));
+
+		String normalizedFriendlyURL = friendlyURL;
+
+		if (normalizedFriendlyURL.endsWith(StringPool.SLASH)) {
+			normalizedFriendlyURL = normalizedFriendlyURL.substring(
+				0, normalizedFriendlyURL.length() - 1);
+		}
+
+		normalizedFriendlyURL =
+			JournalArticleConstants.CANONICAL_URL_SEPARATOR +
+				normalizedFriendlyURL;
+
+		if (normalizedFriendlyURL.endsWith(currentUrlWithoutParams)) {
 			return true;
 		}
 

@@ -140,12 +140,6 @@ public interface AssetPublisherHelper {
 		AssetRenderer<?> assetRenderer, AssetEntry assetEntry,
 		boolean viewInContext);
 
-	public String getAssetViewURL(
-		LiferayPortletRequest liferayPortletRequest,
-		LiferayPortletResponse liferayPortletResponse,
-		AssetRenderer<?> assetRenderer, AssetEntry assetEntry,
-		boolean viewInContext, boolean includeParams);
-
 	public PortletURL getBaseAssetViewURL(
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
@@ -165,12 +159,5 @@ public interface AssetPublisherHelper {
 	public String[] getKeywords(PortletPreferences portletPreferences);
 
 	public String getScopeId(Group group, long scopeGroupId);
-
-	public default boolean hasDisplayPageFriendlyURL(
-		String currentURL, String friendlyURL, boolean viewSingleAsset,
-		boolean assetLinkBehaviorShowFullContent) {
-
-		return true;
-	}
 
 }
