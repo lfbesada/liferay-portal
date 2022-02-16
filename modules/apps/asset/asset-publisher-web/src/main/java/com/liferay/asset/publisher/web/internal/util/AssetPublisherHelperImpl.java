@@ -513,12 +513,15 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 			(ThemeDisplay)liferayPortletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
+		if (!_hasDisplayPage(assetEntry, themeDisplay.getScopeGroupId())) {
+			return null;
+		}
+
 		String friendlyURL = _getAssetViewURL(
 			liferayPortletRequest, liferayPortletResponse,
 			assetEntry.getAssetRenderer(), assetEntry, viewInContext, false);
 
-		if (_hasDisplayPage(assetEntry, themeDisplay.getScopeGroupId()) &&
-			_hasDisplayPageFriendlyURL(
+		if (_hasDisplayPageFriendlyURL(
 				_portal.getCurrentURL(liferayPortletRequest), friendlyURL,
 				viewSingleAsset, assetLinkBehaviorShowFullContent)) {
 
