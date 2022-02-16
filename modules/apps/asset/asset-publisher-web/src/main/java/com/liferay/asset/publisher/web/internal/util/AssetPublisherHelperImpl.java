@@ -521,10 +521,31 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 			liferayPortletRequest, liferayPortletResponse,
 			assetEntry.getAssetRenderer(), assetEntry, viewInContext, false);
 
-		if (_hasDisplayPageFriendlyURL(
-				_portal.getCurrentURL(liferayPortletRequest), friendlyURL,
-				viewSingleAsset, assetLinkBehaviorShowFullContent)) {
+		if (!assetLinkBehaviorShowFullContent) {
+			return friendlyURL;
+		}
 
+		if (!viewSingleAsset) {
+			return null;
+		}
+
+		String currentURL = themeDisplay.getURLCurrent();
+
+		String currentUrlWithoutParams = currentURL.substring(
+			0, currentURL.indexOf("?"));
+
+		String normalizedFriendlyURL = friendlyURL;
+
+		if (normalizedFriendlyURL.endsWith(StringPool.SLASH)) {
+			normalizedFriendlyURL = normalizedFriendlyURL.substring(
+				0, normalizedFriendlyURL.length() - 1);
+		}
+
+		normalizedFriendlyURL =
+			JournalArticleConstants.CANONICAL_URL_SEPARATOR +
+				normalizedFriendlyURL;
+
+		if (normalizedFriendlyURL.endsWith(currentUrlWithoutParams)) {
 			return friendlyURL;
 		}
 
@@ -1243,39 +1264,6 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 		JournalArticle article = assetRenderer.getAssetObject();
 
 		if (Validator.isNotNull(article.getLayoutUuid())) {
-			return true;
-		}
-
-		return false;
-	}
-
-	private boolean _hasDisplayPageFriendlyURL(
-		String currentURL, String friendlyURL, boolean viewSingleAsset,
-		boolean assetLinkBehaviorShowFullContent) {
-
-		if (!assetLinkBehaviorShowFullContent) {
-			return true;
-		}
-
-		if (!viewSingleAsset) {
-			return false;
-		}
-
-		String currentUrlWithoutParams = currentURL.substring(
-			0, currentURL.indexOf("?"));
-
-		String normalizedFriendlyURL = friendlyURL;
-
-		if (normalizedFriendlyURL.endsWith(StringPool.SLASH)) {
-			normalizedFriendlyURL = normalizedFriendlyURL.substring(
-				0, normalizedFriendlyURL.length() - 1);
-		}
-
-		normalizedFriendlyURL =
-			JournalArticleConstants.CANONICAL_URL_SEPARATOR +
-				normalizedFriendlyURL;
-
-		if (normalizedFriendlyURL.endsWith(currentUrlWithoutParams)) {
 			return true;
 		}
 
