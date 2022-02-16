@@ -35,6 +35,7 @@ import com.liferay.asset.publisher.util.AssetPublisherHelper;
 import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherWebConfiguration;
 import com.liferay.asset.publisher.web.internal.constants.AssetPublisherSelectionStyleConstants;
 import com.liferay.asset.util.AssetHelper;
+import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.journal.constants.JournalArticleConstants;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
@@ -53,6 +54,7 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
+import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.search.BaseModelSearchResult;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
@@ -1244,8 +1246,17 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 	}
 
 	private boolean _hasDisplayPage(AssetEntry assetEntry, long groupId) {
+		long classNameId = assetEntry.getClassNameId();
+
+		if (Objects.equals(
+				assetEntry.getClassNameId(),
+				_portal.getClassNameId(DLFileEntry.class))) {
+
+			classNameId = _portal.getClassNameId(FileEntry.class);
+		}
+
 		if (AssetDisplayPageUtil.hasAssetDisplayPage(
-				groupId, assetEntry.getClassNameId(), assetEntry.getClassPK(),
+				groupId, classNameId, assetEntry.getClassPK(),
 				assetEntry.getClassTypeId())) {
 
 			return true;
