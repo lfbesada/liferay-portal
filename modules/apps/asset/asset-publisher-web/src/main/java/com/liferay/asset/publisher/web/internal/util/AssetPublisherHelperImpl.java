@@ -14,6 +14,7 @@
 
 package com.liferay.asset.publisher.web.internal.util;
 
+import com.liferay.asset.display.page.util.AssetDisplayPageUtil;
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.asset.kernel.model.AssetEntry;
@@ -35,6 +36,8 @@ import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherWebC
 import com.liferay.asset.publisher.web.internal.constants.AssetPublisherSelectionStyleConstants;
 import com.liferay.asset.util.AssetHelper;
 import com.liferay.journal.constants.JournalArticleConstants;
+import com.liferay.journal.model.JournalArticle;
+import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -495,6 +498,32 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 			searchContainer, assetEntryQuery, layout, portletPreferences,
 			portletName, locale, timeZone, companyId, scopeGroupId, userId,
 			classNameIds, attributes);
+	}
+
+	@Override
+	public String getAssetShareURL(
+		LiferayPortletRequest liferayPortletRequest,
+		LiferayPortletResponse liferayPortletResponse, AssetEntry assetEntry,
+		boolean assetLinkBehaviorShowFullContent, boolean viewInContext,
+		boolean viewSingleAsset) {
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)liferayPortletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		String friendlyURL = _getAssetViewURL(
+			liferayPortletRequest, liferayPortletResponse,
+			assetEntry.getAssetRenderer(), assetEntry, viewInContext, false);
+
+		if (_hasDisplayPage(assetEntry, themeDisplay.getScopeGroupId()) &&
+			_hasDisplayPageFriendlyURL(
+				_portal.getCurrentURL(liferayPortletRequest), friendlyURL,
+				viewSingleAsset, assetLinkBehaviorShowFullContent)) {
+
+			return friendlyURL;
+		}
+
+		return null;
 	}
 
 	@Override
@@ -1214,6 +1243,17 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 		return ArrayUtil.toLongArray(siteGroupIds);
 	}
 
+	private boolean _hasDisplayPage(AssetEntry assetEntry, long groupId) {
+		if (AssetDisplayPageUtil.hasAssetDisplayPage(
+				groupId, assetEntry.getClassNameId(), assetEntry.getClassPK(),
+				assetEntry.getClassTypeId())) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	private boolean _isSearchWithIndex(
 		String portletName, AssetEntryQuery assetEntryQuery) {
 
@@ -1462,6 +1502,9 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 
 	@Reference
 	private Http _http;
+
+	@Reference
+	private JournalArticleLocalService _journalArticleLocalService;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
