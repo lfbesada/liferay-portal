@@ -40,7 +40,6 @@ function visit(nodes, callback) {
 }
 
 function SelectAssetCategory({
-	categoriesMultipleSelectionEnabled,
 	itemSelectedEventName,
 	multiSelection,
 	namespace,
@@ -58,7 +57,7 @@ function SelectAssetCategory({
 	const [selectedItemsCount, setSelectedItemsCount] = useState(0);
 
 	const handleSelectionChange = (selectedNodeIds) => {
-		if (categoriesMultipleSelectionEnabled && multiSelection) {
+		if (multiSelection) {
 			setSelectedItemsCount(selectedNodeIds.size);
 		}
 
@@ -145,10 +144,7 @@ function SelectAssetCategory({
 							<Treeview
 								NodeComponent={Treeview.Card}
 								filter={getFilter(filterQuery)}
-								multiSelection={
-									categoriesMultipleSelectionEnabled &&
-									multiSelection
-								}
+								multiSelection={multiSelection}
 								nodes={flattenedNodes}
 								onSelectedNodesChange={handleSelectionChange}
 							/>
