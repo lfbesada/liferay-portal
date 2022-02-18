@@ -670,8 +670,8 @@ public class PortalImplCanonicalURLTest {
 
 		String expectedPortalDomain = virtualHostname;
 
-		if (virtualHostname.startsWith("localhost") &&
-			!portalDomain.startsWith("localhost")) {
+		if (virtualHostname.startsWith("localhost") ^
+			portalDomain.startsWith("localhost")) {
 
 			expectedPortalDomain = portalDomain;
 		}
@@ -704,7 +704,6 @@ public class PortalImplCanonicalURLTest {
 
 	private static Locale _defaultLocale;
 	private static int _defaultPrependStyle;
-
 	private static String _originalVirtualHostDefaultSiteName;
 
 	@Inject
