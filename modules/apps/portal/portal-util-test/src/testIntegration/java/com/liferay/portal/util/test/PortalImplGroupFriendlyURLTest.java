@@ -25,6 +25,7 @@ import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.VirtualHostLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
@@ -80,15 +81,6 @@ public class PortalImplGroupFriendlyURLTest {
 		}
 
 		LayoutTestUtil.addLayout(_group, true);
-
-		_privateLayout = LayoutTestUtil.addLayout(_group.getGroupId(), true);
-
-		_updateLayoutSetVirtualHostname(
-			_privateLayout, _PRIVATE_LAYOUT_HOSTNAME);
-
-		_publicLayout = LayoutTestUtil.addLayout(_group.getGroupId(), false);
-
-		_updateLayoutSetVirtualHostname(_publicLayout, _PUBLIC_LAYOUT_HOSTNAME);
 	}
 
 	@AfterClass
@@ -98,6 +90,10 @@ public class PortalImplGroupFriendlyURLTest {
 
 	@Test
 	public void testGetGroupFriendlyURLFromPrivateLayout() throws Exception {
+		Layout layout = _layoutLocalService.fetchDefaultLayout(
+			_group.getGroupId(), true);
+
+		_updateLayoutSetVirtualHostname(layout, _PRIVATE_LAYOUT_HOSTNAME);
 
 		// Tests for LPS-70980
 
@@ -106,55 +102,47 @@ public class PortalImplGroupFriendlyURLTest {
 				_group.getFriendlyURL();
 
 		_testGroupFriendlyURL(
-			_PRIVATE_LAYOUT_HOSTNAME, expectedURL, _group, _privateLayout);
+			_PRIVATE_LAYOUT_HOSTNAME, expectedURL, _group, layout);
 	}
 
 	@Test
 	public void testGetGroupFriendlyURLFromPublicLayout() throws Exception {
+		Layout layout = _layoutLocalService.fetchDefaultLayout(
+			_group.getGroupId(), false);
+
+		_updateLayoutSetVirtualHostname(layout, _PUBLIC_LAYOUT_HOSTNAME);
+
 		String expectedURL = StringPool.BLANK;
 
 		_testGroupFriendlyURL(
-			_PUBLIC_LAYOUT_HOSTNAME, expectedURL, _group, _publicLayout);
+			_PUBLIC_LAYOUT_HOSTNAME, expectedURL, _group, layout);
 	}
 
 	@Test
 	public void testGetGroupFriendlyURLFromPublicLayoutDefaultSite()
 		throws Exception {
 
+		Layout defaultSiteLayout = _layoutLocalService.fetchDefaultLayout(
+			_group.getGroupId(), false);
+
+		_updateLayoutSetVirtualHostname(defaultSiteLayout, "");
+
 		_testGroupFriendlyURL(
-			_company.getVirtualHostname(), StringPool.BLANK, _group, _publicLayout);
+			_company.getVirtualHostname(), StringPool.BLANK, _group,
+			defaultSiteLayout);
 
 		User user = UserTestUtil.getAdminUser(_company.getCompanyId());
 
 		Group group = GroupTestUtil.addGroup(
 			_company.getCompanyId(), user.getUserId(), 0);
 
-		Layout layout = LayoutTestUtil.addLayout(group);
+		Layout nondefaultSiteLayout = LayoutTestUtil.addLayout(group);
 
 		_testGroupFriendlyURL(
 			_company.getVirtualHostname(),
 			PropsValues.LAYOUT_FRIENDLY_URL_PUBLIC_SERVLET_MAPPING +
 				group.getFriendlyURL(),
-			group, layout);
-	}
-
-	private static void _updateLayoutSetVirtualHostname(
-		Layout layout, String layoutHostname) {
-
-		LayoutSet layoutSet = layout.getLayoutSet();
-
-		Map<String, String> virtualHostnames = TreeMapBuilder.put(
-			layoutHostname, StringPool.BLANK
-		).build();
-
-		_virtualHostLocalService.updateVirtualHosts(
-			_company.getCompanyId(), layoutSet.getLayoutSetId(),
-			(TreeMap<String, String>)virtualHostnames);
-
-		layoutSet.setVirtualHostnames(
-			(TreeMap<String, String>)virtualHostnames);
-
-		layout.setLayoutSet(layoutSet);
+			group, nondefaultSiteLayout);
 	}
 
 	private void _testGroupFriendlyURL(
@@ -178,6 +166,25 @@ public class PortalImplGroupFriendlyURLTest {
 				layout.getLayoutSet(), themeDisplay, false, true));
 	}
 
+	private void _updateLayoutSetVirtualHostname(
+		Layout layout, String layoutHostname) {
+
+		LayoutSet layoutSet = layout.getLayoutSet();
+
+		Map<String, String> virtualHostnames = TreeMapBuilder.put(
+			layoutHostname, StringPool.BLANK
+		).build();
+
+		_virtualHostLocalService.updateVirtualHosts(
+			_company.getCompanyId(), layoutSet.getLayoutSetId(),
+			(TreeMap<String, String>)virtualHostnames);
+
+		layoutSet.setVirtualHostnames(
+			(TreeMap<String, String>)virtualHostnames);
+
+		layout.setLayoutSet(layoutSet);
+	}
+
 	private static final String _PRIVATE_LAYOUT_HOSTNAME =
 		"privateLayoutHostname";
 
@@ -194,8 +201,11 @@ public class PortalImplGroupFriendlyURLTest {
 	@Inject
 	private static GroupLocalService _groupLocalService;
 
-	private static Layout _privateLayout;
-	private static Layout _publicLayout;
+	@Inject
+	private static VirtualHostLocalService _virtualHostLocalService;
+
+	@Inject
+	private LayoutLocalService _layoutLocalService;
 
 	@Inject
 	private Portal _portal;
