@@ -31,6 +31,7 @@ import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.VirtualHostLocalService;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -77,6 +78,10 @@ public class PortalImplCanonicalURLTest {
 
 	@BeforeClass
 	public static void setUpClass() throws PortalException {
+		_originalVirtualHostDefaultSiteName =
+			ReflectionTestUtil.getAndSetFieldValue(
+				PropsValues.class, "VIRTUAL_HOSTS_DEFAULT_SITE_NAME", "Guest");
+
 		_defaultLocale = LocaleUtil.getDefault();
 		_defaultPrependStyle = PropsValues.LOCALE_PREPEND_FRIENDLY_URL_STYLE;
 
@@ -100,6 +105,10 @@ public class PortalImplCanonicalURLTest {
 		TestPropsUtil.set(
 			PropsKeys.LOCALE_PREPEND_FRIENDLY_URL_STYLE,
 			GetterUtil.getString(_defaultPrependStyle));
+
+		ReflectionTestUtil.setFieldValue(
+			PropsValues.class, "VIRTUAL_HOSTS_DEFAULT_SITE_NAME",
+			_originalVirtualHostDefaultSiteName);
 	}
 
 	@Before
@@ -695,6 +704,8 @@ public class PortalImplCanonicalURLTest {
 
 	private static Locale _defaultLocale;
 	private static int _defaultPrependStyle;
+
+	private static String _originalVirtualHostDefaultSiteName;
 
 	@Inject
 	private static VirtualHostLocalService _virtualHostLocalService;
