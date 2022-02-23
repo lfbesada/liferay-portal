@@ -50,6 +50,7 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
+import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -112,8 +113,14 @@ public class DefaultAssetDisplayPageFriendlyURLResolver
 
 			ThemeDisplay themeDisplay = new ThemeDisplay();
 
+			themeDisplay.setCompany(_companyLocalService.getCompany(companyId));
 			themeDisplay.setScopeGroupId(groupId);
 			themeDisplay.setSiteGroupId(groupId);
+
+			String portalURL = _portal.getPortalURL(httpServletRequest);
+
+			themeDisplay.setPortalDomain(_http.getDomain(portalURL));
+			themeDisplay.setPortalURL(portalURL);
 
 			String assetFriendlyURL =
 				_assetDisplayPageFriendlyURLProvider.getFriendlyURL(
@@ -547,6 +554,9 @@ public class DefaultAssetDisplayPageFriendlyURLResolver
 
 	@Reference
 	private ClassNameLocalService _classNameLocalService;
+
+	@Reference
+	private CompanyLocalService _companyLocalService;
 
 	@Reference
 	private DDMTemplateLocalService _ddmTemplateLocalService;
