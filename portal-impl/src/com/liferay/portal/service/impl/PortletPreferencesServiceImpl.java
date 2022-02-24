@@ -66,6 +66,20 @@ public class PortletPreferencesServiceImpl
 	}
 
 	@Override
+	public PortletPreferences getPortletPreferences(
+			long groupId, long ownerId, int ownerType, long plid,
+			String portletId)
+		throws PortalException {
+
+		PortletPermissionUtil.check(
+			getPermissionChecker(), groupId, plid, portletId,
+			ActionKeys.PREFERENCES);
+
+		return portletPreferencesLocalService.getPortletPreferences(
+			ownerId, ownerType, plid, portletId);
+	}
+
+	@Override
 	public void restoreArchivedPreferences(
 			long groupId, Layout layout, String portletId, long portletItemId,
 			javax.portlet.PortletPreferences jxPortletPreferences)
@@ -138,6 +152,21 @@ public class PortletPreferencesServiceImpl
 				portletId);
 
 		copyPreferences(jxPortletPreferences, archivedJxPortletPreferences);
+	}
+
+	@Override
+	public PortletPreferences updatePreferences(
+			long groupId, long ownerId, int ownerType, long plid,
+			String portletId,
+			javax.portlet.PortletPreferences portletPreferences)
+		throws PortalException {
+
+		PortletPermissionUtil.check(
+			getPermissionChecker(), groupId, plid, portletId,
+			ActionKeys.PREFERENCES);
+
+		return portletPreferencesLocalService.updatePreferences(
+			ownerId, ownerType, plid, portletId, portletPreferences);
 	}
 
 	protected void copyPreferences(
