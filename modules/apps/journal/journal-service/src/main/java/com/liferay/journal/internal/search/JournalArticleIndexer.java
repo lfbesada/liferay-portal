@@ -22,6 +22,7 @@ import com.liferay.journal.service.JournalArticleResourceLocalService;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.search.BaseIndexer;
 import com.liferay.portal.kernel.search.BooleanQuery;
@@ -36,12 +37,16 @@ import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.search.batch.BatchIndexingActionable;
 import com.liferay.portal.search.batch.BatchIndexingHelper;
 import com.liferay.portal.search.model.uid.UIDFactory;
 import com.liferay.portal.search.spi.model.index.contributor.ModelDocumentContributor;
+import com.liferay.portal.search.spi.model.index.contributor.ModelIndexerWriterContributor;
+import com.liferay.portal.search.spi.model.index.contributor.helper.ModelIndexerWriterDocumentHelper;
 import com.liferay.portal.search.spi.model.query.contributor.KeywordQueryContributor;
 import com.liferay.portal.search.spi.model.query.contributor.ModelPreFilterContributor;
 import com.liferay.portal.search.spi.model.query.contributor.helper.KeywordQueryContributorHelper;
@@ -219,6 +224,37 @@ public class JournalArticleIndexer extends BaseIndexer<JournalArticle> {
 
 	@Override
 	protected void doReindex(String[] ids) throws Exception {
+		long companyId = GetterUtil.getLong(ids[0]);
+
+		BatchIndexingActionable batchIndexingActionable =
+			_modelIndexerWriterContributor.getBatchIndexingActionable();
+
+		_modelIndexerWriterContributor.customize(
+			batchIndexingActionable,
+			new ModelIndexerWriterDocumentHelper() {
+
+				@Override
+				public <T extends BaseModel<?>> Document getDocument(
+					T baseModel) {
+
+					try {
+						return doGetDocument((JournalArticle)baseModel);
+					}
+					catch (Exception exception) {
+						if (_log.isDebugEnabled()) {
+							_log.debug(exception);
+						}
+					}
+
+					return null;
+				}
+
+			});
+
+		batchIndexingActionable.setCompanyId(companyId);
+		batchIndexingActionable.setSearchEngineId(getSearchEngineId());
+
+		batchIndexingActionable.performActions();
 	}
 
 	protected boolean isIndexAllArticleVersions() {
@@ -393,6 +429,12 @@ public class JournalArticleIndexer extends BaseIndexer<JournalArticle> {
 		target = "(indexer.class.name=com.liferay.journal.model.JournalArticle)"
 	)
 	private ModelDocumentContributor<JournalArticle> _modelDocumentContributor;
+
+	@Reference(
+		target = "(indexer.class.name=com.liferay.journal.model.JournalArticle)"
+	)
+	private ModelIndexerWriterContributor<JournalArticle>
+		_modelIndexerWriterContributor;
 
 	@Reference(
 		target = "(indexer.class.name=com.liferay.journal.model.JournalArticle)"
