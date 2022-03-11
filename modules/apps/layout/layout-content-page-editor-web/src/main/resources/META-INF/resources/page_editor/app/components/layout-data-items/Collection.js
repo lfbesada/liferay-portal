@@ -106,12 +106,13 @@ const Grid = ({
 		maxNumberOfItems / collectionConfig.numberOfColumns
 	);
 
-	const numberOfItemsDisplayed = collectionConfig.paginationType
-		? Math.min(
-				collectionConfig.numberOfItemsPerPage,
-				collection.totalNumberOfItems
-		  )
-		: collection.totalNumberOfItems;
+	const numberOfItemsDisplayed =
+		collectionConfig.paginationType !== 'none'
+			? Math.min(
+					collectionConfig.numberOfItemsPerPage,
+					collection.totalNumberOfItems
+			  )
+			: collection.totalNumberOfItems;
 
 	return (
 		<>
@@ -414,7 +415,7 @@ const Collection = React.memo(
 				)}
 
 				{collectionConfig.collection &&
-					collectionConfig.paginationType && (
+					collectionConfig.paginationType !== 'none' && (
 						<CollectionPagination
 							activePage={activePage}
 							collectionConfig={collectionConfig}
@@ -437,7 +438,7 @@ const Collection = React.memo(
 Collection.displayName = 'Collection';
 
 function getNumberOfItems(collection, collectionConfig) {
-	if (collectionConfig.paginationType) {
+	if (collectionConfig.paginationType !== 'none') {
 		const itemsPerPage = Math.min(
 			collectionConfig.numberOfItemsPerPage,
 			config.searchContainerPageMaxDelta
