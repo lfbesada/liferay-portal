@@ -50,7 +50,7 @@ public class PermissionsPortletConfigurationIcon
 
 	@Override
 	public String getIconCssClass() {
-		return "dropdown-item-indicator-start";
+		return "password-policies";
 	}
 
 	@Override
