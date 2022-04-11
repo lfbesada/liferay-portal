@@ -31,24 +31,32 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.test.portlet.MockLiferayPortletRenderResponse;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.search.test.util.IndexerFixture;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
-
 import com.liferay.segments.service.SegmentsExperienceLocalService;
+
+import javax.servlet.http.HttpServletRequest;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -56,6 +64,7 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
 
 /**
  * @author Ricardo Couso
@@ -85,7 +94,7 @@ public class LayoutPublishedSearchTest {
 
 		_layoutIndexerFixture.searchNoOne(name);
 
-		_publishLayout(layout);
+		_publishLayout(layout, new MockHttpServletRequest());
 
 		_layoutIndexerFixture.searchOnlyOne(name);
 	}
@@ -98,9 +107,42 @@ public class LayoutPublishedSearchTest {
 
 		_layoutIndexerFixture.searchNoOne(content);
 
-		_publishLayout(layout);
+		_publishLayout(layout, _getHttpServletRequest(layout));
 
 		_layoutIndexerFixture.searchOnlyOne(content);
+	}
+
+	private HttpServletRequest _getHttpServletRequest(Layout layout)
+		throws Exception {
+
+		MockHttpServletRequest httpServletRequest =
+			new MockHttpServletRequest();
+
+		httpServletRequest.setAttribute(
+			JavaConstants.JAVAX_PORTLET_RESPONSE,
+			new MockLiferayPortletRenderResponse());
+
+		ThemeDisplay themeDisplay = new ThemeDisplay();
+
+		themeDisplay.setCompany(
+			_companyLocalService.getCompany(layout.getCompanyId()));
+		themeDisplay.setLayout(layout);
+
+		LayoutSet layoutSet = _group.getPublicLayoutSet();
+
+		themeDisplay.setLayoutSet(layoutSet);
+		themeDisplay.setLookAndFeel(
+			layoutSet.getTheme(), layoutSet.getColorScheme());
+
+		themeDisplay.setRealUser(TestPropsValues.getUser());
+		themeDisplay.setRequest(httpServletRequest);
+		themeDisplay.setResponse(new MockHttpServletResponse());
+		themeDisplay.setScopeGroupId(_group.getGroupId());
+		themeDisplay.setUser(TestPropsValues.getUser());
+
+		httpServletRequest.setAttribute(WebKeys.THEME_DISPLAY, themeDisplay);
+
+		return httpServletRequest;
 	}
 
 	private Layout _getPrivateLayout(String testInlineValue) throws Exception {
@@ -175,17 +217,13 @@ public class LayoutPublishedSearchTest {
 		return layout;
 	}
 
-	private void _publishLayout(Layout layout) throws Exception {
+	private void _publishLayout(
+			Layout layout, HttpServletRequest httpServletRequest)
+		throws Exception {
+
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(
 				layout.getGroup(), TestPropsValues.getUserId());
-
-		MockHttpServletRequest httpServletRequest =
-			new MockHttpServletRequest();
-
-		httpServletRequest.setAttribute(
-			JavaConstants.JAVAX_PORTLET_RESPONSE,
-			new MockLiferayPortletActionResponse());
 
 		serviceContext.setRequest(httpServletRequest);
 
@@ -203,6 +241,9 @@ public class LayoutPublishedSearchTest {
 	private void _setUpLayoutIndexerFixture() {
 		_layoutIndexerFixture = new IndexerFixture<>(Layout.class);
 	}
+
+	@Inject
+	private CompanyLocalService _companyLocalService;
 
 	@Inject
 	private FragmentCollectionContributorTracker
