@@ -92,16 +92,15 @@ public class LayoutPublishedSearchTest {
 
 	@Test
 	public void testPublishedPrivatePageSearch() throws Exception {
-		Layout layout = LayoutTestUtil.addTypeContentLayout(
-			_group, true, false);
+		String content = RandomTestUtil.randomString();
 
-		String name = layout.getName(layout.getDefaultLanguageId());
+		Layout layout = _getPrivateLayout(content);
 
-		_layoutIndexerFixture.searchNoOne(name);
+		_layoutIndexerFixture.searchNoOne(content);
 
 		_publishLayout(layout);
 
-		_layoutIndexerFixture.searchOnlyOne(name);
+		_layoutIndexerFixture.searchOnlyOne(content);
 	}
 
 	private Layout _getPrivateLayout(String testInlineValue) throws Exception {
