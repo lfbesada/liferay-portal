@@ -123,7 +123,7 @@ public class LayoutModelDocumentContributor
 		boolean useCrawler = true;
 		Group group = layout.getGroup();
 
-		if (layout.getPrivateLayout() || group.isStagingGroup()) {
+		if (layout.isPrivateLayout() || group.isStagingGroup()) {
 			useCrawler = false;
 
 			ServiceContext serviceContext =
@@ -161,12 +161,6 @@ public class LayoutModelDocumentContributor
 				continue;
 			}
 
-			content = _html.stripHtml(_getWrapper(content));
-
-			if (Validator.isNull(content)) {
-				continue;
-			}
-
 			document.addText(
 				Field.getLocalizedName(locale, Field.CONTENT), content);
 		}
@@ -180,18 +174,25 @@ public class LayoutModelDocumentContributor
 		throws Exception {
 
 		if (useCrawler) {
-			return _layoutCrawler.getLayoutContent(layout, locale);
+			String content = _layoutCrawler.getLayoutContent(layout, locale);
+
+			if (Validator.isNull(content)) {
+				return content;
+			}
+
+			return _html.stripHtml(_getWrapper(content));
 		}
 
 		if ((httpServletRequest == null) || (httpServletResponse == null)) {
 			return _getStagedContent(layout, locale);
 		}
 
-		return LayoutPageTemplateStructureRenderUtil.renderLayoutContent(
-			_fragmentRendererController, httpServletRequest,
-			httpServletResponse, layoutPageTemplateStructure,
-			FragmentEntryLinkConstants.VIEW, locale,
-			SegmentsExperienceConstants.ID_DEFAULT);
+		return _html.stripHtml(
+			LayoutPageTemplateStructureRenderUtil.renderLayoutContent(
+				_fragmentRendererController, httpServletRequest,
+				httpServletResponse, layoutPageTemplateStructure,
+				FragmentEntryLinkConstants.VIEW, locale,
+				SegmentsExperienceConstants.ID_DEFAULT));
 	}
 
 	private String _getStagedContent(Layout layout, Locale locale)
