@@ -120,12 +120,9 @@ public class LayoutModelDocumentContributor
 		HttpServletRequest httpServletRequest = null;
 		HttpServletResponse httpServletResponse = null;
 
-		boolean useCrawler = true;
 		Group group = layout.getGroup();
 
 		if (layout.isPrivateLayout() || group.isStagingGroup()) {
-			useCrawler = false;
-
 			ServiceContext serviceContext =
 				ServiceContextThreadLocal.getServiceContext();
 
@@ -149,7 +146,7 @@ public class LayoutModelDocumentContributor
 			try {
 				content = _getLayoutContent(
 					httpServletRequest, httpServletResponse, layout,
-					layoutPageTemplateStructure, locale, useCrawler);
+					layoutPageTemplateStructure, locale);
 			}
 			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
@@ -170,10 +167,12 @@ public class LayoutModelDocumentContributor
 			HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse, Layout layout,
 			LayoutPageTemplateStructure layoutPageTemplateStructure,
-			Locale locale, boolean useCrawler)
+			Locale locale)
 		throws Exception {
 
-		if (useCrawler) {
+		Group group = layout.getGroup();
+
+		if (!layout.isPrivateLayout() && !group.isStagingGroup()) {
 			String content = _layoutCrawler.getLayoutContent(layout, locale);
 
 			if (Validator.isNull(content)) {
