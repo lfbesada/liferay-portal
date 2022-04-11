@@ -211,6 +211,10 @@ public class LayoutModelDocumentContributor
 			stagingGroup = group.getStagingGroup();
 		}
 
+		if (stagingGroup == null) {
+			return StringPool.BLANK;
+		}
+
 		Layout stagingLayout = _layoutLocalService.fetchLayoutByUuidAndGroupId(
 			layout.getUuid(), stagingGroup.getGroupId(),
 			layout.isPrivateLayout());
