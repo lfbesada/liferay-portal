@@ -8473,7 +8473,7 @@ public class PortalImpl implements Portal {
 						virtualHostnames.containsKey(defaultVirtualHostName)) {
 
 						virtualHostnames = TreeMapBuilder.put(
-							company::getVirtualHostname, StringPool.BLANK
+							defaultVirtualHostName, StringPool.BLANK
 						).build();
 					}
 
