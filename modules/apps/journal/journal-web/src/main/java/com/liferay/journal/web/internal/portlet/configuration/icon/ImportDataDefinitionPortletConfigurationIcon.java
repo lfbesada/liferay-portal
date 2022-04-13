@@ -40,6 +40,11 @@ public class ImportDataDefinitionPortletConfigurationIcon
 	extends BaseJSPPortletConfigurationIcon {
 
 	@Override
+	public String getIconCssClass() {
+		return "trash";
+	}
+
+	@Override
 	public String getJspPath() {
 		return "/configuration/icon/import_data_definition.jsp";
 	}

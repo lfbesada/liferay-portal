@@ -43,6 +43,11 @@ public class ExportImportPortletConfigurationIcon
 	extends BasePortletConfigurationIcon {
 
 	@Override
+	public String getIconCssClass() {
+		return "download";
+	}
+
+	@Override
 	public String getCssClass() {
 		return "portlet-export-import portlet-export-import-icon";
 	}
@@ -102,7 +107,7 @@ public class ExportImportPortletConfigurationIcon
 
 	@Override
 	public double getWeight() {
-		return 15.0;
+		return 102;
 	}
 
 	@Override
