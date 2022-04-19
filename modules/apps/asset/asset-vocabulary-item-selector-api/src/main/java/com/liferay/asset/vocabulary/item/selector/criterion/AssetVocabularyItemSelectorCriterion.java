@@ -19,6 +19,59 @@ import com.liferay.item.selector.BaseItemSelectorCriterion;
 /**
  * @author Lourdes Fernández Besada
  */
-public class AssetVocabularyItemSelectorCriterion extends
-	BaseItemSelectorCriterion {
+public class AssetVocabularyItemSelectorCriterion
+	extends BaseItemSelectorCriterion {
+
+	public AssetVocabularyItemSelectorCriterion() {
+		_includeInternalVocabularies = true;
+	}
+
+	public long getGroupId() {
+		return _groupId;
+	}
+
+	public boolean isIncludeAncestorGroupIds() {
+		return _includeAncestorGroupIds;
+	}
+
+	public boolean isIncludeDepotGroupIds() {
+		return _includeDepotGroupIds;
+	}
+
+	public boolean isIncludeInternalVocabularies() {
+		return _includeInternalVocabularies;
+	}
+
+	public boolean isMultiSelection() {
+		return _multiSelection;
+	}
+
+	public void setGroupId(long groupId) {
+		_groupId = groupId;
+	}
+
+	public void setIncludeAncestorGroupIds(boolean includeAncestorGroupIds) {
+		_includeAncestorGroupIds = includeAncestorGroupIds;
+	}
+
+	public void setIncludeDepotGroupIds(boolean includeDepotGroupIds) {
+		_includeDepotGroupIds = includeDepotGroupIds;
+	}
+
+	public void setIncludeInternalVocabularies(
+		boolean includeInternalVocabularies) {
+
+		_includeInternalVocabularies = includeInternalVocabularies;
+	}
+
+	public void setMultiSelection(boolean multiSelection) {
+		_multiSelection = multiSelection;
+	}
+
+	private long _groupId;
+	private boolean _includeAncestorGroupIds;
+	private boolean _includeDepotGroupIds;
+	private boolean _includeInternalVocabularies;
+	private boolean _multiSelection;
+
 }
