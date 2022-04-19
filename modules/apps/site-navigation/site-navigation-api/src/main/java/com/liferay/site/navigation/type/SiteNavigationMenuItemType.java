@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.theme.NavItem;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
@@ -28,6 +29,8 @@ import com.liferay.site.navigation.model.SiteNavigationMenuItem;
 
 import java.io.IOException;
 
+import java.util.Collections;
+import java.util.List;
 import java.util.Locale;
 
 import javax.portlet.PortletURL;
@@ -59,6 +62,18 @@ public interface SiteNavigationMenuItemType {
 		RenderRequest renderRequest, RenderResponse renderResponse) {
 
 		return null;
+	}
+
+	public default List<SiteNavigationMenuItem> getChildren(
+			HttpServletRequest httpServletRequest,
+			SiteNavigationMenuItem siteNavigationMenuItem)
+		throws Exception {
+
+		if (isDynamic()) {
+			return Collections.emptyList();
+		}
+
+		throw new UnsupportedOperationException();
 	}
 
 	public default String getIcon() {
@@ -110,6 +125,18 @@ public interface SiteNavigationMenuItemType {
 		throws Exception {
 
 		return StringPool.BLANK;
+	}
+
+	public default List<SiteNavigationMenuItem> getSiteNavigationMenuItems(
+			HttpServletRequest httpServletRequest,
+			SiteNavigationMenuItem siteNavigationMenuItem)
+		throws Exception {
+
+		if (isDynamic()) {
+			return Collections.emptyList();
+		}
+
+		throw new UnsupportedOperationException();
 	}
 
 	public default String getStatusIcon(
@@ -191,6 +218,10 @@ public interface SiteNavigationMenuItemType {
 			Layout curLayout)
 		throws PortalException {
 
+		return false;
+	}
+
+	public default boolean isDynamic() {
 		return false;
 	}
 
