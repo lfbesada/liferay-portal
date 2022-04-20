@@ -30,12 +30,8 @@ public class AssetVocabularyItemSelectorCriterion
 		return _groupId;
 	}
 
-	public boolean isIncludeAncestorGroupIds() {
-		return _includeAncestorGroupIds;
-	}
-
-	public boolean isIncludeDepotGroupIds() {
-		return _includeDepotGroupIds;
+	public boolean isIncludeAncestorSiteAndDepotGroupIds() {
+		return _includeAncestorSiteAndDepotGroupIds;
 	}
 
 	public boolean isIncludeInternalVocabularies() {
@@ -50,12 +46,11 @@ public class AssetVocabularyItemSelectorCriterion
 		_groupId = groupId;
 	}
 
-	public void setIncludeAncestorGroupIds(boolean includeAncestorGroupIds) {
-		_includeAncestorGroupIds = includeAncestorGroupIds;
-	}
+	public void setIncludeAncestorSiteAndDepotGroupIds(
+		boolean includeAncestorSiteAndDepotGroupIds) {
 
-	public void setIncludeDepotGroupIds(boolean includeDepotGroupIds) {
-		_includeDepotGroupIds = includeDepotGroupIds;
+		_includeAncestorSiteAndDepotGroupIds =
+			includeAncestorSiteAndDepotGroupIds;
 	}
 
 	public void setIncludeInternalVocabularies(
@@ -69,8 +64,7 @@ public class AssetVocabularyItemSelectorCriterion
 	}
 
 	private long _groupId;
-	private boolean _includeAncestorGroupIds;
-	private boolean _includeDepotGroupIds;
+	private boolean _includeAncestorSiteAndDepotGroupIds;
 	private boolean _includeInternalVocabularies;
 	private boolean _multiSelection;
 
