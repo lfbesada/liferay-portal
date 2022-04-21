@@ -91,7 +91,7 @@ public class AssetVocabularyItemSelectorView
 					JavaConstants.JAVAX_PORTLET_RESPONSE)));
 
 		RequestDispatcher requestDispatcher =
-			servletContext.getRequestDispatcher("/select_asset_vocabulary.jsp");
+			servletContext.getRequestDispatcher("/select_asset_vocabulary2.jsp");
 
 		requestDispatcher.include(servletRequest, servletResponse);
 	}

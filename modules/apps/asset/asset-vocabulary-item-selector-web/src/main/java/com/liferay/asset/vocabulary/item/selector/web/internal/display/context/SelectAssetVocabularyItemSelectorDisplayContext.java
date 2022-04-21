@@ -76,11 +76,16 @@ public class SelectAssetVocabularyItemSelectorDisplayContext {
 	public SearchContainer<AssetVocabulary> getAssetVocabularySearchContainer()
 		throws PortalException {
 
+		if (_assetVocabulariesSearchContainer != null) {
+			return _assetVocabulariesSearchContainer;
+		}
+
 		SearchContainer<AssetVocabulary> searchContainer =
 			new SearchContainer<>(
 				(PortletRequest)_httpServletRequest.getAttribute(
 					JavaConstants.JAVAX_PORTLET_REQUEST),
 				_portletURL, null, "there-are-no-items-to-display");
+		
 
 		if (searchContainer.isSearch()) {
 			BaseModelSearchResult<AssetVocabulary> baseModelSearchResult =
@@ -108,7 +113,9 @@ public class SelectAssetVocabularyItemSelectorDisplayContext {
 			searchContainer.setRowChecker(new RowChecker(_renderResponse));
 		}
 
-		return searchContainer;
+		_assetVocabulariesSearchContainer = searchContainer;
+
+		return _assetVocabulariesSearchContainer;
 	}
 
 	public String getItemSelectedEventName() {
@@ -172,7 +179,7 @@ public class SelectAssetVocabularyItemSelectorDisplayContext {
 			groupId = _themeDisplay.getScopeGroupId();
 		}
 
-		if (_assetVocabularyItemSelectorCriterion.
+		if (!_assetVocabularyItemSelectorCriterion.
 				isIncludeAncestorSiteAndDepotGroupIds()) {
 
 			return new long[] {groupId};
@@ -212,5 +219,6 @@ public class SelectAssetVocabularyItemSelectorDisplayContext {
 	private final PortletURL _portletURL;
 	private final RenderResponse _renderResponse;
 	private final ThemeDisplay _themeDisplay;
+	private SearchContainer<AssetVocabulary> _assetVocabulariesSearchContainer;
 
 }
