@@ -15,6 +15,7 @@
 package com.liferay.site.navigation.menu.item.vocabulary.internal.type;
 
 import com.liferay.asset.kernel.model.AssetVocabulary;
+import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.asset.kernel.service.AssetVocabularyLocalService;
 import com.liferay.asset.vocabulary.item.selector.AssetVocabularyItemSelectorReturnType;
 import com.liferay.asset.vocabulary.item.selector.criterion.AssetVocabularyItemSelectorCriterion;
@@ -43,6 +44,7 @@ import java.io.IOException;
 
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import javax.portlet.PortletURL;
 import javax.portlet.RenderRequest;
@@ -169,6 +171,33 @@ public class VocabularySiteNavigationMenuItemType
 	}
 
 	@Override
+	public String getStatusIcon(SiteNavigationMenuItem siteNavigationMenuItem) {
+		UnicodeProperties typeSettingsUnicodeProperties =
+			UnicodePropertiesBuilder.fastLoad(
+				siteNavigationMenuItem.getTypeSettings()
+			).build();
+
+		if (Objects.equals(
+				typeSettingsUnicodeProperties.get("type"), "category")) {
+
+			return SiteNavigationMenuItemType.super.getStatusIcon(
+				siteNavigationMenuItem);
+		}
+
+		int numCategories =
+			_assetCategoryLocalService.getVocabularyCategoriesCount(
+				GetterUtil.getLong(
+					typeSettingsUnicodeProperties.get("classPK")));
+
+		if (numCategories > 0) {
+			return SiteNavigationMenuItemType.super.getStatusIcon(
+				siteNavigationMenuItem);
+		}
+
+		return "warning-full";
+	}
+
+	@Override
 	public String getType() {
 		return SiteNavigationMenuItemTypeConstants.VOCABULARY;
 	}
@@ -262,6 +291,9 @@ public class VocabularySiteNavigationMenuItemType
 			_servletContext, httpServletRequest, httpServletResponse,
 			"/edit_vocabulary.jsp");
 	}
+
+	@Reference
+	private AssetCategoryLocalService _assetCategoryLocalService;
 
 	@Reference
 	private AssetVocabularyLocalService _assetVocabularyLocalService;
