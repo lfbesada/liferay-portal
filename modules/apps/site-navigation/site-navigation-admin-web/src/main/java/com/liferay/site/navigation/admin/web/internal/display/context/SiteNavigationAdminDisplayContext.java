@@ -467,6 +467,8 @@ public class SiteNavigationAdminDisplayContext {
 				"addTitle",
 				siteNavigationMenuItemType.getAddTitle(themeDisplay.getLocale())
 			).put(
+				"dynamic", siteNavigationMenuItemType.isDynamic()
+			).put(
 				"href", _getAddURL(siteNavigationMenuItemType)
 			).put(
 				"itemSelector", siteNavigationMenuItemType.isItemSelector()
