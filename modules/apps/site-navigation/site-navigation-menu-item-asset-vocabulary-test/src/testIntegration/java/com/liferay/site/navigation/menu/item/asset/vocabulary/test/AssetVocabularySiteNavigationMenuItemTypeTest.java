@@ -181,8 +181,6 @@ public class AssetVocabularySiteNavigationMenuItemTypeTest {
 
 		ThemeDisplay themeDisplay = _getThemeDisplay();
 
-		Locale locale = _portal.getSiteDefaultLocale(_group.getGroupId());
-
 		mockHttpServletRequest.setAttribute(
 			WebKeys.THEME_DISPLAY, themeDisplay);
 
@@ -191,7 +189,8 @@ public class AssetVocabularySiteNavigationMenuItemTypeTest {
 				SiteNavigationMenuItemTypeConstants.ASSET_VOCABULARY);
 
 		SiteNavigationMenuItem assetVocabularySiteNavigationMenuItem =
-			_createSiteNavigationMenuItem(locale, "{}", false);
+			_createSiteNavigationMenuItem(
+				_portal.getSiteDefaultLocale(_group.getGroupId()), "{}", false);
 
 		List<SiteNavigationMenuItem> childrenSiteNavigationMenuItems =
 			siteNavigationMenuItemType.getChildrenSiteNavigationMenuItems(
@@ -239,8 +238,6 @@ public class AssetVocabularySiteNavigationMenuItemTypeTest {
 
 	@Test
 	public void testGetRegularURLAssetVocabularyType() throws Exception {
-		Locale locale = _portal.getSiteDefaultLocale(_group.getGroupId());
-
 		ThemeDisplay themeDisplay = _getThemeDisplay();
 
 		MockHttpServletRequest mockHttpServletRequest =
@@ -254,7 +251,8 @@ public class AssetVocabularySiteNavigationMenuItemTypeTest {
 				SiteNavigationMenuItemTypeConstants.ASSET_VOCABULARY);
 
 		SiteNavigationMenuItem siteNavigationMenuItem =
-			_createSiteNavigationMenuItem(locale, "{}", false);
+			_createSiteNavigationMenuItem(
+				_portal.getSiteDefaultLocale(_group.getGroupId()), "{}", false);
 
 		Assert.assertEquals(
 			StringPool.BLANK,
@@ -269,12 +267,8 @@ public class AssetVocabularySiteNavigationMenuItemTypeTest {
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest();
 
-		ThemeDisplay themeDisplay = _getThemeDisplay();
-
-		Locale locale = _portal.getSiteDefaultLocale(_group.getGroupId());
-
 		mockHttpServletRequest.setAttribute(
-			WebKeys.THEME_DISPLAY, themeDisplay);
+			WebKeys.THEME_DISPLAY, _getThemeDisplay());
 
 		SiteNavigationMenuItemType siteNavigationMenuItemType =
 			_siteNavigationMenuItemTypeRegistry.getSiteNavigationMenuItemType(
@@ -282,7 +276,8 @@ public class AssetVocabularySiteNavigationMenuItemTypeTest {
 
 		SiteNavigationMenuItem assetCategorySiteNavigationMenuItem =
 			_getAssetCategorySiteNavigationMenuItem(
-				mockHttpServletRequest, siteNavigationMenuItemType, locale);
+				mockHttpServletRequest, siteNavigationMenuItemType,
+				_portal.getSiteDefaultLocale(_group.getGroupId()));
 
 		List<SiteNavigationMenuItem> siteNavigationMenuItems =
 			siteNavigationMenuItemType.getSiteNavigationMenuItems(
@@ -365,19 +360,16 @@ public class AssetVocabularySiteNavigationMenuItemTypeTest {
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest();
 
-		ThemeDisplay themeDisplay = _getThemeDisplay();
-
-		Locale locale = _portal.getSiteDefaultLocale(_group.getGroupId());
-
 		mockHttpServletRequest.setAttribute(
-			WebKeys.THEME_DISPLAY, themeDisplay);
+			WebKeys.THEME_DISPLAY, _getThemeDisplay());
 
 		SiteNavigationMenuItemType siteNavigationMenuItemType =
 			_siteNavigationMenuItemTypeRegistry.getSiteNavigationMenuItemType(
 				SiteNavigationMenuItemTypeConstants.ASSET_VOCABULARY);
 
 		SiteNavigationMenuItem assetVocabularySiteNavigationMenuItem =
-			_createSiteNavigationMenuItem(locale, "{}", true);
+			_createSiteNavigationMenuItem(
+				_portal.getSiteDefaultLocale(_group.getGroupId()), "{}", true);
 
 		List<SiteNavigationMenuItem> siteNavigationMenuItems =
 			siteNavigationMenuItemType.getSiteNavigationMenuItems(
