@@ -144,6 +144,21 @@ public class AssetVocabularySiteNavigationMenuItemTypeTest {
 			locale, 0, _createSiteNavigationMenuItem(locale, "{}", false));
 	}
 
+	@Test
+	public void testGetChildrenSiteNavigationMenuItemsEmptyAssetVocabulary()
+		throws Exception {
+
+		Locale locale = _portal.getSiteDefaultLocale(_group.getGroupId());
+
+		Assert.assertEquals(
+			0,
+			_assetCategoryLocalService.getVocabularyCategoriesCount(
+				_assetVocabulary.getVocabularyId()));
+
+		_assertGetChildrenSiteNavigationMenuItems(
+			locale, 0, _createSiteNavigationMenuItem(locale, "{}", false));
+	}
+
 	private void _assertGetChildrenSiteNavigationMenuItems(
 			Locale locale, long parentAssetCategoryId,
 			SiteNavigationMenuItem siteNavigationMenuItem)
