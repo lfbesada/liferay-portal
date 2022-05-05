@@ -424,6 +424,33 @@ public class AssetVocabularySiteNavigationMenuItemTypeTest {
 					false)));
 	}
 
+	@Test
+	public void testGetTitleAssetCategoryType() throws Exception {
+		MockHttpServletRequest mockHttpServletRequest =
+			new MockHttpServletRequest();
+
+		mockHttpServletRequest.setAttribute(
+			WebKeys.THEME_DISPLAY, _getThemeDisplay());
+
+		AssetCategory assetCategory = _createAssetCategory(0);
+
+		SiteNavigationMenuItemType siteNavigationMenuItemType =
+			_siteNavigationMenuItemTypeRegistry.getSiteNavigationMenuItemType(
+				SiteNavigationMenuItemTypeConstants.ASSET_VOCABULARY);
+
+		Locale locale = _portal.getSiteDefaultLocale(_group.getGroupId());
+
+		SiteNavigationMenuItem assetCategorySiteNavigationMenuItem =
+			_getAssetCategorySiteNavigationMenuItem(
+				mockHttpServletRequest, assetCategory,
+				siteNavigationMenuItemType, locale);
+
+		Assert.assertEquals(
+			assetCategory.getTitle(locale),
+			siteNavigationMenuItemType.getTitle(
+				assetCategorySiteNavigationMenuItem, locale));
+	}
+
 	private void _assertAssetCategorySiteNavigationMenuItem(
 		AssetCategory assetCategory,
 		SiteNavigationMenuItem assetCategorySiteNavigationMenuItem,
@@ -547,11 +574,10 @@ public class AssetVocabularySiteNavigationMenuItemTypeTest {
 
 	private SiteNavigationMenuItem _getAssetCategorySiteNavigationMenuItem(
 			MockHttpServletRequest mockHttpServletRequest,
+			AssetCategory assetCategory,
 			SiteNavigationMenuItemType siteNavigationMenuItemType,
 			Locale locale)
 		throws Exception {
-
-		AssetCategory assetCategory = _createAssetCategory(0);
 
 		SiteNavigationMenuItem assetVocabularySiteNavigationMenuItem =
 			_createSiteNavigationMenuItem(locale, "{}", false);
@@ -571,6 +597,19 @@ public class AssetVocabularySiteNavigationMenuItemTypeTest {
 			assetCategory, assetCategorySiteNavigationMenuItem, locale);
 
 		return assetCategorySiteNavigationMenuItem;
+	}
+
+	private SiteNavigationMenuItem _getAssetCategorySiteNavigationMenuItem(
+			MockHttpServletRequest mockHttpServletRequest,
+			SiteNavigationMenuItemType siteNavigationMenuItemType,
+			Locale locale)
+		throws Exception {
+
+		AssetCategory assetCategory = _createAssetCategory(0);
+
+		return _getAssetCategorySiteNavigationMenuItem(
+			mockHttpServletRequest, assetCategory, siteNavigationMenuItemType,
+			locale);
 	}
 
 	private ThemeDisplay _getThemeDisplay() throws Exception {
