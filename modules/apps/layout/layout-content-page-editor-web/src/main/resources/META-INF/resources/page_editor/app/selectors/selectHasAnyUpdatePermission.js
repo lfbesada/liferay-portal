@@ -12,14 +12,14 @@
  * details.
  */
 
-import selectHasAnyUpdatePermission from './selectHasAnyUpdatePermission';
-
 /**
- * @param {{ permissions: import("../../types/ActionKeys").ActionKeysMap}} state
+ * @param {{ permissions: import("../../types/ActionKeys").ActionKeysMap, selectedViewportsize: string }} state
  */
-export default function selectCanUpdateItemConfiguration({permissions}) {
+export default function selectHasAnyUpdatePermission({permissions}) {
 	return (
-		!permissions.LOCKED_SEGMENTS_EXPERIMENT &&
-		selectHasAnyUpdatePermission({permissions})
+		permissions.UPDATE ||
+		permissions.UPDATE_LAYOUT_BASIC ||
+		permissions.UPDATE_LAYOUT_LIMITED ||
+		permissions.UPDATE_LAYOUT_CONTENT
 	);
 }
