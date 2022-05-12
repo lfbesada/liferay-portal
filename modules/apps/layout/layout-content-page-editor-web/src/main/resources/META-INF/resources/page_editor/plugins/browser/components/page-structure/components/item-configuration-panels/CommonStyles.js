@@ -23,6 +23,8 @@ import {
 	useDispatch,
 	useSelector,
 } from '../../../../../../app/contexts/StoreContext';
+import selectCanUpdateItemStyles from '../../../../../../app/selectors/selectCanUpdateItemStyles';
+import selectCanUseStylesWithNonTokenValues from '../../../../../../app/selectors/selectCanUseStylesWithNonTokenValues';
 import selectSegmentsExperienceId from '../../../../../../app/selectors/selectSegmentsExperienceId';
 import updateItemStyle from '../../../../../../app/utils/updateItemStyle';
 import {FieldSet, fieldIsDisabled} from './FieldSet';
@@ -36,9 +38,19 @@ export function CommonStyles({
 	const {commonStyles} = config;
 	const dispatch = useDispatch();
 	const segmentsExperienceId = useSelector(selectSegmentsExperienceId);
+
 	const selectedViewportSize = useSelector(
 		(state) => state.selectedViewportSize
 	);
+
+	const canUpdateItemStyles = useSelector(selectCanUpdateItemStyles);
+	const canUseStylesWithNonTokenValues = useSelector(
+		selectCanUseStylesWithNonTokenValues
+	);
+
+	if (!canUpdateItemStyles) {
+		return null;
+	}
 
 	let styles = commonStyles;
 
@@ -61,6 +73,20 @@ export function CommonStyles({
 					),
 				};
 			});
+	}
+
+	if (
+		role === COMMON_STYLES_ROLES.styles &&
+		!canUseStylesWithNonTokenValues
+	) {
+		styles = styles.map((fieldSet) => {
+			return {
+				...fieldSet,
+				styles: fieldSet.styles.filter(
+					(style) => !style.requirePermission
+				),
+			};
+		});
 	}
 
 	const handleValueSelect = (name, value) => {

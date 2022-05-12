@@ -12,14 +12,9 @@
  * details.
  */
 
-import selectHasAnyUpdatePermission from './selectHasAnyUpdatePermission';
-
 /**
  * @param {{ permissions: import("../../types/ActionKeys").ActionKeysMap}} state
  */
-export default function selectCanUpdateItemConfiguration({permissions}) {
-	return (
-		!permissions.LOCKED_SEGMENTS_EXPERIMENT &&
-		selectHasAnyUpdatePermission({permissions})
-	);
+export default function selectCanUseStylesWithNonTokenValues({permissions}) {
+	return permissions.UPDATE;
 }
