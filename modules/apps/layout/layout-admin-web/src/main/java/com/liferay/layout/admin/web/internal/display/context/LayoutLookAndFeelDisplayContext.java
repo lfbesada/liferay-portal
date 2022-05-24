@@ -14,17 +14,22 @@
 
 package com.liferay.layout.admin.web.internal.display.context;
 
+import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServiceUtil;
 import com.liferay.petra.portlet.url.builder.PortletURLBuilder;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
+import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
@@ -58,6 +63,29 @@ public class LayoutLookAndFeelDisplayContext {
 
 		_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
+	}
+
+	public Map<String, Object> getChangeFaviconButtonAdditionalProps() {
+		return HashMapBuilder.<String, Object>put(
+			"url",
+			() -> PortletURLBuilder.createRenderURL(
+				_liferayPortletResponse
+			).setMVCPath(
+				"/select_favicon.jsp"
+			).setParameter(
+				"editableMasterLayout", hasEditableMasterLayout()
+			).setParameter(
+				"selPlid",
+				() -> {
+					Layout selLayout =
+						_layoutsAdminDisplayContext.getSelLayout();
+
+					return selLayout.getPlid();
+				}
+			).setWindowState(
+				LiferayWindowState.POP_UP
+			).buildString()
+		).build();
 	}
 
 	public Map<String, Object> getChangeMasterLayoutButtonAdditionalProps() {
@@ -124,6 +152,34 @@ public class LayoutLookAndFeelDisplayContext {
 					"p_l_back_url", editLayoutURL);
 			}
 		).build();
+	}
+
+	public String getFaviconTitle() {
+		Layout selLayout = _layoutsAdminDisplayContext.getSelLayout();
+
+		if (selLayout.getFaviconFileEntryId() > 0) {
+			FileEntry fileEntry;
+
+			try {
+				fileEntry = DLAppLocalServiceUtil.getFileEntry(
+					selLayout.getFaviconFileEntryId());
+
+				return fileEntry.getTitle();
+			}
+			catch (PortalException portalException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(portalException);
+				}
+			}
+		}
+
+		if (hasEditableMasterLayout() &&
+			(selLayout.getMasterLayoutPlid() > 0)) {
+
+			return LanguageUtil.get(_httpServletRequest, "favicon-from-master");
+		}
+
+		return LanguageUtil.get(_httpServletRequest, "favicon-from-theme");
 	}
 
 	public String getMasterLayoutName() {
@@ -252,6 +308,9 @@ public class LayoutLookAndFeelDisplayContext {
 
 		return _hasStyleBooks;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		LayoutLookAndFeelDisplayContext.class);
 
 	private Boolean _hasEditableMasterLayout;
 	private Boolean _hasMasterLayout;

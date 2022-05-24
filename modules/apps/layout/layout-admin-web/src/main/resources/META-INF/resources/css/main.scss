@@ -8,6 +8,7 @@
 		box-shadow: 0 0 0 2px $primary-l1;
 
 		& .select-master-layout-option-sticker,
+		& .select-favicon-option-sticker,
 		& .select-style-book-option-sticker {
 			display: block;
 		}
@@ -15,6 +16,7 @@
 
 	.card {
 		& .select-master-layout-option-sticker,
+		& .select-favicon-option-sticker,
 		& .select-style-book-option-sticker {
 			display: none;
 		}
