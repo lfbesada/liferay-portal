@@ -17,6 +17,7 @@ package com.liferay.layout.admin.web.internal.exportimport.data.handler;
 import com.liferay.asset.list.model.AssetListEntry;
 import com.liferay.asset.list.service.AssetListEntryLocalService;
 import com.liferay.counter.kernel.service.CounterLocalService;
+import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.exportimport.content.processor.ExportImportContentProcessor;
 import com.liferay.exportimport.controller.PortletExportController;
 import com.liferay.exportimport.controller.PortletImportController;
@@ -88,6 +89,7 @@ import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.model.PortletPreferences;
 import com.liferay.portal.kernel.model.adapter.StagedTheme;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
+import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ImageLocalService;
@@ -406,6 +408,8 @@ public class LayoutStagedModelDataHandler
 		else if (Objects.equals(layout.getType(), LayoutConstants.TYPE_URL)) {
 			_exportLinkedURL(portletDataContext, layout, layoutElement);
 		}
+
+		_exportFaviconFileEntry(layout, layoutElement, portletDataContext);
 
 		_fixExportTypeSettings(layout);
 
@@ -946,6 +950,9 @@ public class LayoutStagedModelDataHandler
 
 		importedLayout.setExpandoBridgeAttributes(serviceContext);
 
+		_importFaviconFileEntry(
+			portletDataContext, layout, layoutElement, importedLayout);
+
 		_staging.updateLastImportSettings(
 			layoutElement, importedLayout, portletDataContext);
 
@@ -1358,6 +1365,44 @@ public class LayoutStagedModelDataHandler
 			layoutElement.addAttribute(
 				"draft-layout-id", String.valueOf(draftLayout.getLayoutId()));
 		}
+	}
+
+	private void _exportFaviconFileEntry(
+			Layout layout, Element layoutElement,
+			PortletDataContext portletDataContext)
+		throws Exception {
+
+		if (layout.getFaviconFileEntryId() <= 0) {
+			return;
+		}
+
+		FileEntry faviconFileEntry;
+
+		try {
+			faviconFileEntry = _dlAppLocalService.getFileEntry(
+				layout.getFaviconFileEntryId());
+		}
+		catch (PortalException portalException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(portalException);
+			}
+
+			return;
+		}
+
+		if (Validator.isNull(
+				layoutElement.attributeValue("favicon-file-entry-uuid"))) {
+
+			layoutElement.addAttribute(
+				"favicon-file-entry-uuid", faviconFileEntry.getUuid());
+			layoutElement.addAttribute(
+				"favicon-file-entry-group-id",
+				String.valueOf(faviconFileEntry.getGroupId()));
+		}
+
+		StagedModelDataHandlerUtil.exportReferenceStagedModel(
+			portletDataContext, layout, faviconFileEntry,
+			PortletDataContext.REFERENCE_TYPE_STRONG);
 	}
 
 	private void _exportLayoutIconImage(
@@ -1949,6 +1994,43 @@ public class LayoutStagedModelDataHandler
 				Layout.class, layout.getPlid()),
 			portletDataContext.getAssetTagNames(
 				Layout.class, layout.getPlid()));
+	}
+
+	private void _importFaviconFileEntry(
+		PortletDataContext portletDataContext, Layout layout,
+		Element layoutElement, Layout importedLayout) {
+
+		Map<Long, Long> fileEntryIds =
+			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
+				FileEntry.class);
+
+		long faviconFileEntryId = MapUtil.getLong(
+			fileEntryIds, layout.getFaviconFileEntryId(), 0);
+
+		String faviconFileEntryUuid = layoutElement.attributeValue(
+			"favicon-file-entry-uuid");
+
+		if ((faviconFileEntryId == 0) &&
+			Validator.isNotNull(faviconFileEntryUuid)) {
+
+			long faviconFileEntryGroupId = GetterUtil.getLong(
+				layoutElement.attributeValue("favicon-file-entry-group-id"));
+
+			try {
+				FileEntry faviconFileEntry =
+					_dlAppLocalService.getFileEntryByUuidAndGroupId(
+						faviconFileEntryUuid, faviconFileEntryGroupId);
+
+				faviconFileEntryId = faviconFileEntry.getFileEntryId();
+			}
+			catch (PortalException portalException) {
+				if (_log.isDebugEnabled()) {
+					_log.debug(portalException);
+				}
+			}
+		}
+
+		importedLayout.setFaviconFileEntryId(faviconFileEntryId);
 	}
 
 	private void _importFriendlyURLEntries(
@@ -2792,6 +2874,9 @@ public class LayoutStagedModelDataHandler
 	@Reference(target = "(model.class.name=java.lang.String)")
 	private ExportImportContentProcessor<String>
 		_defaultTextExportImportContentProcessor;
+
+	@Reference
+	private DLAppLocalService _dlAppLocalService;
 
 	@Reference(target = "(content.processor.type=DLReferences)")
 	private ExportImportContentProcessor<String>
