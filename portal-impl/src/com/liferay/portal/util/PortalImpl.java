@@ -3327,6 +3327,13 @@ public class PortalImpl implements Portal {
 			}
 		}
 
+		if ((user != null) && !user.isDefaultUser() &&
+			GetterUtil.getBoolean(
+				PropsUtil.get("signed.user.update.locale.disabled"))) {
+
+			return user.getLocale();
+		}
+
 		Locale locale = null;
 
 		ThemeDisplay themeDisplay =
