@@ -16,6 +16,7 @@ package com.liferay.portal.util;
 
 import com.liferay.portal.json.JSONObjectImpl;
 import com.liferay.portal.kernel.configuration.Filter;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CookieKeys;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -1986,8 +1987,9 @@ public class PropsValues {
 	public static final String[] REQUEST_HEADER_IGNORE_INIT_PARAMS =
 		PropsUtil.getArray(PropsKeys.REQUEST_HEADER_IGNORE_INIT_PARAMS);
 
-	public static final String[] REQUEST_SHARED_ATTRIBUTES = PropsUtil.getArray(
-		PropsKeys.REQUEST_SHARED_ATTRIBUTES);
+	public static final String[] REQUEST_SHARED_ATTRIBUTES = ArrayUtil.append(
+		PropsUtil.getArray(PropsKeys.REQUEST_SHARED_ATTRIBUTES),
+		"LIFERAY_SHARED_");
 
 	public static final String[] REQUEST_UNWRAP_PACKAGES = PropsUtil.getArray(
 		PropsKeys.REQUEST_UNWRAP_PACKAGES);
