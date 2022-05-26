@@ -27,6 +27,7 @@ import java.util.concurrent.FutureTask;
 
 import javax.portlet.RenderRequest;
 
+import com.liferay.portal.util.PropsUtil;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -78,8 +79,9 @@ public class PortletSharedTaskExecutorImpl
 
 	@Activate
 	protected void activate() {
-		String[] requestSharedAttributes = props.getArray(
-			PropsKeys.REQUEST_SHARED_ATTRIBUTES);
+		String[] requestSharedAttributes = ArrayUtil.append(
+			props.getArray(PropsKeys.REQUEST_SHARED_ATTRIBUTES),
+			"LIFERAY_SHARED_");
 
 		Arrays.sort(requestSharedAttributes);
 
