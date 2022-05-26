@@ -14,6 +14,7 @@
 
 package com.liferay.portal.search.web.internal.portlet.shared.task;
 
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Props;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.search.web.internal.portlet.shared.task.helper.PortletSharedRequestHelper;
@@ -78,8 +79,9 @@ public class PortletSharedTaskExecutorImpl
 
 	@Activate
 	protected void activate() {
-		String[] requestSharedAttributes = props.getArray(
-			PropsKeys.REQUEST_SHARED_ATTRIBUTES);
+		String[] requestSharedAttributes = ArrayUtil.append(
+			props.getArray(PropsKeys.REQUEST_SHARED_ATTRIBUTES),
+			"LIFERAY_SHARED_");
 
 		Arrays.sort(requestSharedAttributes);
 
