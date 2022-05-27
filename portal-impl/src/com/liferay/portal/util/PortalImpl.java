@@ -3329,7 +3329,8 @@ public class PortalImpl implements Portal {
 
 		if ((user != null) && !user.isDefaultUser() &&
 			GetterUtil.getBoolean(
-				PropsUtil.get("signed.user.update.locale.disabled"))) {
+				PropsUtil.get("signed.user.update.locale.disabled")) &&
+			LanguageUtil.isAvailableLocale(user.getLocale())) {
 
 			return user.getLocale();
 		}
