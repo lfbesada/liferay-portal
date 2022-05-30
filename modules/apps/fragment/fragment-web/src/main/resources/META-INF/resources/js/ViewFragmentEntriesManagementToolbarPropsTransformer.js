@@ -34,6 +34,8 @@ export default function propsTransformer({
 }) {
 	const addFragmentEntry = (itemData) => {
 		openSimpleInputModal({
+			checkboxFieldLabel: Liferay.Language.get('form-fragment'),
+			checkboxFieldName: 'type-input',
 			dialogTitle: itemData?.title,
 			formSubmitURL: itemData?.addFragmentEntryURL,
 			mainFieldLabel: Liferay.Language.get('name'),

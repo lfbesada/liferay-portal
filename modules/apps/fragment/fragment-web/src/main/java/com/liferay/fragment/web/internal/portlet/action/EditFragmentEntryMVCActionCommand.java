@@ -14,12 +14,15 @@
 
 package com.liferay.fragment.web.internal.portlet.action;
 
+import com.liferay.fragment.constants.FragmentConstants;
 import com.liferay.fragment.constants.FragmentPortletKeys;
 import com.liferay.fragment.exception.NoSuchEntryException;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.service.FragmentEntryService;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
@@ -27,6 +30,7 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.transaction.Transactional;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Validator;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -100,6 +104,24 @@ public class EditFragmentEntryMVCActionCommand
 		draftFragmentEntry.setCacheable(cacheable);
 		draftFragmentEntry.setConfiguration(configuration);
 		draftFragmentEntry.setStatus(status);
+
+		if (draftFragmentEntry.getType() == FragmentConstants.TYPE_INPUT) {
+			String fileTypes = ParamUtil.getString(actionRequest, "fieldTypes");
+
+			JSONArray fileTypesJSONArray = JSONFactoryUtil.createJSONArray();
+
+			if (Validator.isNotNull(fileTypes)) {
+				fileTypesJSONArray = JSONFactoryUtil.createJSONArray(
+					fileTypes.split(StringPool.COMMA));
+			}
+
+			JSONObject propertiesJSONObject = JSONFactoryUtil.createJSONObject(
+				draftFragmentEntry.getProperties());
+
+			propertiesJSONObject.put("fieldTypes", fileTypesJSONArray);
+
+			draftFragmentEntry.setProperties(propertiesJSONObject.toString());
+		}
 
 		try {
 			_fragmentEntryService.updateDraft(draftFragmentEntry);

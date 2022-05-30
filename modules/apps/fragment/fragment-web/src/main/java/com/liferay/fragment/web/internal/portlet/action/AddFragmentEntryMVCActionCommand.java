@@ -66,6 +66,12 @@ public class AddFragmentEntryMVCActionCommand extends BaseMVCActionCommand {
 		int type = ParamUtil.getInteger(
 			actionRequest, "type", FragmentConstants.TYPE_SECTION);
 
+		boolean typeInput = ParamUtil.getBoolean(actionRequest, "type-input");
+
+		if (typeInput) {
+			type = FragmentConstants.TYPE_INPUT;
+		}
+
 		try {
 			ServiceContext serviceContext = ServiceContextFactory.getInstance(
 				actionRequest);
