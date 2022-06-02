@@ -12,20 +12,26 @@
  * details.
  */
 
+import {render} from '@liferay/frontend-js-react-web';
 import {
 	getCheckedCheckboxes,
 	openSelectionModal,
 	openSimpleInputModal,
 } from 'frontend-js-web';
 
+import AddFragmentModal from './AddFragmentModal';
 import openDeleteFragmentModal from './openDeleteFragmentModal';
 
 export default function propsTransformer({
 	additionalProps: {
+		addFragmentEntryURL,
 		copyFragmentEntryURL,
 		deleteFragmentCompositionsAndFragmentEntriesURL,
 		exportFragmentCompositionsAndFragmentEntriesURL,
+		featureFlagLps152938,
+		fieldTypes,
 		fragmentCollectionId,
+		fragmentTypes,
 		moveFragmentCompositionsAndFragmentEntriesURL,
 		selectFragmentCollectionURL,
 	},
@@ -208,12 +214,26 @@ export default function propsTransformer({
 			}
 		},
 		onCreateButtonClick(event, {item}) {
-			const data = item?.data;
+			if (featureFlagLps152938) {
+				render(
+					AddFragmentModal,
+					{
+						addFragmentEntryURL,
+						fieldTypes,
+						fragmentTypes,
+						namespace: portletNamespace,
+					},
+					document.createElement('div')
+				);
+			}
+			else {
+				const data = item?.data;
 
-			const action = data?.action;
+				const action = data?.action;
 
-			if (action === 'addFragmentEntry') {
-				addFragmentEntry(data);
+				if (action === 'addFragmentEntry') {
+					addFragmentEntry(data);
+				}
 			}
 		},
 	};
