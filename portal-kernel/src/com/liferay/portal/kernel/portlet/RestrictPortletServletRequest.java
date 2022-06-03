@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Mergeable;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
+import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.Collections;
 import java.util.Enumeration;
@@ -186,7 +187,7 @@ public class RestrictPortletServletRequest
 
 	private static final String[] _REQUEST_SHARED_ATTRIBUTES = ArrayUtil.append(
 		PropsUtil.getArray(PropsKeys.REQUEST_SHARED_ATTRIBUTES),
-		"LIFERAY_SHARED_");
+		WebKeys.LIFERAY_SHARED);
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		RestrictPortletServletRequest.class);

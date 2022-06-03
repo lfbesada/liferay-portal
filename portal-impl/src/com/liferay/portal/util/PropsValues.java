@@ -24,6 +24,7 @@ import com.liferay.portal.kernel.util.ServerDetector;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.TextFormatter;
 import com.liferay.portal.kernel.util.Time;
+import com.liferay.portal.kernel.util.WebKeys;
 
 /**
  * @author Brian Wing Shun Chan
@@ -1989,7 +1990,7 @@ public class PropsValues {
 
 	public static final String[] REQUEST_SHARED_ATTRIBUTES = ArrayUtil.append(
 		PropsUtil.getArray(PropsKeys.REQUEST_SHARED_ATTRIBUTES),
-		"LIFERAY_SHARED_");
+		WebKeys.LIFERAY_SHARED);
 
 	public static final String[] REQUEST_UNWRAP_PACKAGES = PropsUtil.getArray(
 		PropsKeys.REQUEST_UNWRAP_PACKAGES);
