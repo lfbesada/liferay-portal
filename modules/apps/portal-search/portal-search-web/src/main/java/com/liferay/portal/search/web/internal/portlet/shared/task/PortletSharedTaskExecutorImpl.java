@@ -14,12 +14,10 @@
 
 package com.liferay.portal.search.web.internal.portlet.shared.task;
 
-import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.Props;
-import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.search.web.internal.portlet.shared.task.helper.PortletSharedRequestHelper;
 import com.liferay.portal.search.web.portlet.shared.task.PortletSharedTask;
 import com.liferay.portal.search.web.portlet.shared.task.PortletSharedTaskExecutor;
+import com.liferay.portal.util.PropsValues;
 
 import java.util.Arrays;
 import java.util.Optional;
@@ -79,9 +77,8 @@ public class PortletSharedTaskExecutorImpl
 
 	@Activate
 	protected void activate() {
-		String[] requestSharedAttributes = ArrayUtil.append(
-			props.getArray(PropsKeys.REQUEST_SHARED_ATTRIBUTES),
-			"LIFERAY_SHARED_");
+		String[] requestSharedAttributes =
+			PropsValues.REQUEST_SHARED_ATTRIBUTES;
 
 		Arrays.sort(requestSharedAttributes);
 
@@ -90,9 +87,6 @@ public class PortletSharedTaskExecutorImpl
 
 	@Reference
 	protected PortletSharedRequestHelper portletSharedRequestHelper;
-
-	@Reference
-	protected Props props;
 
 	private String _requestSharedAttribute;
 
