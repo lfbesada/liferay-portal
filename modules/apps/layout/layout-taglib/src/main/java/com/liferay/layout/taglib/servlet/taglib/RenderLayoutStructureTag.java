@@ -781,6 +781,7 @@ public class RenderLayoutStructureTag extends IncludeTag {
 		jspWriter.write(
 			renderLayoutStructureDisplayContext.getStyle(
 				formStyledLayoutStructureItem));
+
 		jspWriter.write("\">");
 
 		jspWriter.write("<input name=\"classNameId\" type=\"hidden\" value=\"");
@@ -791,11 +792,22 @@ public class RenderLayoutStructureTag extends IncludeTag {
 		jspWriter.write("<input name=\"classTypeId\" type=\"hidden\" value=\"");
 		jspWriter.write(
 			String.valueOf(formStyledLayoutStructureItem.getClassTypeId()));
+
 		jspWriter.write("\">");
 
 		_renderLayoutStructure(
 			layoutStructureItem.getChildrenItemIds(), collectionElementIndex,
 			infoForm, renderLayoutStructureDisplayContext);
+
+		jspWriter.write("<input name=\"classNameId\" type=\"hidden\" value=\"");
+		jspWriter.write(
+			String.valueOf(formStyledLayoutStructureItem.getClassNameId()));
+		jspWriter.write("\">");
+
+		jspWriter.write("<input name=\"classTypeId\" type=\"hidden\" value=\"");
+		jspWriter.write(
+			String.valueOf(formStyledLayoutStructureItem.getClassTypeId()));
+		jspWriter.write("\">");
 
 		jspWriter.write("</form>");
 	}

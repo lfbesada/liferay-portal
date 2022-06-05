@@ -33,12 +33,17 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.template.info.item.provider.TemplateInfoItemFieldSetProvider;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+
+import javax.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -66,6 +71,82 @@ public class AssetCategoryInfoItemFieldValuesProvider
 		).infoItemReference(
 			new InfoItemReference(
 				AssetCategory.class.getName(), assetCategory.getCategoryId())
+		).build();
+	}
+
+	public InfoItemFieldValues getInfoItemFieldValues(
+		HttpServletRequest httpServletRequest) {
+
+		HttpServletRequest originalHttpServletRequest =
+			_portal.getOriginalServletRequest(httpServletRequest);
+
+		String description = ParamUtil.getString(
+			originalHttpServletRequest,
+			AssetCategoryInfoItemFields.descriptionInfoField.getName());
+
+		ServiceContext serviceContext =
+			ServiceContextThreadLocal.getServiceContext();
+
+		ThemeDisplay themeDisplay = serviceContext.getThemeDisplay();
+
+		long scopeGroupId = themeDisplay.getScopeGroupId();
+
+		Locale locale = themeDisplay.getLocale();
+
+		String name = ParamUtil.getString(
+			originalHttpServletRequest,
+			AssetCategoryInfoItemFields.nameInfoField.getName());
+
+		String vocabularyName = ParamUtil.getString(
+			originalHttpServletRequest,
+			AssetCategoryInfoItemFields.vocabularyInfoField.getName());
+
+		List<InfoFieldValue<Object>> assetCategoryInfoFieldValues =
+			new ArrayList<>();
+
+		assetCategoryInfoFieldValues.add(
+			new InfoFieldValue<>(
+				AssetCategoryInfoItemFields.nameInfoField,
+				InfoLocalizedValue.<String>builder(
+				).defaultLocale(
+					locale
+				).values(
+					HashMapBuilder.put(
+						locale, name
+					).build()
+				).build()));
+		assetCategoryInfoFieldValues.add(
+			new InfoFieldValue<>(
+				AssetCategoryInfoItemFields.descriptionInfoField,
+				InfoLocalizedValue.<String>builder(
+				).defaultLocale(
+					locale
+				).values(
+					HashMapBuilder.put(
+						locale, description
+					).build()
+				).build()));
+
+		AssetVocabulary assetVocabulary =
+			_assetVocabularyLocalService.fetchGroupVocabulary(
+				scopeGroupId, vocabularyName);
+
+		if (assetVocabulary != null) {
+			assetCategoryInfoFieldValues.add(
+				new InfoFieldValue<>(
+					AssetCategoryInfoItemFields.vocabularyInfoField,
+					InfoLocalizedValue.<String>builder(
+					).defaultLocale(
+						LocaleUtil.fromLanguageId(
+							assetVocabulary.getDefaultLanguageId())
+					).values(
+						assetVocabulary.getTitleMap()
+					).build()));
+		}
+
+		return InfoItemFieldValues.builder(
+		).infoFieldValues(
+			assetCategoryInfoFieldValues
 		).build();
 	}
 

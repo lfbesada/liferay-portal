@@ -17,6 +17,8 @@ package com.liferay.info.item.provider;
 import com.liferay.info.field.InfoFieldValue;
 import com.liferay.info.item.InfoItemFieldValues;
 
+import javax.servlet.http.HttpServletRequest;
+
 /**
  * @author Jorge Ferrer
  */
@@ -29,6 +31,14 @@ public interface InfoItemFieldValuesProvider<T> {
 
 		return infoItemFieldValues.getInfoFieldValue(fieldName);
 	}
+
+	public default InfoItemFieldValues getInfoItemFieldValues(
+		HttpServletRequest  httpServletRequest) {
+
+		return null;
+	} // Crear mejor una interfaz nueva. Mirar InfoRequestItemProvider: InfoRequestItemFieldValuesProvider
+
+	// EditPageCapability (ahí, añadir esta interfaz nueva, y la otra que he creado)
 
 	/**
 	 *   @deprecated As the method name does not match the interface class
