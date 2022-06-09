@@ -26,6 +26,7 @@ import com.liferay.fragment.processor.FragmentEntryProcessorContext;
 import com.liferay.fragment.service.FragmentEntryLocalService;
 import com.liferay.fragment.util.configuration.FragmentConfigurationField;
 import com.liferay.fragment.util.configuration.FragmentEntryConfigurationParser;
+import com.liferay.info.exception.InfoFormValidationException;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.type.InfoFieldType;
 import com.liferay.info.field.type.SelectInfoFieldType;
@@ -43,6 +44,7 @@ import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.servlet.DummyHttpServletResponse;
+import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.template.StringTemplateResource;
 import com.liferay.portal.kernel.template.Template;
 import com.liferay.portal.kernel.template.TemplateConstants;
@@ -168,6 +170,7 @@ public class FreeMarkerFragmentEntryProcessor
 				"input",
 				_toInputTemplateNode(
 					fragmentEntryLink,
+					fragmentEntryProcessorContext.getHttpServletRequest(),
 					fragmentEntryProcessorContext.getInfoFormOptional(),
 					fragmentEntryProcessorContext.getLocale()));
 		}
@@ -243,8 +246,9 @@ public class FreeMarkerFragmentEntryProcessor
 					).put(
 						"input",
 						new InputTemplateNode(
-							StringPool.BLANK, StringPool.BLANK, "name", false,
-							false, false, "type", "value")
+							StringPool.BLANK, StringPool.BLANK,
+							StringPool.BLANK, "name", false, false, false,
+							"type", "value")
 					).put(
 						"layoutMode", Constants.VIEW
 					).putAll(
@@ -325,6 +329,7 @@ public class FreeMarkerFragmentEntryProcessor
 
 	private InputTemplateNode _toInputTemplateNode(
 		FragmentEntryLink fragmentEntryLink,
+		HttpServletRequest httpServletRequest,
 		Optional<InfoForm> infoFormOptional, Locale locale) {
 
 		InfoField infoField = null;
@@ -397,9 +402,24 @@ public class FreeMarkerFragmentEntryProcessor
 			type = infoFieldType.getName();
 		}
 
+		String errorMessage = StringPool.BLANK;
+
+		if ((infoField != null) &&
+			SessionErrors.contains(
+				httpServletRequest, infoField.getUniqueId())) {
+
+			InfoFormValidationException infoFormValidationException =
+				(InfoFormValidationException)SessionErrors.get(
+					httpServletRequest, infoField.getUniqueId());
+
+			errorMessage = LanguageUtil.format(
+				locale, infoFormValidationException.getLanguageKey(),
+				infoFormValidationException.getArgs());
+		}
+
 		InputTemplateNode inputTemplateNode = new InputTemplateNode(
-			inputHelpText, inputLabel, name, required, inputShowHelpText,
-			inputShowLabel, type, "value");
+			errorMessage, inputHelpText, inputLabel, name, required,
+			inputShowHelpText, inputShowLabel, type, "value");
 
 		if ((infoField != null) &&
 			(infoField.getInfoFieldType() == SelectInfoFieldType.INSTANCE)) {
