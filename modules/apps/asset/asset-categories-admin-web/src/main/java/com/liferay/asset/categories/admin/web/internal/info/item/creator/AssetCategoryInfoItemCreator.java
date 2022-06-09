@@ -21,6 +21,7 @@ import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.asset.kernel.service.AssetVocabularyLocalService;
 import com.liferay.info.exception.InfoFormException;
+import com.liferay.info.exception.InfoFormValidationException;
 import com.liferay.info.exception.InfoItemCreationException;
 import com.liferay.info.field.InfoFieldValue;
 import com.liferay.info.item.InfoItemFieldValues;
@@ -68,7 +69,7 @@ public class AssetCategoryInfoItemCreator
 				AssetCategoryInfoItemFields.vocabularyInfoField.getName());
 
 		if (vocabularyInfoFieldValue == null) {
-			return null;
+			throw new InfoFormValidationException.RequiredInfoField(AssetCategoryInfoItemFields.vocabularyInfoField.getUniqueId());
 		}
 
 		InfoLocalizedValue<String> vocabularyInfoLocalizedValue =
@@ -80,7 +81,7 @@ public class AssetCategoryInfoItemCreator
 				vocabularyInfoLocalizedValue.getValue());
 
 		if (assetVocabulary == null) {
-			return null;
+			throw new InfoFormValidationException.RequiredInfoField(AssetCategoryInfoItemFields.vocabularyInfoField.getUniqueId());
 		}
 
 		InfoFieldValue<Object> nameInfoFieldValue =

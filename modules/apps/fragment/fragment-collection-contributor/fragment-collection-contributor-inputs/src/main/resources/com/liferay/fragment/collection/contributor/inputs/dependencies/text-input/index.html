@@ -4,6 +4,12 @@
 
 		<input aria-describedby="${fragmentEntryLinkNamespace}-text-input-help-text" class="form-control" id="${fragmentEntryLinkNamespace}-text-input" maxlength="280" name="${input.name}" placeholder="${configuration.placeholder}" [#if input.required]required[/#if] type="text" />
 
+		[#if input.error?has_content]
+			<div class="alert alert-dismissible alert-danger" role="alert">
+				${input.error}
+			</div>
+		[/#if]
+
 		[#if input.showHelpText && input.helpText?has_content]
 			<p class="mb-0 mt-1 text-secondary" id="${fragmentEntryLinkNamespace}-text-input-help-text">${input.helpText}</p>
 		[/#if]

@@ -20,6 +20,7 @@ import com.liferay.info.item.InfoItemServiceTracker;
 import com.liferay.info.item.creator.InfoItemCreator;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.struts.StrutsAction;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -35,7 +36,7 @@ import org.osgi.service.component.annotations.Reference;
  * @author Rubén Pulido
  */
 @Component(
-	immediate = true, property = "path=/info/info-item/create",
+	immediate = true, property = "path=/esto-es-otro-path/info/info-item/create",
 	service = StrutsAction.class
 )
 public class CreateInfoItemStrutsAction implements StrutsAction {
@@ -72,7 +73,8 @@ public class CreateInfoItemStrutsAction implements StrutsAction {
 				infoFormValidationException.getInfoFieldUniqueId(),
 				infoFormValidationException);
 			httpServletResponse.sendRedirect(
-				httpServletRequest.getRequestURI());
+				httpServletRequest.getHeader(
+			HttpHeaders.REFERER));
 
 			return null;
 		}
@@ -82,7 +84,8 @@ public class CreateInfoItemStrutsAction implements StrutsAction {
 			}
 		}
 
-		httpServletResponse.sendRedirect(httpServletRequest.getRequestURI());
+		httpServletResponse.sendRedirect(httpServletRequest.getHeader(
+			HttpHeaders.REFERER));
 
 		return null;
 	}

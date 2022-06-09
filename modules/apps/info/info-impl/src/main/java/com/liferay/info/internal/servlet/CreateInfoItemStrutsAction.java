@@ -14,12 +14,15 @@
 
 package com.liferay.info.internal.servlet;
 
+import com.liferay.info.exception.InfoFormValidationException;
 import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.InfoItemServiceTracker;
 import com.liferay.info.item.creator.InfoItemCreator;
 import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.servlet.HttpHeaders;
+import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.struts.StrutsAction;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -47,29 +50,49 @@ public class CreateInfoItemStrutsAction implements StrutsAction {
 		HttpServletRequest originalHttpServletRequest =
 			_portal.getOriginalServletRequest(httpServletRequest);
 
-		long classNameId = ParamUtil.getLong(
-			originalHttpServletRequest, "classNameId");
+		try {
+			InfoItemCreator<Object> infoItemCreator =
+				_infoItemServiceTracker.getFirstInfoItemService(
+					InfoItemCreator.class,
+					_portal.getClassName(
+						ParamUtil.getLong(
+							originalHttpServletRequest, "classNameId")));
 
-		String className = _portal.getClassName(classNameId);
+			infoItemCreator.createFromInfoItemFieldValues(
+				InfoItemFieldValues.builder(
+				).build());
+		}
+		catch (InfoFormValidationException infoFormValidationException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(
+					"Unable to create info item", infoFormValidationException);
+			}
 
-		InfoItemFieldValuesProvider infoItemFieldValuesProvider =
-			_infoItemServiceTracker.getFirstInfoItemService(
-				InfoItemFieldValuesProvider.class, className);
+			SessionErrors.add(
+				originalHttpServletRequest,
+				infoFormValidationException.getInfoFieldUniqueId(),
+				infoFormValidationException);
+			httpServletResponse.sendRedirect(
+				httpServletRequest.getHeader(
+			HttpHeaders.REFERER));
 
-		InfoItemFieldValues infoItemFieldValues =
-			infoItemFieldValuesProvider.getInfoItemFieldValues(
-				httpServletRequest);
+			return null;
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug("Unable to create info item", exception);
+			}
+		}
 
-		InfoItemCreator<Object> infoItemCreator =
-			_infoItemServiceTracker.getFirstInfoItemService(
-				InfoItemCreator.class, className);
-
-		infoItemCreator.createFromInfoItemFieldValues(infoItemFieldValues);
-
-		httpServletResponse.sendRedirect(httpServletRequest.getRequestURI());
+		httpServletResponse.sendRedirect(httpServletRequest.getHeader(
+			HttpHeaders.REFERER));
 
 		return null;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		CreateInfoItemStrutsAction.class);
+
 
 	@Reference
 	private InfoItemServiceTracker _infoItemServiceTracker;
