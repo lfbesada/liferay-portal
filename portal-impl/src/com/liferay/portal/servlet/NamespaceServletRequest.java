@@ -14,6 +14,7 @@
 
 package com.liferay.portal.servlet;
 
+import com.liferay.portal.kernel.portlet.RestrictPortletServletRequest;
 import com.liferay.portal.kernel.servlet.DynamicServletRequest;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.util.PropsValues;
@@ -168,12 +169,8 @@ public class NamespaceServletRequest extends DynamicServletRequest {
 			return true;
 		}
 
-		for (String requestSharedAttribute :
-				PropsValues.REQUEST_SHARED_ATTRIBUTES) {
-
-			if (name.startsWith(requestSharedAttribute)) {
-				return true;
-			}
+		if (RestrictPortletServletRequest.isSharedRequestAttribute(name)) {
+			return true;
 		}
 
 		return false;
