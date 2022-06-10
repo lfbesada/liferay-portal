@@ -325,6 +325,8 @@ public interface WebKeys {
 
 	public static final String LAYOUTS = "LAYOUTS";
 
+	public static final String LIFERAY_SHARED = "LIFERAY_SHARED_";
+
 	public static final String LINKED_ASSET_ENTRY_IDS =
 		"LIFERAY_SHARED_LINKED_ASSET_ENTRY_IDS";
 
