@@ -57,6 +57,7 @@ import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portlet.PortletPreferencesImpl;
 import com.liferay.portlet.exportimport.staging.StagingAdvicesThreadLocal;
 
@@ -469,6 +470,7 @@ public class PortletFragmentEntryProcessor implements FragmentEntryProcessor {
 
 		if (fragmentEntryLink != null) {
 			String checkAccessAllowedToPortletCacheKey = StringBundler.concat(
+				WebKeys.LIFERAY_SHARED,
 				DefaultLayoutTypeAccessPolicyImpl.class.getName(), "#",
 				ParamUtil.getLong(
 					fragmentEntryProcessorContext.getHttpServletRequest(),
