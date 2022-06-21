@@ -14,7 +14,7 @@
 
 package com.liferay.layout.taglib.internal.servlet.taglib;
 
-import com.liferay.layout.taglib.internal.util.LayoutStructureUtil;
+import com.liferay.layout.page.template.util.LayoutStructureUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.servlet.taglib.BaseDynamicInclude;
 import com.liferay.portal.kernel.servlet.taglib.DynamicInclude;
