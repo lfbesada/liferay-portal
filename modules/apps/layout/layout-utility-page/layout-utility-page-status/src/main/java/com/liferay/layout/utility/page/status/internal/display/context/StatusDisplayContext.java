@@ -14,7 +14,12 @@
 
 package com.liferay.layout.utility.page.status.internal.display.context;
 
-import javax.servlet.http.HttpServletRequest;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.HttpComponentsUtil;
+import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.Validator;
 
 /**
  * @author Lourdes Fernández Besada
@@ -23,6 +28,17 @@ public class StatusDisplayContext {
 
 	public StatusDisplayContext(HttpServletRequest httpServletRequest) {
 		_httpServletRequest = httpServletRequest;
+	}
+
+	public String getEscapedURL(ThemeDisplay themeDisplay) {
+		String url = ParamUtil.getString(_httpServletRequest, "previousURL");
+
+		if (Validator.isNull(url)) {
+			url = PortalUtil.getCurrentURL(_httpServletRequest);
+		}
+
+		return HtmlUtil.escape(
+			HttpComponentsUtil.decodeURL(themeDisplay.getPortalURL() + url));
 	}
 
 	private final HttpServletRequest _httpServletRequest;
