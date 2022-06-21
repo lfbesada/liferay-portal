@@ -18,7 +18,6 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServiceUtil;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalServiceUtil;
-import com.liferay.layout.taglib.internal.servlet.ServletContextUtil;
 import com.liferay.layout.util.structure.DropZoneLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
@@ -27,9 +26,14 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.impl.VirtualLayout;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Validator;
-import com.liferay.segments.manager.SegmentsExperienceManager;
+import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.segments.constants.SegmentsWebKeys;
+import com.liferay.segments.service.SegmentsExperienceLocalServiceUtil;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -82,12 +86,20 @@ public class LayoutStructureUtil {
 			return selectedSegmentsExperienceId;
 		}
 
-		SegmentsExperienceManager segmentsExperienceManager =
-			new SegmentsExperienceManager(
-				ServletContextUtil.getSegmentsExperienceLocalService());
+		long[] segmentsExperienceIds = GetterUtil.getLongValues(
+			httpServletRequest.getAttribute(
+				SegmentsWebKeys.SEGMENTS_EXPERIENCE_IDS));
 
-		return segmentsExperienceManager.getSegmentsExperienceId(
-			httpServletRequest);
+		if (ArrayUtil.isNotEmpty(segmentsExperienceIds)) {
+			return segmentsExperienceIds[0];
+		}
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		return SegmentsExperienceLocalServiceUtil.
+			fetchDefaultSegmentsExperienceId(themeDisplay.getPlid());
 	}
 
 	private static Layout _getLayout(long plid) {
