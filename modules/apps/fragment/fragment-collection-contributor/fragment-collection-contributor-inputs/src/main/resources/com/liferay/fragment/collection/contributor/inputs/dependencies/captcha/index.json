@@ -1,0 +1,14 @@
+{
+	"fieldSets": [
+		{
+			"fields": [
+				{
+					"label": "captcha",
+					"localizable": false,
+					"name": "captcha",
+					"type": "checkbox"
+				}
+			]
+		}
+	]
+}
