@@ -15,6 +15,10 @@
 package com.liferay.info.internal.request.struts;
 
 import com.liferay.captcha.util.CaptchaUtil;
+import com.liferay.fragment.model.FragmentEntryLink;
+import com.liferay.fragment.service.FragmentEntryLinkLocalService;
+import com.liferay.fragment.util.configuration.FragmentConfigurationField;
+import com.liferay.fragment.util.configuration.FragmentEntryConfigurationParser;
 import com.liferay.info.exception.InfoFormException;
 import com.liferay.info.exception.InfoFormPrincipalException;
 import com.liferay.info.exception.InfoFormValidationException;
@@ -23,6 +27,10 @@ import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.InfoItemReference;
 import com.liferay.info.item.InfoItemServiceTracker;
 import com.liferay.info.item.creator.InfoItemCreator;
+import com.liferay.layout.page.template.util.LayoutStructureUtil;
+import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
+import com.liferay.layout.util.structure.LayoutStructure;
+import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.portal.kernel.captcha.CaptchaException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -31,10 +39,14 @@ import com.liferay.portal.kernel.servlet.HttpHeaders;
 import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.struts.StrutsAction;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+
+import java.util.List;
+import java.util.Locale;
 
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -156,8 +168,116 @@ public class AddInfoItemStrutsAction implements StrutsAction {
 			new InfoRequestFieldValuesProviderHelper(_infoItemServiceTracker);
 	}
 
+	private boolean _hasCaptchaStructureItem(
+		List<String> childrenItemIds, LayoutStructure layoutStructure,
+		Locale locale) {
+
+		for (String childrenItemId : childrenItemIds) {
+			LayoutStructureItem layoutStructureItem =
+				layoutStructure.getLayoutStructureItem(childrenItemId);
+
+			if (!(layoutStructureItem instanceof
+					FragmentStyledLayoutStructureItem)) {
+
+				if (_hasCaptchaStructureItem(
+						layoutStructureItem.getChildrenItemIds(),
+						layoutStructure, locale)) {
+
+					return true;
+				}
+
+				continue;
+			}
+
+			FragmentStyledLayoutStructureItem
+				fragmentStyledLayoutStructureItem =
+					(FragmentStyledLayoutStructureItem)layoutStructureItem;
+
+			if (fragmentStyledLayoutStructureItem.getFragmentEntryLinkId() <=
+					0) {
+
+				if (_hasCaptchaStructureItem(
+						layoutStructureItem.getChildrenItemIds(),
+						layoutStructure, locale)) {
+
+					return true;
+				}
+
+				continue;
+			}
+
+			FragmentEntryLink fragmentEntryLink =
+				_fragmentEntryLinkLocalService.fetchFragmentEntryLink(
+					fragmentStyledLayoutStructureItem.getFragmentEntryLinkId());
+
+			if ((fragmentEntryLink == null) ||
+				Validator.isNull(fragmentEntryLink.getEditableValues())) {
+
+				if (_hasCaptchaStructureItem(
+						layoutStructureItem.getChildrenItemIds(),
+						layoutStructure, locale)) {
+
+					return true;
+				}
+
+				continue;
+			}
+
+			if (GetterUtil.getBoolean(
+					_fragmentEntryConfigurationParser.getFieldValue(
+						fragmentEntryLink.getEditableValues(),
+						new FragmentConfigurationField(
+							"captcha", "boolean", "false", false, "checkbox"),
+						locale)) ||
+				_hasCaptchaStructureItem(
+					layoutStructureItem.getChildrenItemIds(), layoutStructure,
+					locale)) {
+
+				return true;
+			}
+		}
+
+		return false;
+	}
+
+	private boolean _hasCaptchaStructureItem(
+			String formItemId, HttpServletRequest httpServletRequest)
+		throws InfoFormException {
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		LayoutStructure layoutStructure =
+			LayoutStructureUtil.getLayoutStructure(
+				httpServletRequest,
+				ParamUtil.getLong(
+					httpServletRequest, "plid", themeDisplay.getPlid()));
+
+		if (layoutStructure == null) {
+			throw new InfoFormException();
+		}
+
+		LayoutStructureItem formLayoutStructureItem =
+			layoutStructure.getLayoutStructureItem(formItemId);
+
+		if (formLayoutStructureItem == null) {
+			throw new InfoFormException();
+		}
+
+		return _hasCaptchaStructureItem(
+			formLayoutStructureItem.getChildrenItemIds(), layoutStructure,
+			themeDisplay.getLocale());
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		AddInfoItemStrutsAction.class);
+
+	@Reference
+	private FragmentEntryConfigurationParser _fragmentEntryConfigurationParser;
+
+	@Reference
+	private FragmentEntryLinkLocalService _fragmentEntryLinkLocalService;
 
 	@Reference
 	private InfoItemServiceTracker _infoItemServiceTracker;
