@@ -81,7 +81,11 @@ public class AddInfoItemStrutsAction implements StrutsAction {
 			httpServletRequest, "formItemId");
 
 		try {
-			CaptchaUtil.check(httpServletRequest);
+			if (_hasCaptchaStructureItem(
+					formItemId, originalHttpServletRequest)) {
+
+				CaptchaUtil.check(httpServletRequest);
+			}
 
 			InfoItemCreator<Object> infoItemCreator =
 				_infoItemServiceTracker.getFirstInfoItemService(
