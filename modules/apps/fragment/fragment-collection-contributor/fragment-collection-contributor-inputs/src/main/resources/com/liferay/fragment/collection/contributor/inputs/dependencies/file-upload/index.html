@@ -13,11 +13,17 @@
 				[@clay["icon"] symbol="times-circle-full" /]
 			</button>
 
-			<input accept="${input.fileExtensions}" aria-describedby="${fragmentEntryLinkNamespace}-file-upload-help-text" class="d-none" formenctype="multipart/form-data" id="${fragmentEntryLinkNamespace}-file-upload" name="${input.name}" ${input.required?then('required', '' )} type="file" />
+			[#assign accept = "" /]
+
+			[#if input.attributes.acceptedFileExtensions?has_content]
+				[#assign accept = " accept=\"${input.attributes.acceptedFileExtensions}\" " /]
+			[/#if]
+
+			<input ${accept} aria-describedby="${fragmentEntryLinkNamespace}-file-upload-help-text" class="d-none" formenctype="multipart/form-data" id="${fragmentEntryLinkNamespace}-file-upload" name="${input.name}" ${input.required?then('required', '' )} type="file" />
 		</div>
 
 		[#if (input.showHelpText && input.helpText?has_content) || configuration.showSupportedFileInfo]
-			<p class="mb-0 mt-1 text-secondary" id="${fragmentEntryLinkNamespace}-file-upload-help-text">${configuration.showSupportedFileInfo?then(languageUtil.format(locale, "upload-a-x-no-larger-than-x-mb", [input.fileExtensions, input.fileSize]), '' )} ${input.showHelpText?then(input.helpText, '' )}</p>
+			<p class="mb-0 mt-1 text-secondary" id="${fragmentEntryLinkNamespace}-file-upload-help-text">${configuration.showSupportedFileInfo?then(languageUtil.format(locale, "upload-a-x-no-larger-than-x-mb", [((input.attributes.acceptedFileExtensions)!''), ((input.attributes.maximumFileSize)!'')]), '' )} ${input.showHelpText?then(input.helpText, '' )}</p>
 		[/#if]
 	</div>
 </div>

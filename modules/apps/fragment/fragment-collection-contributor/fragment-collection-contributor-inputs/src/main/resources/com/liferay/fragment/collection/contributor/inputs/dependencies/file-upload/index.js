@@ -12,17 +12,15 @@
  * details.
  */
 
-const MOCK_URL =
-	'http://localhost:8080/group/guest/~/control_panel/manage/-/select/infoitem/_com_liferay_site_navigation_admin_web_portlet_SiteNavigationAdminPortlet_selectInfoItem?_com_liferay_item_selector_web_portlet_ItemSelectorPortlet_0_json=%7B%22desiredItemSelectorReturnTypes%22%3A%22com.liferay.item.selector.criteria.InfoItemItemSelectorReturnType%22%2C%22itemSubtype%22%3Anull%2C%22itemType%22%3A%22com.liferay.portal.kernel.repository.model.FileEntry%22%2C%22mimeTypes%22%3Anull%2C%22multiSelection%22%3Afalse%2C%22status%22%3A0%7D&p_p_auth=IRVXzaPX';
-
-const MOCK_DM_ENABLED = true;
-
 const wrapper = fragmentElement;
 
-const input = document.getElementById(`${fragmentNamespace}-file-upload`);
+const inputElement = document.getElementById(fragmentNamespace + '-file-upload');
 const fileName = wrapper.querySelector('.forms-file-upload-file-name');
 const removeButton = wrapper.querySelector("[type='button']");
 const selectButton = wrapper.querySelector('.btn-secondary');
+
+const selectFromDocumentLibrary = input.attributes.selectFromDocumentLibrary;
+const selectFromDocumentLibraryURL = input.attributes.selectFromDocumentLibraryURL;
 
 if (layoutMode === 'edit') {
 	if (selectButton) {
@@ -31,14 +29,14 @@ if (layoutMode === 'edit') {
 }
 
 function onInputChange() {
-	fileName.innerText = input.files[0].name;
+	fileName.innerText = inputElement.files[0].name;
 
 	removeButton.classList.remove('d-none');
 	removeButton.addEventListener('click', onRemoveFile);
 }
 
 function onRemoveFile() {
-	input.value = '';
+	inputElement.value = '';
 	fileName.innerText = '';
 
 	removeButton.classList.add('d-none');
@@ -46,21 +44,27 @@ function onRemoveFile() {
 }
 
 function onSelectFile(event) {
-	if (MOCK_DM_ENABLED) {
+	if (selectFromDocumentLibrary) {
 		event.preventDefault();
 
 		Liferay.Util.openSelectionModal({
 			customSelectEvent: true,
 			multiple: true,
 			onSelect(selectedItem) {
+				console.log("onSelect selectedItem:");
 				console.log(selectedItem);
 			},
-			selectEventName: 'MOCK_SELECT_EVENT_NAME',
+			selectEventName: 'fileSelected',
 			title: 'Select Document',
-			url: MOCK_URL,
+			url: selectFromDocumentLibraryURL,
 		});
 	}
 }
 
-input.addEventListener('change', onInputChange);
+function fileSelected(selectedItem) {
+	console.log("selectedItem:");
+	console.log(selectedItem);
+}
+
+inputElement.addEventListener('change', onInputChange);
 selectButton.addEventListener('click', onSelectFile);
