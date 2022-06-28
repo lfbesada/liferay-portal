@@ -158,52 +158,6 @@ public class FragmentEntryInputTemplateNodeContextHelper {
 			inputShowHelpText, inputShowLabel, infoFieldType.getName(),
 			"value");
 
-		if (infoField.getInfoFieldType() instanceof NumberInfoFieldType) {
-			String dataType = "integer";
-
-			Optional<Boolean> decimalOptional = infoField.getAttributeOptional(
-				NumberInfoFieldType.DECIMAL);
-
-			if (decimalOptional.orElse(false)) {
-				dataType = "decimal";
-
-				Optional<Integer> decimalPartMaxLengthOptional =
-					infoField.getAttributeOptional(
-						NumberInfoFieldType.DECIMAL_PART_MAX_LENGTH);
-
-				decimalPartMaxLengthOptional.ifPresent(
-					decimalPartMaxLength -> inputTemplateNode.addAttribute(
-						"step", _getStep(decimalPartMaxLength)));
-			}
-
-			inputTemplateNode.addAttribute("dataType", dataType);
-
-			Optional<BigDecimal> maxValueOptional =
-				infoField.getAttributeOptional(NumberInfoFieldType.MAX_VALUE);
-
-			maxValueOptional.ifPresent(
-				maxValue -> inputTemplateNode.addAttribute("max", maxValue));
-
-			Optional<BigDecimal> minValueOptional =
-				infoField.getAttributeOptional(NumberInfoFieldType.MIN_VALUE);
-
-			minValueOptional.ifPresent(
-				minValue -> inputTemplateNode.addAttribute("min", minValue));
-		}
-
-		if (infoField.getInfoFieldType() instanceof SelectInfoFieldType) {
-			Optional<List<SelectInfoFieldType.Option>> optionsOptional =
-				infoField.getAttributeOptional(SelectInfoFieldType.OPTIONS);
-
-			List<SelectInfoFieldType.Option> options = optionsOptional.orElse(
-				new ArrayList<>());
-
-			for (SelectInfoFieldType.Option option : options) {
-				inputTemplateNode.addOption(
-					option.getLabel(locale), option.getValue());
-			}
-		}
-
 		if (infoFieldType instanceof ImageInfoFieldType) {
 			Optional<String> acceptedFileExtensionsOptional =
 				infoField.getAttributeOptional(
@@ -248,6 +202,52 @@ public class FragmentEntryInputTemplateNodeContextHelper {
 
 				inputTemplateNode.addAttribute(
 					"selectFromDocumentLibraryURL", itemSelectorURL.toString());
+			}
+		}
+
+		if (infoField.getInfoFieldType() instanceof NumberInfoFieldType) {
+			String dataType = "integer";
+
+			Optional<Boolean> decimalOptional = infoField.getAttributeOptional(
+				NumberInfoFieldType.DECIMAL);
+
+			if (decimalOptional.orElse(false)) {
+				dataType = "decimal";
+
+				Optional<Integer> decimalPartMaxLengthOptional =
+					infoField.getAttributeOptional(
+						NumberInfoFieldType.DECIMAL_PART_MAX_LENGTH);
+
+				decimalPartMaxLengthOptional.ifPresent(
+					decimalPartMaxLength -> inputTemplateNode.addAttribute(
+						"step", _getStep(decimalPartMaxLength)));
+			}
+
+			inputTemplateNode.addAttribute("dataType", dataType);
+
+			Optional<BigDecimal> maxValueOptional =
+				infoField.getAttributeOptional(NumberInfoFieldType.MAX_VALUE);
+
+			maxValueOptional.ifPresent(
+				maxValue -> inputTemplateNode.addAttribute("max", maxValue));
+
+			Optional<BigDecimal> minValueOptional =
+				infoField.getAttributeOptional(NumberInfoFieldType.MIN_VALUE);
+
+			minValueOptional.ifPresent(
+				minValue -> inputTemplateNode.addAttribute("min", minValue));
+		}
+
+		if (infoField.getInfoFieldType() instanceof SelectInfoFieldType) {
+			Optional<List<SelectInfoFieldType.Option>> optionsOptional =
+				infoField.getAttributeOptional(SelectInfoFieldType.OPTIONS);
+
+			List<SelectInfoFieldType.Option> options = optionsOptional.orElse(
+				new ArrayList<>());
+
+			for (SelectInfoFieldType.Option option : options) {
+				inputTemplateNode.addOption(
+					option.getLabel(locale), option.getValue());
 			}
 		}
 
