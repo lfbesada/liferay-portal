@@ -78,8 +78,6 @@ public class AddInfoItemStrutsAction implements StrutsAction {
 			HttpServletResponse httpServletResponse)
 		throws Exception {
 
-		String className = _portal.getClassName(
-			ParamUtil.getLong(httpServletRequest, "classNameId"));
 		String formItemId = ParamUtil.getString(
 			httpServletRequest, "formItemId");
 
@@ -89,6 +87,9 @@ public class AddInfoItemStrutsAction implements StrutsAction {
 			if (_isCaptchaLayoutStructureItem(formItemId, httpServletRequest)) {
 				CaptchaUtil.check(httpServletRequest);
 			}
+
+			String className = _portal.getClassName(
+				ParamUtil.getLong(httpServletRequest, "classNameId"));
 
 			InfoItemCreator<Object> infoItemCreator =
 				_infoItemServiceTracker.getFirstInfoItemService(
