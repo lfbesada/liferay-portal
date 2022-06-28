@@ -145,22 +145,24 @@ public class FragmentEntryInputTemplateNodeContextHelper {
 					"inputShowLabel", "boolean", "true", false, "checkbox"),
 				locale));
 
-		String type = "type";
+		if (infoField == null) {
+			return new InputTemplateNode(
+				dataType, errorMessage, inputHelpText, inputLabel, name,
+				required, inputShowHelpText, inputShowLabel, "type", "value");
+		}
 
-		if (infoField != null) {
-			InfoFieldType infoFieldType = infoField.getInfoFieldType();
+		InfoFieldType infoFieldType = infoField.getInfoFieldType();
 
-			type = infoFieldType.getName();
+		String type = infoFieldType.getName();
 
-			if (infoFieldType instanceof NumberInfoFieldType) {
-				dataType = "integer";
+		if (infoFieldType instanceof NumberInfoFieldType) {
+			dataType = "integer";
 
-				Optional<Boolean> decimalOptional =
-					infoField.getAttributeOptional(NumberInfoFieldType.DECIMAL);
+			Optional<Boolean> decimalOptional = infoField.getAttributeOptional(
+				NumberInfoFieldType.DECIMAL);
 
-				if (decimalOptional.orElse(false)) {
-					dataType = "decimal";
-				}
+			if (decimalOptional.orElse(false)) {
+				dataType = "decimal";
 			}
 		}
 
@@ -168,9 +170,7 @@ public class FragmentEntryInputTemplateNodeContextHelper {
 			dataType, errorMessage, inputHelpText, inputLabel, name, required,
 			inputShowHelpText, inputShowLabel, type, "value");
 
-		if ((infoField != null) &&
-			(infoField.getInfoFieldType() instanceof SelectInfoFieldType)) {
-
+		if (infoFieldType instanceof SelectInfoFieldType) {
 			Optional<List<SelectInfoFieldType.Option>> optionsOptional =
 				infoField.getAttributeOptional(SelectInfoFieldType.OPTIONS);
 
