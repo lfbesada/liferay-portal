@@ -299,6 +299,13 @@ public class EditFragmentEntryDisplayContext {
 				));
 		}
 
+		jsonArray.put(
+			JSONUtil.put(
+				"key", "captcha"
+			).put(
+				"label", LanguageUtil.get(_themeDisplay.getLocale(), "captcha")
+			));
+
 		return jsonArray;
 	}
 
@@ -374,6 +381,10 @@ public class EditFragmentEntryDisplayContext {
 			}
 
 			jsonArray.put(infoFieldType.getName());
+		}
+
+		if (JSONUtil.hasValue(fieldTypesJSONArray, "captcha")) {
+			jsonArray.put("captcha");
 		}
 
 		return jsonArray;
