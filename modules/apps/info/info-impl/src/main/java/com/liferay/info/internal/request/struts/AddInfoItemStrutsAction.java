@@ -98,12 +98,8 @@ public class AddInfoItemStrutsAction implements StrutsAction {
 				throw new InfoFormException();
 			}
 
-			ThemeDisplay themeDisplay =
-				(ThemeDisplay)httpServletRequest.getAttribute(
-					WebKeys.THEME_DISPLAY);
-
 			infoItemCreator.createFromInfoItemFieldValues(
-				themeDisplay.getScopeGroupId(),
+				ParamUtil.getLong(httpServletRequest, "groupId"),
 				InfoItemFieldValues.builder(
 				).infoFieldValues(
 					_infoRequestFieldValuesProviderHelper.getInfoFieldValues(
