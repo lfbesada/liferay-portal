@@ -204,8 +204,7 @@ public class FragmentEntryInputTemplateNodeContextHelper {
 					"selectFromDocumentLibraryURL", itemSelectorURL.toString());
 			}
 		}
-
-		if (infoField.getInfoFieldType() instanceof NumberInfoFieldType) {
+		else if (infoField.getInfoFieldType() instanceof NumberInfoFieldType) {
 			String dataType = "integer";
 
 			Optional<Boolean> decimalOptional = infoField.getAttributeOptional(
@@ -237,8 +236,7 @@ public class FragmentEntryInputTemplateNodeContextHelper {
 			minValueOptional.ifPresent(
 				minValue -> inputTemplateNode.addAttribute("min", minValue));
 		}
-
-		if (infoField.getInfoFieldType() instanceof SelectInfoFieldType) {
+		else if (infoField.getInfoFieldType() instanceof SelectInfoFieldType) {
 			Optional<List<SelectInfoFieldType.Option>> optionsOptional =
 				infoField.getAttributeOptional(SelectInfoFieldType.OPTIONS);
 
