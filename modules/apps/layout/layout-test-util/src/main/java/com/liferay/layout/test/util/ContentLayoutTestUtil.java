@@ -71,7 +71,17 @@ public class ContentLayoutTestUtil {
 
 	public static JSONObject addFormToLayout(
 			Layout layout, String classNameId, String classTypeId,
-			long segmentsExperienceId, String... fieldTypes)
+			long segmentsExperienceId, InfoField... infoFields)
+		throws Exception {
+
+		return addFormToLayout(
+			layout, classNameId, classTypeId, _DEFAULT_INPUT_HTML,
+			segmentsExperienceId, infoFields);
+	}
+
+	public static JSONObject addFormToLayout(
+			Layout layout, String classNameId, String classTypeId,
+			String inputHTML, long segmentsExperienceId, String... fieldTypes)
 		throws Exception {
 
 		JSONObject jsonObject = addItemToLayout(
@@ -95,14 +105,12 @@ public class ContentLayoutTestUtil {
 				FragmentEntryLocalServiceUtil.addFragmentEntry(
 					TestPropsValues.getUserId(), layout.getGroupId(), 0,
 					StringUtil.randomString(), StringUtil.randomString(),
-					RandomTestUtil.randomString(),
-					RandomTestUtil.randomString(),
+					RandomTestUtil.randomString(), inputHTML,
 					RandomTestUtil.randomString(), false, "{fieldSets: []}",
 					null, 0, FragmentConstants.TYPE_INPUT,
 					JSONUtil.put(
 						"typeOptions",
-						JSONUtil.put(
-							"fieldTypes", JSONUtil.put(fieldType))
+						JSONUtil.put("fieldTypes", JSONUtil.put(fieldType))
 					).toString(),
 					WorkflowConstants.STATUS_APPROVED, serviceContext);
 
@@ -413,5 +421,10 @@ public class ContentLayoutTestUtil {
 			ServiceContextThreadLocal.popServiceContext();
 		}
 	}
+
+	private static final String _DEFAULT_INPUT_HTML =
+		"<div class=\"${fragmentEntryLinkNamespace}-input\">" +
+			"<div id=\"${fragmentEntryLinkNamespace}-inputTemplateNode\">" +
+				"${input.toJSONObject()}</div></div>";
 
 }
