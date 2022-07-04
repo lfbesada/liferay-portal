@@ -19,6 +19,7 @@ import com.liferay.asset.constants.AssetWebKeys;
 import com.liferay.asset.util.AssetHelper;
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.ItemSelectorView;
+import com.liferay.item.selector.ItemSelectorViewDescriptorRenderer;
 import com.liferay.item.selector.criteria.AssetEntryItemSelectorReturnType;
 import com.liferay.item.selector.criteria.asset.criterion.AssetEntryItemSelectorCriterion;
 import com.liferay.petra.string.StringPool;
@@ -76,29 +77,20 @@ public class AssetEntryItemSelectorView
 
 	@Override
 	public void renderHTML(
-			ServletRequest servletRequest, ServletResponse servletResponse,
-			AssetEntryItemSelectorCriterion itemSelectorCriterion,
-			PortletURL portletURL, String itemSelectedEventName, boolean search)
+		ServletRequest servletRequest, ServletResponse servletResponse,
+		AssetEntryItemSelectorCriterion itemSelectorCriterion,
+		PortletURL portletURL, String itemSelectedEventName, boolean search)
 		throws IOException, ServletException {
 
-		HttpServletRequest httpServletRequest = _getDynamicServletRequest(
-			itemSelectorCriterion, servletRequest);
+		_itemSelectorViewDescriptorRenderer.renderHTML(
+			servletRequest, servletResponse,
+			itemSelectorCriterion, portletURL,
+			itemSelectedEventName, search,
+			new AssetEntryItemSelectorViewDescriptor(
+				itemSelectorCriterion,
+				(HttpServletRequest)servletRequest, portletURL,
+				_assetBrowserDisplayContext));
 
-		httpServletRequest.setAttribute(
-			AssetBrowserDisplayContext.class.getName(),
-			new AssetBrowserDisplayContext(
-				_assetHelper, httpServletRequest, portletURL,
-				(RenderRequest)httpServletRequest.getAttribute(
-					JavaConstants.JAVAX_PORTLET_REQUEST),
-				(RenderResponse)httpServletRequest.getAttribute(
-					JavaConstants.JAVAX_PORTLET_RESPONSE)));
-		httpServletRequest.setAttribute(
-			AssetWebKeys.ASSET_HELPER, _assetHelper);
-
-		RequestDispatcher requestDispatcher =
-			_servletContext.getRequestDispatcher("/view.jsp");
-
-		requestDispatcher.include(httpServletRequest, servletResponse);
 	}
 
 	private DynamicServletRequest _getDynamicServletRequest(
@@ -181,4 +173,11 @@ public class AssetEntryItemSelectorView
 	@Reference(target = "(osgi.web.symbolicname=com.liferay.asset.browser.web)")
 	private ServletContext _servletContext;
 
+	@Reference
+	private ItemSelectorViewDescriptorRenderer
+		<AssetEntryItemSelectorCriterion>
+		_itemSelectorViewDescriptorRenderer;
+
+	@Reference
+	private AssetBrowserDisplayContext _assetBrowserDisplayContext;
 }
