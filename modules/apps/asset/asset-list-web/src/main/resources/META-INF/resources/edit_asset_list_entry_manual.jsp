@@ -226,14 +226,26 @@ AssetListEntry assetListEntry = assetListDisplayContext.getAssetListEntry();
 			Liferay.Util.openSelectionModal({
 				customSelectEvent: true,
 				multiple: true,
-				onSelect: function (selectedItems) {
-					if (selectedItems) {
+				onSelect: function (data) {
+
+				console.log("data.value " + data.value);
+				console.log("data.value.length " + data.value.length);
+
+				if (data.value.length) {
+						const selectedItems = data.value;
+						console.log("selectedItems " + selectedItems);
+						console.log(typeof selectedItems);
 						var assetEntryIds = [];
 
 						Array.prototype.forEach.call(
 							selectedItems,
-							(assetEntry) => {
-								assetEntryIds.push(assetEntry.value);
+							(selectedItem) => {
+							console.log(typeof selectedItem);
+							const assetEntry = JSON.parse(selectedItem);
+
+							console.log("assetEntry " + assetEntry);
+
+							assetEntryIds.push(assetEntry.assetEntryId);
 							}
 						);
 

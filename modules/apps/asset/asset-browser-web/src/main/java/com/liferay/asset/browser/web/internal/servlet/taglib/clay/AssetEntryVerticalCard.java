@@ -15,6 +15,7 @@
 package com.liferay.asset.browser.web.internal.servlet.taglib.clay;
 
 import com.liferay.asset.browser.web.internal.display.context.AssetBrowserDisplayContext;
+import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
@@ -56,7 +57,8 @@ public class AssetEntryVerticalCard implements VerticalCard {
 
 		_assetRenderer = assetEntry.getAssetRenderer();
 		_assetRendererFactory =
-			_assetBrowserDisplayContext.getAssetRendererFactory();
+			AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassNameId(assetEntry.getClassNameId());
+
 	}
 
 	@Override
