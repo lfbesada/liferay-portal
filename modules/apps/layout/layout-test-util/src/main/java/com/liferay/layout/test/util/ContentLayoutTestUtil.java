@@ -26,6 +26,7 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalServiceUtil;
 import com.liferay.layout.page.template.util.LayoutStructureUtil;
 import com.liferay.layout.util.constants.LayoutDataItemTypeConstants;
+import com.liferay.layout.util.structure.FormStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -56,8 +57,10 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.segments.service.SegmentsExperienceLocalServiceUtil;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -134,10 +137,27 @@ public class ContentLayoutTestUtil {
 				parentItemId, i);
 		}
 
-		jsonObject.put(
-			"layoutData",
+		LayoutStructure layoutStructure =
 			LayoutStructureUtil.getLayoutStructure(
-				layout.getPlid(), segmentsExperienceId));
+				layout.getPlid(), segmentsExperienceId);
+
+		jsonObject.put("layoutData", layoutStructure);
+
+		List<FormStyledLayoutStructureItem> formStyledLayoutStructureItems =
+			layoutStructure.getFormStyledLayoutStructureItems();
+
+		List<String> formStyledLayoutStructureItemsIds = new ArrayList<>();
+
+		for (FormStyledLayoutStructureItem formStyledLayoutStructureItem :
+				formStyledLayoutStructureItems) {
+
+			formStyledLayoutStructureItemsIds.add(
+				formStyledLayoutStructureItem.getItemId());
+		}
+
+		jsonObject.put(
+			"formStyledLayoutStructureItemsIds",
+			formStyledLayoutStructureItemsIds);
 
 		return jsonObject;
 	}
