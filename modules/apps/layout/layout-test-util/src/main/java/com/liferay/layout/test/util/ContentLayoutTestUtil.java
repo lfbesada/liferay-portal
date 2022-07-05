@@ -115,9 +115,7 @@ public class ContentLayoutTestUtil {
 					RandomTestUtil.randomString(), false, "{fieldSets: []}",
 					null, 0, FragmentConstants.TYPE_INPUT,
 					JSONUtil.put(
-						"typeOptions",
-						JSONUtil.put(
-							"fieldTypes", JSONUtil.put(infoFieldType.getName()))
+						"fieldTypes", JSONUtil.put(infoFieldType.getName())
 					).toString(),
 					WorkflowConstants.STATUS_APPROVED, serviceContext);
 
