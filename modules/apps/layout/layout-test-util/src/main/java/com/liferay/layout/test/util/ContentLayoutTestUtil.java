@@ -69,6 +69,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
+import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
  * @author Lourdes Fernández Besada
@@ -326,6 +327,21 @@ public class ContentLayoutTestUtil {
 			new Class<?>[] {ActionRequest.class, ActionResponse.class},
 			mockLiferayPortletActionRequest,
 			new MockLiferayPortletActionResponse());
+	}
+
+	public static MockHttpServletRequest
+			getMockHttpServletRequest(
+				Company company, Group group, Layout layout)
+		throws Exception {
+
+		MockHttpServletRequest mockHttpServletRequest =
+			new MockHttpServletRequest();
+
+		mockHttpServletRequest.setAttribute(WebKeys.LAYOUT, layout);
+		mockHttpServletRequest.setAttribute(
+			WebKeys.THEME_DISPLAY, getThemeDisplay(company, group, layout));
+
+		return mockHttpServletRequest;
 	}
 
 	public static MockLiferayPortletActionRequest

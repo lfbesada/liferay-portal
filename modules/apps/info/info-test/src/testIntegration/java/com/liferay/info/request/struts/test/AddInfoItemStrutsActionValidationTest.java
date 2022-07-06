@@ -15,17 +15,49 @@
 package com.liferay.info.request.struts.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.info.exception.InfoFormValidationException;
+import com.liferay.info.field.InfoField;
+import com.liferay.info.field.InfoFieldSet;
+import com.liferay.info.field.type.TextInfoFieldType;
+import com.liferay.info.item.InfoItemServiceTracker;
+import com.liferay.info.item.creator.InfoItemCreator;
+import com.liferay.info.localized.InfoLocalizedValue;
+import com.liferay.info.test.util.MockInfoServiceRegistrationHolder;
+import com.liferay.info.test.util.info.item.creator.MockInfoItemCreator;
+import com.liferay.info.test.util.model.MockObject;
+import com.liferay.layout.page.template.info.item.capability.EditPageInfoItemCapability;
+import com.liferay.layout.test.util.ContentLayoutTestUtil;
+import com.liferay.layout.test.util.LayoutTestUtil;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.service.CompanyLocalService;
+import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
+import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.struts.StrutsAction;
+import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.test.portlet.MockLiferayPortletActionRequest;
+import com.liferay.portal.kernel.test.portlet.MockLiferayPortletActionResponse;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.segments.service.SegmentsExperienceLocalService;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
+import org.junit.Test;
 import org.junit.runner.RunWith;
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpServletResponse;
+
+import javax.portlet.ActionRequest;
+import javax.portlet.ActionResponse;
 
 /**
  * @author Lourdes Fernández Besada
@@ -46,10 +78,92 @@ public class AddInfoItemStrutsActionValidationTest {
 	@DeleteAfterTestRun
 	private Group _group;
 
+	@Test
+	public void testRequiredFieldValidation() throws Exception {
+		InfoField<TextInfoFieldType> infoField = InfoField.builder(
+		).infoFieldType(
+			TextInfoFieldType.INSTANCE
+		).namespace(
+			RandomTestUtil.randomString()
+		).name(
+			RandomTestUtil.randomString()
+		).labelInfoLocalizedValue(
+			InfoLocalizedValue.singleValue(RandomTestUtil.randomString())
+		).localizable(
+			true
+		).build();
+
+		try (MockInfoServiceRegistrationHolder mockInfoServiceRegistrationHolder =
+				 new MockInfoServiceRegistrationHolder(InfoFieldSet.builder().infoFieldSetEntries(
+						ListUtil.fromArray(
+							infoField
+						)
+					).build(), _editPageInfoItemCapability)){
+
+			MockInfoItemCreator mockInfoItemCreator = mockInfoServiceRegistrationHolder.getMockInfoItemCreator();
+
+			mockInfoItemCreator.setInfoFormException(
+				new InfoFormValidationException.RequiredInfoField(infoField.getUniqueId()));
+
+			Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
+
+			Layout draftLayout = layout.fetchDraftLayout();
+
+			long segmentsExperienceId =
+				_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
+					draftLayout.getPlid());
+
+			String classNameId = String.valueOf(
+				_portal.getClassNameId(MockObject.class.getName()));
+
+			String classTypeId = "0";
+			
+			JSONObject jsonObject = ContentLayoutTestUtil.addFormToLayout(
+				draftLayout, classNameId, classTypeId,
+				segmentsExperienceId, infoField);
+
+			ContentLayoutTestUtil.publishLayout(draftLayout, layout);
+
+			String formItemId = jsonObject.getString("addedItemId");
+
+			MockHttpServletRequest mockHttpServletRequest =
+				ContentLayoutTestUtil.getMockHttpServletRequest(
+					_companyLocalService.getCompany(layout.getCompanyId()),
+					_group, layout);
+		
+			mockHttpServletRequest.addParameter("redirect", _portal.getLayoutActualURL(layout));
+			mockHttpServletRequest.addParameter("classNameId", classNameId);
+			mockHttpServletRequest.addParameter("classTypeId", classTypeId);
+			mockHttpServletRequest.addParameter("formItemId", formItemId);
+			mockHttpServletRequest.addParameter("groupId", String.valueOf(layout.getGroupId()));
+			mockHttpServletRequest.addParameter("plid", String.valueOf(layout.getPlid()));
+			mockHttpServletRequest.addParameter("segmentsExperienceId", String.valueOf(layout.getPlid()));
+
+			MockHttpServletResponse mockHttpServletResponse =
+				new MockHttpServletResponse();
+
+			_addInfoItemStrutsAction.execute(mockHttpServletRequest, mockHttpServletResponse);
+		}
+	}
+
 	@Inject(
 		filter = "path=/portal/add_info_item"
 	)
 	private StrutsAction _addInfoItemStrutsAction;
+	@Inject
+	private CompanyLocalService _companyLocalService;
+
+	@Inject
+	private EditPageInfoItemCapability _editPageInfoItemCapability;
+
+	@Inject
+	private InfoItemServiceTracker _infoItemServiceTracker;
+
+	@Inject
+	private Portal _portal;
+
+	@Inject
+	private SegmentsExperienceLocalService _segmentsExperienceLocalService;
 }
 
 
