@@ -69,6 +69,7 @@ import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
 import org.osgi.framework.ServiceReference;
+
 import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
@@ -78,17 +79,18 @@ public class ContentLayoutTestUtil {
 
 	public static JSONObject addFormToLayout(
 			Layout layout, String classNameId, String classTypeId,
-			long segmentsExperienceId, InfoField... infoFields)
+			long segmentsExperienceId, boolean addCaptcha,
+			InfoField... infoFields)
 		throws Exception {
 
 		return addFormToLayout(
 			layout, classNameId, classTypeId, _DEFAULT_INPUT_HTML,
-			segmentsExperienceId, infoFields);
+			segmentsExperienceId, addCaptcha, infoFields);
 	}
 
 	public static JSONObject addFormToLayout(
 			Layout layout, String classNameId, String classTypeId,
-			String inputHTML, long segmentsExperienceId,
+			String inputHTML, long segmentsExperienceId, boolean addCaptcha,
 			InfoField... infoFields)
 		throws Exception {
 
@@ -136,6 +138,28 @@ public class ContentLayoutTestUtil {
 				).toString(),
 				fragmentEntry.getFragmentEntryKey(), fragmentEntry.getType(),
 				parentItemId, i);
+		}
+
+		if (addCaptcha) {
+			FragmentEntry fragmentEntry =
+				FragmentEntryLocalServiceUtil.addFragmentEntry(
+					TestPropsValues.getUserId(), layout.getGroupId(), 0,
+					StringUtil.randomString(), StringUtil.randomString(),
+					RandomTestUtil.randomString(), inputHTML,
+					RandomTestUtil.randomString(), false, "{fieldSets: []}",
+					null, 0, FragmentConstants.TYPE_INPUT,
+					JSONUtil.put(
+						"fieldTypes", JSONUtil.put("captcha")
+					).toString(),
+					WorkflowConstants.STATUS_APPROVED, serviceContext);
+
+			addFragmentEntryLinkToLayout(
+				layout, fragmentEntry.getFragmentEntryId(),
+				segmentsExperienceId, fragmentEntry.getCss(),
+				fragmentEntry.getHtml(), fragmentEntry.getJs(),
+				fragmentEntry.getConfiguration(), StringPool.BLANK,
+				fragmentEntry.getFragmentEntryKey(), fragmentEntry.getType(),
+				parentItemId, infoFields.length);
 		}
 
 		LayoutStructure layoutStructure =
@@ -329,9 +353,8 @@ public class ContentLayoutTestUtil {
 			new MockLiferayPortletActionResponse());
 	}
 
-	public static MockHttpServletRequest
-			getMockHttpServletRequest(
-				Company company, Group group, Layout layout)
+	public static MockHttpServletRequest getMockHttpServletRequest(
+			Company company, Group group, Layout layout)
 		throws Exception {
 
 		MockHttpServletRequest mockHttpServletRequest =

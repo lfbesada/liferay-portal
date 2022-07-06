@@ -18,6 +18,7 @@ import com.liferay.info.exception.InfoFormException;
 import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.creator.InfoItemCreator;
 import com.liferay.info.test.util.model.MockObject;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
 
 /**
  * @author Lourdes Fernández Besada
