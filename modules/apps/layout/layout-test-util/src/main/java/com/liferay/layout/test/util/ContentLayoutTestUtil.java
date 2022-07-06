@@ -22,6 +22,7 @@ import com.liferay.fragment.service.FragmentEntryLinkServiceUtil;
 import com.liferay.fragment.service.FragmentEntryLocalServiceUtil;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.type.InfoFieldType;
+import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalServiceUtil;
 import com.liferay.layout.page.template.util.LayoutStructureUtil;
@@ -185,6 +186,24 @@ public class ContentLayoutTestUtil {
 			formStyledLayoutStructureItemsIds);
 
 		return jsonObject;
+	}
+
+	public static String addFormToPublishedLayout(
+			Layout layout, boolean addCaptcha, String classNameId,
+			String classTypeId, InfoField<TextInfoFieldType>... infoField)
+		throws Exception {
+
+		Layout draftLayout = layout.fetchDraftLayout();
+
+		JSONObject jsonObject = addFormToLayout(
+			draftLayout, classNameId, classTypeId,
+			SegmentsExperienceLocalServiceUtil.fetchDefaultSegmentsExperienceId(
+				draftLayout.getPlid()),
+			addCaptcha, infoField);
+
+		publishLayout(draftLayout, layout);
+
+		return jsonObject.getString("addedItemId");
 	}
 
 	public static FragmentEntryLink addFragmentEntryLinkToLayout(

@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
@@ -43,12 +44,10 @@ public class RenderLayoutStructureFormsTest {
 		_group = GroupTestUtil.addGroup();
 	}
 
+	@Inject(filter = "path=/portal/add_info_item")
+	private StrutsAction _addInfoItemStrutsAction;
+
 	@DeleteAfterTestRun
 	private Group _group;
 
-	@Inject(
-		filter = "path=/portal/add_info_item"
-	)
-	private StrutsAction _addInfoItemStrutsAction;
 }
-
