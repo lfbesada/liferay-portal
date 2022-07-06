@@ -15,13 +15,16 @@
 package com.liferay.layout.taglib.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.info.exception.InfoFormException;
 import com.liferay.info.exception.InfoFormValidationException;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldSet;
 import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.info.localized.InfoLocalizedValue;
 import com.liferay.info.test.util.MockInfoServiceRegistrationHolder;
+import com.liferay.info.test.util.model.MockObject;
 import com.liferay.layout.page.template.info.item.capability.EditPageInfoItemCapability;
+import com.liferay.layout.page.template.util.LayoutStructureUtil;
 import com.liferay.layout.taglib.servlet.taglib.RenderLayoutStructureTag;
 import com.liferay.layout.test.util.ContentLayoutTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
@@ -51,11 +54,15 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portal.util.PropsValues;
 
+import com.liferay.segments.service.SegmentsExperienceLocalService;
 import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
@@ -66,6 +73,9 @@ import org.junit.runner.RunWith;
 
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
+import org.springframework.mock.web.MockPageContext;
+
+import java.util.Locale;
 
 /**
  * @author Eudaldo Alonso
@@ -76,7 +86,9 @@ public class RenderLayoutStructureTagTest {
 	@ClassRule
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
-		new LiferayIntegrationTestRule();
+		new AggregateTestRule(
+			new LiferayIntegrationTestRule(),
+			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@Before
 	public void setUp() throws Exception {
@@ -102,7 +114,7 @@ public class RenderLayoutStructureTagTest {
 	}
 
 	@Test
-	public void testDisplayFromError() throws Exception {
+	public void testDisplayingInfoFormException() throws Exception {
 		InfoField<TextInfoFieldType> infoField = _getInfoField();
 
 		try (MockInfoServiceRegistrationHolder
@@ -114,39 +126,116 @@ public class RenderLayoutStructureTagTest {
 						).build(),
 						_editPageInfoItemCapability)) {
 
-			MockInfoItemCreator mockInfoItemCreator =
-				mockInfoServiceRegistrationHolder.getMockInfoItemCreator();
+			Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
 
-			InfoFormValidationException.RequiredInfoField infoFormException =
-				new InfoFormValidationException.RequiredInfoField(
-					infoField.getUniqueId());
+			String formItemId = ContentLayoutTestUtil.addFormToPublishedLayout(
+				layout, false,
+				String.valueOf(
+					_portal.getClassNameId(MockObject.class.getName())),
+				"0", infoField);
 
-			mockInfoItemCreator.setInfoFormException(infoFormException);
+			MockHttpServletRequest mockHttpServletRequest =
+				ContentLayoutTestUtil.getMockHttpServletRequest(
+					_companyLocalService.getCompany(layout.getCompanyId()), _group,
+					layout);
+			InfoFormException infoFormException = new InfoFormException();
+
+			SessionErrors.add(mockHttpServletRequest, formItemId, infoFormException);
+
+			RenderLayoutStructureTag renderLayoutStructureTag =
+				new RenderLayoutStructureTag();
+
+			renderLayoutStructureTag.setLayoutStructure(
+				LayoutStructureUtil.getLayoutStructure(
+				layout.getPlid(), _segmentsExperienceLocalService.
+					fetchDefaultSegmentsExperienceId(layout.getPlid())));
+
+			renderLayoutStructureTag.setPageContext(new MockPageContext(null, mockHttpServletRequest));
+
+			MockHttpServletResponse mockHttpServletResponse =
+				new MockHttpServletResponse();
+
+			renderLayoutStructureTag.doTag(
+				mockHttpServletRequest, mockHttpServletResponse);
+
+			Assert.assertFalse(
+				SessionErrors.contains(mockHttpServletRequest, formItemId));
+
+			String content =
+				mockHttpServletResponse.getContentAsString();
+			String expectedErrorMessage = "<div class=\"alert alert-danger\">" + infoFormException.getLocalizedMessage(
+				_portal.getSiteDefaultLocale(_group)) + "</div>";
+
+			Assert.assertTrue(
+				content.contains(expectedErrorMessage));
+		}
+	}
+
+	@Test
+	public void testDisplayingInfoFormValidationException() throws Exception {
+		InfoField<TextInfoFieldType> infoField = _getInfoField();
+
+		try (MockInfoServiceRegistrationHolder
+				mockInfoServiceRegistrationHolder =
+					new MockInfoServiceRegistrationHolder(
+						InfoFieldSet.builder(
+						).infoFieldSetEntries(
+							ListUtil.fromArray(infoField)
+						).build(),
+						_editPageInfoItemCapability)) {
 
 			Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
 
-			String formItemId = _addFormToLayout(layout, false, infoField);
+			String formItemId = ContentLayoutTestUtil.addFormToPublishedLayout(
+				layout, false,
+				String.valueOf(
+					_portal.getClassNameId(MockObject.class.getName())),
+				"0", infoField);
 
 			MockHttpServletRequest mockHttpServletRequest =
-				_getMockHttpServletRequest(layout, formItemId);
+				ContentLayoutTestUtil.getMockHttpServletRequest(
+					_companyLocalService.getCompany(layout.getCompanyId()), _group,
+					layout);
+			InfoFormValidationException infoFormValidationException =
+				new InfoFormValidationException(infoField.getUniqueId());
 
-			_addInfoItemStrutsAction.execute(
-				mockHttpServletRequest, new MockHttpServletResponse());
+			SessionErrors.add(mockHttpServletRequest, formItemId, infoFormValidationException);
+			SessionErrors.add(mockHttpServletRequest, infoField.getUniqueId(), infoFormValidationException);
 
-			Assert.assertTrue(
-				SessionErrors.contains(mockHttpServletRequest, formItemId));
-			Assert.assertTrue(
-				SessionErrors.contains(
-					mockHttpServletRequest, infoField.getUniqueId()));
-			Assert.assertEquals(
-				infoFormException,
-				SessionErrors.get(mockHttpServletRequest, formItemId));
-			Assert.assertEquals(
-				infoFormException,
-				SessionErrors.get(
-					mockHttpServletRequest, infoField.getUniqueId()));
+			RenderLayoutStructureTag renderLayoutStructureTag =
+				new RenderLayoutStructureTag();
+
+			renderLayoutStructureTag.setLayoutStructure(
+				LayoutStructureUtil.getLayoutStructure(
+				layout.getPlid(), _segmentsExperienceLocalService.
+					fetchDefaultSegmentsExperienceId(layout.getPlid())));
+
+			MockHttpServletResponse mockHttpServletResponse =
+				new MockHttpServletResponse();
+
+			ThemeDisplay themeDisplay = (ThemeDisplay) mockHttpServletRequest.getAttribute(
+											WebKeys.THEME_DISPLAY);
+			themeDisplay.setRequest(mockHttpServletRequest);
+
+			renderLayoutStructureTag.setPageContext(new MockPageContext(null, mockHttpServletRequest, mockHttpServletResponse));
+
+			renderLayoutStructureTag.doTag(
+				mockHttpServletRequest, mockHttpServletResponse);
+
 			Assert.assertFalse(
-				SessionMessages.contains(mockHttpServletRequest, formItemId));
+				SessionErrors.contains(mockHttpServletRequest, formItemId));
+			Assert.assertFalse(
+				SessionErrors.contains(mockHttpServletRequest, infoField.getUniqueId()));
+
+			String content =
+				mockHttpServletResponse.getContentAsString();
+
+			Locale locale = _portal.getSiteDefaultLocale(_group);
+			String expectedErrorMessage = "<div class=\"alert alert-danger\">" + infoFormValidationException.getLocalizedMessage(
+				infoField.getLabel(locale), locale) + "</div>";
+
+			Assert.assertTrue(
+				content.contains(expectedErrorMessage));
 		}
 	}
 
@@ -178,26 +267,6 @@ public class RenderLayoutStructureTagTest {
 		Assert.assertEquals(
 			layoutTypePortlet.getLayoutTemplateId(),
 			PropsValues.DEFAULT_LAYOUT_TEMPLATE_ID);
-	}
-
-	private String _addFormToLayout(
-			Layout layout, boolean addCaptcha,
-			InfoField<TextInfoFieldType>... infoField)
-		throws Exception {
-
-		Layout draftLayout = layout.fetchDraftLayout();
-
-		JSONObject jsonObject = ContentLayoutTestUtil.addFormToLayout(
-			draftLayout,
-			String.valueOf(_portal.getClassNameId(MockObject.class.getName())),
-			"0",
-			_segmentsExperienceLocalService.fetchDefaultSegmentsExperienceId(
-				draftLayout.getPlid()),
-			addCaptcha, infoField);
-
-		ContentLayoutTestUtil.publishLayout(draftLayout, layout);
-
-		return jsonObject.getString("addedItemId");
 	}
 
 	private LayoutStructure _getDefaultMasterLayoutStructure() {
@@ -305,5 +374,11 @@ public class RenderLayoutStructureTagTest {
 
 	@Inject
 	private LayoutLocalService _layoutLocalService;
+
+	@Inject
+	private Portal _portal;
+
+	@Inject
+	private SegmentsExperienceLocalService _segmentsExperienceLocalService;
 
 }
