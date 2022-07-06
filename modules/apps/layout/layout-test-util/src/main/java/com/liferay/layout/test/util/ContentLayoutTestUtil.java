@@ -135,7 +135,7 @@ public class ContentLayoutTestUtil {
 					FragmentEntryProcessorConstants.
 						KEY_FREEMARKER_FRAGMENT_ENTRY_PROCESSOR,
 					JSONUtil.put(
-						"inputFieldId", JSONUtil.put(infoField.getUniqueId()))
+						"inputFieldId", infoField.getUniqueId())
 				).toString(),
 				fragmentEntry.getFragmentEntryKey(), fragmentEntry.getType(),
 				parentItemId, i);
