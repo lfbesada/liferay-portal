@@ -16,6 +16,7 @@ package com.liferay.layout.taglib.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.info.exception.InfoFormException;
+import com.liferay.info.exception.InfoFormValidationException;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldSet;
 import com.liferay.info.field.type.TextInfoFieldType;
@@ -185,6 +186,74 @@ public class RenderLayoutStructureTagTest {
 
 			String expectedErrorMessage = infoFormException.getLocalizedMessage(
 				_portal.getSiteDefaultLocale(_group));
+
+			String expectedErrorHTML =
+				"<div class=\"alert alert-danger\">" + expectedErrorMessage +
+					"</div>";
+
+			Assert.assertTrue(content.contains(expectedErrorHTML));
+		}
+	}
+
+	@Test
+	public void testRenderFormWithInfoFormValidationException()
+		throws Exception {
+
+		InfoField<TextInfoFieldType> infoField = _getInfoField();
+
+		try (MockInfoServiceRegistrationHolder
+				mockInfoServiceRegistrationHolder =
+					new MockInfoServiceRegistrationHolder(
+						InfoFieldSet.builder(
+						).infoFieldSetEntries(
+							ListUtil.fromArray(infoField)
+						).build(),
+						_editPageInfoItemCapability)) {
+
+			Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
+
+			MockHttpServletRequest mockHttpServletRequest =
+				_getMockHttpServletRequest(layout);
+
+			String formItemId = ContentLayoutTestUtil.addFormToPublishedLayout(
+				layout, false,
+				String.valueOf(
+					_portal.getClassNameId(MockObject.class.getName())),
+				"0", infoField);
+
+			InfoFormValidationException infoFormValidationException =
+				new InfoFormValidationException(infoField.getUniqueId());
+
+			SessionErrors.add(
+				mockHttpServletRequest, formItemId,
+				infoFormValidationException);
+			SessionErrors.add(
+				mockHttpServletRequest, infoField.getUniqueId(),
+				infoFormValidationException);
+
+			MockHttpServletResponse mockHttpServletResponse =
+				new MockHttpServletResponse();
+
+			RenderLayoutStructureTag renderLayoutStructureTag =
+				_getRenderLayoutStructureTag(
+					layout, mockHttpServletRequest, mockHttpServletResponse);
+
+			renderLayoutStructureTag.doTag(
+				mockHttpServletRequest, mockHttpServletResponse);
+
+			Assert.assertFalse(
+				SessionErrors.contains(mockHttpServletRequest, formItemId));
+			Assert.assertFalse(
+				SessionErrors.contains(
+					mockHttpServletRequest, infoField.getUniqueId()));
+
+			String content = mockHttpServletResponse.getContentAsString();
+
+			Locale locale = _portal.getSiteDefaultLocale(_group);
+
+			String expectedErrorMessage =
+				infoFormValidationException.getLocalizedMessage(
+					infoField.getLabel(locale), locale);
 
 			String expectedErrorHTML =
 				"<div class=\"alert alert-danger\">" + expectedErrorMessage +
