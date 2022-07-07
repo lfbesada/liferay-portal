@@ -15,6 +15,7 @@
 package com.liferay.fragment.internal.validator;
 
 import com.liferay.fragment.exception.FragmentEntryConfigurationException;
+import com.liferay.fragment.exception.FragmentEntryFieldTypesException;
 import com.liferay.fragment.exception.FragmentEntryTypeOptionsException;
 import com.liferay.fragment.validator.FragmentEntryValidator;
 import com.liferay.petra.string.StringBundler;
@@ -24,6 +25,7 @@ import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -147,6 +149,24 @@ public class FragmentEntryValidatorImpl implements FragmentEntryValidator {
 
 		try {
 			_typeOptionsJSONValidator.validate(typeOptions);
+
+			JSONObject configurationJSONObject =
+				JSONFactoryUtil.createJSONObject(typeOptions);
+
+			JSONArray fieldTypesJSONArray =
+				configurationJSONObject.getJSONArray("fieldTypes");
+
+			if ((fieldTypesJSONArray != null) &&
+				(fieldTypesJSONArray.length() > 1) &&
+				JSONUtil.hasValue(fieldTypesJSONArray, "captcha")) {
+
+				throw new FragmentEntryFieldTypesException(
+					"Captcha field type cannot be combined with other types");
+			}
+		}
+		catch (JSONException jsonException) {
+			throw new FragmentEntryTypeOptionsException(
+				_getMessage(jsonException.getMessage()), jsonException);
 		}
 		catch (JSONValidatorException jsonValidatorException) {
 			throw new FragmentEntryTypeOptionsException(jsonValidatorException);
