@@ -16,6 +16,7 @@ package com.liferay.asset.entry.item.selector.web.internal;
 
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetEntry;
+import com.liferay.asset.kernel.model.AssetRenderer;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.item.selector.ItemSelectorViewDescriptor;
 import com.liferay.petra.string.StringPool;
@@ -99,6 +100,13 @@ public class AssetEntryItemDescriptor
 		).put(
 			"title", _assetEntry.getTitle(themeDisplay.getLocale())
 		).toString();
+	}
+
+	@Override
+	public Integer getStatus() {
+		AssetRenderer<?> assetRenderer = _assetEntry.getAssetRenderer();
+
+		return assetRenderer.getStatus();
 	}
 
 	@Override
