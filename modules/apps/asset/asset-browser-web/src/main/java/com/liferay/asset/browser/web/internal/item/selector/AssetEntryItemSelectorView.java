@@ -14,21 +14,15 @@
 
 package com.liferay.asset.browser.web.internal.item.selector;
 
-import com.liferay.asset.browser.web.internal.display.context.AssetBrowserDisplayContext;
 import com.liferay.asset.util.AssetHelper;
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.ItemSelectorView;
 import com.liferay.item.selector.ItemSelectorViewDescriptorRenderer;
 import com.liferay.item.selector.criteria.AssetEntryItemSelectorReturnType;
 import com.liferay.item.selector.criteria.asset.criterion.AssetEntryItemSelectorCriterion;
-import com.liferay.petra.string.StringPool;
-import com.liferay.petra.string.StringUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.servlet.DynamicServletRequest;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.JavaConstants;
-import com.liferay.portal.kernel.util.WebKeys;
 
 import java.io.IOException;
 
@@ -37,8 +31,6 @@ import java.util.List;
 import java.util.Locale;
 
 import javax.portlet.PortletURL;
-import javax.portlet.RenderRequest;
-import javax.portlet.RenderResponse;
 
 import javax.servlet.ServletContext;
 import javax.servlet.ServletException;
@@ -80,93 +72,20 @@ public class AssetEntryItemSelectorView
 			PortletURL portletURL, String itemSelectedEventName, boolean search)
 		throws IOException, ServletException {
 
-		HttpServletRequest httpServletRequest = _getDynamicServletRequest(
-			itemSelectorCriterion, servletRequest);
-
-		RenderRequest renderRequest =
-			(RenderRequest)httpServletRequest.getAttribute(
-				JavaConstants.JAVAX_PORTLET_REQUEST);
-		RenderResponse renderResponse =
-			(RenderResponse)httpServletRequest.getAttribute(
-				JavaConstants.JAVAX_PORTLET_RESPONSE);
-
 		_itemSelectorViewDescriptorRenderer.renderHTML(
 			new DynamicServletRequest(
 				(HttpServletRequest)servletRequest,
 				HashMapBuilder.put(
 					"multipleSelection",
-					_toStringArray(!itemSelectorCriterion.isSingleSelect())
+					new String[] {
+						String.valueOf(!itemSelectorCriterion.isSingleSelect())
+					}
 				).build()),
 			servletResponse, itemSelectorCriterion, portletURL,
 			itemSelectedEventName, search,
 			new AssetEntryItemSelectorViewDescriptor(
-				httpServletRequest,
-				new AssetBrowserDisplayContext(
-					_assetHelper, httpServletRequest, portletURL, renderRequest,
-					renderResponse)));
-	}
-
-	private DynamicServletRequest _getDynamicServletRequest(
-		AssetEntryItemSelectorCriterion assetEntryItemSelectorCriterion,
-		ServletRequest servletRequest) {
-
-		HttpServletRequest httpServletRequest =
-			(HttpServletRequest)servletRequest;
-
-		return new DynamicServletRequest(
-			httpServletRequest,
-			HashMapBuilder.put(
-				"groupId",
-				_toStringArray(
-					_getGroupId(
-						assetEntryItemSelectorCriterion, servletRequest))
-			).put(
-				"scopeGroupType",
-				_toStringArray(
-					assetEntryItemSelectorCriterion.getScopeGroupType())
-			).put(
-				"selectedGroupIds",
-				_toStringArray(
-					StringUtil.merge(
-						assetEntryItemSelectorCriterion.getSelectedGroupIds(),
-						StringPool.COMMA))
-			).put(
-				"showNonindexable",
-				_toStringArray(
-					assetEntryItemSelectorCriterion.isShowNonindexable())
-			).put(
-				"showScheduled",
-				_toStringArray(
-					assetEntryItemSelectorCriterion.isShowScheduled())
-			).put(
-				"subtypeSelectionId",
-				_toStringArray(
-					assetEntryItemSelectorCriterion.getSubtypeSelectionId())
-			).put(
-				"typeSelection",
-				_toStringArray(
-					assetEntryItemSelectorCriterion.getTypeSelection())
-			).build());
-	}
-
-	private long _getGroupId(
-		AssetEntryItemSelectorCriterion assetEntryItemSelectorCriterion,
-		ServletRequest servletRequest) {
-
-		ThemeDisplay themeDisplay = (ThemeDisplay)servletRequest.getAttribute(
-			WebKeys.THEME_DISPLAY);
-
-		if (assetEntryItemSelectorCriterion.getGroupId() ==
-				themeDisplay.getRefererGroupId()) {
-
-			return themeDisplay.getScopeGroupId();
-		}
-
-		return assetEntryItemSelectorCriterion.getGroupId();
-	}
-
-	private <T> String[] _toStringArray(T value) {
-		return new String[] {String.valueOf(value)};
+				itemSelectorCriterion, _assetHelper,
+				(HttpServletRequest)servletRequest, portletURL));
 	}
 
 	private static final List<ItemSelectorReturnType>
