@@ -102,7 +102,9 @@ public class AssetEntryItemSelectorView
 	@Reference
 	private Language _language;
 
-	@Reference(target = "(osgi.web.symbolicname=com.liferay.asset.browser.web)")
+	@Reference(
+		target = "(osgi.web.symbolicname=com.liferay.asset.entry.item.selector.web)"
+	)
 	private ServletContext _servletContext;
 
 }
