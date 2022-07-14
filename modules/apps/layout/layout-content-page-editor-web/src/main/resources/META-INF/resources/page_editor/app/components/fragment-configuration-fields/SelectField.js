@@ -15,6 +15,7 @@
 import ClayButton from '@clayui/button';
 import ClayDropDown from '@clayui/drop-down';
 import ClayForm, {ClayCheckbox, ClaySelectWithOption} from '@clayui/form';
+import classNames from 'classnames';
 import PropTypes from 'prop-types';
 import React, {useState} from 'react';
 
@@ -142,7 +143,12 @@ const MultiSelect = ({
 
 	return (
 		<>
-			<label id={labelId}>{field.label}</label>
+			<label
+				className={classNames({'sr-only': field.hideLabel})}
+				id={labelId}
+			>
+				{field.label}
+			</label>
 
 			<ClayDropDown
 				active={active}
@@ -189,7 +195,12 @@ const SingleSelect = ({disabled, field, onValueSelect, options, value}) => {
 
 	return (
 		<>
-			<label htmlFor={inputId}>{field.label}</label>
+			<label
+				className={classNames({'sr-only': field.hideLabel})}
+				htmlFor={inputId}
+			>
+				{field.label}
+			</label>
 
 			<ClaySelectWithOption
 				aria-describedby={helpTextId}
