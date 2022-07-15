@@ -14,8 +14,21 @@
 
 package com.liferay.layout.content.page.editor.web.internal.portlet.action;
 
+import com.liferay.fragment.constants.FragmentEntryLinkConstants;
+import com.liferay.fragment.contributor.FragmentCollectionContributorTracker;
+import com.liferay.fragment.model.FragmentEntry;
+import com.liferay.fragment.model.FragmentEntryLink;
+import com.liferay.fragment.processor.DefaultFragmentEntryProcessorContext;
+import com.liferay.fragment.processor.FragmentEntryProcessorContext;
+import com.liferay.fragment.processor.FragmentEntryProcessorRegistry;
+import com.liferay.fragment.service.FragmentEntryLinkService;
+import com.liferay.info.item.InfoItemServiceTracker;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
-import com.liferay.layout.content.page.editor.web.internal.util.layout.structure.LayoutStructureUtil;
+import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
+import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
+import com.liferay.layout.page.template.service.LayoutPageTemplateStructureService;
+import com.liferay.layout.util.structure.LayoutStructure;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.LanguageUtil;
@@ -24,14 +37,18 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Lourdes Fernández Besada
@@ -52,10 +69,13 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 		throws Exception {
 
 		JSONPortletResponseUtil.writeJSON(
-			actionRequest, actionResponse, _updateItemConfig(actionRequest));
+			actionRequest, actionResponse,
+			_updateFormItemConfig(actionRequest, actionResponse));
 	}
 
-	private JSONObject _updateItemConfig(ActionRequest actionRequest) {
+	private JSONObject _updateFormItemConfig(
+		ActionRequest actionRequest, ActionResponse actionResponse) {
+
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
@@ -67,11 +87,77 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 		JSONObject jsonObject = JSONFactoryUtil.createJSONObject();
 
 		try {
-			jsonObject = LayoutStructureUtil.updateLayoutPageTemplateData(
-				themeDisplay.getScopeGroupId(), segmentsExperienceId,
-				themeDisplay.getPlid(),
-				layoutStructure -> layoutStructure.updateItemConfig(
-					JSONFactoryUtil.createJSONObject(itemConfig), itemId));
+			LayoutPageTemplateStructure layoutPageTemplateStructure =
+				_layoutPageTemplateStructureLocalService.
+					fetchLayoutPageTemplateStructure(
+						themeDisplay.getScopeGroupId(), themeDisplay.getPlid());
+
+			LayoutStructure layoutStructure = LayoutStructure.of(
+				layoutPageTemplateStructure.getData(segmentsExperienceId));
+
+			layoutStructure.updateItemConfig(
+				JSONFactoryUtil.createJSONObject(itemConfig), itemId);
+/*
+			FragmentEntry fragmentEntry =
+				_fragmentCollectionContributorTracker.getFragmentEntry(
+					"INPUTS-submit-button");
+
+			if (fragmentEntry == null) {
+				jsonObject.put(
+					"errorMessage",
+					LanguageUtil.format(
+						themeDisplay.getRequest(),
+						"error-x-fields-could-not-be-loaded-because-they-are-" +
+							"not-available",
+						"submit-button"));
+			}
+			else {
+				FragmentEntryLink fragmentEntryLink =
+					_fragmentEntryLinkService.addFragmentEntryLink(
+						themeDisplay.getScopeGroupId(), 0,
+						fragmentEntry.getFragmentEntryId(),
+						segmentsExperienceId, themeDisplay.getPlid(),
+						fragmentEntry.getCss(), fragmentEntry.getHtml(),
+						fragmentEntry.getJs(), fragmentEntry.getConfiguration(),
+						null, StringPool.BLANK, 0,
+						fragmentEntry.getFragmentEntryKey(),
+						fragmentEntry.getType(),
+						ServiceContextFactory.getInstance(actionRequest));
+
+				FragmentEntryProcessorContext fragmentEntryProcessorContext =
+					new DefaultFragmentEntryProcessorContext(
+						_portal.getHttpServletRequest(actionRequest),
+						_portal.getHttpServletResponse(actionResponse),
+						FragmentEntryLinkConstants.EDIT,
+						LocaleUtil.getMostRelevantLocale());
+
+				String processedHTML =
+					_fragmentEntryProcessorRegistry.
+						processFragmentEntryLinkHTML(
+							fragmentEntryLink, fragmentEntryProcessorContext);
+
+				JSONObject editableValuesJSONObject =
+					_fragmentEntryProcessorRegistry.
+						getDefaultEditableValuesJSONObject(
+							processedHTML,
+							fragmentEntryLink.getConfiguration());
+
+				fragmentEntryLink =
+					_fragmentEntryLinkService.updateFragmentEntryLink(
+						fragmentEntryLink.getFragmentEntryLinkId(),
+						editableValuesJSONObject.toString());
+
+				layoutStructure.addFragmentStyledLayoutStructureItem(
+					fragmentEntryLink.getFragmentEntryLinkId(), itemId, 0);
+			}
+ */
+
+			_layoutPageTemplateStructureService.
+				updateLayoutPageTemplateStructureData(
+					themeDisplay.getScopeGroupId(), themeDisplay.getPlid(),
+					segmentsExperienceId, layoutStructure.toString());
+
+			jsonObject.put("layoutData", layoutStructure.toJSONObject());
 		}
 		catch (Exception exception) {
 			_log.error(exception);
@@ -82,12 +168,38 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 					themeDisplay.getRequest(), "an-unexpected-error-occurred"));
 		}
 
-		hideDefaultSuccessMessage(actionRequest);
+		if (jsonObject.has("errorMessage") || jsonObject.has("error")) {
+			hideDefaultSuccessMessage(actionRequest);
+		}
 
 		return jsonObject;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		UpdateFormItemConfigMVCActionCommand.class);
+
+	@Reference
+	private FragmentCollectionContributorTracker
+		_fragmentCollectionContributorTracker;
+
+	@Reference
+	private FragmentEntryLinkService _fragmentEntryLinkService;
+
+	@Reference
+	private FragmentEntryProcessorRegistry _fragmentEntryProcessorRegistry;
+
+	@Reference
+	private InfoItemServiceTracker _infoItemServiceTracker;
+
+	@Reference
+	private LayoutPageTemplateStructureLocalService
+		_layoutPageTemplateStructureLocalService;
+
+	@Reference
+	private LayoutPageTemplateStructureService
+		_layoutPageTemplateStructureService;
+
+	@Reference
+	private Portal _portal;
 
 }
