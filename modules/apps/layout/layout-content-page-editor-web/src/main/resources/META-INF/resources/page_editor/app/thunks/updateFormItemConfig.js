@@ -13,16 +13,33 @@
  */
 
 import updateItemConfig from '../actions/updateItemConfig';
+import updateItemLocalConfig from '../actions/updateItemLocalConfig';
 import FormService from '../services/FormService';
 
 export default function updateFormItemConfig({itemConfig, itemId}) {
-	return (dispatch, getState) =>
-		FormService.updateFormItemConfig({
+	return (dispatch, getState) => {
+		dispatch(
+			updateItemLocalConfig({
+				itemConfig: {
+					loading: true,
+				},
+				itemId,
+			})
+		);
+
+		return FormService.updateFormItemConfig({
 			itemConfig,
 			itemId,
 			onNetworkStatus: dispatch,
 			segmentsExperienceId: getState().segmentsExperienceId,
 		}).then(({layoutData}) => {
-			dispatch(updateItemConfig({itemId, layoutData}));
+			dispatch(
+				updateItemConfig({
+					itemId,
+					layoutData,
+					overridePreviousConfig: true,
+				})
+			);
 		});
+	};
 }
