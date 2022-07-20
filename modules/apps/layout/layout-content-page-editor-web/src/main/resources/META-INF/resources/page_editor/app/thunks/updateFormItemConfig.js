@@ -12,6 +12,8 @@
  * details.
  */
 
+import {openToast} from 'frontend-js-web';
+
 import updateFormItemConfigAction from '../actions/updateFormItemConfig';
 import updateItemLocalConfig from '../actions/updateItemLocalConfig';
 import FormService from '../services/FormService';
@@ -36,6 +38,7 @@ export default function updateFormItemConfig({itemConfig, itemId}) {
 		}).then(
 			({
 				addedFragmentEntryLinks,
+				errorMessage,
 				layoutData,
 				removedFragmentEntryLinkIds,
 			}) => {
@@ -48,6 +51,23 @@ export default function updateFormItemConfig({itemConfig, itemId}) {
 						removedFragmentEntryLinkIds,
 					})
 				);
+
+				const {classNameId} = itemConfig;
+
+				if (errorMessage) {
+					openToast({
+						message: errorMessage,
+						type: 'danger',
+					});
+				}
+				else if (classNameId && classNameId !== '0') {
+					openToast({
+						message: Liferay.Language.get(
+							'your-form-has-been-successfully-loaded'
+						),
+						type: 'success',
+					});
+				}
 			}
 		);
 	};
