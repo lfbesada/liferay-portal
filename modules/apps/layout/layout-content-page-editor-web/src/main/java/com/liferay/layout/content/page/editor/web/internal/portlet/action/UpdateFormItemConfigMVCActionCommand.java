@@ -50,12 +50,15 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Objects;
+import java.util.TreeSet;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -115,16 +118,6 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 			_fragmentCollectionContributorTracker.getFragmentEntry(
 				"INPUTS-submit-button");
 
-		if (fragmentEntry == null) {
-			jsonObject.put(
-				"errorMessage",
-				LanguageUtil.format(
-					themeDisplay.getLocale(), "some-fragments-are-missing",
-					"submit-button"));
-
-			return Collections.emptyList();
-		}
-
 		FragmentEntryProcessorContext fragmentEntryProcessorContext =
 			new DefaultFragmentEntryProcessorContext(
 				httpServletRequest, httpServletResponse,
@@ -134,12 +127,31 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			httpServletRequest);
 
+		Collection<String> missingInputTypes = new TreeSet<>();
+		List<FragmentEntryLink> addedFragmentEntryLinks = new ArrayList<>();
+
 		FragmentEntryLink fragmentEntryLink = _addFragmentEntryLink(
 			formItemId, fragmentEntry, fragmentEntryProcessorContext,
 			layoutStructure, segmentsExperienceId, serviceContext,
 			themeDisplay);
 
-		return ListUtil.fromArray(fragmentEntryLink);
+		if (fragmentEntryLink == null) {
+			missingInputTypes.add(
+				LanguageUtil.get(themeDisplay.getLocale(), "submit-button"));
+		}
+		else {
+			addedFragmentEntryLinks.add(fragmentEntryLink);
+		}
+
+		if (!missingInputTypes.isEmpty()) {
+			jsonObject.put(
+				"errorMessage",
+				LanguageUtil.format(
+					themeDisplay.getLocale(), "some-fragments-are-missing",
+					StringUtil.merge(missingInputTypes)));
+		}
+
+		return addedFragmentEntryLinks;
 	}
 
 	private FragmentEntryLink _addFragmentEntryLink(
@@ -148,6 +160,10 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 			LayoutStructure layoutStructure, long segmentsExperienceId,
 			ServiceContext serviceContext, ThemeDisplay themeDisplay)
 		throws PortalException {
+
+		if (fragmentEntry == null) {
+			return null;
+		}
 
 		FragmentEntryLink fragmentEntryLink =
 			_fragmentEntryLinkService.addFragmentEntryLink(
@@ -172,7 +188,7 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 			editableValuesJSONObject.toString());
 
 		layoutStructure.addFragmentStyledLayoutStructureItem(
-			fragmentEntryLink.getFragmentEntryLinkId(), formItemId, 0);
+			fragmentEntryLink.getFragmentEntryLinkId(), formItemId, -1);
 
 		return fragmentEntryLink;
 	}
