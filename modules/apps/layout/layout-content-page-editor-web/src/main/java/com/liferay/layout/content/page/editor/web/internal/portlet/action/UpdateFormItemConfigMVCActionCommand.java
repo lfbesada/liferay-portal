@@ -55,6 +55,7 @@ import com.liferay.portal.kernel.util.WebKeys;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -162,61 +163,80 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 				layoutPageTemplateStructure.getData(segmentsExperienceId));
 
 			FormStyledLayoutStructureItem formStyledLayoutStructureItem =
+				(FormStyledLayoutStructureItem)
+					layoutStructure.getLayoutStructureItem(formItemId);
+
+			long previousClassNameId =
+				formStyledLayoutStructureItem.getClassNameId();
+			long previousClassTypeId =
+				formStyledLayoutStructureItem.getClassTypeId();
+
+			formStyledLayoutStructureItem =
 				(FormStyledLayoutStructureItem)layoutStructure.updateItemConfig(
 					JSONFactoryUtil.createJSONObject(itemConfig), formItemId);
 
 			List<LayoutStructureItem> removedLayoutStructureItems =
-				_removeFormChildrenItems(
-					layoutStructure,
-					ListUtil.copy(
-						formStyledLayoutStructureItem.getChildrenItemIds()));
-
-			FragmentCollectionContributor fragmentCollectionContributor =
-				_fragmentCollectionContributorTracker.
-					getFragmentCollectionContributor("INPUTS");
-
-			FragmentEntry fragmentEntry =
-				_fragmentCollectionContributorTracker.getFragmentEntry(
-					"INPUTS-submit-button");
+				new ArrayList<>();
+			List<FragmentEntryLink> addedFragmentEntryLinks = new ArrayList<>();
 
 			HttpServletRequest httpServletRequest =
 				_portal.getHttpServletRequest(actionRequest);
 			HttpServletResponse httpServletResponse =
 				_portal.getHttpServletResponse(actionResponse);
 
-			List<FragmentEntryLink> addedFragmentEntryLinks = new ArrayList<>();
+			if (!Objects.equals(
+					previousClassNameId,
+					formStyledLayoutStructureItem.getClassNameId()) ||
+				!Objects.equals(
+					previousClassTypeId,
+					formStyledLayoutStructureItem.getClassTypeId())) {
 
-			if (fragmentCollectionContributor == null) {
-				jsonObject.put(
-					"errorMessage",
-					LanguageUtil.get(
-						themeDisplay.getLocale(),
-						"your-form-could-not-be-loaded-because-fragments-are-" +
-							"not-available"));
-			}
-			else if (fragmentEntry == null) {
-				jsonObject.put(
-					"errorMessage",
-					LanguageUtil.format(
-						themeDisplay.getLocale(), "some-fragments-are-missing",
-						"submit-button"));
-			}
-			else {
-				FragmentEntryProcessorContext fragmentEntryProcessorContext =
-					new DefaultFragmentEntryProcessorContext(
-						httpServletRequest, httpServletResponse,
-						FragmentEntryLinkConstants.EDIT,
-						LocaleUtil.getMostRelevantLocale());
+				removedLayoutStructureItems = _removeFormChildrenItems(
+					layoutStructure,
+					ListUtil.copy(
+						formStyledLayoutStructureItem.getChildrenItemIds()));
 
-				ServiceContext serviceContext =
-					ServiceContextFactory.getInstance(actionRequest);
+				FragmentCollectionContributor fragmentCollectionContributor =
+					_fragmentCollectionContributorTracker.
+						getFragmentCollectionContributor("INPUTS");
 
-				FragmentEntryLink fragmentEntryLink = _addFragmentEntryLink(
-					formItemId, fragmentEntry, fragmentEntryProcessorContext,
-					layoutStructure, segmentsExperienceId, serviceContext,
-					themeDisplay);
+				FragmentEntry fragmentEntry =
+					_fragmentCollectionContributorTracker.getFragmentEntry(
+						"INPUTS-submit-button");
 
-				addedFragmentEntryLinks.add(fragmentEntryLink);
+				if (fragmentCollectionContributor == null) {
+					jsonObject.put(
+						"errorMessage",
+						LanguageUtil.get(
+							themeDisplay.getLocale(),
+							"your-form-could-not-be-loaded-because-fragments-" +
+								"are-not-available"));
+				}
+				else if (fragmentEntry == null) {
+					jsonObject.put(
+						"errorMessage",
+						LanguageUtil.format(
+							themeDisplay.getLocale(),
+							"some-fragments-are-missing", "submit-button"));
+				}
+				else {
+					FragmentEntryProcessorContext
+						fragmentEntryProcessorContext =
+							new DefaultFragmentEntryProcessorContext(
+								httpServletRequest, httpServletResponse,
+								FragmentEntryLinkConstants.EDIT,
+								LocaleUtil.getMostRelevantLocale());
+
+					ServiceContext serviceContext =
+						ServiceContextFactory.getInstance(actionRequest);
+
+					FragmentEntryLink fragmentEntryLink = _addFragmentEntryLink(
+						formItemId, fragmentEntry,
+						fragmentEntryProcessorContext, layoutStructure,
+						segmentsExperienceId, serviceContext, themeDisplay);
+
+					addedFragmentEntryLinks.add(fragmentEntryLink);
+				}
 			}
 
 			layoutPageTemplateStructure =
