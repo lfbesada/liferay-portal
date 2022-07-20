@@ -52,7 +52,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
-import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
@@ -123,7 +123,7 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 		if (fragmentCollectionContributor == null) {
 			jsonObject.put(
 				"errorMessage",
-				LanguageUtil.get(
+				_language.get(
 					themeDisplay.getLocale(),
 					"your-form-could-not-be-loaded-because-fragments-are-not-" +
 						"available"));
@@ -176,7 +176,7 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 
 		if (fragmentEntryLink == null) {
 			missingInputTypes.add(
-				LanguageUtil.get(themeDisplay.getLocale(), "submit-button"));
+				_language.get(themeDisplay.getLocale(), "submit-button"));
 		}
 		else {
 			addedFragmentEntryLinks.add(fragmentEntryLink);
@@ -185,7 +185,7 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 		if (!missingInputTypes.isEmpty()) {
 			jsonObject.put(
 				"errorMessage",
-				LanguageUtil.format(
+				_language.format(
 					themeDisplay.getLocale(), "some-fragments-are-missing",
 					StringUtil.merge(missingInputTypes)));
 		}
@@ -481,7 +481,7 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 
 			jsonObject.put(
 				"error",
-				LanguageUtil.get(
+				_language.get(
 					themeDisplay.getRequest(), "an-unexpected-error-occurred"));
 		}
 
@@ -508,6 +508,9 @@ public class UpdateFormItemConfigMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private InfoItemServiceTracker _infoItemServiceTracker;
+
+	@Reference
+	private Language _language;
 
 	@Reference
 	private LayoutPageTemplateStructureLocalService
