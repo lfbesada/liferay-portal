@@ -159,6 +159,7 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -1170,20 +1171,9 @@ public class ContentPageEditorDisplayContext {
 				continue;
 			}
 
-			Map<String, Object> dynamicFragment =
-				HashMapBuilder.<String, Object>put(
-					"fragmentEntryKey", fragmentRenderer.getKey()
-				).put(
-					"highlighted",
-					_isHighlightedFragment(fragmentRenderer.getKey())
-				).put(
-					"icon", fragmentRenderer.getIcon()
-				).put(
-					"imagePreviewURL",
-					fragmentRenderer.getImagePreviewURL(httpServletRequest)
-				).put(
-					"name", fragmentRenderer.getLabel(themeDisplay.getLocale())
-				).build();
+			Map<String, Object> dynamicFragment = _getFragmentRendererMap(
+				fragmentRenderer,
+				_isHighlightedFragment(fragmentRenderer.getKey()));
 
 			List<Map<String, Object>> fragmentCollections =
 				fragmentCollectionMap.get(fragmentRenderer.getCollectionKey());
@@ -1348,6 +1338,27 @@ public class ContentPageEditorDisplayContext {
 		return allFragmentCollections;
 	}
 
+	private Map<String, Object> _getFragmentCompositionMap(
+		FragmentComposition fragmentComposition, boolean highlighted) {
+
+		return HashMapBuilder.<String, Object>put(
+			"fragmentEntryKey", fragmentComposition.getFragmentCompositionKey()
+		).put(
+			"groupId", fragmentComposition.getGroupId()
+		).put(
+			"highlighted", highlighted
+		).put(
+			"icon", fragmentComposition.getIcon()
+		).put(
+			"imagePreviewURL",
+			fragmentComposition.getImagePreviewURL(themeDisplay)
+		).put(
+			"name", fragmentComposition.getName()
+		).put(
+			"type", ContentPageEditorConstants.TYPE_COMPOSITION
+		).build();
+	}
+
 	private List<Map<String, Object>> _getFragmentCompositions(
 		List<FragmentComposition> fragmentCompositions) {
 
@@ -1362,27 +1373,12 @@ public class ContentPageEditorDisplayContext {
 			}
 
 			filteredFragmentCompositions.add(
-				HashMapBuilder.<String, Object>put(
-					"fragmentEntryKey",
-					fragmentComposition.getFragmentCompositionKey()
-				).put(
-					"groupId", fragmentComposition.getGroupId()
-				).put(
-					"highlighted",
+				_getFragmentCompositionMap(
+					fragmentComposition,
 					_isHighlightedFragment(
 						_getFragmentUniqueKey(
 							fragmentComposition.getFragmentCompositionKey(),
-							fragmentComposition.getGroupId()))
-				).put(
-					"icon", fragmentComposition.getIcon()
-				).put(
-					"imagePreviewURL",
-					fragmentComposition.getImagePreviewURL(themeDisplay)
-				).put(
-					"name", fragmentComposition.getName()
-				).put(
-					"type", ContentPageEditorConstants.TYPE_COMPOSITION
-				).build());
+							fragmentComposition.getGroupId()))));
 		}
 
 		return filteredFragmentCompositions;
@@ -1401,27 +1397,12 @@ public class ContentPageEditorDisplayContext {
 			}
 
 			filteredFragmentEntries.add(
-				HashMapBuilder.<String, Object>put(
-					"fragmentEntryKey", fragmentEntry.getFragmentEntryKey()
-				).put(
-					"groupId", fragmentEntry.getGroupId()
-				).put(
-					"highlighted",
+				_getFragmentEntryMap(
+					fragmentEntry,
 					_isHighlightedFragment(
 						_getFragmentUniqueKey(
 							fragmentEntry.getFragmentEntryKey(),
-							fragmentEntry.getGroupId()))
-				).put(
-					"icon", fragmentEntry.getIcon()
-				).put(
-					"imagePreviewURL",
-					fragmentEntry.getImagePreviewURL(themeDisplay)
-				).put(
-					"name", fragmentEntry.getName()
-				).put(
-					"type",
-					FragmentConstants.getTypeLabel(fragmentEntry.getType())
-				).build());
+							fragmentEntry.getGroupId()))));
 		}
 
 		return filteredFragmentEntries;
@@ -1599,6 +1580,43 @@ public class ContentPageEditorDisplayContext {
 		}
 
 		return fragmentEntryLinksMap;
+	}
+
+	private Map<String, Object> _getFragmentEntryMap(
+		FragmentEntry fragmentEntry, boolean highlighted) {
+
+		return HashMapBuilder.<String, Object>put(
+			"fragmentEntryKey", fragmentEntry.getFragmentEntryKey()
+		).put(
+			"groupId", fragmentEntry.getGroupId()
+		).put(
+			"highlighted", highlighted
+		).put(
+			"icon", fragmentEntry.getIcon()
+		).put(
+			"imagePreviewURL", fragmentEntry.getImagePreviewURL(themeDisplay)
+		).put(
+			"name", fragmentEntry.getName()
+		).put(
+			"type", FragmentConstants.getTypeLabel(fragmentEntry.getType())
+		).build();
+	}
+
+	private Map<String, Object> _getFragmentRendererMap(
+		FragmentRenderer fragmentRenderer, boolean highlighted) {
+
+		return HashMapBuilder.<String, Object>put(
+			"fragmentEntryKey", fragmentRenderer.getKey()
+		).put(
+			"highlighted", highlighted
+		).put(
+			"icon", fragmentRenderer.getIcon()
+		).put(
+			"imagePreviewURL",
+			fragmentRenderer.getImagePreviewURL(httpServletRequest)
+		).put(
+			"name", fragmentRenderer.getLabel(themeDisplay.getLocale())
+		).build();
 	}
 
 	private String _getFragmentUniqueKey(
