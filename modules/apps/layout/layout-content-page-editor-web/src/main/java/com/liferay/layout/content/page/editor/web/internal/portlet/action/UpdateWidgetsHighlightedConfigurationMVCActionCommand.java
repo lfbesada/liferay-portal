@@ -255,6 +255,27 @@ public class UpdateWidgetsHighlightedConfigurationMVCActionCommand
 			"highlightedPortletIds",
 			highlightedPortletIds.toArray(new String[0]));
 
+		PortletCategory rootPortletCategory = (PortletCategory)WebAppPool.get(
+			themeDisplay.getCompanyId(), WebKeys.PORTLET_CATEGORY);
+
+		PortletCategory highlightedPortletCategory =
+			rootPortletCategory.getCategory("category.highlighted");
+
+		Set<String> defaultHighlightedPortletIds =
+			highlightedPortletCategory.getPortletIds();
+
+		Set<String> unhighlightedPortletIds = SetUtil.fromArray(
+			portletPreferences.getValues(
+				"unhighlightedPortletIds", new String[0]));
+
+		if (!highlighted && defaultHighlightedPortletIds.contains(portletId)) {
+			unhighlightedPortletIds.add(portletId);
+
+			portletPreferences.setValues(
+				"unhighlightedPortletIds",
+				unhighlightedPortletIds.toArray(new String[0]));
+		}
+
 		try {
 			portletPreferences.store();
 		}
@@ -267,10 +288,15 @@ public class UpdateWidgetsHighlightedConfigurationMVCActionCommand
 					httpServletRequest, "an-unexpected-error-occurred"));
 		}
 
+		Set<String> portletIds = new TreeSet<>(defaultHighlightedPortletIds);
+
+		portletIds.removeAll(unhighlightedPortletIds);
+		portletIds.addAll(highlightedPortletIds);
+
 		return JSONUtil.put(
 			"highlightedWidgets",
 			_getPortletsJSONArray(
-				httpServletRequest, highlightedPortletIds, themeDisplay));
+				httpServletRequest, portletIds, themeDisplay));
 	}
 
 	private static final String[] _UNSUPPORTED_PORTLETS_NAMES = {
