@@ -639,6 +639,11 @@ public class ContentPageEditorDisplayContext {
 				getFragmentEntryActionURL(
 					"/layout_content_page_editor/update_form_item_config")
 			).put(
+				"updateFragmentsHighlightedConfigurationURL",
+				getFragmentEntryActionURL(
+					"/layout_content_page_editor" +
+						"/update_fragments_highlighted_configuration")
+			).put(
 				"updateItemConfigURL",
 				getFragmentEntryActionURL(
 					"/layout_content_page_editor/update_item_config")
@@ -660,6 +665,11 @@ public class ContentPageEditorDisplayContext {
 				"updateSegmentsExperienceURL",
 				getFragmentEntryActionURL(
 					"/layout_content_page_editor/update_segments_experience")
+			).put(
+				"updateWidgetsHighlightedConfigurationURL",
+				getFragmentEntryActionURL(
+					"/layout_content_page_editor" +
+						"/update_widgets_highlighted_configuration")
 			).put(
 				"videoItemSelectorURL", _getVideoItemSelectorURL()
 			).put(
