@@ -14,17 +14,59 @@
 
 package com.liferay.layout.content.page.editor.web.internal.portlet.action;
 
+import com.liferay.fragment.contributor.FragmentCollectionContributorTracker;
+import com.liferay.fragment.listener.FragmentEntryLinkListenerTracker;
+import com.liferay.fragment.renderer.FragmentRendererTracker;
+import com.liferay.fragment.service.FragmentCompositionService;
+import com.liferay.fragment.service.FragmentEntryLinkService;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
+import com.liferay.layout.content.page.editor.web.internal.util.FragmentEntryLinkManager;
+import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Portlet;
+import com.liferay.portal.kernel.model.PortletConstants;
+import com.liferay.portal.kernel.model.PortletItem;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
+import com.liferay.portal.kernel.portlet.PortletIdCodec;
+import com.liferay.portal.kernel.portlet.PortletPreferencesFactory;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.service.PortletItemLocalService;
+import com.liferay.portal.kernel.service.PortletLocalService;
+import com.liferay.portal.kernel.service.permission.PortletPermissionUtil;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.util.comparator.PortletTitleComparator;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
+import javax.portlet.PortletPreferences;
+import javax.portlet.ValidatorException;
+
+import javax.servlet.ServletContext;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Lourdes Fernández Besada
@@ -47,8 +89,229 @@ public class UpdatePortletsHighlightedConfigurationMVCActionCommand
 
 		JSONPortletResponseUtil.writeJSON(
 			actionRequest, actionResponse,
-			JSONUtil.put(
-				"highlightedPortlets", JSONFactoryUtil.createJSONArray()));
+			_updatePortletsHighlightedConfiguration(actionRequest));
 	}
+
+	private JSONArray _getPortletItemsJSONArray(
+		Portlet portlet, ThemeDisplay themeDisplay) {
+
+		List<PortletItem> portletItems =
+			_portletItemLocalService.getPortletItems(
+				themeDisplay.getScopeGroupId(), portlet.getPortletId(),
+				com.liferay.portal.kernel.model.PortletPreferences.class.
+					getName());
+
+		if (ListUtil.isEmpty(portletItems)) {
+			return JSONFactoryUtil.createJSONArray();
+		}
+
+		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
+
+		for (PortletItem portletItem : portletItems) {
+			jsonArray.put(
+				JSONUtil.put(
+					"instanceable", portlet.isInstanceable()
+				).put(
+					"portletId", portlet.getPortletId()
+				).put(
+					"portletItemId", portletItem.getPortletItemId()
+				).put(
+					"title", HtmlUtil.escape(portletItem.getName())
+				));
+		}
+
+		return jsonArray;
+	}
+
+	private List<Portlet> _getPortlets(
+		Set<String> portletIds, ThemeDisplay themeDisplay) {
+
+		List<Portlet> portlets = new ArrayList<>();
+
+		for (String portletId : portletIds) {
+			Portlet portlet = _portletLocalService.getPortletById(
+				themeDisplay.getCompanyId(), portletId);
+
+			if ((portlet == null) ||
+				ArrayUtil.contains(
+					_UNSUPPORTED_PORTLETS_NAMES, portlet.getPortletName())) {
+
+				continue;
+			}
+
+			try {
+				if (PortletPermissionUtil.contains(
+						themeDisplay.getPermissionChecker(),
+						themeDisplay.getLayout(), portlet,
+						ActionKeys.ADD_TO_PAGE)) {
+
+					portlets.add(portlet);
+				}
+			}
+			catch (PortalException portalException) {
+				_log.error(
+					"Unable to check portlet permissions for " +
+						portlet.getPortletId(),
+					portalException);
+			}
+		}
+
+		return portlets;
+	}
+
+	private JSONArray _getPortletsJSONArray(
+		HttpServletRequest httpServletRequest, Set<String> portletIds,
+		ThemeDisplay themeDisplay) {
+
+		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
+
+		HttpSession httpSession = httpServletRequest.getSession();
+
+		ServletContext servletContext = httpSession.getServletContext();
+
+		List<Portlet> portlets = _getPortlets(portletIds, themeDisplay);
+
+		portlets = ListUtil.sort(
+			portlets,
+			new PortletTitleComparator(
+				servletContext, themeDisplay.getLocale()));
+
+		for (Portlet portlet : portlets) {
+			jsonArray.put(
+				JSONUtil.put(
+					"highlighted", true
+				).put(
+					"instanceable", portlet.isInstanceable()
+				).put(
+					"portletId", portlet.getPortletId()
+				).put(
+					"portletItems",
+					_getPortletItemsJSONArray(portlet, themeDisplay)
+				).put(
+					"title",
+					_portal.getPortletTitle(
+						portlet, servletContext, themeDisplay.getLocale())
+				));
+		}
+
+		return jsonArray;
+	}
+
+	private JSONObject _updatePortletsHighlightedConfiguration(
+			ActionRequest actionRequest)
+		throws Exception {
+
+		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
+			WebKeys.THEME_DISPLAY);
+
+		String portletId = PortletIdCodec.decodePortletName(
+			ParamUtil.getString(actionRequest, "portletId"));
+
+		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
+			actionRequest);
+
+		if (!PortletPermissionUtil.contains(
+				themeDisplay.getPermissionChecker(),
+				themeDisplay.getScopeGroupId(), themeDisplay.getLayout(),
+				portletId, ActionKeys.ADD_TO_PAGE)) {
+
+			hideDefaultSuccessMessage(actionRequest);
+
+			return JSONUtil.put(
+				"error",
+				_language.get(
+					httpServletRequest,
+					"you-do-not-have-the-roles-required-to-access-this-" +
+						"portlet"));
+		}
+
+		boolean highlighted = ParamUtil.getBoolean(
+			actionRequest, "highlighted");
+
+		PortletPreferences portletPreferences =
+			_portletPreferencesFactory.getPortletSetup(
+				httpServletRequest,
+				PortletIdCodec.encode(
+					ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET,
+					themeDisplay.getUserId()),
+				PortletConstants.DEFAULT_PREFERENCES);
+
+		Set<String> highlightedPortletIds = SetUtil.fromArray(
+			portletPreferences.getValues(
+				"highlightedPortletIds", new String[0]));
+
+		if (highlighted) {
+			highlightedPortletIds.add(portletId);
+		}
+		else {
+			highlightedPortletIds.remove(portletId);
+		}
+
+		portletPreferences.setValues(
+			"highlightedPortletIds",
+			highlightedPortletIds.toArray(new String[0]));
+
+		try {
+			portletPreferences.store();
+		}
+		catch (ValidatorException validatorException) {
+			hideDefaultSuccessMessage(actionRequest);
+
+			return JSONUtil.put(
+				"error",
+				_language.get(
+					httpServletRequest, "an-unexpected-error-occurred"));
+		}
+
+		return JSONUtil.put(
+			"highlightedPortlets",
+			_getPortletsJSONArray(
+				httpServletRequest, highlightedPortletIds, themeDisplay));
+	}
+
+	private static final String[] _UNSUPPORTED_PORTLETS_NAMES = {
+		"com_liferay_nested_portlets_web_portlet_NestedPortletsPortlet"
+	};
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		UpdatePortletsHighlightedConfigurationMVCActionCommand.class);
+
+	@Reference
+	private FragmentCollectionContributorTracker
+		_fragmentCollectionContributorTracker;
+
+	@Reference
+	private FragmentCompositionService _fragmentCompositionService;
+
+	@Reference
+	private FragmentEntryLinkListenerTracker _fragmentEntryLinkListenerTracker;
+
+	@Reference
+	private FragmentEntryLinkManager _fragmentEntryLinkManager;
+
+	@Reference
+	private FragmentEntryLinkService _fragmentEntryLinkService;
+
+	@Reference
+	private FragmentRendererTracker _fragmentRendererTracker;
+
+	@Reference
+	private Language _language;
+
+	@Reference
+	private LayoutPageTemplateEntryLocalService
+		_layoutPageTemplateEntryLocalService;
+
+	@Reference
+	private Portal _portal;
+
+	@Reference
+	private PortletItemLocalService _portletItemLocalService;
+
+	@Reference
+	private PortletLocalService _portletLocalService;
+
+	@Reference
+	private PortletPreferencesFactory _portletPreferencesFactory;
 
 }
