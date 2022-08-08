@@ -108,6 +108,7 @@ import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutSetLocalServiceUtil;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
@@ -124,6 +125,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.Validator;
@@ -161,6 +163,7 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import javax.portlet.PortletConfig;
+import javax.portlet.PortletPreferences;
 import javax.portlet.PortletRequest;
 import javax.portlet.PortletURL;
 import javax.portlet.RenderResponse;
@@ -1171,6 +1174,9 @@ public class ContentPageEditorDisplayContext {
 				HashMapBuilder.<String, Object>put(
 					"fragmentEntryKey", fragmentRenderer.getKey()
 				).put(
+					"highlighted",
+					_isHighlightedFragment(fragmentRenderer.getKey())
+				).put(
 					"icon", fragmentRenderer.getIcon()
 				).put(
 					"imagePreviewURL",
@@ -1362,6 +1368,12 @@ public class ContentPageEditorDisplayContext {
 				).put(
 					"groupId", fragmentComposition.getGroupId()
 				).put(
+					"highlighted",
+					_isHighlightedFragment(
+						_getFragmentUniqueKey(
+							fragmentComposition.getFragmentCompositionKey(),
+							fragmentComposition.getGroupId()))
+				).put(
 					"icon", fragmentComposition.getIcon()
 				).put(
 					"imagePreviewURL",
@@ -1393,6 +1405,12 @@ public class ContentPageEditorDisplayContext {
 					"fragmentEntryKey", fragmentEntry.getFragmentEntryKey()
 				).put(
 					"groupId", fragmentEntry.getGroupId()
+				).put(
+					"highlighted",
+					_isHighlightedFragment(
+						_getFragmentUniqueKey(
+							fragmentEntry.getFragmentEntryKey(),
+							fragmentEntry.getGroupId()))
 				).put(
 					"icon", fragmentEntry.getIcon()
 				).put(
@@ -1581,6 +1599,36 @@ public class ContentPageEditorDisplayContext {
 		}
 
 		return fragmentEntryLinksMap;
+	}
+
+	private String _getFragmentUniqueKey(
+		String fragmentEntryKey, long groupId) {
+
+		if (groupId <= 0) {
+			return fragmentEntryKey;
+		}
+
+		Group group = GroupLocalServiceUtil.fetchGroup(groupId);
+
+		if (group == null) {
+			return fragmentEntryKey;
+		}
+
+		return fragmentEntryKey + StringPool.POUND + group.getGroupKey();
+	}
+
+	private Set<String> _getHighlightedFragmentEntryKeys() {
+		if (_highlightedFragmentEntryKeys != null) {
+			return _highlightedFragmentEntryKeys;
+		}
+
+		PortletPreferences portletPreferences = portletRequest.getPreferences();
+
+		_highlightedFragmentEntryKeys = SetUtil.fromArray(
+			portletPreferences.getValues(
+				"highlightedFragmentEntryKeys", new String[0]));
+
+		return _highlightedFragmentEntryKeys;
 	}
 
 	private ItemSelectorCriterion _getImageItemSelectorCriterion() {
@@ -2140,6 +2188,17 @@ public class ContentPageEditorDisplayContext {
 		return false;
 	}
 
+	private boolean _isHighlightedFragment(String fragmentEntryKey) {
+		Set<String> highlightedFragmentEntryKeys =
+			_getHighlightedFragmentEntryKeys();
+
+		if (highlightedFragmentEntryKeys.contains(fragmentEntryKey)) {
+			return true;
+		}
+
+		return false;
+	}
+
 	private boolean _isMasterUsed() {
 		if (_getLayoutType() !=
 				LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT) {
@@ -2205,6 +2264,7 @@ public class ContentPageEditorDisplayContext {
 	private final FrontendTokenDefinitionRegistry
 		_frontendTokenDefinitionRegistry;
 	private Long _groupId;
+	private Set<String> _highlightedFragmentEntryKeys;
 	private ItemSelectorCriterion _imageItemSelectorCriterion;
 	private final ItemSelector _itemSelector;
 	private LayoutStructure _layoutStructure;
