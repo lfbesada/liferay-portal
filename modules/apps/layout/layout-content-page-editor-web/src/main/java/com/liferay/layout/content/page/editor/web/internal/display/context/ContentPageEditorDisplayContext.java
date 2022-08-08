@@ -1285,6 +1285,26 @@ public class ContentPageEditorDisplayContext {
 		List<Map<String, Object>> allFragmentCollections = new ArrayList<>();
 
 		if (includeSystem) {
+			List<Map<String, Object>> highlightedFragments =
+				_getHighlightedFragments();
+
+			if (GetterUtil.getBoolean(
+					com.liferay.portal.kernel.util.PropsUtil.get(
+						"feature.flag.LPS-158737")) &&
+				!ListUtil.isEmpty(highlightedFragments)) {
+
+				allFragmentCollections.add(
+					HashMapBuilder.<String, Object>put(
+						"fragmentCollectionId", "highlighted"
+					).put(
+						"fragmentEntries", highlightedFragments
+					).put(
+						"name",
+						() -> LanguageUtil.get(
+							themeDisplay.getLocale(), "favorites")
+					).build());
+			}
+
 			allFragmentCollections.addAll(_getFragmentCollectionContributors());
 			allFragmentCollections.addAll(_getDynamicFragments());
 		}
@@ -1647,6 +1667,80 @@ public class ContentPageEditorDisplayContext {
 				"highlightedFragmentEntryKeys", new String[0]));
 
 		return _highlightedFragmentEntryKeys;
+	}
+
+	private List<Map<String, Object>> _getHighlightedFragments() {
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		Map<String, Map<String, Object>> map = new TreeMap<>();
+
+		for (String key : _getHighlightedFragmentEntryKeys()) {
+			int pos = key.indexOf(StringPool.POUND);
+
+			long groupId = 0;
+
+			if (pos > 0) {
+				String groupKey = GetterUtil.getString(key.substring(pos + 1));
+
+				Group group = GroupLocalServiceUtil.fetchGroup(
+					themeDisplay.getCompanyId(), groupKey);
+
+				if (group != null) {
+					groupId = group.getGroupId();
+				}
+
+				key = key.substring(0, pos);
+			}
+
+			if (!_isAllowedFragmentEntryKey(key)) {
+				continue;
+			}
+
+			FragmentRenderer fragmentRenderer =
+				_fragmentRendererTracker.getFragmentRenderer(key);
+
+			if (fragmentRenderer != null) {
+				map.put(
+					fragmentRenderer.getLabel(themeDisplay.getLocale()),
+					_getFragmentRendererMap(fragmentRenderer, true));
+
+				continue;
+			}
+
+			FragmentEntry fragmentEntry =
+				_fragmentEntryLinkManager.getFragmentEntry(
+					groupId, key, themeDisplay.getLocale());
+
+			if (fragmentEntry != null) {
+				map.put(
+					fragmentEntry.getName(),
+					_getFragmentEntryMap(fragmentEntry, true));
+
+				continue;
+			}
+
+			FragmentComposition fragmentComposition =
+				_fragmentCollectionContributorTracker.getFragmentComposition(
+					key);
+
+			if (fragmentComposition == null) {
+				fragmentComposition =
+					FragmentCompositionServiceUtil.fetchFragmentComposition(
+						groupId, key);
+			}
+
+			if (fragmentComposition == null) {
+				continue;
+			}
+
+			map.put(
+				fragmentComposition.getName(),
+				_getFragmentCompositionMap(fragmentComposition, true));
+		}
+
+		return new ArrayList<>(map.values());
 	}
 
 	private ItemSelectorCriterion _getImageItemSelectorCriterion() {
