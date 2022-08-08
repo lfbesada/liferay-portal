@@ -96,6 +96,65 @@ public class UpdateFragmentsHighlightedConfigurationMVCActionCommand
 			_updateFragmentsHighlightedConfiguration(actionRequest));
 	}
 
+	private String _getFragmentEntryKey(ActionRequest actionRequest) {
+		String fragmentEntryKey = ParamUtil.getString(
+			actionRequest, "fragmentEntryKey");
+
+		FragmentRenderer fragmentRenderer =
+			_fragmentRendererTracker.getFragmentRenderer(fragmentEntryKey);
+
+		if (fragmentRenderer != null) {
+			return fragmentEntryKey;
+		}
+
+		FragmentEntry fragmentEntry =
+			_fragmentCollectionContributorTracker.getFragmentEntry(
+				fragmentEntryKey);
+
+		if (fragmentEntry != null) {
+			return fragmentEntryKey;
+		}
+
+		FragmentComposition fragmentComposition =
+			_fragmentCollectionContributorTracker.getFragmentComposition(
+				fragmentEntryKey);
+
+		if (fragmentComposition != null) {
+			return fragmentEntryKey;
+		}
+
+		long groupId = ParamUtil.getLong(actionRequest, "groupId");
+
+		fragmentEntry = _fragmentEntryLocalService.fetchFragmentEntry(
+			groupId, fragmentEntryKey);
+
+		if (fragmentEntry != null) {
+			return _getFragmentUniqueKey(fragmentEntryKey, groupId);
+		}
+
+		fragmentComposition =
+			_fragmentCompositionService.fetchFragmentComposition(
+				groupId, fragmentEntryKey);
+
+		if (fragmentComposition != null) {
+			return _getFragmentUniqueKey(fragmentEntryKey, groupId);
+		}
+
+		return null;
+	}
+
+	private String _getFragmentUniqueKey(
+		String fragmentEntryKey, long groupId) {
+
+		Group group = _groupLocalService.fetchGroup(groupId);
+
+		if (group == null) {
+			return fragmentEntryKey;
+		}
+
+		return fragmentEntryKey + StringPool.POUND + group.getGroupKey();
+	}
+
 	private JSONArray _getHighlightedFragmentsJSONArray(
 		Set<String> highlightedFragmentEntryKeys,
 		HttpServletRequest httpServletRequest, ThemeDisplay themeDisplay) {
@@ -291,8 +350,7 @@ public class UpdateFragmentsHighlightedConfigurationMVCActionCommand
 			ActionRequest actionRequest)
 		throws Exception {
 
-		String fragmentEntryKey = ParamUtil.getString(
-			actionRequest, "fragmentEntryKey");
+		String fragmentEntryKey = _getFragmentEntryKey(actionRequest);
 
 		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
 			actionRequest);
