@@ -20,6 +20,7 @@
 
 <div class="layout-content portlet-layout" id="main-content" role="main">
 	<liferay-portlet:runtime
+		persistSettings="<%= false %>"
 		portletName="<%= ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET %>"
 	/>
 </div>
