@@ -32,7 +32,7 @@ import selectCanUpdatePageStructure from '../../selectors/selectCanUpdatePageStr
 import selectSegmentsExperienceId from '../../selectors/selectSegmentsExperienceId';
 import resizeColumns from '../../thunks/resizeColumns';
 import {
-	NotDraggableArea,
+	notDraggableProps,
 	useSetCanDrag,
 } from '../../utils/drag-and-drop/useDragAndDrop';
 import {getResponsiveColumnSize} from '../../utils/getResponsiveColumnSize';
@@ -451,19 +451,18 @@ const ColumnWithControls = React.forwardRef(({children, item}, ref) => {
 					parentItemIsActive &&
 					columnIndex !== 0 &&
 					!isReverseOrder && (
-						<NotDraggableArea>
-							<button
-								className={classNames(
-									'btn-primary page-editor__col__resizer',
-									{
-										'page-editor__col__resizer-first': isFirstColumnOfRow,
-									}
-								)}
-								onMouseDown={handleMouseDown}
-								title={Liferay.Language.get('resize-column')}
-								type="button"
-							/>
-						</NotDraggableArea>
+						<button
+							{...notDraggableProps}
+							className={classNames(
+								'btn-primary page-editor__col__resizer',
+								{
+									'page-editor__col__resizer-first': isFirstColumnOfRow,
+								}
+							)}
+							onMouseDown={handleMouseDown}
+							title={Liferay.Language.get('resize-column')}
+							type="button"
+						/>
 					)}
 
 				{children}

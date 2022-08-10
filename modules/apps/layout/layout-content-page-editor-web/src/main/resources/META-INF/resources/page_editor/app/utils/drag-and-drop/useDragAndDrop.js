@@ -118,18 +118,14 @@ export function useSetCanDrag() {
 	return useContext(DragAndDropContext).setCanDrag;
 }
 
-export function NotDraggableArea({children}) {
-	return (
-		<div
-			draggable
-			onDragStart={(event) => {
-				event.preventDefault();
-				event.stopPropagation();
-			}}
-		>
-			{children}
-		</div>
-	);
+export function notDraggableProps() {
+	return {
+		draggable: true,
+		onDragStart: (event) => {
+			event.preventDefault();
+			event.stopPropagation();
+		},
+	};
 }
 
 export function useDragItem(sourceItem, onDragEnd, onBegin = () => {}) {
