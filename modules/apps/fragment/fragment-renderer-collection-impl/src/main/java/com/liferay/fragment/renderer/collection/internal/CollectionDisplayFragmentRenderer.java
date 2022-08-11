@@ -31,7 +31,7 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Lourdes Fernández Besada
  */
-@Component(service = FragmentRenderer.class)
+@Component(enabled = false, service = FragmentRenderer.class)
 public class CollectionDisplayFragmentRenderer implements FragmentRenderer {
 
 	@Override
