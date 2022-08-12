@@ -60,6 +60,7 @@ import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.CompanyLocalService;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionService;
@@ -173,6 +174,26 @@ public class JournalArticleLocalServiceTest {
 		Assert.assertEquals(
 			StringUtil.toLowerCase(friendlyURLMap.get(defaultLocale)),
 			articleFriendlyURLMap.get(defaultLocale));
+	}
+
+	@Test
+	public void testArticleFriendlyURLValidationCompanyGroup()
+		throws Exception {
+
+		Group companyGroup = _groupLocalService.getCompanyGroup(
+			_group.getCompanyId());
+
+		JournalArticle journalArticle = JournalTestUtil.addArticle(
+			companyGroup.getGroupId(),
+			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID,
+			Collections.emptyMap());
+
+		Map<Locale, String> friendlyURLMap = journalArticle.getFriendlyURLMap();
+
+		journalArticle = _updateJournalArticle(
+			Collections.emptyMap(), journalArticle);
+
+		Assert.assertEquals(friendlyURLMap, journalArticle.getFriendlyURLMap());
 	}
 
 	@Test(expected = ArticleFriendlyURLException.class)
@@ -762,6 +783,9 @@ public class JournalArticleLocalServiceTest {
 
 	@DeleteAfterTestRun
 	private Group _group;
+
+	@Inject
+	private GroupLocalService _groupLocalService;
 
 	@Inject
 	private JournalArticleLocalService _journalArticleLocalService;
