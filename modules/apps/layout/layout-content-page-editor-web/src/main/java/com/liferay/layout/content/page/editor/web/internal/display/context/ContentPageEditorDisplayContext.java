@@ -952,6 +952,52 @@ public class ContentPageEditorDisplayContext {
 	protected final StagingGroupHelper stagingGroupHelper;
 	protected final ThemeDisplay themeDisplay;
 
+	private List<Map<String, Object>> _addLayoutElements(
+		Map<String, Map<String, Object>> fragmentCollectionMap) {
+
+		for (LayoutElement layoutElement :
+				_layoutElementTracker.getLayoutElements()) {
+
+			if (!_isAllowedFragmentEntryKey(layoutElement.getKey())) {
+				continue;
+			}
+
+			Map<String, Object> fragmentCollection =
+				fragmentCollectionMap.computeIfAbsent(
+					layoutElement.getCollectionKey(),
+					key -> HashMapBuilder.<String, Object>put(
+						"fragmentCollectionId", layoutElement.getCollectionKey()
+					).put(
+						"name",
+						() -> {
+							String string = StringUtil.toLowerCase(
+								layoutElement.getCollectionKey());
+
+							return LanguageUtil.get(
+								themeDisplay.getLocale(),
+								"fragment.collection.label." + string);
+						}
+					).build());
+
+			List<Map<String, Object>> collectionItems =
+				(List<Map<String, Object>>)fragmentCollection.computeIfAbsent(
+					"fragmentEntries", key -> new LinkedList<>());
+
+			collectionItems.add(
+				HashMapBuilder.<String, Object>put(
+					"fragmentEntryKey", layoutElement.getKey()
+				).put(
+					"icon", layoutElement.getIcon()
+				).put(
+					"itemType", layoutElement.getType()
+				).put(
+					"name", layoutElement.getLabel(themeDisplay.getLocale())
+				).build());
+		}
+
+		return new LinkedList<>(fragmentCollectionMap.values());
+	}
+
 	private String _getAssetCategoryTreeNodeItemSelectorURL() {
 		ItemSelectorCriterion itemSelectorCriterion =
 			new AssetCategoryTreeNodeItemSelectorCriterion();
@@ -1304,7 +1350,7 @@ public class ContentPageEditorDisplayContext {
 			systemFragmentCollections.putAll(_getDynamicFragments());
 
 			allFragmentCollections.addAll(
-				_getLayoutElements(systemFragmentCollections));
+				_addLayoutElements(systemFragmentCollections));
 		}
 
 		List<FragmentCollection> fragmentCollections =
@@ -1681,52 +1727,6 @@ public class ContentPageEditorDisplayContext {
 				_renderResponse.getNamespace() + "selectImage",
 				_getImageItemSelectorCriterion(),
 				_getURLItemSelectorCriterion()));
-	}
-
-	private List<Map<String, Object>> _getLayoutElements(
-		Map<String, Map<String, Object>> fragmentCollectionMap) {
-
-		for (LayoutElement layoutElement :
-				_layoutElementTracker.getLayoutElements()) {
-
-			if (!_isAllowedFragmentEntryKey(layoutElement.getKey())) {
-				continue;
-			}
-
-			Map<String, Object> fragmentCollection =
-				fragmentCollectionMap.computeIfAbsent(
-					layoutElement.getCollectionKey(),
-					key -> HashMapBuilder.<String, Object>put(
-						"fragmentCollectionId", layoutElement.getCollectionKey()
-					).put(
-						"name",
-						() -> {
-							String string = StringUtil.toLowerCase(
-								layoutElement.getCollectionKey());
-
-							return LanguageUtil.get(
-								themeDisplay.getLocale(),
-								"fragment.collection.label." + string);
-						}
-					).build());
-
-			List<Map<String, Object>> collectionItems =
-				(List<Map<String, Object>>)fragmentCollection.computeIfAbsent(
-					"fragmentEntries", key -> new LinkedList<>());
-
-			collectionItems.add(
-				HashMapBuilder.<String, Object>put(
-					"fragmentEntryKey", layoutElement.getKey()
-				).put(
-					"icon", layoutElement.getIcon()
-				).put(
-					"itemType", layoutElement.getType()
-				).put(
-					"name", layoutElement.getLabel(themeDisplay.getLocale())
-				).build());
-		}
-
-		return new LinkedList<>(fragmentCollectionMap.values());
 	}
 
 	private String _getLayoutItemSelectorURL() {
