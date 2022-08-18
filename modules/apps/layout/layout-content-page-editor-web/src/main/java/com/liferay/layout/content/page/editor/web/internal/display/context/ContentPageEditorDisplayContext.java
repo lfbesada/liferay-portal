@@ -66,6 +66,7 @@ import com.liferay.layout.content.page.editor.web.internal.util.MappingTypesUtil
 import com.liferay.layout.content.page.editor.web.internal.util.StyleBookEntryUtil;
 import com.liferay.layout.content.page.editor.web.internal.util.layout.structure.LayoutStructureUtil;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
+import com.liferay.layout.element.LayoutElementTracker;
 import com.liferay.layout.item.selector.criterion.LayoutItemSelectorCriterion;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.info.item.capability.EditPageInfoItemCapability;
@@ -187,7 +188,7 @@ public class ContentPageEditorDisplayContext {
 		FrontendTokenDefinitionRegistry frontendTokenDefinitionRegistry,
 		HttpServletRequest httpServletRequest,
 		InfoItemServiceTracker infoItemServiceTracker,
-		ItemSelector itemSelector,
+		ItemSelector itemSelector, LayoutElementTracker layoutElementTracker,
 		PageEditorConfiguration pageEditorConfiguration,
 		PortletRequest portletRequest, RenderResponse renderResponse,
 		SegmentsConfigurationProvider segmentsConfigurationProvider,
@@ -201,6 +202,7 @@ public class ContentPageEditorDisplayContext {
 		_fragmentRendererTracker = fragmentRendererTracker;
 		_frontendTokenDefinitionRegistry = frontendTokenDefinitionRegistry;
 		_itemSelector = itemSelector;
+		_layoutElementTracker = layoutElementTracker;
 		_pageEditorConfiguration = pageEditorConfiguration;
 		_renderResponse = renderResponse;
 		_segmentsConfigurationProvider = segmentsConfigurationProvider;
@@ -2207,6 +2209,7 @@ public class ContentPageEditorDisplayContext {
 	private Long _groupId;
 	private ItemSelectorCriterion _imageItemSelectorCriterion;
 	private final ItemSelector _itemSelector;
+	private final LayoutElementTracker _layoutElementTracker;
 	private LayoutStructure _layoutStructure;
 	private Integer _layoutType;
 	private LayoutStructure _masterLayoutStructure;
