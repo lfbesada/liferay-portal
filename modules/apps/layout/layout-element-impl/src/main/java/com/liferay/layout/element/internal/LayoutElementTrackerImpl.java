@@ -50,7 +50,9 @@ public class LayoutElementTrackerImpl implements LayoutElementTracker {
 	protected void activate(BundleContext bundleContext) {
 		_serviceTrackerList = ServiceTrackerListFactory.open(
 			bundleContext, LayoutElement.class,
-			new PropertyServiceReferenceComparator<>("service.ranking"));
+			Collections.reverseOrder(
+				new PropertyServiceReferenceComparator<>(
+					"layout.element.order")));
 	}
 
 	@Deactivate

@@ -25,7 +25,10 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Lourdes Fernández Besada
  */
-@Component(service = LayoutElement.class)
+@Component(
+	immediate = true, property = "layout.element.order:Integer=300",
+	service = LayoutElement.class
+)
 public class FormLayoutElement implements LayoutElement {
 
 	@Override
