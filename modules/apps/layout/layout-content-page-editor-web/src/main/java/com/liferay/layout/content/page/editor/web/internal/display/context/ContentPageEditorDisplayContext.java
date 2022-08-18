@@ -1155,8 +1155,9 @@ public class ContentPageEditorDisplayContext {
 		).buildString();
 	}
 
-	private List<Map<String, Object>> _getDynamicFragments() {
-		List<Map<String, Object>> dynamicFragments = new ArrayList<>();
+	private Map<String, Map<String, Object>> _getDynamicFragments() {
+		Map<String, Map<String, Object>> dynamicFragments =
+			new LinkedHashMap<>();
 
 		Map<String, List<Map<String, Object>>> fragmentCollectionMap =
 			new HashMap<>();
@@ -1206,7 +1207,8 @@ public class ContentPageEditorDisplayContext {
 		for (Map.Entry<String, List<Map<String, Object>>> entry :
 				fragmentCollectionMap.entrySet()) {
 
-			dynamicFragments.add(
+			dynamicFragments.put(
+				entry.getKey(),
 				HashMapBuilder.<String, Object>put(
 					"fragmentCollectionId", entry.getKey()
 				).put(
@@ -1222,9 +1224,11 @@ public class ContentPageEditorDisplayContext {
 		return dynamicFragments;
 	}
 
-	private List<Map<String, Object>> _getFragmentCollectionContributors() {
-		List<Map<String, Object>> fragmentCollectionContributorsMap =
-			new ArrayList<>();
+	private Map<String, Map<String, Object>>
+		_getFragmentCollectionContributors() {
+
+		Map<String, Map<String, Object>> fragmentCollectionContributorsMap =
+			new LinkedHashMap<>();
 
 		List<FragmentCollectionContributor> fragmentCollectionContributors =
 			_fragmentCollectionContributorTracker.
@@ -1271,7 +1275,8 @@ public class ContentPageEditorDisplayContext {
 					return name1.compareTo(name2);
 				});
 
-			fragmentCollectionContributorsMap.add(
+			fragmentCollectionContributorsMap.put(
+				fragmentCollectionContributor.getFragmentCollectionKey(),
 				HashMapBuilder.<String, Object>put(
 					"fragmentCollectionId",
 					fragmentCollectionContributor.getFragmentCollectionKey()
@@ -1293,9 +1298,13 @@ public class ContentPageEditorDisplayContext {
 		List<Map<String, Object>> allFragmentCollections = new ArrayList<>();
 
 		if (includeSystem) {
-			allFragmentCollections.addAll(_getFragmentCollectionContributors());
-			allFragmentCollections.addAll(_getDynamicFragments());
-			allFragmentCollections.addAll(_getLayoutElements());
+			Map<String, Map<String, Object>> systemFragmentCollections =
+				_getFragmentCollectionContributors();
+
+			systemFragmentCollections.putAll(_getDynamicFragments());
+
+			allFragmentCollections.addAll(
+				_getLayoutElements(systemFragmentCollections));
 		}
 
 		List<FragmentCollection> fragmentCollections =
@@ -1674,9 +1683,8 @@ public class ContentPageEditorDisplayContext {
 				_getURLItemSelectorCriterion()));
 	}
 
-	private List<Map<String, Object>> _getLayoutElements() {
-		Map<String, Map<String, Object>> fragmentCollectionMap =
-			new LinkedHashMap<>();
+	private List<Map<String, Object>> _getLayoutElements(
+		Map<String, Map<String, Object>> fragmentCollectionMap) {
 
 		for (LayoutElement layoutElement :
 				_layoutElementTracker.getLayoutElements()) {
