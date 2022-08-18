@@ -66,6 +66,7 @@ import com.liferay.layout.content.page.editor.web.internal.util.MappingTypesUtil
 import com.liferay.layout.content.page.editor.web.internal.util.StyleBookEntryUtil;
 import com.liferay.layout.content.page.editor.web.internal.util.layout.structure.LayoutStructureUtil;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
+import com.liferay.layout.element.LayoutElement;
 import com.liferay.layout.element.LayoutElementTracker;
 import com.liferay.layout.item.selector.criterion.LayoutItemSelectorCriterion;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
@@ -153,6 +154,7 @@ import java.util.Comparator;
 import java.util.EnumSet;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
@@ -1293,6 +1295,7 @@ public class ContentPageEditorDisplayContext {
 		if (includeSystem) {
 			allFragmentCollections.addAll(_getFragmentCollectionContributors());
 			allFragmentCollections.addAll(_getDynamicFragments());
+			allFragmentCollections.addAll(_getLayoutElements());
 		}
 
 		List<FragmentCollection> fragmentCollections =
@@ -1669,6 +1672,53 @@ public class ContentPageEditorDisplayContext {
 				_renderResponse.getNamespace() + "selectImage",
 				_getImageItemSelectorCriterion(),
 				_getURLItemSelectorCriterion()));
+	}
+
+	private List<Map<String, Object>> _getLayoutElements() {
+		Map<String, Map<String, Object>> fragmentCollectionMap =
+			new LinkedHashMap<>();
+
+		for (LayoutElement layoutElement :
+				_layoutElementTracker.getLayoutElements()) {
+
+			if (!_isAllowedFragmentEntryKey(layoutElement.getKey())) {
+				continue;
+			}
+
+			Map<String, Object> fragmentCollection =
+				fragmentCollectionMap.computeIfAbsent(
+					layoutElement.getCollectionKey(),
+					key -> HashMapBuilder.<String, Object>put(
+						"fragmentCollectionId", layoutElement.getCollectionKey()
+					).put(
+						"name",
+						() -> {
+							String string = StringUtil.toLowerCase(
+								layoutElement.getCollectionKey());
+
+							return LanguageUtil.get(
+								themeDisplay.getLocale(),
+								"fragment.collection.label." + string);
+						}
+					).build());
+
+			List<Map<String, Object>> collectionItems =
+				(List<Map<String, Object>>)fragmentCollection.computeIfAbsent(
+					"fragmentEntries", key -> new LinkedList<>());
+
+			collectionItems.add(
+				HashMapBuilder.<String, Object>put(
+					"fragmentEntryKey", layoutElement.getKey()
+				).put(
+					"icon", layoutElement.getIcon()
+				).put(
+					"itemType", layoutElement.getType()
+				).put(
+					"name", layoutElement.getLabel(themeDisplay.getLocale())
+				).build());
+		}
+
+		return new LinkedList<>(fragmentCollectionMap.values());
 	}
 
 	private String _getLayoutItemSelectorURL() {
