@@ -984,6 +984,7 @@ public class ContentPageEditorDisplayContext {
 					"fragmentEntries", key -> new LinkedList<>());
 
 			collectionItems.add(
+				0,
 				HashMapBuilder.<String, Object>put(
 					"fragmentEntryKey", layoutElement.getKey()
 				).put(
