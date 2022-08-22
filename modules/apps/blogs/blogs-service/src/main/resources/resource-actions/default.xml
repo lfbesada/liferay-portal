@@ -15,6 +15,7 @@
 				<action-key>ADD_ENTRY</action-key>
 				<action-key>PERMISSIONS</action-key>
 				<action-key>SUBSCRIBE</action-key>
+				<action-key>VIEW</action-key>
 			</supports>
 			<site-member-defaults>
 				<action-key>SUBSCRIBE</action-key>
