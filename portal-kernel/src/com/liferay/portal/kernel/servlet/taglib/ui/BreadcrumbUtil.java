@@ -159,8 +159,8 @@ public class BreadcrumbUtil {
 
 		if (!group.isLayoutPrototype()) {
 			_addLayoutBreadcrumbEntries(
-				breadcrumbEntries, themeDisplay.getRequest(), themeDisplay,
-				layout);
+				breadcrumbEntries, themeDisplay.getRequest(), layout,
+				themeDisplay);
 		}
 
 		return breadcrumbEntries;
@@ -307,16 +307,16 @@ public class BreadcrumbUtil {
 
 	private static void _addLayoutBreadcrumbEntries(
 			List<BreadcrumbEntry> breadcrumbEntries,
-			HttpServletRequest httpServletRequest, ThemeDisplay themeDisplay,
-			Layout layout)
+			HttpServletRequest httpServletRequest, Layout layout,
+			ThemeDisplay themeDisplay)
 		throws Exception {
 
 		if (layout.getParentLayoutId() !=
 				LayoutConstants.DEFAULT_PARENT_LAYOUT_ID) {
 
 			_addLayoutBreadcrumbEntries(
-				breadcrumbEntries, httpServletRequest, themeDisplay,
-				LayoutLocalServiceUtil.getParentLayout(layout));
+				breadcrumbEntries, httpServletRequest,
+				LayoutLocalServiceUtil.getParentLayout(layout), themeDisplay);
 		}
 
 		BreadcrumbEntry breadcrumbEntry = new BreadcrumbEntry();
