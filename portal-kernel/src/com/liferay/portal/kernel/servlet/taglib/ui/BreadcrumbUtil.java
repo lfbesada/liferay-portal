@@ -14,6 +14,7 @@
 
 package com.liferay.portal.kernel.servlet.taglib.ui;
 
+import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Company;
@@ -36,6 +37,7 @@ import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CookieKeys;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -157,7 +159,8 @@ public class BreadcrumbUtil {
 
 		if (!group.isLayoutPrototype()) {
 			_addLayoutBreadcrumbEntries(
-				breadcrumbEntries, themeDisplay, layout);
+				breadcrumbEntries, themeDisplay.getRequest(), themeDisplay,
+				layout);
 		}
 
 		return breadcrumbEntries;
@@ -303,7 +306,8 @@ public class BreadcrumbUtil {
 	}
 
 	private static void _addLayoutBreadcrumbEntries(
-			List<BreadcrumbEntry> breadcrumbEntries, ThemeDisplay themeDisplay,
+			List<BreadcrumbEntry> breadcrumbEntries,
+			HttpServletRequest httpServletRequest, ThemeDisplay themeDisplay,
 			Layout layout)
 		throws Exception {
 
@@ -311,7 +315,7 @@ public class BreadcrumbUtil {
 				LayoutConstants.DEFAULT_PARENT_LAYOUT_ID) {
 
 			_addLayoutBreadcrumbEntries(
-				breadcrumbEntries, themeDisplay,
+				breadcrumbEntries, httpServletRequest, themeDisplay,
 				LayoutLocalServiceUtil.getParentLayout(layout));
 		}
 
@@ -332,6 +336,16 @@ public class BreadcrumbUtil {
 
 			layoutName = LanguageUtil.get(
 				themeDisplay.getLocale(), "control-panel");
+		}
+
+		if (layout.isTypeAssetDisplay()) {
+			AssetEntry assetEntry = (AssetEntry)httpServletRequest.getAttribute(
+				WebKeys.LAYOUT_ASSET_ENTRY);
+
+			if (assetEntry != null) {
+				layoutName = HtmlUtil.escape(
+					assetEntry.getTitle(themeDisplay.getLocale()));
+			}
 		}
 
 		breadcrumbEntry.setTitle(layoutName);
