@@ -28,10 +28,16 @@ import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactory;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 
+import java.util.ArrayList;
+import java.util.LinkedHashMap;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
+import java.util.Objects;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -63,6 +69,71 @@ public class UpdateFragmentCollectionsSortConfigurationMVCActionCommand
 		JSONPortletResponseUtil.writeJSON(
 			actionRequest, actionResponse,
 			_updateFragmentCollectionsSortConfiguration(actionRequest));
+	}
+
+	private String[] _mergeFragmentCollectionKeys(
+		List<String> newFragmentCollectionKeys,
+		List<String> oldFragmentCollectionKeys) {
+
+		if (ListUtil.isEmpty(oldFragmentCollectionKeys)) {
+			return newFragmentCollectionKeys.toArray(new String[0]);
+		}
+
+		List<String> oldVisibleFragmentCollectionKeys = new ArrayList<>();
+
+		for (String fragmentCollectionKey : oldFragmentCollectionKeys) {
+			if (newFragmentCollectionKeys.contains(fragmentCollectionKey)) {
+				oldVisibleFragmentCollectionKeys.add(fragmentCollectionKey);
+			}
+		}
+
+		Map<String, String> swapCollectionKeysMap = new LinkedHashMap<>();
+
+		for (int i = 0;
+			 (i < newFragmentCollectionKeys.size()) &&
+			 (i < oldVisibleFragmentCollectionKeys.size()); i++) {
+
+			String fragmentCollectionKey = newFragmentCollectionKeys.get(i);
+			String samePosOldVisibleFragmentCollectionKey =
+				oldVisibleFragmentCollectionKeys.get(i);
+
+			if (Objects.equals(
+					fragmentCollectionKey,
+					samePosOldVisibleFragmentCollectionKey)) {
+
+				continue;
+			}
+
+			swapCollectionKeysMap.put(
+				samePosOldVisibleFragmentCollectionKey, fragmentCollectionKey);
+		}
+
+		List<String> fragmentCollectionKeys = new LinkedList<>();
+
+		for (String fragmentCollectionKey : oldFragmentCollectionKeys) {
+			String swapFragmentCollectionKey = swapCollectionKeysMap.remove(
+				fragmentCollectionKey);
+
+			if (swapFragmentCollectionKey == null) {
+				fragmentCollectionKeys.add(fragmentCollectionKey);
+
+				continue;
+			}
+
+			fragmentCollectionKeys.add(swapFragmentCollectionKey);
+		}
+
+		if (newFragmentCollectionKeys.size() >
+				oldVisibleFragmentCollectionKeys.size()) {
+
+			fragmentCollectionKeys.addAll(
+				ListUtil.subList(
+					newFragmentCollectionKeys,
+					oldVisibleFragmentCollectionKeys.size() - 1,
+					newFragmentCollectionKeys.size() - 1));
+		}
+
+		return fragmentCollectionKeys.toArray(new String[0]);
 	}
 
 	private JSONObject _updateFragmentCollectionsSortConfiguration(
@@ -99,10 +170,16 @@ public class UpdateFragmentCollectionsSortConfigurationMVCActionCommand
 		PortalPreferences portalPreferences =
 			_portletPreferencesFactory.getPortalPreferences(httpServletRequest);
 
+		List<String> oldSortedFragmentCollectionKeys = ListUtil.fromArray(
+			portalPreferences.getValues(
+				ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET,
+				"sortedFragmentCollectionKeys", new String[0]));
+
 		portalPreferences.setValues(
 			ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET,
 			"sortedFragmentCollectionKeys",
-			sortedFragmentCollectionKeys.toArray(new String[0]));
+			_mergeFragmentCollectionKeys(
+				sortedFragmentCollectionKeys, oldSortedFragmentCollectionKeys));
 
 		return JSONUtil.put(
 			"fragmentCollections", JSONFactoryUtil.createJSONArray());
