@@ -61,6 +61,7 @@ import com.liferay.layout.content.page.editor.web.internal.constants.ContentPage
 import com.liferay.layout.content.page.editor.web.internal.constants.ContentPageEditorConstants;
 import com.liferay.layout.content.page.editor.web.internal.util.ContentUtil;
 import com.liferay.layout.content.page.editor.web.internal.util.FragmentEntryLinkManager;
+import com.liferay.layout.content.page.editor.web.internal.util.FragmentManager;
 import com.liferay.layout.content.page.editor.web.internal.util.MappingContentUtil;
 import com.liferay.layout.content.page.editor.web.internal.util.MappingTypesUtil;
 import com.liferay.layout.content.page.editor.web.internal.util.StyleBookEntryUtil;
@@ -189,6 +190,7 @@ public class ContentPageEditorDisplayContext {
 		FragmentCollectionContributorTracker
 			fragmentCollectionContributorTracker,
 		FragmentEntryLinkManager fragmentEntryLinkManager,
+		FragmentManager fragmentManager,
 		FragmentRendererTracker fragmentRendererTracker,
 		FrontendTokenDefinitionRegistry frontendTokenDefinitionRegistry,
 		HttpServletRequest httpServletRequest,
@@ -204,6 +206,7 @@ public class ContentPageEditorDisplayContext {
 		_fragmentCollectionContributorTracker =
 			fragmentCollectionContributorTracker;
 		_fragmentEntryLinkManager = fragmentEntryLinkManager;
+		_fragmentManager = fragmentManager;
 		_fragmentRendererTracker = fragmentRendererTracker;
 		_frontendTokenDefinitionRegistry = frontendTokenDefinitionRegistry;
 		_itemSelector = itemSelector;
@@ -2383,6 +2386,7 @@ public class ContentPageEditorDisplayContext {
 	private List<String> _fragmentEntryKeys;
 	private final FragmentEntryLinkManager _fragmentEntryLinkManager;
 	private Map<String, Object> _fragmentEntryLinks;
+	private final FragmentManager _fragmentManager;
 	private final FragmentRendererTracker _fragmentRendererTracker;
 	private final FrontendTokenDefinitionRegistry
 		_frontendTokenDefinitionRegistry;

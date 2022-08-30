@@ -38,6 +38,7 @@ import com.liferay.layout.content.page.editor.sidebar.panel.ContentPageEditorSid
 import com.liferay.layout.content.page.editor.web.internal.configuration.PageEditorConfiguration;
 import com.liferay.layout.content.page.editor.web.internal.info.search.InfoSearchClassMapperTrackerUtil;
 import com.liferay.layout.content.page.editor.web.internal.util.FragmentEntryLinkManager;
+import com.liferay.layout.content.page.editor.web.internal.util.FragmentManager;
 import com.liferay.layout.content.page.editor.web.internal.util.MappingContentUtil;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServiceUtil;
@@ -75,6 +76,7 @@ public class ContentPageEditorLayoutPageTemplateDisplayContext
 		FragmentCollectionContributorTracker
 			fragmentCollectionContributorTracker,
 		FragmentEntryLinkManager fragmentEntryLinkManager,
+		FragmentManager fragmentManager,
 		FragmentRendererTracker fragmentRendererTracker,
 		FrontendTokenDefinitionRegistry frontendTokenDefinitionRegistry,
 		HttpServletRequest httpServletRequest,
@@ -90,11 +92,11 @@ public class ContentPageEditorLayoutPageTemplateDisplayContext
 		super(
 			contentPageEditorSidebarPanels,
 			fragmentCollectionContributorTracker, fragmentEntryLinkManager,
-			fragmentRendererTracker, frontendTokenDefinitionRegistry,
-			httpServletRequest, infoItemServiceTracker, itemSelector,
-			pageEditorConfiguration, portletRequest, renderResponse,
-			segmentsConfigurationProvider, segmentsExperienceManager,
-			stagingGroupHelper);
+			fragmentManager, fragmentRendererTracker,
+			frontendTokenDefinitionRegistry, httpServletRequest,
+			infoItemServiceTracker, itemSelector, pageEditorConfiguration,
+			portletRequest, renderResponse, segmentsConfigurationProvider,
+			segmentsExperienceManager, stagingGroupHelper);
 
 		_itemSelector = itemSelector;
 		_pageIsDisplayPage = pageIsDisplayPage;

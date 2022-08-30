@@ -23,6 +23,7 @@ import com.liferay.layout.content.page.editor.constants.ContentPageEditorWebKeys
 import com.liferay.layout.content.page.editor.sidebar.panel.ContentPageEditorSidebarPanel;
 import com.liferay.layout.content.page.editor.web.internal.configuration.PageEditorConfiguration;
 import com.liferay.layout.content.page.editor.web.internal.util.FragmentEntryLinkManager;
+import com.liferay.layout.content.page.editor.web.internal.util.FragmentManager;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
@@ -73,9 +74,9 @@ public class ContentPageEditorDisplayContextProvider {
 			return new ContentPageLayoutEditorDisplayContext(
 				_getContentPageEditorSidebarPanels(),
 				_fragmentCollectionContributorTracker,
-				_fragmentEntryLinkManager, _fragmentRendererTracker,
-				_frontendTokenDefinitionRegistry, httpServletRequest,
-				_infoItemServiceTracker, _itemSelector,
+				_fragmentEntryLinkManager, _fragmentManager,
+				_fragmentRendererTracker, _frontendTokenDefinitionRegistry,
+				httpServletRequest, _infoItemServiceTracker, _itemSelector,
 				_pageEditorConfiguration, portletRequest, renderResponse,
 				_segmentsConfigurationProvider,
 				new SegmentsExperienceManager(_segmentsExperienceLocalService),
@@ -101,10 +102,11 @@ public class ContentPageEditorDisplayContextProvider {
 		return new ContentPageEditorLayoutPageTemplateDisplayContext(
 			_getContentPageEditorSidebarPanels(),
 			_fragmentCollectionContributorTracker, _fragmentEntryLinkManager,
-			_fragmentRendererTracker, _frontendTokenDefinitionRegistry,
-			httpServletRequest, _infoItemServiceTracker, _itemSelector,
-			_pageEditorConfiguration, pageIsDisplayPage, portletRequest,
-			renderResponse, _segmentsConfigurationProvider,
+			_fragmentManager, _fragmentRendererTracker,
+			_frontendTokenDefinitionRegistry, httpServletRequest,
+			_infoItemServiceTracker, _itemSelector, _pageEditorConfiguration,
+			pageIsDisplayPage, portletRequest, renderResponse,
+			_segmentsConfigurationProvider,
 			new SegmentsExperienceManager(_segmentsExperienceLocalService),
 			_stagingGroupHelper);
 	}
@@ -146,6 +148,9 @@ public class ContentPageEditorDisplayContextProvider {
 
 	@Reference
 	private FragmentEntryLinkManager _fragmentEntryLinkManager;
+
+	@Reference
+	private FragmentManager _fragmentManager;
 
 	@Reference
 	private FragmentRendererTracker _fragmentRendererTracker;
