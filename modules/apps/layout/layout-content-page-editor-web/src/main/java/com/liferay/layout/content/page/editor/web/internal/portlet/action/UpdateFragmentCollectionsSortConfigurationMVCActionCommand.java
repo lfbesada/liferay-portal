@@ -15,6 +15,11 @@
 package com.liferay.layout.content.page.editor.web.internal.portlet.action;
 
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
+import com.liferay.layout.content.page.editor.web.internal.util.FragmentManager;
+import com.liferay.layout.content.page.editor.web.internal.util.layout.structure.LayoutStructureUtil;
+import com.liferay.layout.util.structure.DropZoneLayoutStructureItem;
+import com.liferay.layout.util.structure.LayoutStructure;
+import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -23,14 +28,18 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
 import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactory;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.segments.constants.SegmentsExperienceConstants;
 
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -69,6 +78,39 @@ public class UpdateFragmentCollectionsSortConfigurationMVCActionCommand
 		JSONPortletResponseUtil.writeJSON(
 			actionRequest, actionResponse,
 			_updateFragmentCollectionsSortConfiguration(actionRequest));
+	}
+
+	private DropZoneLayoutStructureItem _getMasterDropZoneLayoutStructureItem(
+		ThemeDisplay themeDisplay) {
+
+		Layout layout = themeDisplay.getLayout();
+
+		if (layout.getMasterLayoutPlid() <= 0) {
+			return null;
+		}
+
+		try {
+			LayoutStructure masterLayoutStructure =
+				LayoutStructureUtil.getLayoutStructure(
+					layout.getGroupId(), layout.getMasterLayoutPlid(),
+					SegmentsExperienceConstants.KEY_DEFAULT);
+
+			LayoutStructureItem layoutStructureItem =
+				masterLayoutStructure.getDropZoneLayoutStructureItem();
+
+			if (layoutStructureItem == null) {
+				return null;
+			}
+
+			return (DropZoneLayoutStructureItem)layoutStructureItem;
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug("Unable to get master layout structure", exception);
+			}
+		}
+
+		return null;
 	}
 
 	private String[] _mergeFragmentCollectionKeys(
@@ -181,12 +223,23 @@ public class UpdateFragmentCollectionsSortConfigurationMVCActionCommand
 			_mergeFragmentCollectionKeys(
 				sortedFragmentCollectionKeys, oldSortedFragmentCollectionKeys));
 
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
 		return JSONUtil.put(
-			"fragmentCollections", JSONFactoryUtil.createJSONArray());
+			"fragmentCollections",
+			_fragmentManager.getFragmentCollectionMapsList(
+				themeDisplay.getScopeGroupId(), httpServletRequest, false, true,
+				_getMasterDropZoneLayoutStructureItem(themeDisplay),
+				themeDisplay));
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		UpdateFragmentCollectionsSortConfigurationMVCActionCommand.class);
+
+	@Reference
+	private FragmentManager _fragmentManager;
 
 	@Reference
 	private Language _language;
