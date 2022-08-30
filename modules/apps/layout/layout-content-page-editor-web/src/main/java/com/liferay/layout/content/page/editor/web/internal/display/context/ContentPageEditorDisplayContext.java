@@ -1393,25 +1393,14 @@ public class ContentPageEditorDisplayContext {
 			return _fragmentEntryKeys;
 		}
 
-		LayoutStructure masterLayoutStructure = _getMasterLayoutStructure();
-
-		if (masterLayoutStructure == null) {
-			_fragmentEntryKeys = Collections.emptyList();
-
-			return _fragmentEntryKeys;
-		}
-
-		LayoutStructureItem layoutStructureItem =
-			masterLayoutStructure.getDropZoneLayoutStructureItem();
-
-		if (layoutStructureItem == null) {
-			_fragmentEntryKeys = Collections.emptyList();
-
-			return _fragmentEntryKeys;
-		}
-
 		DropZoneLayoutStructureItem dropZoneLayoutStructureItem =
-			(DropZoneLayoutStructureItem)layoutStructureItem;
+			_getMasterDropZoneLayoutStructureItem();
+
+		if (dropZoneLayoutStructureItem == null) {
+			_fragmentEntryKeys = Collections.emptyList();
+
+			return _fragmentEntryKeys;
+		}
 
 		_fragmentEntryKeys = dropZoneLayoutStructureItem.getFragmentEntryKeys();
 
@@ -1840,6 +1829,25 @@ public class ContentPageEditorDisplayContext {
 		}
 
 		return mappingFieldsJSONObject;
+	}
+
+	private DropZoneLayoutStructureItem
+		_getMasterDropZoneLayoutStructureItem() {
+
+		LayoutStructure masterLayoutStructure = _getMasterLayoutStructure();
+
+		if (masterLayoutStructure == null) {
+			return null;
+		}
+
+		LayoutStructureItem layoutStructureItem =
+			masterLayoutStructure.getDropZoneLayoutStructureItem();
+
+		if (layoutStructureItem == null) {
+			return null;
+		}
+
+		return (DropZoneLayoutStructureItem)layoutStructureItem;
 	}
 
 	private JSONObject _getMasterLayoutJSONObject() {
@@ -2271,25 +2279,14 @@ public class ContentPageEditorDisplayContext {
 			return _allowNewFragmentEntries;
 		}
 
-		LayoutStructure masterLayoutStructure = _getMasterLayoutStructure();
-
-		if (masterLayoutStructure == null) {
-			_allowNewFragmentEntries = true;
-
-			return true;
-		}
-
-		LayoutStructureItem layoutStructureItem =
-			masterLayoutStructure.getDropZoneLayoutStructureItem();
-
-		if (layoutStructureItem == null) {
-			_allowNewFragmentEntries = true;
-
-			return true;
-		}
-
 		DropZoneLayoutStructureItem dropZoneLayoutStructureItem =
-			(DropZoneLayoutStructureItem)layoutStructureItem;
+			_getMasterDropZoneLayoutStructureItem();
+
+		if (dropZoneLayoutStructureItem == null) {
+			_allowNewFragmentEntries = true;
+
+			return true;
+		}
 
 		_allowNewFragmentEntries =
 			dropZoneLayoutStructureItem.isAllowNewFragmentEntries();
