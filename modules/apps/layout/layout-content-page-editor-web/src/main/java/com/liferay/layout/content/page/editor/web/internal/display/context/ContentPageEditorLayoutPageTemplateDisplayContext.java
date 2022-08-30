@@ -19,8 +19,6 @@ import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
 import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
-import com.liferay.fragment.contributor.FragmentCollectionContributorTracker;
-import com.liferay.fragment.renderer.FragmentRendererTracker;
 import com.liferay.frontend.token.definition.FrontendTokenDefinitionRegistry;
 import com.liferay.info.collection.provider.item.selector.criterion.RelatedInfoItemCollectionProviderItemSelectorCriterion;
 import com.liferay.info.item.InfoItemClassDetails;
@@ -73,11 +71,8 @@ public class ContentPageEditorLayoutPageTemplateDisplayContext
 
 	public ContentPageEditorLayoutPageTemplateDisplayContext(
 		List<ContentPageEditorSidebarPanel> contentPageEditorSidebarPanels,
-		FragmentCollectionContributorTracker
-			fragmentCollectionContributorTracker,
 		FragmentEntryLinkManager fragmentEntryLinkManager,
 		FragmentManager fragmentManager,
-		FragmentRendererTracker fragmentRendererTracker,
 		FrontendTokenDefinitionRegistry frontendTokenDefinitionRegistry,
 		HttpServletRequest httpServletRequest,
 		InfoItemServiceTracker infoItemServiceTracker,
@@ -90,13 +85,12 @@ public class ContentPageEditorLayoutPageTemplateDisplayContext
 		StagingGroupHelper stagingGroupHelper) {
 
 		super(
-			contentPageEditorSidebarPanels,
-			fragmentCollectionContributorTracker, fragmentEntryLinkManager,
-			fragmentManager, fragmentRendererTracker,
-			frontendTokenDefinitionRegistry, httpServletRequest,
-			infoItemServiceTracker, itemSelector, pageEditorConfiguration,
-			portletRequest, renderResponse, segmentsConfigurationProvider,
-			segmentsExperienceManager, stagingGroupHelper);
+			contentPageEditorSidebarPanels, fragmentEntryLinkManager,
+			fragmentManager, frontendTokenDefinitionRegistry,
+			httpServletRequest, infoItemServiceTracker, itemSelector,
+			pageEditorConfiguration, portletRequest, renderResponse,
+			segmentsConfigurationProvider, segmentsExperienceManager,
+			stagingGroupHelper);
 
 		_itemSelector = itemSelector;
 		_pageIsDisplayPage = pageIsDisplayPage;

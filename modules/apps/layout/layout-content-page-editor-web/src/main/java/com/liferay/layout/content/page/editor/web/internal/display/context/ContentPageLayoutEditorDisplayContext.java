@@ -22,8 +22,6 @@ import com.liferay.asset.kernel.model.ClassTypeReader;
 import com.liferay.asset.list.constants.AssetListEntryTypeConstants;
 import com.liferay.asset.list.model.AssetListEntry;
 import com.liferay.asset.list.service.AssetListEntryLocalServiceUtil;
-import com.liferay.fragment.contributor.FragmentCollectionContributorTracker;
-import com.liferay.fragment.renderer.FragmentRendererTracker;
 import com.liferay.frontend.token.definition.FrontendTokenDefinitionRegistry;
 import com.liferay.info.collection.provider.InfoCollectionProvider;
 import com.liferay.info.collection.provider.SingleFormVariationInfoCollectionProvider;
@@ -99,11 +97,8 @@ public class ContentPageLayoutEditorDisplayContext
 
 	public ContentPageLayoutEditorDisplayContext(
 		List<ContentPageEditorSidebarPanel> contentPageEditorSidebarPanels,
-		FragmentCollectionContributorTracker
-			fragmentCollectionContributorTracker,
 		FragmentEntryLinkManager fragmentEntryLinkManager,
 		FragmentManager fragmentManager,
-		FragmentRendererTracker fragmentRendererTracker,
 		FrontendTokenDefinitionRegistry frontendTokenDefinitionRegistry,
 		HttpServletRequest httpServletRequest,
 		InfoItemServiceTracker infoItemServiceTracker,
@@ -115,13 +110,12 @@ public class ContentPageLayoutEditorDisplayContext
 		StagingGroupHelper stagingGroupHelper) {
 
 		super(
-			contentPageEditorSidebarPanels,
-			fragmentCollectionContributorTracker, fragmentEntryLinkManager,
-			fragmentManager, fragmentRendererTracker,
-			frontendTokenDefinitionRegistry, httpServletRequest,
-			infoItemServiceTracker, itemSelector, pageEditorConfiguration,
-			portletRequest, renderResponse, segmentsConfigurationProvider,
-			segmentsExperienceManager, stagingGroupHelper);
+			contentPageEditorSidebarPanels, fragmentEntryLinkManager,
+			fragmentManager, frontendTokenDefinitionRegistry,
+			httpServletRequest, infoItemServiceTracker, itemSelector,
+			pageEditorConfiguration, portletRequest, renderResponse,
+			segmentsConfigurationProvider, segmentsExperienceManager,
+			stagingGroupHelper);
 	}
 
 	@Override
