@@ -15,13 +15,31 @@
 package com.liferay.layout.content.page.editor.web.internal.portlet.action;
 
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
+import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONException;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
+import com.liferay.portal.kernel.portlet.PortalPreferences;
+import com.liferay.portal.kernel.portlet.PortletPreferencesFactory;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
+
+import java.util.List;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Lourdes Fernández Besada
@@ -41,6 +59,65 @@ public class UpdateFragmentCollectionsSortConfigurationMVCActionCommand
 	protected void doProcessAction(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
+
+		JSONPortletResponseUtil.writeJSON(
+			actionRequest, actionResponse,
+			_updateFragmentCollectionsSortConfiguration(actionRequest));
 	}
+
+	private JSONObject _updateFragmentCollectionsSortConfiguration(
+		ActionRequest actionRequest) {
+
+		String fragmentCollections = ParamUtil.getString(
+			actionRequest, "fragmentCollections");
+
+		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
+			actionRequest);
+
+		JSONArray fragmentCollectionsJSONArray;
+
+		try {
+			fragmentCollectionsJSONArray = JSONFactoryUtil.createJSONArray(
+				fragmentCollections);
+		}
+		catch (JSONException jsonException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(jsonException);
+			}
+
+			hideDefaultSuccessMessage(actionRequest);
+
+			return JSONUtil.put(
+				"error",
+				_language.get(
+					httpServletRequest, "an-unexpected-error-occurred"));
+		}
+
+		List<String> sortedFragmentCollectionKeys = JSONUtil.toStringList(
+			fragmentCollectionsJSONArray);
+
+		PortalPreferences portalPreferences =
+			_portletPreferencesFactory.getPortalPreferences(httpServletRequest);
+
+		portalPreferences.setValues(
+			ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET,
+			"sortedFragmentCollectionKeys",
+			sortedFragmentCollectionKeys.toArray(new String[0]));
+
+		return JSONUtil.put(
+			"fragmentCollections", JSONFactoryUtil.createJSONArray());
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		UpdateFragmentCollectionsSortConfigurationMVCActionCommand.class);
+
+	@Reference
+	private Language _language;
+
+	@Reference
+	private Portal _portal;
+
+	@Reference
+	private PortletPreferencesFactory _portletPreferencesFactory;
 
 }
