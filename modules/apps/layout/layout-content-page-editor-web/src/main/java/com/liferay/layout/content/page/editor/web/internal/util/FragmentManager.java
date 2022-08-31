@@ -139,7 +139,45 @@ public class FragmentManager {
 				).build());
 		}
 
-		return allFragmentCollectionMapsList;
+		List<String> sortedFragmentCollectionKeys = ListUtil.fromArray(
+			portalPreferences.getValues(
+				ContentPageEditorPortletKeys.CONTENT_PAGE_EDITOR_PORTLET,
+				"sortedFragmentCollectionKeys", new String[0]));
+
+		if (sortedFragmentCollectionKeys.isEmpty()) {
+			return allFragmentCollectionMapsList;
+		}
+
+		Map<String, Map<String, Object>> fragmentCollectionMaps =
+			new LinkedHashMap<>();
+
+		for (Map<String, Object> fragmentCollectionMap :
+				allFragmentCollectionMapsList) {
+
+			fragmentCollectionMaps.put(
+				String.valueOf(
+					fragmentCollectionMap.get("fragmentCollectionId")),
+				fragmentCollectionMap);
+		}
+
+		List<Map<String, Object>> sortedFragmentCollectionMapsList =
+			new LinkedList<>();
+
+		for (String collectionKey : sortedFragmentCollectionKeys) {
+			Map<String, Object> fragmentCollectionMap =
+				fragmentCollectionMaps.remove(collectionKey);
+
+			if (fragmentCollectionMap == null) {
+				continue;
+			}
+
+			sortedFragmentCollectionMapsList.add(fragmentCollectionMap);
+		}
+
+		sortedFragmentCollectionMapsList.addAll(
+			fragmentCollectionMaps.values());
+
+		return sortedFragmentCollectionMapsList;
 	}
 
 	private Map<String, Map<String, Object>> _getDynamicFragmentCollectionMaps(
