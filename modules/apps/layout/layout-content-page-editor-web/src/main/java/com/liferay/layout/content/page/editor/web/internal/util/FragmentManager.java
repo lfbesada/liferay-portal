@@ -160,24 +160,8 @@ public class FragmentManager {
 				fragmentCollectionMap);
 		}
 
-		List<Map<String, Object>> sortedFragmentCollectionMapsList =
-			new LinkedList<>();
-
-		for (String collectionKey : sortedFragmentCollectionKeys) {
-			Map<String, Object> fragmentCollectionMap =
-				fragmentCollectionMaps.remove(collectionKey);
-
-			if (fragmentCollectionMap == null) {
-				continue;
-			}
-
-			sortedFragmentCollectionMapsList.add(fragmentCollectionMap);
-		}
-
-		sortedFragmentCollectionMapsList.addAll(
-			fragmentCollectionMaps.values());
-
-		return sortedFragmentCollectionMapsList;
+		return _getSortedFragmentCollectionMapsList(
+			fragmentCollectionMaps, sortedFragmentCollectionKeys);
 	}
 
 	private Map<String, Map<String, Object>> _getDynamicFragmentCollectionMaps(
@@ -417,6 +401,30 @@ public class FragmentManager {
 		return fragmentEntryKey + StringPool.POUND + group.getGroupKey();
 	}
 
+	private List<Map<String, Object>> _getSortedFragmentCollectionMapsList(
+		Map<String, Map<String, Object>> fragmentCollectionMaps,
+		List<String> sortedFragmentCollectionKeys) {
+
+		List<Map<String, Object>> sortedFragmentCollectionMapsList =
+			new LinkedList<>();
+
+		for (String collectionKey : sortedFragmentCollectionKeys) {
+			Map<String, Object> fragmentCollectionMap =
+				fragmentCollectionMaps.remove(collectionKey);
+
+			if (fragmentCollectionMap == null) {
+				continue;
+			}
+
+			sortedFragmentCollectionMapsList.add(fragmentCollectionMap);
+		}
+
+		sortedFragmentCollectionMapsList.addAll(
+			fragmentCollectionMaps.values());
+
+		return sortedFragmentCollectionMapsList;
+	}
+
 	private List<Map<String, Object>> _getSystemFragmentCollectionMapsList(
 		Set<String> highlightedFragmentEntryKeys,
 		HttpServletRequest httpServletRequest,
@@ -492,20 +500,9 @@ public class FragmentManager {
 		}
 
 		List<Map<String, Object>> fragmentCollectionMapsList =
-			new LinkedList<>();
-
-		for (String collectionKey : _SORTED_FRAGMENT_COLLECTION_KEYS) {
-			Map<String, Object> fragmentCollectionMap =
-				fragmentCollectionMaps.remove(collectionKey);
-
-			if (fragmentCollectionMap == null) {
-				continue;
-			}
-
-			fragmentCollectionMapsList.add(fragmentCollectionMap);
-		}
-
-		fragmentCollectionMapsList.addAll(fragmentCollectionMaps.values());
+			_getSortedFragmentCollectionMapsList(
+				fragmentCollectionMaps,
+				ListUtil.fromArray(_SORTED_FRAGMENT_COLLECTION_KEYS));
 
 		if (GetterUtil.getBoolean(PropsUtil.get("feature.flag.LPS-158737")) &&
 			!SetUtil.isEmpty(highlightedFragmentEntryKeys)) {
