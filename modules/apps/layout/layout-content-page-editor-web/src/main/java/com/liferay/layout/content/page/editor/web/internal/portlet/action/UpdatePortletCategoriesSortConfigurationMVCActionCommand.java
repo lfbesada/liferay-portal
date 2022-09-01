@@ -15,6 +15,7 @@
 package com.liferay.layout.content.page.editor.web.internal.portlet.action;
 
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
+import com.liferay.layout.content.page.editor.web.internal.util.PortletCategoryManager;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
@@ -28,8 +29,10 @@ import com.liferay.portal.kernel.portlet.PortalPreferences;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactory;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -64,7 +67,8 @@ public class UpdatePortletCategoriesSortConfigurationMVCActionCommand
 	}
 
 	private JSONObject _updatePortletCategoriesSortConfiguration(
-		ActionRequest actionRequest) {
+			ActionRequest actionRequest)
+		throws Exception {
 
 		String portletCategories = ParamUtil.getString(
 			actionRequest, "portletCategories");
@@ -100,7 +104,11 @@ public class UpdatePortletCategoriesSortConfigurationMVCActionCommand
 			JSONUtil.toStringArray(portletCategoriesJSONArray));
 
 		return JSONUtil.put(
-			"portletCategories", JSONFactoryUtil.createJSONArray());
+			"portletCategories",
+			_portletCategoryManager.getPortletsJSONArray(
+				httpServletRequest,
+				(ThemeDisplay)httpServletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY)));
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -111,6 +119,9 @@ public class UpdatePortletCategoriesSortConfigurationMVCActionCommand
 
 	@Reference
 	private Portal _portal;
+
+	@Reference
+	private PortletCategoryManager _portletCategoryManager;
 
 	@Reference
 	private PortletPreferencesFactory _portletPreferencesFactory;
