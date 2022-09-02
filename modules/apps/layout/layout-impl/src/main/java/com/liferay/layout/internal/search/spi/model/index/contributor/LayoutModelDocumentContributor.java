@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
@@ -291,7 +292,12 @@ public class LayoutModelDocumentContributor
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
+		long companyId = CompanyThreadLocal.getCompanyId();
+
 		try {
+			CompanyThreadLocal.setCompanyId(
+				layoutPageTemplateStructure.getCompanyId());
+
 			PermissionThreadLocal.setPermissionChecker(
 				mockContextHelper.getPermissionChecker());
 
@@ -311,6 +317,8 @@ public class LayoutModelDocumentContributor
 				FragmentEntryLinkConstants.VIEW, locale, segmentsExperienceId);
 		}
 		finally {
+			CompanyThreadLocal.setCompanyId(companyId);
+
 			PermissionThreadLocal.setPermissionChecker(permissionChecker);
 
 			ServiceContextThreadLocal.popServiceContext();
