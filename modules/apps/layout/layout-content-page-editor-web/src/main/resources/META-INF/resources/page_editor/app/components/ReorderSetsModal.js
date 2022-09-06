@@ -48,6 +48,10 @@ const TAB_IDS = {
 
 const ACCEPTING_ITEM_TYPE = 'acceptingItemType';
 
+const HIGHLIGHTED_CATEGORY_ID = 'root--category-highlighted';
+
+const HIGHLIGHTED_COLLECTION_ID = 'highlighted';
+
 export function ReorderSetsModal({onCloseModal}) {
 	const {observer, onClose} = useModal({
 		onClose: onCloseModal,
@@ -156,19 +160,28 @@ function Tabs({widgetFragmentEntryLinksRef}) {
 		() => [
 			{
 				id: TAB_IDS.fragments,
-				items: fragments.map(({fragmentCollectionId, name}) => ({
-					id: fragmentCollectionId,
-					name,
-				})),
+				items: fragments
+					.filter(
+						({fragmentCollectionId}) =>
+							fragmentCollectionId !== HIGHLIGHTED_COLLECTION_ID
+					)
+					.map(({fragmentCollectionId, name}) => ({
+						id: fragmentCollectionId,
+						name,
+					})),
 				label: Liferay.Language.get('fragments'),
 			},
 			{
 				id: TAB_IDS.widgets,
 				items: widgets
-					? widgets.map(({path, title}) => ({
-							id: path,
-							name: title,
-					  }))
+					? widgets
+							.filter(
+								({path}) => path !== HIGHLIGHTED_CATEGORY_ID
+							)
+							.map(({path, title}) => ({
+								id: path,
+								name: title,
+							}))
 					: null,
 				label: Liferay.Language.get('widgets'),
 			},
