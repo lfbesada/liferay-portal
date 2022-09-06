@@ -27,6 +27,12 @@ import {useDrag, useDrop} from 'react-dnd';
 import {getEmptyImage} from 'react-dnd-html5-backend';
 
 import {
+	SortedFragmentsWidgetSetsContextProvider,
+	useSetSortedFragmentsWidgetSets,
+	useSortedFragmentsWidgetSets,
+} from '../../app/contexts/SortedFragmentsWidgetsContext';
+import updateFragmentWidgetSetsOrder from '../../app/thunks/updateFragmentWidgetSetsOrder';
+import {
 	useDispatch,
 	useSelector,
 	useSelectorRef,
@@ -47,39 +53,85 @@ export function ReorderSetsModal({onCloseModal}) {
 		onClose: onCloseModal,
 	});
 
+	const dispatch = useDispatch();
+	const [sortedFragmentsWidgetSets, setSortedFragmentsWidgetSets] = useState({
+		fragments: null,
+		widgets: null,
+	});
+	const widgetFragmentEntryLinksRef = useSelectorRef(
+		selectWidgetFragmentEntryLinks
+	);
+
 	return (
-		<ClayModal
-			className="page-editor__reorder-set-modal"
-			observer={observer}
+		<SortedFragmentsWidgetSetsContextProvider
+			value={{
+				setSortedFragmentsWidgetSets,
+				sortedFragmentsWidgetSets,
+			}}
 		>
-			<ClayModal.Header>
-				{Liferay.Language.get('reorder-sets')}
-			</ClayModal.Header>
+			<ClayModal
+				className="page-editor__reorder-set-modal"
+				observer={observer}
+			>
+				<ClayModal.Header>
+					{Liferay.Language.get('reorder-sets')}
+				</ClayModal.Header>
 
-			<ClayModal.Body>
-				<p className="text-secondary">
-					{Liferay.Language.get(
-						'fragments-and-widgets-sets-can-be-ordered-to-give-you-easy-access-to-the-ones-you-use-the-most'
-					)}
-				</p>
+				<ClayModal.Body>
+					<p className="text-secondary">
+						{Liferay.Language.get(
+							'fragments-and-widgets-sets-can-be-ordered-to-give-you-easy-access-to-the-ones-you-use-the-most'
+						)}
+					</p>
 
-				<Tabs />
-			</ClayModal.Body>
+					<Tabs
+						widgetFragmentEntryLinksRef={
+							widgetFragmentEntryLinksRef
+						}
+					/>
+				</ClayModal.Body>
 
-			<ClayModal.Footer
-				last={
-					<ClayButton.Group spaced>
-						<ClayButton displayType="secondary" onClick={onClose}>
-							{Liferay.Language.get('cancel')}
-						</ClayButton>
+				<ClayModal.Footer
+					last={
+						<ClayButton.Group spaced>
+							<ClayButton
+								displayType="secondary"
+								onClick={onClose}
+							>
+								{Liferay.Language.get('cancel')}
+							</ClayButton>
 
-						<ClayButton displayType="primary" onClick={() => {}}>
-							{Liferay.Language.get('save')}
-						</ClayButton>
-					</ClayButton.Group>
-				}
-			/>
-		</ClayModal>
+							<ClayButton
+								displayType="primary"
+								onClick={() => {
+									if (
+										!sortedFragmentsWidgetSets.fragments
+											?.length &&
+										!sortedFragmentsWidgetSets.widgets
+											?.length
+									) {
+										return;
+									}
+
+									dispatch(
+										updateFragmentWidgetSetsOrder({
+											fragmentCollectionKeys:
+												sortedFragmentsWidgetSets.fragments,
+											fragmentEntryLinks:
+												widgetFragmentEntryLinksRef.current,
+											portletCategoryKeys:
+												sortedFragmentsWidgetSets.widgets,
+										})
+									);
+								}}
+							>
+								{Liferay.Language.get('save')}
+							</ClayButton>
+						</ClayButton.Group>
+					}
+				/>
+			</ClayModal>
+		</SortedFragmentsWidgetSetsContextProvider>
 	);
 }
 
@@ -87,7 +139,7 @@ ReorderSetsModal.propTypes = {
 	onCloseModal: PropTypes.func.isRequired,
 };
 
-function Tabs() {
+function Tabs({widgetFragmentEntryLinksRef}) {
 	const namespace = useId();
 
 	const getTabId = (id) => `${namespace}tab${id}`;
@@ -96,9 +148,6 @@ function Tabs() {
 	const [activeTabId, setActiveTabId] = useState(TAB_IDS.fragments);
 
 	const dispatch = useDispatch();
-	const widgetFragmentEntryLinksRef = useSelectorRef(
-		selectWidgetFragmentEntryLinks
-	);
 
 	const fragments = useSelector((state) => state.fragments);
 	const widgets = useSelector((state) => state.widgets);
@@ -166,7 +215,7 @@ function Tabs() {
 						key={id}
 					>
 						{items ? (
-							<Items items={items} />
+							<Items items={items} tabId={id} />
 						) : (
 							<ClayLoadingIndicator small />
 						)}
@@ -177,8 +226,10 @@ function Tabs() {
 	);
 }
 
-function Items({items: initialItems}) {
+function Items({items: initialItems, tabId}) {
 	const [items, setItems] = useState(initialItems);
+	const setSortedFragmentsWidgetSets = useSetSortedFragmentsWidgetSets();
+	const sortedFragmentsWidgetSets = useSortedFragmentsWidgetSets();
 
 	const onChangeItemPosition = (itemId, newPosition) => {
 		const itemIndex = items.findIndex(({id}) => id === itemId);
@@ -191,6 +242,10 @@ function Items({items: initialItems}) {
 		nextItems.splice(newPosition, 0, item);
 
 		setItems(nextItems);
+		setSortedFragmentsWidgetSets({
+			...sortedFragmentsWidgetSets,
+			[tabId]: nextItems.map(({id}) => id),
+		});
 	};
 
 	return (
