@@ -15,6 +15,7 @@
 import {
 	ADD_FRAGMENT_COMPOSITION,
 	TOGGLE_FRAGMENT_HIGHLIGHTED,
+	UPDATE_FRAGMENTS,
 } from '../actions/types';
 
 const HIGHLIGHTED_COLLECTION_ID = 'highlighted';
@@ -98,6 +99,10 @@ export default function fragmentsReducer(fragments = [], action) {
 			}
 
 			return nextFragments;
+		}
+
+		case UPDATE_FRAGMENTS: {
+			return action.fragments || fragments;
 		}
 
 		default:
