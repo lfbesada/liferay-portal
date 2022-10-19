@@ -320,7 +320,7 @@ public class DDMFormValuesInfoFieldValuesProviderImpl
 				DDMFormFieldOptions ddmFormFieldOptions =
 					ddmFormField.getDDMFormFieldOptions();
 
-				String[] optionLabelsArray =
+				String[] optionLabels =
 					new String[optionReferencesJSONArray.length()];
 
 				for (int i = 0; i < optionReferencesJSONArray.length(); i++) {
@@ -328,10 +328,10 @@ public class DDMFormValuesInfoFieldValuesProviderImpl
 						ddmFormFieldOptions.getOptionLabels(
 							optionReferencesJSONArray.getString(i));
 
-					optionLabelsArray[i] = localizedValue.getString(locale);
+					optionLabels[i] = localizedValue.getString(locale);
 				}
 
-				return StringUtil.merge(optionLabelsArray, StringPool.COMMA);
+				return StringUtil.merge(optionLabels, StringPool.COMMA);
 			}
 
 			return SanitizerUtil.sanitize(
