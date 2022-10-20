@@ -185,8 +185,11 @@ public class TemplateNode extends LinkedHashMap<String, Object> {
 		else if (type.equals("geolocation")) {
 			return _getGeolocationData();
 		}
-		else if (type.equals("radio") || type.equals("select")) {
+		else if (type.equals("radio")) {
 			return _getOptionData();
+		}
+		else if (type.equals("select")) {
+			return _getSelectData();
 		}
 
 		return (String)get("data");
@@ -523,6 +526,14 @@ public class TemplateNode extends LinkedHashMap<String, Object> {
 		}
 
 		return data;
+	}
+
+	private String _getSelectData() {
+		if (GetterUtil.getBoolean(getAttribute("multiple"))) {
+			return _getMultipleOptionData();
+		}
+
+		return _getOptionData();
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(TemplateNode.class);
