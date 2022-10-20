@@ -286,6 +286,10 @@ public class DDMFormValuesInfoFieldValuesProviderImpl
 				LocalizedValue localizedValue =
 					ddmFormFieldOptions.getOptionLabels(valueString);
 
+				if (localizedValue == null) {
+					return null;
+				}
+
 				return localizedValue.getString(locale);
 			}
 			else if (Objects.equals(
