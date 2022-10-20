@@ -552,6 +552,11 @@ public class JournalTransformer {
 				attributes.put(key, value);
 			}
 		}
+		else if (type.equals(DDMFormFieldTypeConstants.SELECT) &&
+				 GetterUtil.getBoolean(ddmFormField.getProperty("multiple"))) {
+
+			attributes.put("multiple", "true");
+		}
 
 		if (dynamicContentElement != null) {
 			for (Attribute attribute : dynamicContentElement.attributes()) {
