@@ -218,6 +218,51 @@ public class DDMFormValuesInfoFieldValuesProviderImpl
 			}
 			else if (Objects.equals(
 						ddmFormFieldValue.getType(),
+						DDMFormFieldTypeConstants.CHECKBOX_MULTIPLE) ||
+					 Objects.equals(
+						 ddmFormFieldValue.getType(),
+						 DDMFormFieldTypeConstants.SELECT)) {
+
+				if (Validator.isNull(valueString)) {
+					return null;
+				}
+
+				JSONArray optionReferencesJSONArray = null;
+
+				try {
+					optionReferencesJSONArray = _jsonFactory.createJSONArray(
+						valueString);
+				}
+				catch (JSONException jsonException) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(jsonException);
+					}
+				}
+
+				if (optionReferencesJSONArray == null) {
+					return null;
+				}
+
+				DDMFormField ddmFormField = ddmFormFieldValue.getDDMFormField();
+
+				DDMFormFieldOptions ddmFormFieldOptions =
+					ddmFormField.getDDMFormFieldOptions();
+
+				String[] optionLabels =
+					new String[optionReferencesJSONArray.length()];
+
+				for (int i = 0; i < optionReferencesJSONArray.length(); i++) {
+					LocalizedValue localizedValue =
+						ddmFormFieldOptions.getOptionLabels(
+							optionReferencesJSONArray.getString(i));
+
+					optionLabels[i] = localizedValue.getString(locale);
+				}
+
+				return StringUtil.merge(optionLabels, StringPool.COMMA);
+			}
+			else if (Objects.equals(
+						ddmFormFieldValue.getType(),
 						DDMFormFieldTypeConstants.DATE) ||
 					 Objects.equals(ddmFormFieldValue.getType(), "date")) {
 
@@ -291,51 +336,6 @@ public class DDMFormValuesInfoFieldValuesProviderImpl
 				}
 
 				return localizedValue.getString(locale);
-			}
-			else if (Objects.equals(
-						ddmFormFieldValue.getType(),
-						DDMFormFieldTypeConstants.CHECKBOX_MULTIPLE) ||
-					 Objects.equals(
-						 ddmFormFieldValue.getType(),
-						 DDMFormFieldTypeConstants.SELECT)) {
-
-				if (Validator.isNull(valueString)) {
-					return null;
-				}
-
-				JSONArray optionReferencesJSONArray = null;
-
-				try {
-					optionReferencesJSONArray = _jsonFactory.createJSONArray(
-						valueString);
-				}
-				catch (JSONException jsonException) {
-					if (_log.isDebugEnabled()) {
-						_log.debug(jsonException);
-					}
-				}
-
-				if (optionReferencesJSONArray == null) {
-					return null;
-				}
-
-				DDMFormField ddmFormField = ddmFormFieldValue.getDDMFormField();
-
-				DDMFormFieldOptions ddmFormFieldOptions =
-					ddmFormField.getDDMFormFieldOptions();
-
-				String[] optionLabels =
-					new String[optionReferencesJSONArray.length()];
-
-				for (int i = 0; i < optionReferencesJSONArray.length(); i++) {
-					LocalizedValue localizedValue =
-						ddmFormFieldOptions.getOptionLabels(
-							optionReferencesJSONArray.getString(i));
-
-					optionLabels[i] = localizedValue.getString(locale);
-				}
-
-				return StringUtil.merge(optionLabels, StringPool.COMMA);
 			}
 
 			return SanitizerUtil.sanitize(
