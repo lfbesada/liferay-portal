@@ -490,13 +490,13 @@ public class TemplateNode extends LinkedHashMap<String, Object> {
 
 		Map<String, String> optionsMap = getOptionsMap();
 
-		String[] optionsDataArray = new String[dataJSONArray.length()];
+		String[] optionLabels = new String[dataJSONArray.length()];
 
 		for (int i = 0; i < dataJSONArray.length(); i++) {
-			optionsDataArray[i] = optionsMap.get(dataJSONArray.getString(i));
+			optionLabels[i] = optionsMap.get(dataJSONArray.getString(i));
 		}
 
-		return StringUtil.merge(optionsDataArray, StringPool.COMMA);
+		return StringUtil.merge(optionLabels, StringPool.COMMA);
 	}
 
 	private String _getNumericData() {
