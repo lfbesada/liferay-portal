@@ -320,7 +320,7 @@ public class DDMFormValuesInfoFieldValuesProviderImpl
 				DDMFormFieldOptions ddmFormFieldOptions =
 					ddmFormField.getDDMFormFieldOptions();
 
-				String[] optionLabelsJSONArray =
+				String[] optionLabelsArray =
 					new String[optionReferencesJSONArray.length()];
 
 				for (int i = 0; i < optionReferencesJSONArray.length(); i++) {
