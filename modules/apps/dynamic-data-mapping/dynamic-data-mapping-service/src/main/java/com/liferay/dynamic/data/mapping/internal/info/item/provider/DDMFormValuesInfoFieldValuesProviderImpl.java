@@ -272,7 +272,7 @@ public class DDMFormValuesInfoFieldValuesProviderImpl
 			}
 			else if (Objects.equals(
 						ddmFormFieldValue.getType(),
-						DDMFormFieldTypeConstants.SELECT)) {
+						DDMFormFieldTypeConstants.RADIO)) {
 
 				if (Validator.isNull(valueString)) {
 					return null;
