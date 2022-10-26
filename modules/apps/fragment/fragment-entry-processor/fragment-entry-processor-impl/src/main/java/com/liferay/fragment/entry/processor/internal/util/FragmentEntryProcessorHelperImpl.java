@@ -17,7 +17,10 @@ package com.liferay.fragment.entry.processor.internal.util;
 import com.liferay.fragment.constants.FragmentEntryLinkConstants;
 import com.liferay.fragment.entry.processor.helper.FragmentEntryProcessorHelper;
 import com.liferay.info.exception.NoSuchInfoItemException;
+import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldValue;
+import com.liferay.info.field.type.InfoFieldType;
+import com.liferay.info.field.type.SelectInfoFieldType;
 import com.liferay.info.formatter.InfoCollectionTextFormatter;
 import com.liferay.info.formatter.InfoTextFormatter;
 import com.liferay.info.item.ClassPKInfoItemIdentifier;
@@ -32,6 +35,8 @@ import com.liferay.info.type.Labeled;
 import com.liferay.info.type.WebImage;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.Language;
@@ -40,12 +45,15 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Collection;
 import java.util.Iterator;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -96,7 +104,55 @@ public class FragmentEntryProcessorHelperImpl
 		}
 		else {
 			if (fieldValue instanceof String) {
-				formattedFieldValue = (String)fieldValue;
+				InfoField infoField = infoFieldValue.getInfoField();
+
+				InfoFieldType infoFieldType = infoField.getInfoFieldType();
+
+				if (infoFieldType instanceof SelectInfoFieldType) {
+					String optionValues = (String)fieldValue;
+
+					JSONArray optionValuesJSONArray = null;
+
+					try {
+						optionValuesJSONArray = _jsonFactory.createJSONArray(
+							optionValues);
+					}
+					catch (JSONException jsonException) {
+						if (_log.isDebugEnabled()) {
+							_log.debug(jsonException);
+						}
+					}
+
+					Optional<List<SelectInfoFieldType.Option>> optionsOptional =
+						infoField.getAttributeOptional(
+							SelectInfoFieldType.OPTIONS);
+
+					List<SelectInfoFieldType.Option> options =
+						optionsOptional.orElseGet(null);
+
+					if (optionValuesJSONArray == null) {
+						formattedFieldValue = _getOptionLabel(
+							locale, options, optionValues);
+					}
+					else {
+						String[] optionLabels =
+							new String[optionValuesJSONArray.length()];
+
+						for (int i = 0; i < optionValuesJSONArray.length();
+							 i++) {
+
+							optionLabels[i] = _getOptionLabel(
+								locale, options,
+								optionValuesJSONArray.getString(i));
+						}
+
+						formattedFieldValue = StringUtil.merge(
+							optionLabels, StringPool.COMMA);
+					}
+				}
+				else {
+					formattedFieldValue = (String)fieldValue;
+				}
 			}
 			else if (fieldValue instanceof Labeled) {
 				Labeled labeledFieldValue = (Labeled)fieldValue;
@@ -490,6 +546,23 @@ public class FragmentEntryProcessorHelperImpl
 		}
 
 		return null;
+	}
+
+	private String _getOptionLabel(
+		Locale locale, List<SelectInfoFieldType.Option> options,
+		String optionValue) {
+
+		if (ListUtil.isNull(options)) {
+			return optionValue;
+		}
+
+		for (SelectInfoFieldType.Option option : options) {
+			if (Objects.equals(option.getValue(), optionValue)) {
+				return option.getLabel(locale);
+			}
+		}
+
+		return optionValue;
 	}
 
 	private static final InfoCollectionTextFormatter<Object>
