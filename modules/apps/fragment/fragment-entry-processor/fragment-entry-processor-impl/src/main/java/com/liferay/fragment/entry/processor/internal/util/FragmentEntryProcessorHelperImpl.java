@@ -102,80 +102,75 @@ public class FragmentEntryProcessorHelperImpl
 			formattedFieldValue = infoCollectionTextFormatter.format(
 				collection, locale);
 		}
-		else {
-			if (fieldValue instanceof String) {
-				InfoField infoField = infoFieldValue.getInfoField();
+		else if (fieldValue instanceof String) {
+			InfoField infoField = infoFieldValue.getInfoField();
 
-				InfoFieldType infoFieldType = infoField.getInfoFieldType();
+			InfoFieldType infoFieldType = infoField.getInfoFieldType();
 
-				if (infoFieldType instanceof SelectInfoFieldType) {
-					String optionValues = (String)fieldValue;
+			if (infoFieldType instanceof SelectInfoFieldType) {
+				String optionValues = (String)fieldValue;
 
-					JSONArray optionValuesJSONArray = null;
+				JSONArray optionValuesJSONArray = null;
 
-					try {
-						optionValuesJSONArray = _jsonFactory.createJSONArray(
-							optionValues);
+				try {
+					optionValuesJSONArray = _jsonFactory.createJSONArray(
+						optionValues);
+				}
+				catch (JSONException jsonException) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(jsonException);
 					}
-					catch (JSONException jsonException) {
-						if (_log.isDebugEnabled()) {
-							_log.debug(jsonException);
-						}
-					}
+				}
 
-					Optional<List<SelectInfoFieldType.Option>> optionsOptional =
-						infoField.getAttributeOptional(
-							SelectInfoFieldType.OPTIONS);
+				Optional<List<SelectInfoFieldType.Option>> optionsOptional =
+					infoField.getAttributeOptional(SelectInfoFieldType.OPTIONS);
 
-					List<SelectInfoFieldType.Option> options =
-						optionsOptional.orElseGet(null);
+				List<SelectInfoFieldType.Option> options =
+					optionsOptional.orElseGet(null);
 
-					if (optionValuesJSONArray == null) {
-						formattedFieldValue = _getOptionLabel(
-							locale, options, optionValues);
-					}
-					else {
-						String[] optionLabels =
-							new String[optionValuesJSONArray.length()];
-
-						for (int i = 0; i < optionValuesJSONArray.length();
-							 i++) {
-
-							optionLabels[i] = _getOptionLabel(
-								locale, options,
-								optionValuesJSONArray.getString(i));
-						}
-
-						formattedFieldValue = StringUtil.merge(
-							optionLabels, StringPool.COMMA);
-					}
+				if (optionValuesJSONArray == null) {
+					formattedFieldValue = _getOptionLabel(
+						locale, options, optionValues);
 				}
 				else {
-					formattedFieldValue = (String)fieldValue;
-				}
-			}
-			else if (fieldValue instanceof Labeled) {
-				Labeled labeledFieldValue = (Labeled)fieldValue;
+					String[] optionLabels =
+						new String[optionValuesJSONArray.length()];
 
-				formattedFieldValue = labeledFieldValue.getLabel(locale);
+					for (int i = 0; i < optionValuesJSONArray.length(); i++) {
+						optionLabels[i] = _getOptionLabel(
+							locale, options,
+							optionValuesJSONArray.getString(i));
+					}
+
+					formattedFieldValue = StringUtil.merge(
+						optionLabels, StringPool.COMMA);
+				}
 			}
 			else {
-				Class<?> fieldValueClass = fieldValue.getClass();
+				formattedFieldValue = (String)fieldValue;
+			}
+		}
+		else if (fieldValue instanceof Labeled) {
+			Labeled labeledFieldValue = (Labeled)fieldValue;
 
-				String itemClassName = fieldValueClass.getName();
+			formattedFieldValue = labeledFieldValue.getLabel(locale);
+		}
+		else {
+			Class<?> fieldValueClass = fieldValue.getClass();
 
-				InfoTextFormatter<Object> infoTextFormatter =
-					(InfoTextFormatter<Object>)
-						_infoItemServiceTracker.getFirstInfoItemService(
-							InfoTextFormatter.class, itemClassName);
+			String itemClassName = fieldValueClass.getName();
 
-				if (infoTextFormatter == null) {
-					formattedFieldValue = fieldValue.toString();
-				}
-				else {
-					formattedFieldValue = infoTextFormatter.format(
-						fieldValue, locale);
-				}
+			InfoTextFormatter<Object> infoTextFormatter =
+				(InfoTextFormatter<Object>)
+					_infoItemServiceTracker.getFirstInfoItemService(
+						InfoTextFormatter.class, itemClassName);
+
+			if (infoTextFormatter == null) {
+				formattedFieldValue = fieldValue.toString();
+			}
+			else {
+				formattedFieldValue = infoTextFormatter.format(
+					fieldValue, locale);
 			}
 		}
 
