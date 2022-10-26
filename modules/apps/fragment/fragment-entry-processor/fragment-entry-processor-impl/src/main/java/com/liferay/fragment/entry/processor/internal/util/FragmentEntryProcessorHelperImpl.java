@@ -106,64 +106,62 @@ public class FragmentEntryProcessorHelperImpl
 			return labeledFieldValue.getLabel(locale);
 		}
 
-		if (fieldValue instanceof String) {
-			InfoField infoField = infoFieldValue.getInfoField();
+		if (!(fieldValue instanceof String)) {
+			Class<?> fieldValueClass = fieldValue.getClass();
 
-			InfoFieldType infoFieldType = infoField.getInfoFieldType();
+			String itemClassName = fieldValueClass.getName();
 
-			if (infoFieldType instanceof SelectInfoFieldType) {
-				String optionValues = (String)fieldValue;
+			InfoTextFormatter<Object> infoTextFormatter =
+				(InfoTextFormatter<Object>)
+					_infoItemServiceTracker.getFirstInfoItemService(
+						InfoTextFormatter.class, itemClassName);
 
-				JSONArray optionValuesJSONArray = null;
-
-				try {
-					optionValuesJSONArray = _jsonFactory.createJSONArray(
-						optionValues);
-				}
-				catch (JSONException jsonException) {
-					if (_log.isDebugEnabled()) {
-						_log.debug(jsonException);
-					}
-				}
-
-				Optional<List<SelectInfoFieldType.Option>> optionsOptional =
-					infoField.getAttributeOptional(SelectInfoFieldType.OPTIONS);
-
-				List<SelectInfoFieldType.Option> options =
-					optionsOptional.orElseGet(null);
-
-				if (optionValuesJSONArray == null) {
-					return _getOptionLabel(locale, options, optionValues);
-				}
-
-				String[] optionLabels =
-					new String[optionValuesJSONArray.length()];
-
-				for (int i = 0; i < optionValuesJSONArray.length(); i++) {
-					optionLabels[i] = _getOptionLabel(
-						locale, options, optionValuesJSONArray.getString(i));
-				}
-
-				return StringUtil.merge(optionLabels, StringPool.COMMA);
+			if (infoTextFormatter == null) {
+				return fieldValue.toString();
 			}
 
+			return infoTextFormatter.format(fieldValue, locale);
+		}
+
+		InfoField infoField = infoFieldValue.getInfoField();
+
+		InfoFieldType infoFieldType = infoField.getInfoFieldType();
+
+		if (!(infoFieldType instanceof SelectInfoFieldType)) {
 			return (String)fieldValue;
 		}
 
-		Class<?> fieldValueClass = fieldValue.getClass();
+		String optionValues = (String)fieldValue;
 
-		String itemClassName = fieldValueClass.getName();
+		JSONArray optionValuesJSONArray = null;
 
-		InfoTextFormatter<Object> infoTextFormatter =
-			(InfoTextFormatter<Object>)
-				_infoItemServiceTracker.getFirstInfoItemService(
-					InfoTextFormatter.class, itemClassName);
-
-		if (infoTextFormatter == null) {
-			return fieldValue.toString();
+		try {
+			optionValuesJSONArray = _jsonFactory.createJSONArray(optionValues);
+		}
+		catch (JSONException jsonException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(jsonException);
+			}
 		}
 
-		return infoTextFormatter.format(fieldValue, locale);
+		Optional<List<SelectInfoFieldType.Option>> optionsOptional =
+			infoField.getAttributeOptional(SelectInfoFieldType.OPTIONS);
+
+		List<SelectInfoFieldType.Option> options = optionsOptional.orElseGet(
+			null);
+
+		if (optionValuesJSONArray == null) {
+			return _getOptionLabel(locale, options, optionValues);
+		}
+
+		String[] optionLabels = new String[optionValuesJSONArray.length()];
+
+		for (int i = 0; i < optionValuesJSONArray.length(); i++) {
+			optionLabels[i] = _getOptionLabel(
+				locale, options, optionValuesJSONArray.getString(i));
+		}
+
+		return StringUtil.merge(optionLabels, StringPool.COMMA);
 	}
 
 	@Override
