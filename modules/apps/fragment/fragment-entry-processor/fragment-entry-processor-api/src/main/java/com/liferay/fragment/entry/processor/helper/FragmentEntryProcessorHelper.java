@@ -16,6 +16,7 @@ package com.liferay.fragment.entry.processor.helper;
 
 import aQute.bnd.annotation.ProviderType;
 
+import com.liferay.info.field.InfoFieldValue;
 import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.InfoItemReference;
 import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
@@ -33,7 +34,8 @@ import java.util.Optional;
 @ProviderType
 public interface FragmentEntryProcessorHelper {
 
-	public String formatMappedValue(Object value, Locale locale);
+	public String formatMappedValue(
+		InfoFieldValue<Object> infoFieldValue, Locale locale);
 
 	public String getEditableValue(JSONObject jsonObject, Locale locale);
 

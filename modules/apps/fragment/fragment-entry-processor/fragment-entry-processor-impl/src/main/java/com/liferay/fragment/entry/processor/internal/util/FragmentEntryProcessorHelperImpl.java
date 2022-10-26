@@ -62,7 +62,11 @@ public class FragmentEntryProcessorHelperImpl
 	implements FragmentEntryProcessorHelper {
 
 	@Override
-	public String formatMappedValue(Object fieldValue, Locale locale) {
+	public String formatMappedValue(
+		InfoFieldValue<Object> infoFieldValue, Locale locale) {
+
+		Object fieldValue = infoFieldValue.getValue(locale);
+
 		if (fieldValue == null) {
 			return null;
 		}
