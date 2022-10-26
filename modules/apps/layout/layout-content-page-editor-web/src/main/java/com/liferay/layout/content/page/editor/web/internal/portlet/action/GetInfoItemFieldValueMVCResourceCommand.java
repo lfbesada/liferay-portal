@@ -153,7 +153,7 @@ public class GetInfoItemFieldValueMVCResourceCommand
 		}
 		else {
 			value = _fragmentEntryProcessorHelper.formatMappedValue(
-				value, LocaleUtil.fromLanguageId(languageId));
+				infoFieldValue, LocaleUtil.fromLanguageId(languageId));
 		}
 
 		jsonObject.put("fieldValue", value);

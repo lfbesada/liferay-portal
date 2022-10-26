@@ -436,7 +436,7 @@ public class GetCollectionFieldMVCResourceCommand
 			}
 			else {
 				value = _fragmentEntryProcessorHelper.formatMappedValue(
-					value, locale);
+					infoFieldValue, locale);
 			}
 
 			InfoField infoField = infoFieldValue.getInfoField();

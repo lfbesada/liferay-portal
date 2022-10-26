@@ -350,7 +350,7 @@ public class FragmentEntryProcessorHelperImpl
 			return webImage.toJSONObject();
 		}
 
-		return formatMappedValue(value, locale);
+		return formatMappedValue(infoFieldValue, locale);
 	}
 
 	@Override
