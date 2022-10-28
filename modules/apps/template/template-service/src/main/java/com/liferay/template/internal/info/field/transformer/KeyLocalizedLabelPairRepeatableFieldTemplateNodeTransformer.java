@@ -32,7 +32,10 @@ import org.osgi.service.component.annotations.Component;
  */
 @Component(
 	immediate = true,
-	property = "info.field.type.class.name=com.liferay.info.field.type.CategoriesInfoFieldType",
+	property = {
+		"info.field.type.class.name=com.liferay.info.field.type.CategoriesInfoFieldType",
+		"info.field.type.class.name=com.liferay.info.field.type.SelectInfoFieldType"
+	},
 	service = TemplateNodeTransformer.class
 )
 public class KeyLocalizedLabelPairRepeatableFieldTemplateNodeTransformer
