@@ -15,6 +15,7 @@
 package com.liferay.fragment.entry.processor.internal.util.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.asset.kernel.model.AssetCategory;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.dynamic.data.mapping.constants.DDMStructureConstants;
 import com.liferay.dynamic.data.mapping.io.DDMFormDeserializer;
@@ -27,8 +28,17 @@ import com.liferay.dynamic.data.mapping.storage.StorageType;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestHelper;
 import com.liferay.dynamic.data.mapping.test.util.DDMTemplateTestUtil;
 import com.liferay.fragment.entry.processor.helper.FragmentEntryProcessorHelper;
+import com.liferay.info.field.InfoField;
+import com.liferay.info.field.InfoFieldValue;
+import com.liferay.info.field.type.CategoriesInfoFieldType;
+import com.liferay.info.field.type.SelectInfoFieldType;
+import com.liferay.info.field.type.TextInfoFieldType;
+import com.liferay.info.formatter.InfoTextFormatter;
 import com.liferay.info.item.ClassPKInfoItemIdentifier;
 import com.liferay.info.item.InfoItemReference;
+import com.liferay.info.localized.InfoLocalizedValue;
+import com.liferay.info.localized.SingleValueInfoLocalizedValue;
+import com.liferay.info.type.categorization.Category;
 import com.liferay.journal.constants.JournalArticleConstants;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
@@ -53,6 +63,7 @@ import com.liferay.portal.kernel.util.CalendarFactoryUtil;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -65,6 +76,7 @@ import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 
 import java.io.InputStream;
 
+import java.util.Arrays;
 import java.util.Calendar;
 import java.util.Collections;
 import java.util.List;
@@ -77,6 +89,11 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.osgi.framework.Bundle;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.FrameworkUtil;
+import org.osgi.framework.ServiceRegistration;
 
 /**
  * @author Rubén Pulido
@@ -94,6 +111,271 @@ public class FragmentEntryProcessorHelperTest {
 	@Before
 	public void setUp() throws Exception {
 		_group = GroupTestUtil.addGroup();
+	}
+
+	@Test
+	public void testFormatMappedValueFromCollectionValue() {
+		String localizedCategoryName1 = RandomTestUtil.randomString();
+		String localizedCategoryName2 = RandomTestUtil.randomString();
+
+		String expected =
+			localizedCategoryName1 + StringPool.COMMA_AND_SPACE +
+				localizedCategoryName2;
+
+		Assert.assertEquals(
+			expected,
+			_fragmentEntryProcessorHelper.formatMappedValue(
+				new InfoFieldValue<>(
+					InfoField.builder(
+					).infoFieldType(
+						CategoriesInfoFieldType.INSTANCE
+					).namespace(
+						AssetCategory.class.getSimpleName()
+					).name(
+						RandomTestUtil.randomString()
+					).labelInfoLocalizedValue(
+						null
+					).build(),
+					Arrays.asList(
+						new Category(
+							RandomTestUtil.randomString(),
+							InfoLocalizedValue.<String>builder(
+							).defaultLocale(
+								LocaleUtil.US
+							).values(
+								HashMapBuilder.put(
+									LocaleUtil.GERMANY,
+									RandomTestUtil.randomString()
+								).put(
+									LocaleUtil.SPAIN, localizedCategoryName1
+								).put(
+									LocaleUtil.US, RandomTestUtil.randomString()
+								).build()
+							).build()),
+						new Category(
+							RandomTestUtil.randomString(),
+							InfoLocalizedValue.<String>builder(
+							).defaultLocale(
+								LocaleUtil.US
+							).values(
+								HashMapBuilder.put(
+									LocaleUtil.GERMANY,
+									RandomTestUtil.randomString()
+								).put(
+									LocaleUtil.SPAIN, localizedCategoryName2
+								).put(
+									LocaleUtil.US, RandomTestUtil.randomString()
+								).build()
+							).build()))),
+				LocaleUtil.SPAIN));
+	}
+
+	@Test
+	public void testFormatMappedValueFromEmptyCollectionValue() {
+		Assert.assertEquals(
+			StringPool.BLANK,
+			_fragmentEntryProcessorHelper.formatMappedValue(
+				new InfoFieldValue<>(
+					InfoField.builder(
+					).infoFieldType(
+						CategoriesInfoFieldType.INSTANCE
+					).namespace(
+						AssetCategory.class.getSimpleName()
+					).name(
+						RandomTestUtil.randomString()
+					).labelInfoLocalizedValue(
+						null
+					).build(),
+					Collections.emptyList()),
+				LocaleUtil.SPAIN));
+	}
+
+	@Test
+	public void testFormatMappedValueFromLabeledValue() {
+		String expected = RandomTestUtil.randomString();
+
+		Assert.assertEquals(
+			expected,
+			_fragmentEntryProcessorHelper.formatMappedValue(
+				new InfoFieldValue<>(
+					InfoField.builder(
+					).infoFieldType(
+						CategoriesInfoFieldType.INSTANCE
+					).namespace(
+						AssetCategory.class.getSimpleName()
+					).name(
+						RandomTestUtil.randomString()
+					).labelInfoLocalizedValue(
+						null
+					).build(),
+					new Category(
+						RandomTestUtil.randomString(),
+						InfoLocalizedValue.<String>builder(
+						).defaultLocale(
+							LocaleUtil.US
+						).values(
+							HashMapBuilder.put(
+								LocaleUtil.GERMANY,
+								RandomTestUtil.randomString()
+							).put(
+								LocaleUtil.SPAIN, expected
+							).put(
+								LocaleUtil.US, RandomTestUtil.randomString()
+							).build()
+						).build())),
+				LocaleUtil.SPAIN));
+	}
+
+	@Test
+	public void testFormatMappedValueFromNullValue() {
+		Assert.assertEquals(
+			null,
+			_fragmentEntryProcessorHelper.formatMappedValue(
+				new InfoFieldValue<>(
+					InfoField.builder(
+					).infoFieldType(
+						CategoriesInfoFieldType.INSTANCE
+					).namespace(
+						AssetCategory.class.getSimpleName()
+					).name(
+						RandomTestUtil.randomString()
+					).labelInfoLocalizedValue(
+						null
+					).build(),
+					null),
+				LocaleUtil.SPAIN));
+	}
+
+	@Test
+	public void testFormatMappedValueFromOtherClassValue() {
+		DummyClass testDummyClass = new DummyClass();
+
+		InfoFieldValue<Object> infoFieldValue = new InfoFieldValue<>(
+			InfoField.builder(
+			).infoFieldType(
+				TextInfoFieldType.INSTANCE
+			).namespace(
+				AssetCategory.class.getSimpleName()
+			).name(
+				RandomTestUtil.randomString()
+			).labelInfoLocalizedValue(
+				null
+			).build(),
+			testDummyClass);
+
+		Assert.assertEquals(
+			testDummyClass.toString(),
+			_fragmentEntryProcessorHelper.formatMappedValue(
+				infoFieldValue, LocaleUtil.SPAIN));
+
+		Bundle bundle = FrameworkUtil.getBundle(
+			FragmentEntryProcessorHelperTest.class);
+
+		BundleContext bundleContext = bundle.getBundleContext();
+
+		InfoTextFormatter<DummyClass> infoTextFormatter =
+			(dummyClass, locale) -> dummyClass.toString() + locale.toString();
+
+		ServiceRegistration<InfoTextFormatter> serviceRegistration =
+			bundleContext.registerService(
+				InfoTextFormatter.class, infoTextFormatter,
+				HashMapDictionaryBuilder.<String, Object>put(
+					"item.class.name", DummyClass.class.getName()
+				).build());
+
+		try {
+			Assert.assertEquals(
+				infoTextFormatter.format(testDummyClass, LocaleUtil.SPAIN),
+				_fragmentEntryProcessorHelper.formatMappedValue(
+					infoFieldValue, LocaleUtil.SPAIN));
+		}
+		finally {
+			serviceRegistration.unregister();
+		}
+	}
+
+	@Test
+	public void testFormatMappedValueFromSelectTypeMultipleSelection() {
+		SelectInfoFieldType.Option option1 = new SelectInfoFieldType.Option(
+			new SingleValueInfoLocalizedValue<>(RandomTestUtil.randomString()),
+			RandomTestUtil.randomString());
+
+		SelectInfoFieldType.Option option2 = new SelectInfoFieldType.Option(
+			new SingleValueInfoLocalizedValue<>(RandomTestUtil.randomString()),
+			RandomTestUtil.randomString());
+
+		Assert.assertEquals(
+			option1.getLabel(LocaleUtil.SPAIN) + StringPool.COMMA +
+				option2.getLabel(LocaleUtil.SPAIN),
+			_fragmentEntryProcessorHelper.formatMappedValue(
+				new InfoFieldValue<>(
+					InfoField.builder(
+					).infoFieldType(
+						SelectInfoFieldType.INSTANCE
+					).namespace(
+						StringPool.BLANK
+					).name(
+						RandomTestUtil.randomString()
+					).attribute(
+						SelectInfoFieldType.MULTIPLE, true
+					).attribute(
+						SelectInfoFieldType.OPTIONS,
+						Arrays.asList(option1, option2)
+					).build(),
+					Arrays.toString(
+						new String[] {option1.getValue(), option2.getValue()})),
+				LocaleUtil.SPAIN));
+	}
+
+	@Test
+	public void testFormatMappedValueFromSelectTypeSingleSelection() {
+		SelectInfoFieldType.Option option1 = new SelectInfoFieldType.Option(
+			new SingleValueInfoLocalizedValue<>(RandomTestUtil.randomString()),
+			RandomTestUtil.randomString());
+
+		SelectInfoFieldType.Option option2 = new SelectInfoFieldType.Option(
+			new SingleValueInfoLocalizedValue<>(RandomTestUtil.randomString()),
+			RandomTestUtil.randomString());
+
+		Assert.assertEquals(
+			option1.getLabel(LocaleUtil.SPAIN),
+			_fragmentEntryProcessorHelper.formatMappedValue(
+				new InfoFieldValue<>(
+					InfoField.builder(
+					).infoFieldType(
+						SelectInfoFieldType.INSTANCE
+					).namespace(
+						StringPool.BLANK
+					).name(
+						RandomTestUtil.randomString()
+					).attribute(
+						SelectInfoFieldType.MULTIPLE, true
+					).attribute(
+						SelectInfoFieldType.OPTIONS,
+						Arrays.asList(option1, option2)
+					).build(),
+					Arrays.toString(new String[] {option1.getValue()})),
+				LocaleUtil.SPAIN));
+
+		Assert.assertEquals(
+			option1.getLabel(LocaleUtil.SPAIN),
+			_fragmentEntryProcessorHelper.formatMappedValue(
+				new InfoFieldValue<>(
+					InfoField.builder(
+					).infoFieldType(
+						SelectInfoFieldType.INSTANCE
+					).namespace(
+						StringPool.BLANK
+					).name(
+						RandomTestUtil.randomString()
+					).attribute(
+						SelectInfoFieldType.MULTIPLE, true
+					).attribute(
+						SelectInfoFieldType.OPTIONS,
+						Arrays.asList(option1, option2)
+					).build(),
+					option1.getValue()),
+				LocaleUtil.SPAIN));
 	}
 
 	@Test
@@ -374,5 +656,8 @@ public class FragmentEntryProcessorHelperTest {
 
 	@Inject
 	private Portal _portal;
+
+	private static class DummyClass {
+	}
 
 }
