@@ -35,7 +35,6 @@ import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.staging.StagingGroupHelper;
 import com.liferay.template.constants.TemplatePortletKeys;
 import com.liferay.template.internal.transformer.TemplateDisplayTemplateTransformer;
-import com.liferay.template.internal.transformer.TemplateNodeFactory;
 import com.liferay.template.model.TemplateEntry;
 import com.liferay.template.service.TemplateEntryLocalService;
 
@@ -60,15 +59,13 @@ public class TemplateInfoItemTemplatedRenderer<T>
 		String className, DDMTemplateLocalService ddmTemplateLocalService,
 		InfoItemServiceTracker infoItemServiceTracker,
 		StagingGroupHelper stagingGroupHelper,
-		TemplateEntryLocalService templateEntryLocalService,
-		TemplateNodeFactory templateNodeFactory) {
+		TemplateEntryLocalService templateEntryLocalService) {
 
 		_className = className;
 		_ddmTemplateLocalService = ddmTemplateLocalService;
 		_infoItemServiceTracker = infoItemServiceTracker;
 		_stagingGroupHelper = stagingGroupHelper;
 		_templateEntryLocalService = templateEntryLocalService;
-		_templateNodeFactory = templateNodeFactory;
 	}
 
 	@Override
@@ -150,8 +147,7 @@ public class TemplateInfoItemTemplatedRenderer<T>
 			TemplateDisplayTemplateTransformer
 				templateDisplayTemplateTransformer =
 					new TemplateDisplayTemplateTransformer(
-						templateEntry, infoItemFieldValues,
-						_templateNodeFactory);
+						templateEntry, infoItemFieldValues);
 
 			writer.write(templateDisplayTemplateTransformer.transform());
 		}
@@ -206,6 +202,5 @@ public class TemplateInfoItemTemplatedRenderer<T>
 	private final InfoItemServiceTracker _infoItemServiceTracker;
 	private final StagingGroupHelper _stagingGroupHelper;
 	private final TemplateEntryLocalService _templateEntryLocalService;
-	private final TemplateNodeFactory _templateNodeFactory;
 
 }

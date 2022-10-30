@@ -18,6 +18,7 @@ import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.service.DDMTemplateLocalServiceUtil;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldValue;
+import com.liferay.info.field.type.InfoFieldType;
 import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.petra.string.StringPool;
@@ -44,12 +45,10 @@ import java.util.Map;
 public class TemplateDisplayTemplateTransformer {
 
 	public TemplateDisplayTemplateTransformer(
-		TemplateEntry templateEntry, InfoItemFieldValues infoItemFieldValues,
-		TemplateNodeFactory templateNodeFactory) {
+		TemplateEntry templateEntry, InfoItemFieldValues infoItemFieldValues) {
 
 		_templateEntry = templateEntry;
 		_infoItemFieldValues = infoItemFieldValues;
-		_templateNodeFactory = templateNodeFactory;
 	}
 
 	public String transform() throws Exception {
@@ -89,8 +88,12 @@ public class TemplateDisplayTemplateTransformer {
 				continue;
 			}
 
-			TemplateNode templateNode = _templateNodeFactory.createTemplateNode(
-				infoFieldValue, themeDisplay);
+			InfoFieldType infoFieldType = infoField.getInfoFieldType();
+
+			TemplateNode templateNode = TemplateNodeFactory.createTemplateNode(
+				infoField.getName(), infoFieldType.getName(),
+				infoFieldValue.getValue(themeDisplay.getLocale()),
+				themeDisplay);
 
 			contextObjects.put(infoField.getName(), templateNode);
 			contextObjects.put(infoField.getUniqueId(), templateNode);
@@ -113,7 +116,6 @@ public class TemplateDisplayTemplateTransformer {
 
 	private final InfoItemFieldValues _infoItemFieldValues;
 	private final TemplateEntry _templateEntry;
-	private final TemplateNodeFactory _templateNodeFactory;
 
 	private static class TransformerHolder {
 

@@ -27,7 +27,6 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.staging.StagingGroupHelper;
 import com.liferay.template.info.item.capability.TemplateInfoItemCapability;
 import com.liferay.template.internal.info.item.renderer.TemplateInfoItemTemplatedRenderer;
-import com.liferay.template.internal.transformer.TemplateNodeFactory;
 import com.liferay.template.service.TemplateEntryLocalService;
 
 import java.util.List;
@@ -94,9 +93,6 @@ public class TemplateInfoItemCapabilitiesProviderTracker {
 	@Reference
 	private TemplateInfoItemCapability _templateInfoItemCapability;
 
-	@Reference
-	private TemplateNodeFactory _templateNodeFactory;
-
 	private class InfoItemCapabilitiesProviderServiceTrackerCustomizer
 		implements ServiceTrackerCustomizer
 			<InfoItemCapabilitiesProvider<?>, InfoItemCapabilitiesProvider<?>> {
@@ -147,7 +143,7 @@ public class TemplateInfoItemCapabilitiesProviderTracker {
 						new TemplateInfoItemTemplatedRenderer<>(
 							className, _ddmTemplateLocalService,
 							_infoItemServiceTracker, _stagingGroupHelper,
-							_templateEntryLocalService, _templateNodeFactory),
+							_templateEntryLocalService),
 						HashMapDictionaryBuilder.<String, Object>put(
 							"item.class.name", className
 						).put(
