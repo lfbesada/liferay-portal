@@ -20,8 +20,8 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.templateparser.TemplateNode;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.template.info.field.transformer.TemplateNodeTransformer;
+import com.liferay.template.internal.transformer.TemplateNodeTransformerUtil;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -81,7 +81,7 @@ public class DefaultRepeatableFieldTemplateNodeTransformer
 		Object firstItem = iterator.next();
 
 		TemplateNodeTransformer templateNodeTransformer =
-			_getTemplateNodeTransformer(firstItem);
+			TemplateNodeTransformerUtil.getTemplateNodeTransformer(firstItem);
 
 		TemplateNode templateNode = templateNodeTransformer.transform(
 			fieldName, fieldType, firstItem, themeDisplay);
@@ -97,33 +97,7 @@ public class DefaultRepeatableFieldTemplateNodeTransformer
 		return templateNode;
 	}
 
-	private TemplateNodeTransformer _getTemplateNodeTransformer(
-		Object value) {
-
-		Class<?> fieldValueClass = value.getClass();
-
-		String fieldValueClassName = fieldValueClass.getName();
-
-		TemplateNodeTransformer templateNodeTransformer =
-			_templateNodeTransformerTracker.getTemplateNodeTransformer(
-				fieldValueClassName);
-
-		if (templateNodeTransformer != null) {
-			return templateNodeTransformer;
-		}
-
-		if (value instanceof Collection) {
-			return this;
-		}
-
-		return _templateNodeTransformerTracker.getTemplateNodeTransformer(
-			"<ANY>");
-	}
-
 	private static final Log _log = LogFactoryUtil.getLog(
 		DefaultRepeatableFieldTemplateNodeTransformer.class);
-
-	@Reference
-	private TemplateNodeTransformerTracker _templateNodeTransformerTracker;
 
 }
