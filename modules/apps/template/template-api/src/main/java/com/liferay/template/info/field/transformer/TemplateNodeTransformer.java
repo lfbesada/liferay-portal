@@ -14,7 +14,6 @@
 
 package com.liferay.template.info.field.transformer;
 
-import com.liferay.info.field.InfoFieldValue;
 import com.liferay.portal.kernel.templateparser.TemplateNode;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 
@@ -26,6 +25,7 @@ public interface TemplateNodeTransformer {
 	public String getClassName();
 
 	public TemplateNode transform(
-		InfoFieldValue<Object> infoFieldValue, ThemeDisplay themeDisplay);
+		String fieldName, String fieldType, Object value,
+		ThemeDisplay themeDisplay);
 
 }
