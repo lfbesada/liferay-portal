@@ -17,7 +17,6 @@ package com.liferay.template.internal.info.field.transformer;
 import com.liferay.osgi.service.tracker.collections.map.PropertyServiceReferenceComparator;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
-import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.template.info.field.transformer.TemplateNodeTransformer;
 
 import java.util.ArrayList;
@@ -64,18 +63,11 @@ public class TemplateNodeTransformerTrackerImpl
 					(Class)TemplateNodeTransformer.class,
 				null,
 				(serviceReference, emitter) -> {
+					TemplateNodeTransformer templateNodeTransformer =
+						bundleContext.getService(serviceReference);
+
 					try {
-						List<String> classNames = StringUtil.asList(
-							serviceReference.getProperty(
-								"info.field.type.class.name"));
-
-						for (String className : classNames) {
-							emitter.emit(className);
-						}
-
-						if (classNames.isEmpty()) {
-							emitter.emit(_CLASS_NAME_ANY);
-						}
+						emitter.emit(templateNodeTransformer.getClassName());
 					}
 					finally {
 						bundleContext.ungetService(serviceReference);

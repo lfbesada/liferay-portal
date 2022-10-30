@@ -23,6 +23,8 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
  */
 public interface TemplateNodeTransformer {
 
+	public String getClassName();
+
 	public TemplateNode transform(
 		InfoFieldValue<Object> infoFieldValue, ThemeDisplay themeDisplay);
 
