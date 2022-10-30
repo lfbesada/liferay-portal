@@ -22,15 +22,12 @@ import com.liferay.template.info.field.transformer.TemplateNodeTransformer;
 
 import java.util.Collections;
 
-import org.osgi.service.component.annotations.Component;
-
 /**
  * @author Lourdes Fernández Besada
  */
-@Component(immediate = true, service = TemplateNodeFactory.class)
 public class TemplateNodeFactory {
 
-	public TemplateNode createTemplateNode(
+	public static TemplateNode createTemplateNode(
 		String fieldName, String fieldType, Object value,
 		ThemeDisplay themeDisplay) {
 
