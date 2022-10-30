@@ -15,6 +15,8 @@
 package com.liferay.template.internal.transformer;
 
 import com.liferay.template.info.field.transformer.TemplateNodeTransformer;
+import com.liferay.template.internal.info.field.transformer.DefaultRepeatableFieldTemplateNodeTransformer;
+import com.liferay.template.internal.info.field.transformer.DefaultTemplateNodeTransformer;
 import com.liferay.template.internal.info.field.transformer.TemplateNodeTransformerTracker;
 
 import java.util.Collection;
@@ -44,17 +46,10 @@ public class TemplateNodeTransformerUtil {
 		}
 
 		if (value instanceof Collection) {
-			templateNodeTransformer =
-				_templateNodeTransformerTracker.getTemplateNodeTransformer(
-					Collection.class.getName());
+			return _DEFAULT_REPEATABLE_FIELD_TEMPLATE_NODE_TRANSFORMER;
 		}
 
-		if (templateNodeTransformer != null) {
-			return templateNodeTransformer;
-		}
-
-		return _templateNodeTransformerTracker.getTemplateNodeTransformer(
-			"<ANY>");
+		return _DEFAULT_TEMPLATE_NODE_TRANSFORMER;
 	}
 
 	@Reference(unbind = "-")
@@ -63,6 +58,14 @@ public class TemplateNodeTransformerUtil {
 
 		_templateNodeTransformerTracker = templateNodeTransformerTracker;
 	}
+
+	private static final TemplateNodeTransformer
+		_DEFAULT_REPEATABLE_FIELD_TEMPLATE_NODE_TRANSFORMER =
+			new DefaultRepeatableFieldTemplateNodeTransformer();
+
+	private static final TemplateNodeTransformer
+		_DEFAULT_TEMPLATE_NODE_TRANSFORMER =
+			new DefaultTemplateNodeTransformer();
 
 	private static TemplateNodeTransformerTracker
 		_templateNodeTransformerTracker;

@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.templateparser.TemplateNode;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.template.info.field.transformer.TemplateNodeTransformer;
 import com.liferay.template.internal.transformer.TemplateNodeTransformerUtil;
-import org.osgi.service.component.annotations.Component;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -30,7 +29,6 @@ import java.util.Iterator;
 /**
  * @author Lourdes Fernández Besada
  */
-@Component(immediate = true, service = TemplateNodeTransformer.class)
 public class DefaultRepeatableFieldTemplateNodeTransformer
 	implements TemplateNodeTransformer {
 

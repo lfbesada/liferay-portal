@@ -17,14 +17,10 @@ package com.liferay.template.internal.info.field.transformer;
 import com.liferay.portal.kernel.templateparser.TemplateNode;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.template.info.field.transformer.BaseTemplateNodeTransformer;
-import com.liferay.template.info.field.transformer.TemplateNodeTransformer;
-
-import org.osgi.service.component.annotations.Component;
 
 /**
  * @author Lourdes Fernández Besada
  */
-@Component(immediate = true, service = TemplateNodeTransformer.class)
 public class DefaultTemplateNodeTransformer
 	extends BaseTemplateNodeTransformer {
 
