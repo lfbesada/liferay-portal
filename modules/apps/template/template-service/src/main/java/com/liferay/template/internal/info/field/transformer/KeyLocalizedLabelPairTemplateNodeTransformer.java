@@ -14,15 +14,11 @@
 
 package com.liferay.template.internal.info.field.transformer;
 
-import com.liferay.info.field.InfoField;
-import com.liferay.info.field.InfoFieldValue;
-import com.liferay.info.field.type.InfoFieldType;
 import com.liferay.info.type.KeyLocalizedLabelPair;
-import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.portal.kernel.templateparser.TemplateNode;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.template.info.field.transformer.BaseRepeatableFieldTemplateNodeTransformer;
+import com.liferay.template.info.field.transformer.BaseTemplateNodeTransformer;
 import com.liferay.template.info.field.transformer.TemplateNodeTransformer;
 
 import org.osgi.service.component.annotations.Component;
@@ -30,30 +26,26 @@ import org.osgi.service.component.annotations.Component;
 /**
  * @author Lourdes Fernández Besada
  */
-@Component(
-	immediate = true,
-	property = {
-		"info.field.type.class.name=com.liferay.info.field.type.CategoriesInfoFieldType",
-		"info.field.type.class.name=com.liferay.info.field.type.SelectInfoFieldType"
-	},
-	service = TemplateNodeTransformer.class
-)
-public class KeyLocalizedLabelPairRepeatableFieldTemplateNodeTransformer
-	extends BaseRepeatableFieldTemplateNodeTransformer<KeyLocalizedLabelPair> {
+@Component(immediate = true, service = TemplateNodeTransformer.class)
+public class KeyLocalizedLabelPairTemplateNodeTransformer
+	extends BaseTemplateNodeTransformer {
 
 	@Override
-	protected UnsafeFunction<KeyLocalizedLabelPair, TemplateNode, Exception>
-		getTransformUnsafeFunction(
-			InfoFieldValue<Object> infoFieldValue, ThemeDisplay themeDisplay) {
+	public String getClassName() {
+		return KeyLocalizedLabelPair.class.getName();
+	}
 
-		InfoField<?> infoField = infoFieldValue.getInfoField();
+	@Override
+	public TemplateNode transform(
+		String fieldName, String fieldType, Object value,
+		ThemeDisplay themeDisplay) {
 
-		InfoFieldType infoFieldType = infoField.getInfoFieldType();
+		KeyLocalizedLabelPair keyLocalizedLabelPair =
+			(KeyLocalizedLabelPair)value;
 
-		return keyLocalizedLabelPair -> new TemplateNode(
-			themeDisplay, infoField.getName(),
-			keyLocalizedLabelPair.getLabel(themeDisplay.getLocale()),
-			infoFieldType.getName(),
+		return new TemplateNode(
+			themeDisplay, fieldName,
+			keyLocalizedLabelPair.getLabel(themeDisplay.getLocale()), fieldType,
 			HashMapBuilder.put(
 				"key", keyLocalizedLabelPair.getKey()
 			).put(
