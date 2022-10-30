@@ -14,12 +14,8 @@
 
 package com.liferay.template.info.field.transformer;
 
-import com.liferay.info.field.InfoField;
-import com.liferay.info.field.InfoFieldValue;
-import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.templateparser.TemplateNode;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Collections;
 
@@ -30,21 +26,12 @@ public abstract class BaseTemplateNodeTransformer
 	implements TemplateNodeTransformer {
 
 	protected TemplateNode getDefaultTemplateNode(
-		InfoFieldValue<Object> infoFieldValue, ThemeDisplay themeDisplay) {
-
-		InfoField<?> infoField = infoFieldValue.getInfoField();
-
-		Object data = infoFieldValue.getValue(themeDisplay.getLocale());
-
-		if (Validator.isNull(data)) {
-			return new TemplateNode(
-				themeDisplay, infoField.getName(), StringPool.BLANK,
-				StringPool.BLANK, Collections.emptyMap());
-		}
+		String fieldName, String fieldType, Object value,
+		ThemeDisplay themeDisplay) {
 
 		return new TemplateNode(
-			themeDisplay, infoField.getName(), String.valueOf(data),
-			StringPool.BLANK, Collections.emptyMap());
+			themeDisplay, fieldName, String.valueOf(value), fieldType,
+			Collections.emptyMap());
 	}
 
 }

@@ -14,7 +14,6 @@
 
 package com.liferay.template.internal.info.field.transformer;
 
-import com.liferay.info.field.InfoFieldValue;
 import com.liferay.portal.kernel.templateparser.TemplateNode;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.template.info.field.transformer.BaseTemplateNodeTransformer;
@@ -30,10 +29,17 @@ public class DefaultTemplateNodeTransformer
 	extends BaseTemplateNodeTransformer {
 
 	@Override
-	public TemplateNode transform(
-		InfoFieldValue<Object> infoFieldValue, ThemeDisplay themeDisplay) {
+	public String getClassName() {
+		return "<ANY>";
+	}
 
-		return getDefaultTemplateNode(infoFieldValue, themeDisplay);
+	@Override
+	public TemplateNode transform(
+		String fieldName, String fieldType, Object value,
+		ThemeDisplay themeDisplay) {
+
+		return getDefaultTemplateNode(
+			fieldName, fieldType, value, themeDisplay);
 	}
 
 }
