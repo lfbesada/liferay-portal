@@ -14,42 +14,116 @@
 
 package com.liferay.template.internal.info.field.transformer;
 
-import com.liferay.info.field.InfoField;
-import com.liferay.info.field.InfoFieldValue;
-import com.liferay.info.field.type.InfoFieldType;
-import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.templateparser.TemplateNode;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.template.info.field.transformer.BaseRepeatableFieldTemplateNodeTransformer;
 import com.liferay.template.info.field.transformer.TemplateNodeTransformer;
-
-import java.util.Collections;
-
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
+import java.util.Collection;
+import java.util.Collections;
+import java.util.Iterator;
 
 /**
  * @author Lourdes Fernández Besada
  */
-@Component(
-	immediate = true,
-	property = "info.field.type.class.name=com.liferay.info.field.type.TagsInfoFieldType",
-	service = TemplateNodeTransformer.class
-)
+@Component(immediate = true, service = TemplateNodeTransformer.class)
 public class DefaultRepeatableFieldTemplateNodeTransformer
-	extends BaseRepeatableFieldTemplateNodeTransformer<Object> {
+	implements TemplateNodeTransformer {
 
 	@Override
-	protected UnsafeFunction<Object, TemplateNode, Exception>
-		getTransformUnsafeFunction(
-			InfoFieldValue<Object> infoFieldValue, ThemeDisplay themeDisplay) {
-
-		InfoField<?> infoField = infoFieldValue.getInfoField();
-
-		InfoFieldType infoFieldType = infoField.getInfoFieldType();
-
-		return object -> new TemplateNode(
-			themeDisplay, infoField.getName(), String.valueOf(object),
-			infoFieldType.getName(), Collections.emptyMap());
+	public String getClassName() {
+		return Collections.class.getName();
 	}
+
+	public TemplateNode transform(
+		String fieldName, String fieldType, Object value,
+		ThemeDisplay themeDisplay) {
+
+		if (!(value instanceof Collection)) {
+			return new TemplateNode(
+				themeDisplay, fieldName, String.valueOf(value), fieldType,
+				Collections.emptyMap());
+		}
+
+		Collection<Object> collection = (Collection<Object>)value;
+
+		try {
+			return _createTemplateNode(
+				fieldName, fieldType, themeDisplay, collection);
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception);
+			}
+
+			return new TemplateNode(
+				themeDisplay, fieldName, String.valueOf(value), fieldType,
+				Collections.emptyMap());
+		}
+	}
+
+	private <T> TemplateNode _createTemplateNode(
+		String fieldName, String fieldType, ThemeDisplay themeDisplay,
+		Collection<Object> collection) {
+
+		if (collection.isEmpty()) {
+			return new TemplateNode(
+				themeDisplay, fieldName, StringPool.BLANK, fieldType,
+				Collections.emptyMap());
+		}
+
+		Iterator<Object> iterator = collection.iterator();
+
+		Object firstItem = iterator.next();
+
+		TemplateNodeTransformer templateNodeTransformer =
+			_getTemplateNodeTransformer(firstItem);
+
+		TemplateNode templateNode = templateNodeTransformer.transform(
+			fieldName, fieldType, firstItem, themeDisplay);
+
+		templateNode.appendSibling(templateNode);
+
+		while (iterator.hasNext()) {
+			templateNode.appendSibling(
+				templateNodeTransformer.transform(
+					fieldName, fieldType, iterator.next(), themeDisplay));
+		}
+
+		return templateNode;
+	}
+
+	private TemplateNodeTransformer _getTemplateNodeTransformer(
+		Object value) {
+
+		Class<?> fieldValueClass = value.getClass();
+
+		String fieldValueClassName = fieldValueClass.getName();
+
+		TemplateNodeTransformer templateNodeTransformer =
+			_templateNodeTransformerTracker.getTemplateNodeTransformer(
+				fieldValueClassName);
+
+		if (templateNodeTransformer != null) {
+			return templateNodeTransformer;
+		}
+
+		if (value instanceof Collection) {
+			return this;
+		}
+
+		return _templateNodeTransformerTracker.getTemplateNodeTransformer(
+			"<ANY>");
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DefaultRepeatableFieldTemplateNodeTransformer.class);
+
+	@Reference
+	private TemplateNodeTransformerTracker _templateNodeTransformerTracker;
 
 }
