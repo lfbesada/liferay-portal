@@ -14,13 +14,15 @@
 
 package com.liferay.template.internal.transformer;
 
-import com.liferay.info.field.InfoField;
-import com.liferay.info.field.InfoFieldValue;
-import com.liferay.info.field.type.InfoFieldType;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.templateparser.TemplateNode;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.template.info.field.transformer.TemplateNodeTransformer;
 import com.liferay.template.internal.info.field.transformer.TemplateNodeTransformerTracker;
+
+import java.util.Collection;
+import java.util.Collections;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -32,19 +34,49 @@ import org.osgi.service.component.annotations.Reference;
 public class TemplateNodeFactory {
 
 	public TemplateNode createTemplateNode(
-		InfoFieldValue<Object> infoFieldValue, ThemeDisplay themeDisplay) {
+		String fieldName, String fieldType, Object value,
+		ThemeDisplay themeDisplay) {
 
-		InfoField<?> infoField = infoFieldValue.getInfoField();
+		if (Validator.isNull(value)) {
+			return new TemplateNode(
+				themeDisplay, fieldName, StringPool.BLANK, fieldType,
+				Collections.emptyMap());
+		}
 
-		InfoFieldType infoFieldType = infoField.getInfoFieldType();
+		TemplateNodeTransformer templateNodeTransformer =
+			_getTemplateNodeTransformer(value);
 
-		Class<?> infoFieldTypeClass = infoFieldType.getClass();
+		return templateNodeTransformer.transform(
+			fieldName, fieldType, value, themeDisplay);
+	}
+
+	private TemplateNodeTransformer _getTemplateNodeTransformer(
+		Object value) {
+
+		Class<?> fieldValueClass = value.getClass();
+
+		String fieldValueClassName = fieldValueClass.getName();
 
 		TemplateNodeTransformer templateNodeTransformer =
 			_templateNodeTransformerTracker.getTemplateNodeTransformer(
-				infoFieldTypeClass.getName());
+				fieldValueClassName);
 
-		return templateNodeTransformer.transform(infoFieldValue, themeDisplay);
+		if (templateNodeTransformer != null) {
+			return templateNodeTransformer;
+		}
+
+		if (value instanceof Collection) {
+			templateNodeTransformer =
+				_templateNodeTransformerTracker.getTemplateNodeTransformer(
+					Collection.class.getName());
+		}
+
+		if (templateNodeTransformer != null) {
+			return templateNodeTransformer;
+		}
+
+		return _templateNodeTransformerTracker.getTemplateNodeTransformer(
+			"<ANY>");
 	}
 
 	@Reference
