@@ -37,15 +37,7 @@ public class TemplateNodeTransformerTrackerImpl
 	public TemplateNodeTransformer getTemplateNodeTransformer(
 		String className) {
 
-		TemplateNodeTransformer templateNodeTransformer =
-			_templateNodeTransformerServiceTrackerMap.getService(className);
-
-		if (templateNodeTransformer != null) {
-			return templateNodeTransformer;
-		}
-
-		return _templateNodeTransformerServiceTrackerMap.getService(
-			_CLASS_NAME_ANY);
+		return _templateNodeTransformerServiceTrackerMap.getService(className);
 	}
 
 	@Override
@@ -75,8 +67,6 @@ public class TemplateNodeTransformerTrackerImpl
 				},
 				new PropertyServiceReferenceComparator<>("service.ranking"));
 	}
-
-	private static final String _CLASS_NAME_ANY = "<ANY>";
 
 	private ServiceTrackerMap<String, TemplateNodeTransformer>
 		_templateNodeTransformerServiceTrackerMap;
