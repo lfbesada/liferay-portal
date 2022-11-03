@@ -29,7 +29,7 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 
-import java.util.Collections;
+import java.util.HashMap;
 
 import javax.portlet.ResourceRequest;
 import javax.portlet.ResourceResponse;
@@ -71,7 +71,7 @@ public class GetInfoItemFieldValueMVCResourceCommand
 
 		Object value =
 			_fragmentEntryProcessorHelper.getMappedInfoItemFieldValue(
-				jsonObject, Collections.emptyMap(),
+				jsonObject, new HashMap<>(),
 				LocaleUtil.fromLanguageId(languageId),
 				FragmentEntryLinkConstants.EDIT, 0, StringPool.BLANK);
 
