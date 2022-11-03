@@ -15,6 +15,7 @@
 package com.liferay.fragment.entry.processor.editable.internal.parser;
 
 import com.liferay.fragment.entry.processor.editable.parser.EditableElementParser;
+import com.liferay.fragment.entry.processor.editable.parser.util.EditableElementParserUtil;
 import com.liferay.fragment.exception.FragmentEntryContentException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
@@ -53,7 +54,9 @@ public class DateTextEditableElementParser implements EditableElementParser {
 
 	@Override
 	public void replace(Element element, String value) {
-		replace(element, value, null);
+		Element bodyElement = EditableElementParserUtil.getDocumentBody(value);
+
+		element.html(bodyElement.html());
 	}
 
 	@Override
