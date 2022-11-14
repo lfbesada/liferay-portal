@@ -1248,7 +1248,7 @@ public class JournalDisplayContext {
 		articleAndFolderSearchContainer.setOrderByType(getOrderByType());
 
 		if (isSearch()) {
-			Indexer<?> indexer = JournalSearcher.getInstance();
+			Indexer<JournalArticle> indexer = IndexerRegistryUtil.getIndexer(JournalArticle.class);
 
 			SearchContext searchContext = buildSearchContext(
 				articleAndFolderSearchContainer.getStart(),

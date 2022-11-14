@@ -45,6 +45,8 @@ import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.Indexer;
+import com.liferay.portal.kernel.search.IndexerRegistry;
+import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.search.QueryConfig;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
@@ -88,7 +90,7 @@ public class BasicWebContentSingleFormVariationInfoCollectionProvider
 		CollectionQuery collectionQuery) {
 
 		try {
-			Indexer<?> indexer = JournalSearcher.getInstance();
+			Indexer<JournalArticle> indexer = _indexerRegistry.getIndexer(JournalArticle.class);
 
 			SearchContext searchContext = _buildSearchContext(collectionQuery);
 
@@ -313,5 +315,8 @@ public class BasicWebContentSingleFormVariationInfoCollectionProvider
 
 	@Reference
 	private Portal _portal;
+
+	@Reference
+	private IndexerRegistry _indexerRegistry;
 
 }

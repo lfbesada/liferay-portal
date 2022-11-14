@@ -36,6 +36,7 @@ import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.Indexer;
+import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.search.QueryConfig;
 import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.SearchException;
@@ -84,8 +85,7 @@ public class DDMStructureRelatedInfoCollectionProvider
 					Collections.emptyList(), collectionQuery.getPagination(),
 					0);
 			}
-
-			Indexer<?> indexer = JournalSearcher.getInstance();
+			Indexer<JournalArticle> indexer = IndexerRegistryUtil.getIndexer(JournalArticle.class);
 
 			SearchContext searchContext = _buildSearchContext(
 				(AssetCategory)relatedItem, collectionQuery);
