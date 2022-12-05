@@ -331,6 +331,8 @@ public class JournalArticleInfoItemFieldValuesProvider
 				StringPool.BLANK
 			).name(
 				fieldName
+			).attribute(
+				TextInfoFieldType.HTML, true
 			).labelInfoLocalizedValue(
 				InfoLocalizedValue.localize(getClass(), fieldName)
 			).build(),
