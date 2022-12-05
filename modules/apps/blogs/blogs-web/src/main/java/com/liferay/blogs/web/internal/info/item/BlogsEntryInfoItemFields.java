@@ -50,6 +50,8 @@ public class BlogsEntryInfoItemFields {
 			TextInfoFieldType.INSTANCE
 		).name(
 			"content"
+		).attribute(
+			TextInfoFieldType.HTML, true
 		).labelInfoLocalizedValue(
 			InfoLocalizedValue.localize(
 				BlogsEntryInfoItemFields.class, "content")
