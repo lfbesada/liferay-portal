@@ -17,7 +17,9 @@ package com.liferay.blogs.web.internal.info.item.provider.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.BlogsEntryLocalService;
+import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldValue;
+import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
 import com.liferay.info.type.WebImage;
@@ -46,6 +48,7 @@ import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import java.io.InputStream;
 
 import java.util.Date;
+import java.util.Optional;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -104,6 +107,19 @@ public class BlogsEntryInfoItemFieldValuesProviderTest {
 
 		Assert.assertEquals(
 			blogsEntry.getDisplayDate(), publishDateInfoFieldValue.getValue());
+
+		InfoFieldValue<Object> contentInfoFieldValue =
+			infoItemFieldValues.getInfoFieldValue("content");
+
+		Assert.assertEquals(
+			blogsEntry.getContent(), contentInfoFieldValue.getValue());
+
+		InfoField infoField = contentInfoFieldValue.getInfoField();
+
+		Optional<Boolean> htmlOptional = infoField.getAttributeOptional(
+			TextInfoFieldType.HTML);
+
+		Assert.assertTrue(htmlOptional.orElse(false));
 	}
 
 	@Test
