@@ -105,6 +105,8 @@ public class TemplateInfoItemFieldSetProviderImpl
 		).name(
 			PortletDisplayTemplate.DISPLAY_STYLE_PREFIX +
 				templateEntry.getTemplateEntryId()
+		).attribute(
+			TextInfoFieldType.HTML, true
 		).labelInfoLocalizedValue(
 			InfoLocalizedValue.<String>builder(
 			).value(
