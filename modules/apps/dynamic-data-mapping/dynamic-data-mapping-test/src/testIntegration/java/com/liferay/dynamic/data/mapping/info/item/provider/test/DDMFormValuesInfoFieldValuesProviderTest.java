@@ -34,6 +34,7 @@ import com.liferay.petra.function.UnsafeConsumer;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.test.randomizerbumpers.StartingLetterStringRandomizerBumper;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -270,7 +271,9 @@ public class DDMFormValuesInfoFieldValuesProviderTest {
 		boolean multiple, Map<String, String> optionsMap, String type) {
 
 		DDMFormField ddmFormField = new DDMFormField(
-			RandomTestUtil.randomString(10), type);
+			RandomTestUtil.randomString(
+				10, StartingLetterStringRandomizerBumper.INSTANCE),
+			type);
 
 		ddmFormField.setDataType("text");
 		ddmFormField.setIndexType("text");

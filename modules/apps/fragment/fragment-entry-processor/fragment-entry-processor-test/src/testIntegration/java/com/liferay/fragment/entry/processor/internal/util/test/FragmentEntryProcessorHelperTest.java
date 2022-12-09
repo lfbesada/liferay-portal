@@ -53,6 +53,7 @@ import com.liferay.portal.kernel.repository.LocalRepository;
 import com.liferay.portal.kernel.repository.RepositoryProviderUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.randomizerbumpers.StartingLetterStringRandomizerBumper;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -460,7 +461,9 @@ public class FragmentEntryProcessorHelperTest {
 
 	private DDMFormField _createDDMFormField(String type) {
 		DDMFormField ddmFormField = new DDMFormField(
-			RandomTestUtil.randomString(10), type);
+			RandomTestUtil.randomString(
+				10, StartingLetterStringRandomizerBumper.INSTANCE),
+			type);
 
 		ddmFormField.setDataType("text");
 		ddmFormField.setIndexType("text");

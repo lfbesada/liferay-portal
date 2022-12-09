@@ -52,6 +52,7 @@ import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
+import com.liferay.portal.kernel.test.randomizerbumpers.StartingLetterStringRandomizerBumper;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -644,7 +645,9 @@ public class TemplateInfoItemFieldSetProviderTest {
 		boolean multiple, Map<String, String> optionsMap, String type) {
 
 		DDMFormField ddmFormField = new DDMFormField(
-			RandomTestUtil.randomString(10), type);
+			RandomTestUtil.randomString(
+				10, StartingLetterStringRandomizerBumper.INSTANCE),
+			type);
 
 		ddmFormField.setDataType("text");
 		ddmFormField.setIndexType("text");
