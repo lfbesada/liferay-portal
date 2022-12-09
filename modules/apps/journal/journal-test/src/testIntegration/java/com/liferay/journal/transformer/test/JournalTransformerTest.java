@@ -34,6 +34,7 @@ import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.templateparser.TransformerListener;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.test.randomizerbumpers.StartingLetterStringRandomizerBumper;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -233,7 +234,9 @@ public class JournalTransformerTest {
 			TestPropsValues.getGroupId());
 
 		DDMFormField ddmFormField = new DDMFormField(
-			RandomTestUtil.randomString(10), DDMFormFieldTypeConstants.SELECT);
+			RandomTestUtil.randomString(
+				10, StartingLetterStringRandomizerBumper.INSTANCE),
+			DDMFormFieldTypeConstants.SELECT);
 
 		ddmFormField.setDataType("text");
 		ddmFormField.setIndexType("text");
