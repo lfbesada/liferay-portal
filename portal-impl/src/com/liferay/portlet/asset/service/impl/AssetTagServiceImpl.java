@@ -20,6 +20,8 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.security.access.control.AccessControlled;
@@ -27,7 +29,6 @@ import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.portal.kernel.util.Autocomplete;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -264,8 +265,7 @@ public class AssetTagServiceImpl extends AssetTagServiceBaseImpl {
 	@AccessControlled(guestAccessEnabled = true)
 	@Override
 	public JSONArray search(long[] groupIds, String name, int start, int end) {
-		return Autocomplete.arrayToJSONArray(
-			getTags(groupIds, name, start, end), "name", "name");
+		return _toJSONArray(getTags(groupIds, name, start, end));
 	}
 
 	@Override
@@ -333,6 +333,23 @@ public class AssetTagServiceImpl extends AssetTagServiceBaseImpl {
 		}
 
 		return tags;
+	}
+
+	private JSONArray _toJSONArray(List<AssetTag> assetTags) {
+		JSONArray jsonArray = JSONFactoryUtil.createJSONArray();
+
+		for (AssetTag assetTag : assetTags) {
+			jsonArray.put(
+				JSONUtil.put(
+					"groupId", assetTag.getGroupId()
+				).put(
+					"name", assetTag.getName()
+				).put(
+					"tagId", assetTag.getTagId()
+				));
+		}
+
+		return jsonArray;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
