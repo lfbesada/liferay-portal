@@ -1181,6 +1181,8 @@ public class JournalTestUtil {
 		).put(
 			"label", _toI18nJSONObject(ddmFormField.getLabel())
 		).put(
+			"multiple", ddmFormField.isMultiple()
+		).put(
 			"localizable", ddmFormField.isLocalizable()
 		).put(
 			"name", ddmFormField.getName()
