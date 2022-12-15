@@ -405,6 +405,13 @@ public class ContentPageEditorDisplayContext {
 				_getResourceURL(
 					"/layout_content_page_editor/get_collection_variations")
 			).put(
+				"getEditCollectionConfigurationUrlURL",
+				HttpComponentsUtil.addParameter(
+					_getResourceURL(
+						"/layout_content_page_editor" +
+							"/get_edit_collection_configuration_url"),
+					"urlCurrent", themeDisplay.getURLCurrent())
+			).put(
 				"getExperienceDataURL",
 				_getResourceURL(
 					"/layout_content_page_editor/get_experience_data")
