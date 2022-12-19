@@ -76,16 +76,32 @@ export function CollectionGeneralPanel({item}) {
 		paginationType,
 	} = item.config;
 
-	const [availableListItemStyles, setAvailableListItemStyles] = useState([]);
-	const [collectionConfiguration, setCollectionConfiguration] = useState(
-		null
-	);
-	const collectionEmptyCollectionMessageId = useId();
 	const collectionItemType = collection?.itemType || null;
+	const flexEnabled =
+		listStyle === LIST_STYLES.flexColumn ||
+		listStyle === LIST_STYLES.flexRow;
+
+	const selectedViewportSize = useSelector(
+		(state) => state.selectedViewportSize
+	);
+
+	const [availableListItemStyles, setAvailableListItemStyles] = useState([]);
+	const [collectionConfiguration, setCollectionConfiguration] =
+		useState(null);
+	const [filterConfigurationVisible, setFilterConfigurationVisible] =
+		useState(false);
+
+	const collectionConfig = getResponsiveConfig(
+		item.config,
+		selectedViewportSize
+	);
+
+	const collectionEmptyCollectionMessageId = useId();
 	const collectionLayoutId = useId();
 	const collectionListItemStyleId = useId();
 	const collectionPaginationTypeId = useId();
 	const collectionVerticalAlignmentId = useId();
+
 	const dispatch = useDispatch();
 	const getState = useGetState();
 
@@ -93,11 +109,6 @@ export function CollectionGeneralPanel({item}) {
 		observer: filterConfigurationObserver,
 		onClose: onFilterConfigurationClose,
 	} = useModal({onClose: () => setFilterConfigurationVisible(false)});
-
-	const [
-		filterConfigurationVisible,
-		setFilterConfigurationVisible,
-	] = useState(false);
 
 	const optionsMenuItems = useMemo(
 		() =>
@@ -113,15 +124,6 @@ export function CollectionGeneralPanel({item}) {
 		[collectionConfiguration, setFilterConfigurationVisible]
 	);
 
-	const selectedViewportSize = useSelector(
-		(state) => state.selectedViewportSize
-	);
-
-	const collectionConfig = getResponsiveConfig(
-		item.config,
-		selectedViewportSize
-	);
-
 	const handleCollectionSelect = (collection = {}) => {
 		dispatch(
 			updateCollectionDisplayCollection({
@@ -131,6 +133,22 @@ export function CollectionGeneralPanel({item}) {
 			})
 		);
 	};
+
+	const handleConfigurationChanged = useCallback(
+		(itemConfig) => {
+			if (selectedViewportSize !== VIEWPORT_SIZES.desktop) {
+				itemConfig = {[selectedViewportSize]: itemConfig};
+			}
+
+			dispatch(
+				updateItemConfig({
+					itemConfig,
+					itemId: item.itemId,
+				})
+			);
+		},
+		[item.itemId, dispatch, selectedViewportSize]
+	);
 
 	const onBeforeCollectionSelect = useCallback(
 		({preventDefault}) => {
@@ -180,22 +198,6 @@ export function CollectionGeneralPanel({item}) {
 		[getState, item.itemId]
 	);
 
-	const handleConfigurationChanged = useCallback(
-		(itemConfig) => {
-			if (selectedViewportSize !== VIEWPORT_SIZES.desktop) {
-				itemConfig = {[selectedViewportSize]: itemConfig};
-			}
-
-			dispatch(
-				updateItemConfig({
-					itemConfig,
-					itemId: item.itemId,
-				})
-			);
-		},
-		[item.itemId, dispatch, selectedViewportSize]
-	);
-
 	useEffect(() => {
 		if (
 			collection &&
@@ -226,21 +228,15 @@ export function CollectionGeneralPanel({item}) {
 						)
 					) {
 						setCollectionConfiguration(nextCollectionConfiguration);
-					}
-					else {
+					} else {
 						setCollectionConfiguration(null);
 					}
 				})
 				.catch(() => setCollectionConfiguration(null));
-		}
-		else {
+		} else {
 			setCollectionConfiguration(null);
 		}
 	}, [collection]);
-
-	const flexEnabled =
-		listStyle === LIST_STYLES.flexColumn ||
-		listStyle === LIST_STYLES.flexRow;
 
 	return (
 		<>
