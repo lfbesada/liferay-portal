@@ -33,6 +33,7 @@ import {
 	useGetState,
 	useSelector,
 } from '../../../../../../../app/contexts/StoreContext';
+import selectSegmentsExperienceId from '../../../../../../../app/selectors/selectSegmentsExperienceId';
 import CollectionService from '../../../../../../../app/services/CollectionService';
 import InfoItemService from '../../../../../../../app/services/InfoItemService';
 import updateCollectionDisplayCollection from '../../../../../../../app/thunks/updateCollectionDisplayCollection';
@@ -81,6 +82,7 @@ export function CollectionGeneralPanel({item}) {
 		listStyle === LIST_STYLES.flexColumn ||
 		listStyle === LIST_STYLES.flexRow;
 
+	const segmentsExperienceId = useSelector(selectSegmentsExperienceId);
 	const selectedViewportSize = useSelector(
 		(state) => state.selectedViewportSize
 	);
@@ -113,9 +115,30 @@ export function CollectionGeneralPanel({item}) {
 		onClose: onFilterConfigurationClose,
 	} = useModal({onClose: () => setFilterConfigurationVisible(false)});
 
-	const optionsMenuItems = useMemo(
-		() =>
-			collectionConfiguration
+	const editConfigurationURL = useCache({
+		fetcher: () =>
+			CollectionService.getCollectionEditConfigurationUrl({
+				collectionKey: collection.key,
+				itemId: item.itemId,
+				segmentsExperienceId,
+			}).then(({url}) => url),
+		key: [CACHE_KEYS.collectionConfigurationUrl, collection.key],
+	});
+
+	const optionsMenuItems = useMemo(() => {
+		if (Liferay.FeatureFlags['LPS-166275']) {
+			return editConfigurationURL
+				? [
+						{
+							href: editConfigurationURL,
+							label: Liferay.Language.get('filter-collection'),
+							symbolLeft: 'filter',
+						},
+				  ]
+				: [];
+		}
+		else {
+			return collectionConfiguration
 				? [
 						{
 							label: Liferay.Language.get('prefilter-collection'),
@@ -123,9 +146,13 @@ export function CollectionGeneralPanel({item}) {
 							symbolLeft: 'filter',
 						},
 				  ]
-				: [],
-		[collectionConfiguration, setFilterConfigurationVisible]
-	);
+				: [];
+		}
+	}, [
+		collectionConfiguration,
+		editConfigurationURL,
+		setFilterConfigurationVisible,
+	]);
 
 	const handleCollectionSelect = (collection = {}) => {
 		dispatch(
