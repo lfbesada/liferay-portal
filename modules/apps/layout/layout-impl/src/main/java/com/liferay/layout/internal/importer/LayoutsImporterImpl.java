@@ -16,9 +16,6 @@ package com.liferay.layout.internal.importer;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 
-import com.liferay.document.library.kernel.model.DLFolder;
-import com.liferay.document.library.kernel.model.DLFolderConstants;
-import com.liferay.document.library.kernel.service.DLFolderLocalService;
 import com.liferay.fragment.listener.FragmentEntryLinkListener;
 import com.liferay.fragment.listener.FragmentEntryLinkListenerRegistry;
 import com.liferay.fragment.model.FragmentEntryLink;
@@ -82,7 +79,6 @@ import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.model.Theme;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
 import com.liferay.portal.kernel.repository.model.FileEntry;
-import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -812,7 +808,7 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 	}
 
 	private long _getPreviewFileEntryId(
-			long groupId, long layoutEntryId, ZipEntry zipEntry,
+			long groupId, long layoutPageTemplateEntryId, ZipEntry zipEntry,
 			ZipFile zipFile)
 		throws Exception {
 
@@ -832,7 +828,7 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 		}
 
 		String imageFileName =
-			layoutEntryId + "_preview." +
+			layoutPageTemplateEntryId + "_preview." +
 				FileUtil.getExtension(zipEntry.getName());
 
 		byte[] bytes = null;
@@ -841,45 +837,20 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 			bytes = FileUtil.getBytes(inputStream);
 		}
 
-		DLFolder dlFolder = _dlFolderLocalService.fetchFolder(
-			groupId, repository.getDlFolderId(),
-			String.valueOf(layoutEntryId));
+		FileEntry fileEntry = _portletFileRepository.fetchPortletFileEntry(
+			groupId, repository.getDlFolderId(), imageFileName);
 
-		FileEntry fileEntry = null;
-
-		if(dlFolder == null) {
-
-			Folder folder = _portletFileRepository.addPortletFolder(
-				serviceContext.getUserId(), repository.getRepositoryId(),
-				DLFolderConstants.DEFAULT_PARENT_FOLDER_ID,
-				String.valueOf(layoutEntryId), serviceContext);
-
-			fileEntry = _portletFileRepository.addPortletFileEntry(
-				groupId, serviceContext.getUserId(),
-				LayoutPageTemplateEntry.class.getName(), layoutEntryId,
-				LayoutAdminPortletKeys.GROUP_PAGES, folder.getFolderId(),
-				bytes, imageFileName,
-				MimeTypesUtil.getContentType(imageFileName),
-				false);
+		if (fileEntry != null) {
+			_portletFileRepository.deletePortletFileEntry(
+				fileEntry.getFileEntryId());
 		}
-		else{
 
-			fileEntry = _portletFileRepository.fetchPortletFileEntry(
-				groupId, dlFolder.getFolderId(), imageFileName);
-
-			if (fileEntry != null) {
-				_portletFileRepository.deletePortletFileEntry(
-					fileEntry.getFileEntryId());
-			}
-
-			fileEntry = _portletFileRepository.addPortletFileEntry(
-				groupId, serviceContext.getUserId(),
-				LayoutPageTemplateEntry.class.getName(), layoutEntryId,
-				LayoutAdminPortletKeys.GROUP_PAGES, dlFolder.getFolderId(),
-				bytes, imageFileName,
-				MimeTypesUtil.getContentType(imageFileName),
-				false);
-		}
+		fileEntry = _portletFileRepository.addPortletFileEntry(
+			groupId, serviceContext.getUserId(),
+			LayoutPageTemplateEntry.class.getName(), layoutPageTemplateEntryId,
+			LayoutAdminPortletKeys.GROUP_PAGES, repository.getDlFolderId(),
+			bytes, imageFileName, MimeTypesUtil.getContentType(imageFileName),
+			false);
 
 		return fileEntry.getFileEntryId();
 	}
@@ -1224,7 +1195,7 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 			String externalReferenceCode, long groupId,
 			LayoutUtilityPageEntry layoutUtilityPageEntry, String name,
 			PageDefinition pageDefinition, String type, boolean overwrite,
-			ZipEntry thumbnailZipEntry, String zipPath, ZipFile zipFile)
+			String zipPath)
 		throws Exception {
 
 		try {
@@ -1257,16 +1228,6 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 					layoutUtilityPageEntry.getPlid(), pageDefinition,
 					warningMessages);
 
-				long previewFileEntryId = _getPreviewFileEntryId(
-					groupId,
-					layoutUtilityPageEntry.getLayoutUtilityPageEntryId(),
-					thumbnailZipEntry, zipFile);
-
-				_layoutUtilityPageEntryService.
-					updateLayoutUtilityPageEntry(
-						layoutUtilityPageEntry.getLayoutUtilityPageEntryId(),
-						previewFileEntryId);
-
 				_layoutsImporterResultEntries.add(
 					new LayoutsImporterResultEntry(
 						name, LayoutsImporterResultEntry.Status.IMPORTED,
@@ -1281,6 +1242,15 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 							new String[] {zipPath, "utility page"})));
 			}
 		}
+		catch (DropzoneLayoutStructureItemException
+					dropzoneLayoutStructureItemException) {
+
+			if (_log.isWarnEnabled()) {
+				_log.warn(dropzoneLayoutStructureItemException);
+			}
+
+			throw new PortalException();
+		}
 		catch (PortalException portalException) {
 			if (_log.isWarnEnabled()) {
 				_log.warn(portalException);
@@ -1293,7 +1263,6 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 						groupId, _MESSAGE_KEY_INVALID,
 						new String[] {zipPath, "utility page"})));
 		}
-
 	}
 
 	private void _processMasterLayoutPageTemplateEntries(
@@ -1676,9 +1645,6 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 	private static final TransactionConfig _transactionConfig =
 		TransactionConfig.Factory.create(
 			Propagation.REQUIRED, new Class<?>[] {Exception.class});
-
-	@Reference
-	private DLFolderLocalService _dlFolderLocalService;
 
 	@Reference
 	private FragmentEntryLinkListenerRegistry
@@ -2140,8 +2106,7 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 				_utilityPageTemplateEntry.getPageDefinition(),
 				UtilityPageTemplateUtil.convertToInternalValue(
 					utilityPageTemplate.getTypeAsString()),
-				_overwrite, _utilityPageTemplateEntry.getThumbnailZipEntry(),
-				_utilityPageTemplateEntry.getZipPath(), _zipFile);
+				_overwrite, _utilityPageTemplateEntry.getZipPath());
 
 			return null;
 		}
