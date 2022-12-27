@@ -108,6 +108,12 @@ public class EditCollectionConfigurationDisplayContext {
 
 	public Map<String, Object> getData() throws Exception {
 		return HashMapBuilder.<String, Object>put(
+			"actionURL", getActionURL()
+		).put(
+			"classNameId", getClassNameId()
+		).put(
+			"classPK", getClassPK()
+		).put(
 			"collection", _getCollectionJSONObject()
 		).put(
 			"collectionItemTypeLabel", _getCollectionItemTypeLabel()
@@ -135,7 +141,15 @@ public class EditCollectionConfigurationDisplayContext {
 					url, "classPK", getClassPK());
 			}
 		).put(
+			"itemId", getItemId()
+		).put(
 			"languageId", _themeDisplay.getLanguageId()
+		).put(
+			"plid", getPlid()
+		).put(
+			"redirect", getRedirect()
+		).put(
+			"segmentsExperienceId", getSegmentsExperienceId()
 		).put(
 			"selectAssetCategoryURL",
 			() -> {
@@ -155,6 +169,8 @@ public class EditCollectionConfigurationDisplayContext {
 						itemSelectorCriterion)
 				).buildString();
 			}
+		).put(
+			"type", getType()
 		).build();
 	}
 
