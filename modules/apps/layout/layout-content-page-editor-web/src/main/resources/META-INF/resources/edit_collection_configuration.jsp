@@ -25,6 +25,10 @@ portletDisplay.setURLBack(editCollectionConfigurationDisplayContext.getRedirect(
 renderResponse.setTitle(LanguageUtil.get(request, "filter-collection"));
 %>
 
+<liferay-util:html-top>
+	<link href="<%= PortalUtil.getStaticResourceURL(request, PortalUtil.getPathModule() + "/layout-content-page-editor-web/page_editor/plugins/collection-configuration/CollectionConfiguration.css") %>" rel="stylesheet" />
+</liferay-util:html-top>
+
 <liferay-frontend:edit-form
 	action="<%= editCollectionConfigurationDisplayContext.getActionURL() %>"
 	method="post"
@@ -38,6 +42,13 @@ renderResponse.setTitle(LanguageUtil.get(request, "filter-collection"));
 	<aui:input name="redirect" type="hidden" value="<%= editCollectionConfigurationDisplayContext.getRedirect() %>" />
 	<aui:input name="segmentsExperienceId" type="hidden" value="<%= editCollectionConfigurationDisplayContext.getSegmentsExperienceId() %>" />
 	<aui:input name="type" type="hidden" value="<%= editCollectionConfigurationDisplayContext.getType() %>" />
+
+	<div>
+		<react:component
+			module="page_editor/plugins/collection-configuration/CollectionConfiguration"
+			props="<%= editCollectionConfigurationDisplayContext.getData() %>"
+		/>
+	</div>
 
 	<liferay-ui:error key="anUnexpectedErrorOccurred" message="an-unexpected-error-occurred" />
 
