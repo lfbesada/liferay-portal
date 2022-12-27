@@ -29,8 +29,19 @@ renderResponse.setTitle(LanguageUtil.get(request, "filter-collection"));
 
 <portlet:actionURL name="/layout_content_page_editor/update_collection_configuration" var="updateCollectionConfigurationURL" />
 
+<style type="text/css">
+	.edit-collection-configuration-form .sheet {
+		padding: 0;
+	}
+
+	.edit-collection-configuration-form .sheet-footer {
+		padding: 0 1.5rem;
+	}
+</style>
+
 <liferay-frontend:edit-form
 	action="<%= updateCollectionConfigurationURL %>"
+	cssClass="edit-collection-configuration-form"
 	method="post"
 	name="fm"
 >
@@ -42,6 +53,15 @@ renderResponse.setTitle(LanguageUtil.get(request, "filter-collection"));
 	<aui:input name="redirect" type="hidden" value="<%= editCollectionConfigurationDisplayContext.getRedirect() %>" />
 	<aui:input name="segmentsExperienceId" type="hidden" value="<%= editCollectionConfigurationDisplayContext.getSegmentsExperienceId() %>" />
 	<aui:input name="type" type="hidden" value="<%= editCollectionConfigurationDisplayContext.getType() %>" />
+
+	<div>
+		<react:component
+			module="page_editor/plugins/collection-configuration/CollectionConfiguration"
+			props="<%= editCollectionConfigurationDisplayContext.getData() %>"
+		/>
+	</div>
+
+	<liferay-ui:error key="anUnexpectedErrorOccurred" message="an-unexpected-error-occurred" />
 
 	<liferay-frontend:edit-form-footer>
 		<liferay-frontend:edit-form-buttons
