@@ -1,0 +1,30 @@
+@import 'cadmin-variables';
+
+html#{$cadmin-selector} {
+	.cadmin {
+		.collection-configuration {
+			p {
+				font-size: 0.875rem;
+			}
+
+			&__configuration-fieldsets {
+				.form-group-sm .form-control,
+				.form-control,
+				.form-control-select {
+					height: 2.5rem;
+				}
+
+				.form-control-select {
+					background-color: $cadmin-gray-200;
+					border-color: $cadmin-gray-300;
+
+					&:hover,
+					&:active,
+					&:focus {
+						background-color: $cadmin-gray-200;
+					}
+				}
+			}
+		}
+	}
+}
