@@ -67,58 +67,19 @@ public class EditCollectionConfigurationDisplayContext {
 			WebKeys.THEME_DISPLAY);
 	}
 
-	public ActionURL getActionURL() {
-		return PortletURLBuilder.createActionURL(
-			_renderResponse
-		).setActionName(
-			"/layout_content_page_editor/update_collection_configuration"
-		).buildActionURL();
-	}
-
-	public long getClassNameId() {
-		if (Validator.isNotNull(_classNameId)) {
-			return _classNameId;
-		}
-
-		_classNameId = ParamUtil.getLong(_httpServletRequest, "classNameId");
-
-		return _classNameId;
-	}
-
-	public long getClassPK() {
-		if (Validator.isNotNull(_classPK)) {
-			return _classPK;
-		}
-
-		_classPK = ParamUtil.getLong(_httpServletRequest, "classPK");
-
-		return _classPK;
-	}
-
-	public String getCollectionKey() {
-		if (_collectionKey != null) {
-			return _collectionKey;
-		}
-
-		_collectionKey = ParamUtil.getString(
-			_httpServletRequest, "collectionKey");
-
-		return _collectionKey;
-	}
-
 	public Map<String, Object> getData() throws Exception {
 		return HashMapBuilder.<String, Object>put(
-			"actionURL", getActionURL()
+			"actionURL", _getActionURL()
 		).put(
-			"classNameId", getClassNameId()
+			"classNameId", _getClassNameId()
 		).put(
-			"classPK", getClassPK()
+			"classPK", _getClassPK()
 		).put(
 			"collection", _getCollectionJSONObject()
 		).put(
 			"collectionItemTypeLabel", _getCollectionItemTypeLabel()
 		).put(
-			"collectionKey", getCollectionKey()
+			"collectionKey", _getCollectionKey()
 		).put(
 			"collectionLabel", _getCollectionLabel()
 		).put(
@@ -135,21 +96,21 @@ public class EditCollectionConfigurationDisplayContext {
 					resourceURL.toString(), "p_l_mode", Constants.EDIT);
 
 				url = HttpComponentsUtil.addParameter(
-					url, "classNameId", getClassNameId());
+					url, "classNameId", _getClassNameId());
 
 				return HttpComponentsUtil.addParameter(
-					url, "classPK", getClassPK());
+					url, "classPK", _getClassPK());
 			}
 		).put(
-			"itemId", getItemId()
+			"itemId", _getItemId()
 		).put(
 			"languageId", _themeDisplay.getLanguageId()
 		).put(
-			"plid", getPlid()
+			"plid", _getPlid()
 		).put(
 			"redirect", getRedirect()
 		).put(
-			"segmentsExperienceId", getSegmentsExperienceId()
+			"segmentsExperienceId", _getSegmentsExperienceId()
 		).put(
 			"selectAssetCategoryURL",
 			() -> {
@@ -170,28 +131,8 @@ public class EditCollectionConfigurationDisplayContext {
 				).buildString();
 			}
 		).put(
-			"type", getType()
+			"type", _getType()
 		).build();
-	}
-
-	public String getItemId() {
-		if (_itemId != null) {
-			return _itemId;
-		}
-
-		_itemId = ParamUtil.getString(_httpServletRequest, "itemId");
-
-		return _itemId;
-	}
-
-	public long getPlid() {
-		if (_plid != null) {
-			return _plid;
-		}
-
-		_plid = ParamUtil.getLong(_httpServletRequest, "plid");
-
-		return _plid;
 	}
 
 	public String getRedirect() {
@@ -204,25 +145,32 @@ public class EditCollectionConfigurationDisplayContext {
 		return _redirect;
 	}
 
-	public long getSegmentsExperienceId() {
-		if (_segmentsExperienceId != null) {
-			return _segmentsExperienceId;
-		}
-
-		_segmentsExperienceId = ParamUtil.getLong(
-			_httpServletRequest, "segmentsExperienceId");
-
-		return _segmentsExperienceId;
+	private ActionURL _getActionURL() {
+		return PortletURLBuilder.createActionURL(
+			_renderResponse
+		).setActionName(
+			"/layout_content_page_editor/update_collection_configuration"
+		).buildActionURL();
 	}
 
-	public String getType() {
-		if (Validator.isNotNull(_type)) {
-			return _type;
+	private long _getClassNameId() {
+		if (Validator.isNotNull(_classNameId)) {
+			return _classNameId;
 		}
 
-		_type = ParamUtil.getString(_httpServletRequest, "type");
+		_classNameId = ParamUtil.getLong(_httpServletRequest, "classNameId");
 
-		return _type;
+		return _classNameId;
+	}
+
+	private long _getClassPK() {
+		if (Validator.isNotNull(_classPK)) {
+			return _classPK;
+		}
+
+		_classPK = ParamUtil.getLong(_httpServletRequest, "classPK");
+
+		return _classPK;
 	}
 
 	private String _getCollectionItemTypeLabel() {
@@ -247,11 +195,11 @@ public class EditCollectionConfigurationDisplayContext {
 	private JSONObject _getCollectionJSONObject() throws Exception {
 		LayoutStructure layoutStructure =
 			LayoutStructureUtil.getLayoutStructure(
-				_themeDisplay.getScopeGroupId(), getPlid(),
-				getSegmentsExperienceId());
+				_themeDisplay.getScopeGroupId(), _getPlid(),
+				_getSegmentsExperienceId());
 
 		LayoutStructureItem layoutStructureItem =
-			layoutStructure.getLayoutStructureItem(getItemId());
+			layoutStructure.getLayoutStructureItem(_getItemId());
 
 		if (!(layoutStructureItem instanceof
 				CollectionStyledLayoutStructureItem)) {
@@ -271,6 +219,17 @@ public class EditCollectionConfigurationDisplayContext {
 		}
 
 		return JSONFactoryUtil.createJSONObject();
+	}
+
+	private String _getCollectionKey() {
+		if (_collectionKey != null) {
+			return _collectionKey;
+		}
+
+		_collectionKey = ParamUtil.getString(
+			_httpServletRequest, "collectionKey");
+
+		return _collectionKey;
 	}
 
 	private String _getCollectionLabel() {
@@ -311,7 +270,7 @@ public class EditCollectionConfigurationDisplayContext {
 	}
 
 	private InfoCollectionProvider _getInfoCollectionProvider() {
-		String collectionKey = getCollectionKey();
+		String collectionKey = _getCollectionKey();
 
 		if (Validator.isBlank(collectionKey)) {
 			return null;
@@ -327,6 +286,47 @@ public class EditCollectionConfigurationDisplayContext {
 
 		return _infoItemServiceRegistry.getInfoItemService(
 			RelatedInfoItemCollectionProvider.class, collectionKey);
+	}
+
+	private String _getItemId() {
+		if (_itemId != null) {
+			return _itemId;
+		}
+
+		_itemId = ParamUtil.getString(_httpServletRequest, "itemId");
+
+		return _itemId;
+	}
+
+	private long _getPlid() {
+		if (_plid != null) {
+			return _plid;
+		}
+
+		_plid = ParamUtil.getLong(_httpServletRequest, "plid");
+
+		return _plid;
+	}
+
+	private long _getSegmentsExperienceId() {
+		if (_segmentsExperienceId != null) {
+			return _segmentsExperienceId;
+		}
+
+		_segmentsExperienceId = ParamUtil.getLong(
+			_httpServletRequest, "segmentsExperienceId");
+
+		return _segmentsExperienceId;
+	}
+
+	private String _getType() {
+		if (Validator.isNotNull(_type)) {
+			return _type;
+		}
+
+		_type = ParamUtil.getString(_httpServletRequest, "type");
+
+		return _type;
 	}
 
 	private Long _classNameId;
