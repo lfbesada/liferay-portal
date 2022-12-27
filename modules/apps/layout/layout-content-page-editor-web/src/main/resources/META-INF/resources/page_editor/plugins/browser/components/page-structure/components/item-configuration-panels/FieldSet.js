@@ -112,7 +112,7 @@ export function FieldSet({
 	);
 }
 
-function FieldSetContent({
+export function FieldSetContent({
 	fields,
 	isCustomStylesFieldSet,
 	item,
