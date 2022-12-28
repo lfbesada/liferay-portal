@@ -25,6 +25,8 @@ portletDisplay.setURLBack(editCollectionConfigurationDisplayContext.getRedirect(
 renderResponse.setTitle(LanguageUtil.get(request, "filter-collection"));
 %>
 
+<liferay-product-navigation:control-menu />
+
 <liferay-util:html-top>
 	<link href="<%= PortalUtil.getStaticResourceURL(request, PortalUtil.getPathModule() + "/layout-content-page-editor-web/page_editor/plugins/collection-configuration/CollectionConfiguration.css") %>" rel="stylesheet" />
 </liferay-util:html-top>
