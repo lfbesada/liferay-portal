@@ -162,6 +162,7 @@ public class AssetEntriesWithSameAssetCategoryRelatedInfoItemCollectionProvider
 					SelectInfoFieldType.OPTIONS,
 					ListUtil.fromArray(
 						new SelectInfoFieldType.Option(
+							true,
 							new ResourceBundleInfoLocalizedValue(
 								getClass(), "not-selected"),
 							StringPool.BLANK),
@@ -373,6 +374,7 @@ public class AssetEntriesWithSameAssetCategoryRelatedInfoItemCollectionProvider
 
 			options.add(
 				new SelectInfoFieldType.Option(
+					true,
 					new ModelResourceLocalizedValue(
 						assetRendererFactory.getClassName()),
 					assetRendererFactory.getClassName()));
