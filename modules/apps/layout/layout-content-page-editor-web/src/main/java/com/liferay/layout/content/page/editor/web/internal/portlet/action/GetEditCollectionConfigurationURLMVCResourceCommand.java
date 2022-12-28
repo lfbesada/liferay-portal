@@ -112,6 +112,8 @@ public class GetEditCollectionConfigurationURLMVCResourceCommand
 				"/layout_content_page_editor/edit_collection_configuration"
 			).setRedirect(
 				urlCurrent
+			).setBackURL(
+				urlCurrent
 			).setParameter(
 				"collectionKey", collectionKey
 			).setParameter(
