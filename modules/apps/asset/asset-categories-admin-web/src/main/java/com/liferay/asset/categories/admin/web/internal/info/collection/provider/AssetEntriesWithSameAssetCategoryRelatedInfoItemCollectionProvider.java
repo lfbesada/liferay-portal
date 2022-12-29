@@ -203,7 +203,7 @@ public class AssetEntriesWithSameAssetCategoryRelatedInfoItemCollectionProvider
 				).namespace(
 					StringPool.BLANK
 				).name(
-					"specificAssetCategoryId"
+					"specificAssetCategoryJSONObject"
 				).attribute(
 					CategoriesInfoFieldType.ITEM_SELECTOR_URL,
 					_getItemSelectorURL()
@@ -262,10 +262,10 @@ public class AssetEntriesWithSameAssetCategoryRelatedInfoItemCollectionProvider
 
 			if (Objects.equals(assetCategoryRule, "specificAssetCategory") &&
 				!ArrayUtil.isEmpty(
-					configuration.get("specificAssetCategoryId"))) {
+					configuration.get("specificAssetCategoryJSONObject"))) {
 
 				String[] specificAssetCategoryIds = configuration.get(
-					"specificAssetCategoryId");
+					"specificAssetCategoryJSONObject");
 
 				try {
 					JSONObject jsonObject = _jsonFactory.createJSONObject(
