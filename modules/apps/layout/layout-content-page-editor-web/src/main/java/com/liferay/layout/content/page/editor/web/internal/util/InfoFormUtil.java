@@ -213,6 +213,19 @@ public class InfoFormUtil {
 				}
 			}
 		}
+		else if (infoFieldType instanceof CategoriesInfoFieldType) {
+			jsonObject.put(
+				"typeOptions",
+				JSONUtil.put(
+					"itemSelectorURL",
+					() -> {
+						Optional<String> itemSelectorURLOptional =
+							infoField.getAttributeOptional(
+								CategoriesInfoFieldType.ITEM_SELECTOR_URL);
+
+						return itemSelectorURLOptional.orElse(null);
+					}));
+		}
 
 		return jsonObject;
 	}
