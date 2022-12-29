@@ -22,6 +22,9 @@ public class CategoriesInfoFieldType implements InfoFieldType {
 	public static final CategoriesInfoFieldType INSTANCE =
 		new CategoriesInfoFieldType();
 
+	public static final Attribute<CategoriesInfoFieldType, String>
+		ITEM_SELECTOR_URL = new Attribute<>();
+
 	@Override
 	public String getName() {
 		return "categories";
