@@ -31,6 +31,7 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.KeyValuePair;
 
 import java.util.Collections;
 import java.util.List;
@@ -212,6 +213,38 @@ public class InfoFormUtil {
 					_log.debug(exception);
 				}
 			}
+		}
+		else if (infoFieldType instanceof CategoriesInfoFieldType) {
+			jsonObject.put(
+				"typeOptions",
+				JSONUtil.put(
+					"dependency",
+					() -> {
+						Optional<KeyValuePair> dependencyOptional =
+							infoField.getAttributeOptional(
+								CategoriesInfoFieldType.DEPENDENCY);
+
+						KeyValuePair dependencyKeyValuePair =
+							dependencyOptional.orElse(null);
+
+						if (dependencyKeyValuePair == null) {
+							return null;
+						}
+
+						return JSONUtil.put(
+							dependencyKeyValuePair.getKey(),
+							dependencyKeyValuePair.getValue());
+					}
+				).put(
+					"infoItemSelectorURL",
+					() -> {
+						Optional<String> itemSelectorURLOptional =
+							infoField.getAttributeOptional(
+								CategoriesInfoFieldType.INFO_ITEM_SELECTOR_URL);
+
+						return itemSelectorURLOptional.orElse(null);
+					}
+				));
 		}
 
 		return jsonObject;
