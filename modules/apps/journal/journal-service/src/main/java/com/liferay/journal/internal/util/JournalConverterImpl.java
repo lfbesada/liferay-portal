@@ -56,6 +56,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -500,6 +501,32 @@ public class JournalConverterImpl implements JournalConverter {
 		return jsonArray.toString();
 	}
 
+	private List<DDMFormField> _sortNestedDDMFormFields(
+		List<DDMFormField> nestedDDMFormFields, String fieldSetName) {
+
+		if (!fieldSetName.endsWith("FieldSet")) {
+			return nestedDDMFormFields;
+		}
+
+		List<DDMFormField> ddmFormFields = new LinkedList<>();
+
+		String mainNestedDDMFormFieldName = fieldSetName.substring(
+			0, fieldSetName.indexOf("FieldSet"));
+
+		for (DDMFormField nestedDDMFormField : nestedDDMFormFields) {
+			if (Objects.equals(
+					nestedDDMFormField.getName(), mainNestedDDMFormFieldName)) {
+
+				ddmFormFields.add(0, nestedDDMFormField);
+			}
+			else {
+				ddmFormFields.add(nestedDDMFormField);
+			}
+		}
+
+		return ddmFormFields;
+	}
+
 	private String[] _splitFieldsDisplayValue(Field fieldsDisplayField) {
 		String value = (String)fieldsDisplayField.getValue();
 
@@ -657,7 +684,10 @@ public class JournalConverterImpl implements JournalConverter {
 					childDynamicElementElement, field);
 			}
 			else if (ListUtil.isNotEmpty(nestedDDMFormFields)) {
-				for (DDMFormField nestedDDMFormField : nestedDDMFormFields) {
+				for (DDMFormField nestedDDMFormField :
+						_sortNestedDDMFormFields(
+							nestedDDMFormFields, fieldName)) {
+
 					_updateDynamicElementElement(
 						ddmFields, ddmFieldsCounter, nestedDDMFormField,
 						childDynamicElementElement, count + i);
