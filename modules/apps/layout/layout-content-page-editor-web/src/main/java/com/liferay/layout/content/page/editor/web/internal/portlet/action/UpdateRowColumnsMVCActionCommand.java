@@ -15,6 +15,7 @@
 package com.liferay.layout.content.page.editor.web.internal.portlet.action;
 
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
+import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
 import com.liferay.layout.content.page.editor.web.internal.util.ContentUtil;
 import com.liferay.layout.content.page.editor.web.internal.util.layout.structure.LayoutStructureUtil;
@@ -82,7 +83,7 @@ public class UpdateRowColumnsMVCActionCommand
 			ContentUtil.getPageContentsJSONArray(
 				_portal.getHttpServletRequest(actionRequest),
 				_portal.getHttpServletResponse(actionResponse),
-				themeDisplay.getPlid(), segmentsExperienceId)
+				_infoItemServiceRegistry, themeDisplay.getPlid(), segmentsExperienceId)
 		);
 	}
 
@@ -91,5 +92,8 @@ public class UpdateRowColumnsMVCActionCommand
 
 	@Reference
 	private Portal _portal;
+
+	@Reference
+	private InfoItemServiceRegistry _infoItemServiceRegistry;
 
 }

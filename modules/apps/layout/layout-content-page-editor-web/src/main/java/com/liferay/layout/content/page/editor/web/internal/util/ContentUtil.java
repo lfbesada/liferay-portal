@@ -23,7 +23,10 @@ import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.util.DLURLHelperUtil;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.service.FragmentEntryLinkLocalServiceUtil;
+import com.liferay.info.exception.InfoPermissionException;
 import com.liferay.info.item.InfoItemReference;
+import com.liferay.info.item.InfoItemServiceRegistry;
+import com.liferay.info.permission.provider.InfoPermissionProvider;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
 import com.liferay.layout.content.page.editor.web.internal.info.display.url.provider.InfoEditURLProviderUtil;
 import com.liferay.layout.content.page.editor.web.internal.info.search.InfoSearchClassMapperRegistryUtil;
@@ -35,6 +38,7 @@ import com.liferay.layout.display.page.LayoutDisplayPageProvider;
 import com.liferay.layout.model.LayoutClassedModelUsage;
 import com.liferay.layout.service.LayoutClassedModelUsageLocalServiceUtil;
 import com.liferay.layout.util.structure.ContainerStyledLayoutStructureItem;
+import com.liferay.layout.util.structure.FormStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.petra.string.StringBundler;
@@ -68,6 +72,8 @@ import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.segments.constants.SegmentsExperienceConstants;
 import com.liferay.taglib.security.PermissionsURLTag;
 
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -123,13 +129,14 @@ public class ContentUtil {
 
 	public static JSONArray getPageContentsJSONArray(
 			HttpServletRequest httpServletRequest,
-			HttpServletResponse httpServletResponse, long plid,
+			HttpServletResponse httpServletResponse,
+			InfoItemServiceRegistry infoItemServiceRegistry, long plid,
 			long segmentsExperienceId)
 		throws PortalException {
 
 		return JSONUtil.concat(
 			_getLayoutClassedModelPageContentsJSONArray(
-				httpServletRequest, plid, segmentsExperienceId),
+				httpServletRequest, infoItemServiceRegistry, plid, segmentsExperienceId),
 			AssetListEntryUsagesUtil.getPageContentsJSONArray(
 				httpServletRequest, httpServletResponse, plid,
 				segmentsExperienceId));
@@ -421,8 +428,8 @@ public class ContentUtil {
 	}
 
 	private static JSONArray _getLayoutClassedModelPageContentsJSONArray(
-			HttpServletRequest httpServletRequest, long plid,
-			long segmentsExperienceId)
+		HttpServletRequest httpServletRequest, InfoItemServiceRegistry infoItemServiceRegistry, long plid,
+		long segmentsExperienceId)
 		throws PortalException {
 
 		JSONArray mappedContentsJSONArray = JSONFactoryUtil.createJSONArray();
@@ -438,6 +445,34 @@ public class ContentUtil {
 		LayoutStructure layoutStructure =
 			LayoutStructureUtil.getLayoutStructure(
 				themeDisplay.getScopeGroupId(), plid, segmentsExperienceId);
+
+		List<String> restrictedItemIds = new ArrayList<>();
+
+		for (FormStyledLayoutStructureItem formStyledLayoutStructureItem :
+			layoutStructure.getFormStyledLayoutStructureItems()) {
+
+			if(formStyledLayoutStructureItem.getClassNameId() <= 0) {
+				continue;
+			}
+
+			InfoPermissionProvider infoPermissionProvider =
+				infoItemServiceRegistry.getFirstInfoItemService(
+					InfoPermissionProvider.class,
+					PortalUtil.getClassName(formStyledLayoutStructureItem.getClassNameId()));
+
+			if (infoPermissionProvider == null) {
+				continue;
+			}
+
+			if (infoPermissionProvider.hasViewPermission(
+				themeDisplay.getPermissionChecker())) {
+
+				continue;
+			}
+
+			restrictedItemIds.addAll(
+				_getChildrenItemIds(formStyledLayoutStructureItem, layoutStructure));
+		}
 
 		Set<String> uniqueLayoutClassedModelUsageKeys = new HashSet<>();
 
@@ -482,7 +517,8 @@ public class ContentUtil {
 						fragmentEntryLink.getFragmentEntryLinkId());
 
 				if ((layoutStructureItem == null) ||
-					fragmentEntryLink.isDeleted()) {
+					fragmentEntryLink.isDeleted() ||
+					restrictedItemIds.contains(layoutStructureItem.getItemId())) {
 
 					continue;
 				}
@@ -541,6 +577,23 @@ public class ContentUtil {
 		}
 
 		return mappedContentsJSONArray;
+	}
+
+	private static List<String> _getChildrenItemIds(
+		LayoutStructureItem layoutStructureItem, LayoutStructure layoutStructure) {
+		List<String> childrenItemIds = new ArrayList<>();
+
+		for (String childItemId : layoutStructureItem.getChildrenItemIds()) {
+			childrenItemIds.add(childItemId);
+
+			LayoutStructureItem childLayoutStructureItem =
+				layoutStructure.getLayoutStructureItem(childItemId);
+
+			childrenItemIds.addAll(
+				_getChildrenItemIds(childLayoutStructureItem, layoutStructure));
+		}
+
+		return childrenItemIds;
 	}
 
 	private static LayoutDisplayPageObjectProvider<?>

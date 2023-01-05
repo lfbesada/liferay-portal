@@ -18,6 +18,7 @@ import com.liferay.fragment.listener.FragmentEntryLinkListener;
 import com.liferay.fragment.listener.FragmentEntryLinkListenerRegistry;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.service.FragmentEntryLinkService;
+import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
 import com.liferay.layout.content.page.editor.web.internal.util.ContentUtil;
 import com.liferay.layout.content.page.editor.web.internal.util.FragmentEntryLinkManager;
@@ -98,7 +99,7 @@ public class EditFragmentEntryLinkMVCActionCommand
 				ContentUtil.getPageContentsJSONArray(
 					_portal.getHttpServletRequest(actionRequest),
 					_portal.getHttpServletResponse(actionResponse),
-					themeDisplay.getPlid(),
+					_infoItemServiceRegistry, themeDisplay.getPlid(),
 					ParamUtil.getLong(actionRequest, "segmentsExperienceId"))
 			));
 	}
@@ -115,5 +116,9 @@ public class EditFragmentEntryLinkMVCActionCommand
 
 	@Reference
 	private Portal _portal;
+
+
+	@Reference
+	private InfoItemServiceRegistry _infoItemServiceRegistry;
 
 }

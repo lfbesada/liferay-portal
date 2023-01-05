@@ -700,7 +700,7 @@ public class ContentPageEditorDisplayContext {
 				ContentUtil.getPageContentsJSONArray(
 					httpServletRequest,
 					PortalUtil.getHttpServletResponse(_renderResponse),
-					themeDisplay.getPlid(), getSegmentsExperienceId())
+					infoItemServiceRegistry, themeDisplay.getPlid(), getSegmentsExperienceId())
 			).put(
 				"permissions",
 				() -> {
