@@ -410,7 +410,7 @@ public class AssetEntriesWithSameAssetCategoryRelatedInfoItemCollectionProvider
 		return PortletURLBuilder.create(
 			_itemSelector.getItemSelectorURL(
 				RequestBackedPortletURLFactoryUtil.create(httpServletRequest),
-				namespace + "selectItem", itemSelectorCriterion)
+				namespace + "selectInfoItem", itemSelectorCriterion)
 		).buildString();
 	}
 
