@@ -455,10 +455,17 @@ function visit(
 					isMasterItem: !isMasterPage && itemInMasterLayout,
 					itemType: ITEM_TYPES.editable,
 					mapped: isMapped(editable),
-					name: mappedFieldLabel || editableId,
+					name:
+						Liferay.FeatureFlags['LPS-169923'] &&
+						editable?.isRestricted
+							? Liferay.Language.get('restricted-content')
+							: mappedFieldLabel || editableId,
 					onHoverNode,
 					parentId: item.parentId,
 					removable: false,
+					showPermissionRestriction:
+						Liferay.FeatureFlags['LPS-169923'] &&
+						editable?.isRestricted,
 					tooltipTitle: EDITABLE_LABEL[type],
 				});
 			}
@@ -580,6 +587,10 @@ function visit(
 		onHoverNode,
 		parentItemId: item.parentId,
 		removable: !itemInMasterLayout && isRemovable(item, layoutData),
+		showPermissionRestriction:
+			Liferay.FeatureFlags['LPS-169923'] &&
+			item.type === LAYOUT_DATA_ITEM_TYPES.form &&
+			formIsRestricted(item),
 		tooltipTitle: selectLayoutDataItemLabel({fragmentEntryLinks}, item, {
 			useCustomName: false,
 		}),
