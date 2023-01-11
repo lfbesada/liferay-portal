@@ -49,6 +49,7 @@ export default function PageContent({
 	classPK,
 	editableId,
 	icon,
+	isRestricted = false,
 	subtype,
 	title,
 }) {
@@ -264,24 +265,26 @@ export default function PageContent({
 						}
 					/>
 				) : (
-					<ClayButton
-						aria-label={sub(
-							Liferay.Language.get('edit-inline-text-x'),
-							title
-						)}
-						className={classNames(
-							'flex-shrink-0 btn-sm mr-2 page-editor__page-contents__button',
-							{
-								'not-allowed':
-									isBeingEdited || !canUpdateEditables,
-							}
-						)}
-						disabled={isBeingEdited || !canUpdateEditables}
-						displayType="unstyled"
-						onClick={onClickEditInlineText}
-					>
-						<ClayIcon symbol="pencil" />
-					</ClayButton>
+					(!Liferay.FeatureFlags['LPS-169923'] || !isRestricted) && (
+						<ClayButton
+							aria-label={sub(
+								Liferay.Language.get('edit-inline-text-x'),
+								title
+							)}
+							className={classNames(
+								'flex-shrink-0 btn-sm mr-2 page-editor__page-contents__button',
+								{
+									'not-allowed':
+										isBeingEdited || !canUpdateEditables,
+								}
+							)}
+							disabled={isBeingEdited || !canUpdateEditables}
+							displayType="unstyled"
+							onClick={onClickEditInlineText}
+						>
+							<ClayIcon symbol="pencil" />
+						</ClayButton>
+					)
 				)}
 			</div>
 
@@ -301,6 +304,7 @@ export default function PageContent({
 PageContent.propTypes = {
 	actions: PropTypes.object,
 	icon: PropTypes.string,
+	isRestricted: PropTypes.bool,
 	name: PropTypes.string,
 	subtype: PropTypes.string,
 	title: PropTypes.string.isRequired,

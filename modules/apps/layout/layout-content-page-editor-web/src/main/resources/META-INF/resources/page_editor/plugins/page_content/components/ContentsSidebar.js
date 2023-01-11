@@ -93,8 +93,14 @@ const getEditableValues = (
 const normalizeEditableValues = (editable, languageId) => {
 	return {
 		...editable,
-		icon: 'align-left',
-		title: getEditableTitle(editable, languageId),
+		icon:
+			Liferay.FeatureFlags['LPS-169923'] && editable?.isRestricted
+				? 'password-policies'
+				: 'align-left',
+		title:
+			Liferay.FeatureFlags['LPS-169923'] && editable?.isRestricted
+				? Liferay.Language.get('restricted-content')
+				: getEditableTitle(editable, languageId),
 	};
 };
 
