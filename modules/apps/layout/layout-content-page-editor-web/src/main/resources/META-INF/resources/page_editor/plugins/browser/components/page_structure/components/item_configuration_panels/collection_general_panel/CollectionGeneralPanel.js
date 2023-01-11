@@ -44,6 +44,7 @@ import {getResponsiveConfig} from '../../../../../../../app/utils/getResponsiveC
 import useCache from '../../../../../../../app/utils/useCache';
 import Collapse from '../../../../../../../common/components/Collapse';
 import CollectionSelector from '../../../../../../../common/components/CollectionSelector';
+import {PermissionRestrictionMessage} from '../../../../../../../common/components/PermissionRestrictionMessage';
 import {useId} from '../../../../../../../common/hooks/useId';
 import CollectionFilterConfigurationModal from '../../CollectionFilterConfigurationModal';
 import {CommonStyles} from '../CommonStyles';
@@ -295,6 +296,10 @@ export function CollectionGeneralPanel({item}) {
 			setCollectionConfiguration(null);
 		}
 	}, [collection]);
+
+	if (Liferay.FeatureFlags['LPS-169923'] && item.config?.isRestricted) {
+		return <PermissionRestrictionMessage />;
+	}
 
 	return (
 		<>

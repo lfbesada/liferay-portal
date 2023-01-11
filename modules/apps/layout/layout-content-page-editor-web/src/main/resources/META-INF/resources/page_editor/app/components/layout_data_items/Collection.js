@@ -18,6 +18,7 @@ import classNames from 'classnames';
 import {sub} from 'frontend-js-web';
 import React, {useContext, useEffect, useMemo, useState} from 'react';
 
+import {PermissionRestrictionMessage} from '../../../common/components/PermissionRestrictionMessage';
 import {COLUMN_SIZE_MODULE_PER_ROW_SIZES} from '../../config/constants/columnSizes';
 import {CONTENT_DISPLAY_OPTIONS} from '../../config/constants/contentDisplayOptions';
 import {config} from '../../config/index';
@@ -427,6 +428,10 @@ const Collection = React.memo(
 		const flexEnabled =
 			collectionConfig.listStyle === CONTENT_DISPLAY_OPTIONS.flexColumn ||
 			collectionConfig.listStyle === CONTENT_DISPLAY_OPTIONS.flexRow;
+
+		if (Liferay.FeatureFlags['LPS-169923'] && item.config?.isRestricted) {
+			return <PermissionRestrictionMessage />;
+		}
 
 		return (
 			<div

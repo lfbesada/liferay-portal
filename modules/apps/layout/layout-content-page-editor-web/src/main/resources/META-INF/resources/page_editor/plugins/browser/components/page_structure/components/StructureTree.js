@@ -499,7 +499,7 @@ function visit(
 		item.children.forEach((childId) => {
 			if (
 				(item.type === LAYOUT_DATA_ITEM_TYPES.collection &&
-					!item.config.collection) ||
+					(!item.config.collection || item.config?.isRestricted)) ||
 				(item.type === LAYOUT_DATA_ITEM_TYPES.form &&
 					(!formIsMapped(item) ||
 						(Liferay.FeatureFlags['LPS-169923'] &&
@@ -589,8 +589,10 @@ function visit(
 		removable: !itemInMasterLayout && isRemovable(item, layoutData),
 		showPermissionRestriction:
 			Liferay.FeatureFlags['LPS-169923'] &&
-			item.type === LAYOUT_DATA_ITEM_TYPES.form &&
-			formIsRestricted(item),
+			((item.type === LAYOUT_DATA_ITEM_TYPES.form &&
+				formIsRestricted(item)) ||
+				(item.type === LAYOUT_DATA_ITEM_TYPES.collection &&
+					item.config?.isRestricted)),
 		tooltipTitle: selectLayoutDataItemLabel({fragmentEntryLinks}, item, {
 			useCustomName: false,
 		}),
