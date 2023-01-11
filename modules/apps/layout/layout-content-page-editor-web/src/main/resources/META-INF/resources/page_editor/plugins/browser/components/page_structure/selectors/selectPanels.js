@@ -24,6 +24,7 @@ import selectCanUpdateCSSAdvancedOptions from '../../../../../app/selectors/sele
 import selectCanUpdateEditables from '../../../../../app/selectors/selectCanUpdateEditables';
 import selectCanUpdateItemAdvancedConfiguration from '../../../../../app/selectors/selectCanUpdateItemAdvancedConfiguration';
 import selectCanUpdateItemConfiguration from '../../../../../app/selectors/selectCanUpdateItemConfiguration';
+import selectEditableValue from '../../../../../app/selectors/selectEditableValue';
 import {formIsRestricted} from '../../../../../app/utils/formIsRestricted';
 import getFragmentItem from '../../../../../app/utils/getFragmentItem';
 import isEditableSubmit from '../../../../../app/utils/isEditableSubmit';
@@ -232,23 +233,44 @@ export function selectPanels(activeItemId, activeItemType, state) {
 		state.permissions.UPDATE || state.permissions.UPDATE_LAYOUT_LIMITED;
 
 	if (canUpdateEditables && activeItem.editableId) {
-		panelsIds = {
-			[PANEL_IDS.editableLink]:
-				[
-					EDITABLE_TYPES.text,
-					EDITABLE_TYPES.image,
-					EDITABLE_TYPES.link,
-				].includes(activeItem.type) &&
-				state.selectedViewportSize === VIEWPORT_SIZES.desktop &&
-				!isEditableSubmit(activeItem.editableId, activeItem.parentId),
-			[PANEL_IDS.imageSource]:
-				activeItem.type === EDITABLE_TYPES.image ||
-				activeItem.type === EDITABLE_TYPES.backgroundImage,
-			[PANEL_IDS.editableMapping]:
-				state.selectedViewportSize === VIEWPORT_SIZES.desktop &&
-				activeItem.type !== EDITABLE_TYPES.image &&
-				activeItem.type !== EDITABLE_TYPES.backgroundImage,
-		};
+		const editableValue = selectEditableValue(
+			state,
+			activeItem.fragmentEntryLinkId,
+			activeItem.editableId,
+			activeItem.editableValueNamespace
+		);
+
+		panelsIds =
+			Liferay.FeatureFlags['LPS-169923'] && editableValue?.isRestricted
+				? {
+						[PANEL_IDS.editableMapping]:
+							state.selectedViewportSize ===
+								VIEWPORT_SIZES.desktop &&
+							activeItem.type !== EDITABLE_TYPES.image &&
+							activeItem.type !== EDITABLE_TYPES.backgroundImage,
+				  }
+				: {
+						[PANEL_IDS.editableLink]:
+							[
+								EDITABLE_TYPES.text,
+								EDITABLE_TYPES.image,
+								EDITABLE_TYPES.link,
+							].includes(activeItem.type) &&
+							state.selectedViewportSize ===
+								VIEWPORT_SIZES.desktop &&
+							!isEditableSubmit(
+								activeItem.editableId,
+								activeItem.parentId
+							),
+						[PANEL_IDS.imageSource]:
+							activeItem.type === EDITABLE_TYPES.image ||
+							activeItem.type === EDITABLE_TYPES.backgroundImage,
+						[PANEL_IDS.editableMapping]:
+							state.selectedViewportSize ===
+								VIEWPORT_SIZES.desktop &&
+							activeItem.type !== EDITABLE_TYPES.image &&
+							activeItem.type !== EDITABLE_TYPES.backgroundImage,
+				  };
 	}
 	else if (!canUpdateItemConfiguration) {
 		return {activeItem, panelsIds};

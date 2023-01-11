@@ -26,6 +26,7 @@ import selectEditableValue from '../../../../../../app/selectors/selectEditableV
 import updateEditableValues from '../../../../../../app/thunks/updateEditableValues';
 import isMapped from '../../../../../../app/utils/editable_value/isMapped';
 import MappingSelector from '../../../../../../common/components/MappingSelector';
+import {PermissionRestrictionMessage} from '../../../../../../common/components/PermissionRestrictionMessage';
 import {getEditableItemPropTypes} from '../../../../../../prop_types/index';
 import DateEditableFormatInput from './DateEditableFormatInput';
 
@@ -90,6 +91,10 @@ export function MappingPanel({item}) {
 			})
 		);
 	};
+
+	if (Liferay.FeatureFlags['LPS-169923'] && editableValue?.isRestricted) {
+		return <PermissionRestrictionMessage />;
+	}
 
 	return (
 		<>
