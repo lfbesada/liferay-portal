@@ -27,6 +27,9 @@ public class SelectInfoFieldType implements InfoFieldType {
 	public static final SelectInfoFieldType INSTANCE =
 		new SelectInfoFieldType();
 
+	public static final Attribute<SelectInfoFieldType, Boolean> INLINE =
+		new Attribute<>();
+
 	public static final Attribute<SelectInfoFieldType, Boolean> MULTIPLE =
 		new Attribute<>();
 
