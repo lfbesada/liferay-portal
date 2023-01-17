@@ -62,6 +62,8 @@ create index IX_577C6F94 on FragmentEntryLink (uuid_[$COLUMN_LENGTH:75$], compan
 create index IX_83328E10 on FragmentEntryLink (uuid_[$COLUMN_LENGTH:75$], ctCollectionId);
 create unique index IX_145C8796 on FragmentEntryLink (uuid_[$COLUMN_LENGTH:75$], groupId, ctCollectionId);
 
+create unique index IX_A685ADF on FragmentEntryPropagation (fragmentEntryKey[$COLUMN_LENGTH:75$], ctCollectionId);
+
 create index IX_646748B7 on FragmentEntryVersion (fragmentCollectionId, ctCollectionId);
 create index IX_DC8A5E2D on FragmentEntryVersion (fragmentCollectionId, version, ctCollectionId);
 create index IX_E487E5AF on FragmentEntryVersion (fragmentEntryId, ctCollectionId);
