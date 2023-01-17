@@ -14,8 +14,11 @@
 
 package com.liferay.fragment.service.impl;
 
+import com.liferay.fragment.model.FragmentEntryPropagation;
 import com.liferay.fragment.service.base.FragmentEntryPropagationLocalServiceBaseImpl;
 import com.liferay.portal.aop.AopService;
+
+import java.util.Date;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -28,4 +31,43 @@ import org.osgi.service.component.annotations.Component;
 )
 public class FragmentEntryPropagationLocalServiceImpl
 	extends FragmentEntryPropagationLocalServiceBaseImpl {
+
+	@Override
+	public FragmentEntryPropagation addOrUpdateFragmentEntryPropagation(
+		String fragmentEntryKey, String css, String html, String js,
+		String configuration, int type) {
+
+		FragmentEntryPropagation fragmentEntryPropagation =
+			fragmentEntryPropagationPersistence.fetchByFragmentEntryKey(
+				fragmentEntryKey);
+
+		if (fragmentEntryPropagation == null) {
+			fragmentEntryPropagation =
+				fragmentEntryPropagationPersistence.create(
+					counterLocalService.increment());
+
+			fragmentEntryPropagation.setCreateDate(new Date());
+			fragmentEntryPropagation.setFragmentEntryKey(fragmentEntryKey);
+		}
+
+		fragmentEntryPropagation.setModifiedDate(new Date());
+		fragmentEntryPropagation.setFragmentEntryKey(fragmentEntryKey);
+		fragmentEntryPropagation.setCss(css);
+		fragmentEntryPropagation.setHtml(html);
+		fragmentEntryPropagation.setJs(js);
+		fragmentEntryPropagation.setConfiguration(configuration);
+		fragmentEntryPropagation.setType(type);
+
+		return fragmentEntryPropagationPersistence.update(
+			fragmentEntryPropagation);
+	}
+
+	@Override
+	public FragmentEntryPropagation fetchByFragmentEntryKey(
+		String fragmentEntryKey) {
+
+		return fragmentEntryPropagationPersistence.fetchByFragmentEntryKey(
+			fragmentEntryKey);
+	}
+
 }
