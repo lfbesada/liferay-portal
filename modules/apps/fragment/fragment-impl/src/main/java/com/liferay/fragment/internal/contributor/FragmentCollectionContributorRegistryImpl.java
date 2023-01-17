@@ -20,8 +20,10 @@ import com.liferay.fragment.contributor.FragmentCollectionContributorRegistry;
 import com.liferay.fragment.model.FragmentComposition;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.model.FragmentEntryLink;
+import com.liferay.fragment.model.FragmentEntryPropagation;
 import com.liferay.fragment.processor.FragmentEntryProcessorRegistry;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
+import com.liferay.fragment.service.FragmentEntryPropagationLocalService;
 import com.liferay.fragment.validator.FragmentEntryValidator;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMap;
 import com.liferay.osgi.service.tracker.collections.map.ServiceTrackerMapFactory;
@@ -38,6 +40,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.ServiceReference;
@@ -264,6 +267,10 @@ public class FragmentCollectionContributorRegistryImpl
 	@Reference
 	private FragmentEntryLinkLocalService _fragmentEntryLinkLocalService;
 
+	@Reference
+	private FragmentEntryPropagationLocalService
+		_fragmentEntryPropagationLocalService;
+
 	private ServiceTrackerMap<String, FragmentCollectionBag> _serviceTrackerMap;
 
 	private static class FragmentCollectionBag {
@@ -317,10 +324,43 @@ public class FragmentCollectionContributorRegistryImpl
 						continue;
 					}
 
+					FragmentEntryPropagation fragmentEntryPropagation =
+						_fragmentEntryPropagationLocalService.
+							fetchByFragmentEntryKey(
+								fragmentEntry.getFragmentEntryKey());
+
+					if ((fragmentEntryPropagation != null) &&
+						Objects.equals(
+							fragmentEntry.getCss(),
+							fragmentEntryPropagation.getCss()) &&
+						Objects.equals(
+							fragmentEntry.getHtml(),
+							fragmentEntryPropagation.getHtml()) &&
+						Objects.equals(
+							fragmentEntry.getJs(),
+							fragmentEntryPropagation.getJs()) &&
+						Objects.equals(
+							fragmentEntry.getConfiguration(),
+							fragmentEntryPropagation.getConfiguration()) &&
+						Objects.equals(
+							fragmentEntry.getType(),
+							fragmentEntryPropagation.getType())) {
+
+						continue;
+					}
+
 					fragmentEntries.put(
 						fragmentEntry.getFragmentEntryKey(), fragmentEntry);
 
 					_updateFragmentEntryLinks(fragmentEntry);
+
+					_fragmentEntryPropagationLocalService.
+						addOrUpdateFragmentEntryPropagation(
+							fragmentEntry.getFragmentEntryKey(),
+							fragmentEntry.getCss(), fragmentEntry.getHtml(),
+							fragmentEntry.getJs(),
+							fragmentEntry.getConfiguration(),
+							fragmentEntry.getType());
 				}
 			}
 
