@@ -189,6 +189,11 @@ public class FragmentServiceUpgradeStepRegistrator
 			"2.10.0", "2.10.1",
 			new com.liferay.fragment.internal.upgrade.v2_10_1.
 				FragmentCollectionUpgradeProcess(_dlFolderLocalService));
+
+		registry.register(
+			"2.10.1", "3.0.0",
+			new com.liferay.fragment.internal.upgrade.v3_0_0.
+				SchemaUpgradeProcess());
 	}
 
 	@Reference
