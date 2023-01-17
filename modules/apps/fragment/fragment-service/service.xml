@@ -326,6 +326,32 @@
 			<finder-column name="rendererKey" />
 		</finder>
 	</entity>
+	<entity local-service="true" name="FragmentEntryPropagation" remote-service="false">
+
+		<!-- PK fields -->
+
+		<column name="fragmentEntryPropagationId" primary="true" type="long" />
+
+		<!-- Audit fields -->
+
+		<column name="createDate" type="Date" />
+		<column name="modifiedDate" type="Date" />
+
+		<!-- Other fields -->
+
+		<column name="fragmentEntryKey" type="String" />
+		<column name="css" type="String" />
+		<column name="html" type="String" />
+		<column name="js" type="String" />
+		<column name="configuration" type="String" />
+		<column name="type" type="int" />
+
+		<!-- Finder methods -->
+
+		<finder name="FragmentEntryKey" return-type="FragmentEntryPropagation" unique="true">
+			<finder-column name="fragmentEntryKey" />
+		</finder>
+	</entity>
 	<exceptions>
 		<exception>DuplicateFragmentCollection</exception>
 		<exception>DuplicateFragmentCollectionKey</exception>
