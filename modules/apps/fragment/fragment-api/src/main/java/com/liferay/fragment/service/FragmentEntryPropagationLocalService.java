@@ -82,6 +82,10 @@ public interface FragmentEntryPropagationLocalService
 	public FragmentEntryPropagation addFragmentEntryPropagation(
 		FragmentEntryPropagation fragmentEntryPropagation);
 
+	public FragmentEntryPropagation addOrUpdateFragmentEntryPropagation(
+		String fragmentEntryKey, String css, String html, String js,
+		String configuration, int type);
+
 	/**
 	 * Creates a new fragment entry propagation with the primary key. Does not add the fragment entry propagation to the database.
 	 *
@@ -206,6 +210,10 @@ public interface FragmentEntryPropagationLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public long dynamicQueryCount(
 		DynamicQuery dynamicQuery, Projection projection);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public FragmentEntryPropagation fetchByFragmentEntryKey(
+		String fragmentEntryKey);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public FragmentEntryPropagation fetchFragmentEntryPropagation(

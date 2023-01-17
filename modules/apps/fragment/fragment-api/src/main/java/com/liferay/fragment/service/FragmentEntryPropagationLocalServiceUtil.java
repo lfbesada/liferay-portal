@@ -62,6 +62,14 @@ public class FragmentEntryPropagationLocalServiceUtil {
 			fragmentEntryPropagation);
 	}
 
+	public static FragmentEntryPropagation addOrUpdateFragmentEntryPropagation(
+		String fragmentEntryKey, String css, String html, String js,
+		String configuration, int type) {
+
+		return getService().addOrUpdateFragmentEntryPropagation(
+			fragmentEntryKey, css, html, js, configuration, type);
+	}
+
 	/**
 	 * Creates a new fragment entry propagation with the primary key. Does not add the fragment entry propagation to the database.
 	 *
@@ -214,6 +222,12 @@ public class FragmentEntryPropagationLocalServiceUtil {
 		com.liferay.portal.kernel.dao.orm.Projection projection) {
 
 		return getService().dynamicQueryCount(dynamicQuery, projection);
+	}
+
+	public static FragmentEntryPropagation fetchByFragmentEntryKey(
+		String fragmentEntryKey) {
+
+		return getService().fetchByFragmentEntryKey(fragmentEntryKey);
 	}
 
 	public static FragmentEntryPropagation fetchFragmentEntryPropagation(
