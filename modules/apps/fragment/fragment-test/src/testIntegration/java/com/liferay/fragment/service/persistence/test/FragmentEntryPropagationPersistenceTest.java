@@ -239,8 +239,7 @@ public class FragmentEntryPropagationPersistenceTest {
 		return OrderByComparatorFactoryUtil.create(
 			"FragmentEntryPropagation", "mvccVersion", true, "ctCollectionId",
 			true, "fragmentEntryPropagationId", true, "createDate", true,
-			"modifiedDate", true, "fragmentEntryKey", true, "css", true, "html",
-			true, "js", true, "configuration", true, "type", true);
+			"modifiedDate", true, "fragmentEntryKey", true, "type", true);
 	}
 
 	@Test

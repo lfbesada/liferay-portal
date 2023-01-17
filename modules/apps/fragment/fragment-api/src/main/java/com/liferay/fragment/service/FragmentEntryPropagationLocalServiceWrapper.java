@@ -60,6 +60,16 @@ public class FragmentEntryPropagationLocalServiceWrapper
 			addFragmentEntryPropagation(fragmentEntryPropagation);
 	}
 
+	@Override
+	public FragmentEntryPropagation addOrUpdateFragmentEntryPropagation(
+		String fragmentEntryKey, String css, String html, String js,
+		String configuration, int type) {
+
+		return _fragmentEntryPropagationLocalService.
+			addOrUpdateFragmentEntryPropagation(
+				fragmentEntryKey, css, html, js, configuration, type);
+	}
+
 	/**
 	 * Creates a new fragment entry propagation with the primary key. Does not add the fragment entry propagation to the database.
 	 *
@@ -238,6 +248,14 @@ public class FragmentEntryPropagationLocalServiceWrapper
 
 		return _fragmentEntryPropagationLocalService.dynamicQueryCount(
 			dynamicQuery, projection);
+	}
+
+	@Override
+	public FragmentEntryPropagation fetchByFragmentEntryKey(
+		String fragmentEntryKey) {
+
+		return _fragmentEntryPropagationLocalService.fetchByFragmentEntryKey(
+			fragmentEntryKey);
 	}
 
 	@Override

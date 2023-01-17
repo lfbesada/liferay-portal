@@ -17,6 +17,7 @@ package com.liferay.fragment.model;
 import com.liferay.petra.sql.dsl.Column;
 import com.liferay.petra.sql.dsl.base.BaseTable;
 
+import java.sql.Clob;
 import java.sql.Types;
 
 import java.util.Date;
@@ -54,15 +55,15 @@ public class FragmentEntryPropagationTable
 		fragmentEntryKey = createColumn(
 			"fragmentEntryKey", String.class, Types.VARCHAR,
 			Column.FLAG_DEFAULT);
-	public final Column<FragmentEntryPropagationTable, String> css =
-		createColumn("css", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
-	public final Column<FragmentEntryPropagationTable, String> html =
-		createColumn("html", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
-	public final Column<FragmentEntryPropagationTable, String> js =
-		createColumn("js", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
-	public final Column<FragmentEntryPropagationTable, String> configuration =
+	public final Column<FragmentEntryPropagationTable, Clob> css = createColumn(
+		"css", Clob.class, Types.CLOB, Column.FLAG_DEFAULT);
+	public final Column<FragmentEntryPropagationTable, Clob> html =
+		createColumn("html", Clob.class, Types.CLOB, Column.FLAG_DEFAULT);
+	public final Column<FragmentEntryPropagationTable, Clob> js = createColumn(
+		"js", Clob.class, Types.CLOB, Column.FLAG_DEFAULT);
+	public final Column<FragmentEntryPropagationTable, Clob> configuration =
 		createColumn(
-			"configuration", String.class, Types.VARCHAR, Column.FLAG_DEFAULT);
+			"configuration", Clob.class, Types.CLOB, Column.FLAG_DEFAULT);
 	public final Column<FragmentEntryPropagationTable, Integer> type =
 		createColumn(
 			"type_", Integer.class, Types.INTEGER, Column.FLAG_DEFAULT);
