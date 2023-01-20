@@ -111,12 +111,14 @@ export default {
 	 * @param {string} options.classNameId
 	 * @param {string} options.classPK
 	 * @param {object} options.collection
+	 * @param {object} options.collectionConfig
 	 * @param {function} options.onNetworkStatus
 	 */
 	getCollectionItemCount({
 		classNameId,
 		classPK,
 		collection,
+		collectionConfig,
 		onNetworkStatus,
 	}) {
 		return serviceFetch(
@@ -125,6 +127,7 @@ export default {
 				body: {
 					classNameId,
 					classPK,
+					collectionConfig: JSON.stringify(collectionConfig),
 					layoutObjectReference: JSON.stringify(collection),
 				},
 			},

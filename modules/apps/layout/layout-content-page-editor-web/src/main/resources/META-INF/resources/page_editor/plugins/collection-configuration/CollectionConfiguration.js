@@ -17,10 +17,11 @@ import ClayLayout from '@clayui/layout';
 import ClayToolbar from '@clayui/toolbar';
 import {useIsMounted} from '@liferay/frontend-js-react-web';
 import classNames from 'classnames';
-import {fetch, objectToFormData, sub} from 'frontend-js-web';
+import {sub} from 'frontend-js-web';
 import React, {useEffect, useRef, useState} from 'react';
 
 import {initializeConfig} from '../../app/config/index';
+import CollectionService from '../../app/services/CollectionService';
 import {setIn} from '../../app/utils/setIn';
 import {FieldSet} from '../browser/components/page_structure/components/item_configuration_panels/FieldSet';
 
@@ -151,20 +152,14 @@ const FilterInformationToolbar = ({
 
 	useEffect(() => {
 		if (hasConfigurationValues) {
-			fetch(getCollectionItemCountURL, {
-				body: objectToFormData({
-					[`${namespace}layoutObjectReference`]: JSON.stringify(
-						collectionConfig
-					),
-				}),
-				method: 'POST',
-			})
-				.then((response) => response.json())
-				.then(({totalNumberOfItems}) => {
-					if (isMounted()) {
-						setTotalNumberOfItems(totalNumberOfItems || 0);
-					}
-				});
+			CollectionService.getCollectionItemCount({
+				collectionConfig,
+				onNetworkStatus: () => {},
+			}).then(({totalNumberOfItems}) => {
+				if (isMounted()) {
+					setTotalNumberOfItems(totalNumberOfItems || 0);
+				}
+			});
 		}
 	}, [
 		collectionConfig,
