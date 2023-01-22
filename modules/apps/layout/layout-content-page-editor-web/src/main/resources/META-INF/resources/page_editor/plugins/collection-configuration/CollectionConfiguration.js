@@ -70,6 +70,7 @@ function CollectionConfiguration({
 				</h1>
 
 				<FilterInformationToolbar
+					collection={collection}
 					collectionConfig={collectionConfig}
 					configurationDefinition={configurationDefinition}
 					getCollectionItemCountURL={getCollectionItemCountURL}
@@ -128,6 +129,7 @@ function CollectionConfiguration({
 }
 
 const FilterInformationToolbar = ({
+	collection,
 	collectionConfig,
 	configurationDefinition,
 	getCollectionItemCountURL,
@@ -144,6 +146,10 @@ const FilterInformationToolbar = ({
 		(value) => !!value
 	).length;
 
+	const clonedCollection = JSON.parse(JSON.stringify(collection));
+
+	clonedCollection.config = collectionConfig;
+
 	const filterInformationMessage = getFilterInformationMessage(
 		configurationDefinition,
 		collectionConfig
@@ -154,7 +160,7 @@ const FilterInformationToolbar = ({
 			fetch(getCollectionItemCountURL, {
 				body: objectToFormData({
 					[`${namespace}layoutObjectReference`]: JSON.stringify(
-						collectionConfig
+						clonedCollection
 					),
 				}),
 				method: 'POST',
@@ -167,6 +173,7 @@ const FilterInformationToolbar = ({
 				});
 		}
 	}, [
+		collection,
 		collectionConfig,
 		getCollectionItemCountURL,
 		hasConfigurationValues,
