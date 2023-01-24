@@ -593,26 +593,26 @@ public class FragmentEntryProcessorHelperImpl
 				fragmentEntryProcessorContext.getHttpServletRequest(),
 				object)) {
 
-			if (!(infoField.getInfoFieldType() instanceof FileInfoFieldType) &&
-				!(infoField.getInfoFieldType() instanceof ImageInfoFieldType) &&
-				!(infoField.getInfoFieldType() instanceof URLInfoFieldType) &&
-				Objects.equals(
+			if (!Objects.equals(
 					fragmentEntryProcessorContext.getMode(),
-					FragmentEntryLinkConstants.EDIT)) {
+					FragmentEntryLinkConstants.EDIT) ||
+				(infoField.getInfoFieldType() instanceof FileInfoFieldType) ||
+				(infoField.getInfoFieldType() instanceof ImageInfoFieldType) ||
+				(infoField.getInfoFieldType() instanceof URLInfoFieldType)) {
 
-				return StringBundler.concat(
-					"<span class=\"clearfix page-editor__editable\" ",
-					"data-lfr-editable-id=\"02-title\">",
-					_language.get(
-						fragmentEntryProcessorContext.getLocale(),
-						"restricted-content"),
-					"<svg class=\"lexicon-icon lexicon-icon-password-policies",
-					"\" role=\"presentation\" viewBox=\"0 0 512 512\">",
-					"<use xlink:href=\"/o/classic-theme/images/clay",
-					"/icons.svg#password-policies\"></use></svg></span>");
+				return StringPool.BLANK;
 			}
 
-			return StringPool.BLANK;
+			return StringBundler.concat(
+				"<span class=\"clearfix page-editor__editable\" ",
+				"data-lfr-editable-id=\"02-title\">",
+				_language.get(
+					fragmentEntryProcessorContext.getLocale(),
+					"restricted-content"),
+				"<svg class=\"lexicon-icon lexicon-icon-password-policies",
+				"\" role=\"presentation\" viewBox=\"0 0 512 512\">",
+				"<use xlink:href=\"/o/classic-theme/images/clay",
+				"/icons.svg#password-policies\"></use></svg></span>");
 		}
 
 		Object value = infoFieldValue.getValue(
