@@ -14,6 +14,7 @@
 
 package com.liferay.fragment.entry.processor.internal.util;
 
+import com.liferay.fragment.constants.FragmentEntryLinkConstants;
 import com.liferay.fragment.entry.processor.helper.FragmentEntryProcessorHelper;
 import com.liferay.fragment.processor.FragmentEntryProcessorContext;
 import com.liferay.info.exception.InfoItemPermissionException;
@@ -37,6 +38,7 @@ import com.liferay.info.type.Labeled;
 import com.liferay.info.type.WebImage;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
 import com.liferay.layout.display.page.constants.LayoutDisplayPageWebKeys;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -179,6 +181,30 @@ public class FragmentEntryProcessorHelperImpl
 			fieldName = editableValueJSONObject.getString("mappedField");
 
 			object = layoutDisplayPageObjectProvider.getDisplayObject();
+		}
+
+		if (!_hasViewPermission(
+				className,
+				fragmentEntryProcessorContext.getHttpServletRequest(),
+				object)) {
+
+			if (Objects.equals(
+					fragmentEntryProcessorContext.getMode(),
+					FragmentEntryLinkConstants.EDIT)) {
+
+				return StringBundler.concat(
+					"<span class=\"clearfix page-editor__editable\" ",
+					"data-lfr-editable-id=\"02-title\">",
+					_language.get(
+						fragmentEntryProcessorContext.getLocale(),
+						"restricted-content"),
+					"<svg class=\"lexicon-icon lexicon-icon-password-policies",
+					"\" role=\"presentation\" viewBox=\"0 0 512 512\">",
+					"<use xlink:href=\"/o/classic-theme/images/clay",
+					"/icons.svg#password-policies\"></use></svg></span>");
+			}
+
+			return StringPool.BLANK;
 		}
 
 		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
@@ -350,35 +376,9 @@ public class FragmentEntryProcessorHelperImpl
 			object = layoutDisplayPageObjectProvider.getDisplayObject();
 		}
 
-		HttpServletRequest httpServletRequest =
-			fragmentEntryProcessorContext.getHttpServletRequest();
-
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		try {
-			InfoItemPermissionProvider infoItemPermissionProvider =
-				_infoItemServiceRegistry.getFirstInfoItemService(
-					InfoItemPermissionProvider.class, className);
-
-			if ((infoItemPermissionProvider != null) &&
-				!infoItemPermissionProvider.hasPermission(
-					themeDisplay.getPermissionChecker(), object,
-					ActionKeys.VIEW)) {
-
-				return false;
-			}
-
-			return true;
-		}
-		catch (InfoItemPermissionException infoItemPermissionException) {
-			_log.error(
-				"Unable to check display object permissions",
-				infoItemPermissionException);
-
-			return false;
-		}
+		return _hasViewPermission(
+			className, fragmentEntryProcessorContext.getHttpServletRequest(),
+			object);
 	}
 
 	@Override
@@ -738,6 +738,38 @@ public class FragmentEntryProcessorHelperImpl
 		_shortTimeStylePatterns.put(locale, sortTimeStylePattern);
 
 		return sortTimeStylePattern;
+	}
+
+	private boolean _hasViewPermission(
+		String className, HttpServletRequest httpServletRequest,
+		Object object) {
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		try {
+			InfoItemPermissionProvider infoItemPermissionProvider =
+				_infoItemServiceRegistry.getFirstInfoItemService(
+					InfoItemPermissionProvider.class, className);
+
+			if ((infoItemPermissionProvider != null) &&
+				!infoItemPermissionProvider.hasPermission(
+					themeDisplay.getPermissionChecker(), object,
+					ActionKeys.VIEW)) {
+
+				return false;
+			}
+
+			return true;
+		}
+		catch (InfoItemPermissionException infoItemPermissionException) {
+			_log.error(
+				"Unable to check display object permissions",
+				infoItemPermissionException);
+
+			return false;
+		}
 	}
 
 	private static final InfoCollectionTextFormatter<Object>
