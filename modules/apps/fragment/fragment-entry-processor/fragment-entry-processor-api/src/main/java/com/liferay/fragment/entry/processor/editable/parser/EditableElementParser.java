@@ -5,13 +5,17 @@
 
 package com.liferay.fragment.entry.processor.editable.parser;
 
+import com.liferay.fragment.constants.FragmentEntryLinkConstants;
 import com.liferay.fragment.exception.FragmentEntryContentException;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 
 import java.util.Locale;
+import java.util.Objects;
 
 import org.jsoup.nodes.Element;
 
@@ -30,6 +34,23 @@ public interface EditableElementParser {
 		String fieldName, Locale locale, Object fieldValue) {
 
 		return JSONFactoryUtil.createJSONObject();
+	}
+
+	public default String getRestrictedContentFieldValue(
+		Locale locale, String mode) {
+
+		if (!Objects.equals(mode, FragmentEntryLinkConstants.EDIT)) {
+			return StringPool.BLANK;
+		}
+
+		return StringBundler.concat(
+			"<span class=\"clearfix page-editor__editable\" ",
+			"data-lfr-editable-id=\"02-title\">",
+			LanguageUtil.get(locale, "restricted-content"),
+			"&nbsp;<svg class=\"lexicon-icon lexicon-icon-password-policies",
+			"\" role=\"presentation\" viewBox=\"0 0 512 512\">",
+			"<use xlink:href=\"/o/classic-theme/images/clay",
+			"/icons.svg#password-policies\"></use></svg></span>");
 	}
 
 	public String getValue(Element element);
