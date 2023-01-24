@@ -64,10 +64,14 @@ public class LinkEditableElementMapper implements EditableElementMapper {
 			_fragmentEntryProcessorHelper.isMappedDisplayPage(
 				configJSONObject)) {
 
-			href = GetterUtil.getString(
-				_fragmentEntryProcessorHelper.getFieldValue(
-					configJSONObject, new HashMap<>(),
-					fragmentEntryProcessorContext));
+			if (_fragmentEntryProcessorHelper.hasViewPermission(
+					configJSONObject, fragmentEntryProcessorContext)) {
+
+				href = GetterUtil.getString(
+					_fragmentEntryProcessorHelper.getFieldValue(
+						configJSONObject, new HashMap<>(),
+						fragmentEntryProcessorContext));
+			}
 		}
 		else if (_isMappedLayout(configJSONObject)) {
 			href = GetterUtil.getString(
