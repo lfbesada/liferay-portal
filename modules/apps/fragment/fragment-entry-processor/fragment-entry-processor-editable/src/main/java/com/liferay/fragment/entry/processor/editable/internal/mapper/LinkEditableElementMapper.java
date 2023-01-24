@@ -13,8 +13,10 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.service.permission.LayoutPermissionUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -205,6 +207,12 @@ public class LinkEditableElementMapper implements EditableElementMapper {
 
 		if (layout == null) {
 			return StringPool.POUND;
+		}
+
+		if (!LayoutPermissionUtil.contains(
+				themeDisplay.getPermissionChecker(), layout, ActionKeys.VIEW)) {
+
+			return StringPool.BLANK;
 		}
 
 		return _portal.getLayoutRelativeURL(layout, themeDisplay);
