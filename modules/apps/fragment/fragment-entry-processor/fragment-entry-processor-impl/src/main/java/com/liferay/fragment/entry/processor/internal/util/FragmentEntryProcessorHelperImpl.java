@@ -16,6 +16,7 @@ package com.liferay.fragment.entry.processor.internal.util;
 
 import com.liferay.fragment.entry.processor.helper.FragmentEntryProcessorHelper;
 import com.liferay.fragment.processor.FragmentEntryProcessorContext;
+import com.liferay.info.exception.InfoItemPermissionException;
 import com.liferay.info.exception.NoSuchInfoItemException;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldValue;
@@ -30,6 +31,7 @@ import com.liferay.info.item.InfoItemReference;
 import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
 import com.liferay.info.item.provider.InfoItemObjectProvider;
+import com.liferay.info.item.provider.InfoItemPermissionProvider;
 import com.liferay.info.search.InfoSearchClassMapperRegistry;
 import com.liferay.info.type.Labeled;
 import com.liferay.info.type.WebImage;
@@ -42,6 +44,8 @@ import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.trash.TrashHandler;
 import com.liferay.portal.kernel.trash.TrashHandlerRegistryUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
@@ -50,6 +54,7 @@ import com.liferay.portal.kernel.util.Html;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.util.WebKeys;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -278,6 +283,102 @@ public class FragmentEntryProcessorHelperImpl
 			(ClassPKInfoItemIdentifier)fileEntryInfoItemIdentifier;
 
 		return classPKInfoItemIdentifier.getClassPK();
+	}
+
+	@Override
+	public boolean hasViewPermission(
+		JSONObject editableValueJSONObject,
+		FragmentEntryProcessorContext fragmentEntryProcessorContext) {
+
+		String className = StringPool.BLANK;
+		Object object = null;
+
+		if (isMapped(editableValueJSONObject)) {
+			className = _portal.getClassName(
+				editableValueJSONObject.getLong("classNameId"));
+
+			InfoItemIdentifier infoItemIdentifier =
+				new ClassPKInfoItemIdentifier(
+					editableValueJSONObject.getLong("classPK"));
+
+			if (fragmentEntryProcessorContext.getPreviewClassPK() > 0) {
+				infoItemIdentifier = new ClassPKInfoItemIdentifier(
+					fragmentEntryProcessorContext.getPreviewClassPK());
+
+				if (Validator.isNotNull(
+						fragmentEntryProcessorContext.getPreviewVersion())) {
+
+					infoItemIdentifier.setVersion(
+						fragmentEntryProcessorContext.getPreviewVersion());
+				}
+			}
+
+			object = _getInfoItem(className, infoItemIdentifier);
+		}
+		else if (isMappedCollection(editableValueJSONObject)) {
+			InfoItemReference infoItemReference =
+				fragmentEntryProcessorContext.getContextInfoItemReference();
+
+			if (infoItemReference == null) {
+				return true;
+			}
+
+			className = infoItemReference.getClassName();
+
+			object = _getInfoItem(infoItemReference);
+		}
+		else if (isMappedDisplayPage(editableValueJSONObject)) {
+			HttpServletRequest httpServletRequest =
+				fragmentEntryProcessorContext.getHttpServletRequest();
+
+			if (httpServletRequest == null) {
+				return true;
+			}
+
+			LayoutDisplayPageObjectProvider<?> layoutDisplayPageObjectProvider =
+				(LayoutDisplayPageObjectProvider<?>)
+					httpServletRequest.getAttribute(
+						LayoutDisplayPageWebKeys.
+							LAYOUT_DISPLAY_PAGE_OBJECT_PROVIDER);
+
+			if (layoutDisplayPageObjectProvider == null) {
+				return true;
+			}
+
+			className = layoutDisplayPageObjectProvider.getClassName();
+
+			object = layoutDisplayPageObjectProvider.getDisplayObject();
+		}
+
+		HttpServletRequest httpServletRequest =
+			fragmentEntryProcessorContext.getHttpServletRequest();
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		try {
+			InfoItemPermissionProvider infoItemPermissionProvider =
+				_infoItemServiceRegistry.getFirstInfoItemService(
+					InfoItemPermissionProvider.class, className);
+
+			if ((infoItemPermissionProvider != null) &&
+				!infoItemPermissionProvider.hasPermission(
+					themeDisplay.getPermissionChecker(), object,
+					ActionKeys.VIEW)) {
+
+				return false;
+			}
+
+			return true;
+		}
+		catch (InfoItemPermissionException infoItemPermissionException) {
+			_log.error(
+				"Unable to check display object permissions",
+				infoItemPermissionException);
+
+			return false;
+		}
 	}
 
 	@Override
