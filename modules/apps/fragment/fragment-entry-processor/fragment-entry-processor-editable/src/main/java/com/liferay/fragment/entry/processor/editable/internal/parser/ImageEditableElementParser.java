@@ -108,6 +108,11 @@ public class ImageEditableElementParser implements EditableElementParser {
 	}
 
 	@Override
+	public String getRestrictedContentFieldValue(Locale locale, String mode) {
+		return StringPool.BLANK;
+	}
+
+	@Override
 	public String getValue(Element element) {
 		List<Element> elements = element.getElementsByTag("img");
 
