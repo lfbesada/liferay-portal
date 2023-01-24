@@ -22,7 +22,10 @@ import com.liferay.info.exception.NoSuchInfoItemException;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldValue;
 import com.liferay.info.field.type.DateInfoFieldType;
+import com.liferay.info.field.type.FileInfoFieldType;
+import com.liferay.info.field.type.ImageInfoFieldType;
 import com.liferay.info.field.type.TextInfoFieldType;
+import com.liferay.info.field.type.URLInfoFieldType;
 import com.liferay.info.formatter.InfoCollectionTextFormatter;
 import com.liferay.info.formatter.InfoTextFormatter;
 import com.liferay.info.item.ClassPKInfoItemIdentifier;
@@ -183,30 +186,6 @@ public class FragmentEntryProcessorHelperImpl
 			object = layoutDisplayPageObjectProvider.getDisplayObject();
 		}
 
-		if (!_hasViewPermission(
-				className,
-				fragmentEntryProcessorContext.getHttpServletRequest(),
-				object)) {
-
-			if (Objects.equals(
-					fragmentEntryProcessorContext.getMode(),
-					FragmentEntryLinkConstants.EDIT)) {
-
-				return StringBundler.concat(
-					"<span class=\"clearfix page-editor__editable\" ",
-					"data-lfr-editable-id=\"02-title\">",
-					_language.get(
-						fragmentEntryProcessorContext.getLocale(),
-						"restricted-content"),
-					"<svg class=\"lexicon-icon lexicon-icon-password-policies",
-					"\" role=\"presentation\" viewBox=\"0 0 512 512\">",
-					"<use xlink:href=\"/o/classic-theme/images/clay",
-					"/icons.svg#password-policies\"></use></svg></span>");
-			}
-
-			return StringPool.BLANK;
-		}
-
 		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
 			className);
 
@@ -232,8 +211,8 @@ public class FragmentEntryProcessorHelperImpl
 		}
 
 		return _getMappedInfoItemFieldValue(
-			editableValueJSONObject, fieldName, infoItemFieldValuesProvider,
-			fragmentEntryProcessorContext.getLocale(), object);
+			className, editableValueJSONObject, fieldName,
+			fragmentEntryProcessorContext, infoItemFieldValuesProvider, object);
 	}
 
 	@Override
@@ -595,8 +574,9 @@ public class FragmentEntryProcessorHelperImpl
 	}
 
 	private Object _getMappedInfoItemFieldValue(
-		JSONObject editableValueJSONObject, String fieldName,
-		InfoItemFieldValuesProvider infoItemFieldValuesProvider, Locale locale,
+		String className, JSONObject editableValueJSONObject, String fieldName,
+		FragmentEntryProcessorContext fragmentEntryProcessorContext,
+		InfoItemFieldValuesProvider infoItemFieldValuesProvider,
 		Object object) {
 
 		InfoFieldValue<Object> infoFieldValue =
@@ -606,7 +586,37 @@ public class FragmentEntryProcessorHelperImpl
 			return null;
 		}
 
-		Object value = infoFieldValue.getValue(locale);
+		InfoField infoField = infoFieldValue.getInfoField();
+
+		if (!_hasViewPermission(
+				className,
+				fragmentEntryProcessorContext.getHttpServletRequest(),
+				object)) {
+
+			if (!(infoField.getInfoFieldType() instanceof FileInfoFieldType) &&
+				!(infoField.getInfoFieldType() instanceof ImageInfoFieldType) &&
+				!(infoField.getInfoFieldType() instanceof URLInfoFieldType) &&
+				Objects.equals(
+					fragmentEntryProcessorContext.getMode(),
+					FragmentEntryLinkConstants.EDIT)) {
+
+				return StringBundler.concat(
+					"<span class=\"clearfix page-editor__editable\" ",
+					"data-lfr-editable-id=\"02-title\">",
+					_language.get(
+						fragmentEntryProcessorContext.getLocale(),
+						"restricted-content"),
+					"<svg class=\"lexicon-icon lexicon-icon-password-policies",
+					"\" role=\"presentation\" viewBox=\"0 0 512 512\">",
+					"<use xlink:href=\"/o/classic-theme/images/clay",
+					"/icons.svg#password-policies\"></use></svg></span>");
+			}
+
+			return StringPool.BLANK;
+		}
+
+		Object value = infoFieldValue.getValue(
+			fragmentEntryProcessorContext.getLocale());
 
 		if (value == null) {
 			return null;
@@ -642,23 +652,25 @@ public class FragmentEntryProcessorHelperImpl
 			InfoCollectionTextFormatter<Object> infoCollectionTextFormatter =
 				_getInfoCollectionTextFormatter(firstItemClass.getName());
 
-			return infoCollectionTextFormatter.format(collection, locale);
+			return infoCollectionTextFormatter.format(
+				collection, fragmentEntryProcessorContext.getLocale());
 		}
 
 		if (value instanceof String) {
-			InfoField infoField = infoFieldValue.getInfoField();
-
 			if (infoField.getInfoFieldType() instanceof DateInfoFieldType) {
 				try {
 					DateFormat dateFormat =
 						DateFormatFactoryUtil.getSimpleDateFormat(
-							"MM/dd/yy hh:mm a", locale);
+							"MM/dd/yy hh:mm a",
+							fragmentEntryProcessorContext.getLocale());
 
 					Date date = dateFormat.parse(value.toString());
 
 					return _getDateValue(
 						editableValueJSONObject, date,
-						_getShortTimeStylePattern(locale), locale);
+						_getShortTimeStylePattern(
+							fragmentEntryProcessorContext.getLocale()),
+						fragmentEntryProcessorContext.getLocale());
 				}
 				catch (ParseException parseException1) {
 					if (_log.isDebugEnabled()) {
@@ -668,12 +680,15 @@ public class FragmentEntryProcessorHelperImpl
 					try {
 						DateFormat dateFormat =
 							DateFormatFactoryUtil.getSimpleDateFormat(
-								"MM/dd/yy", locale);
+								"MM/dd/yy",
+								fragmentEntryProcessorContext.getLocale());
 
 						return _getDateValue(
 							editableValueJSONObject,
 							dateFormat.parse(value.toString()),
-							_getDefaultPattern(locale), locale);
+							_getDefaultPattern(
+								fragmentEntryProcessorContext.getLocale()),
+							fragmentEntryProcessorContext.getLocale());
 					}
 					catch (ParseException parseException2) {
 						if (_log.isDebugEnabled()) {
@@ -700,7 +715,8 @@ public class FragmentEntryProcessorHelperImpl
 		if (value instanceof Labeled) {
 			Labeled labeledFieldValue = (Labeled)value;
 
-			return labeledFieldValue.getLabel(locale);
+			return labeledFieldValue.getLabel(
+				fragmentEntryProcessorContext.getLocale());
 		}
 
 		if (value instanceof Date) {
@@ -708,7 +724,9 @@ public class FragmentEntryProcessorHelperImpl
 
 			return _getDateValue(
 				editableValueJSONObject, date,
-				_getShortTimeStylePattern(locale), locale);
+				_getShortTimeStylePattern(
+					fragmentEntryProcessorContext.getLocale()),
+				fragmentEntryProcessorContext.getLocale());
 		}
 
 		Class<?> fieldValueClass = value.getClass();
@@ -719,7 +737,8 @@ public class FragmentEntryProcessorHelperImpl
 					InfoTextFormatter.class, fieldValueClass.getName());
 
 		if (infoTextFormatter != null) {
-			return infoTextFormatter.format(value, locale);
+			return infoTextFormatter.format(
+				value, fragmentEntryProcessorContext.getLocale());
 		}
 
 		return value.toString();
