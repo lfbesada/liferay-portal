@@ -17,6 +17,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import java.util.List;
+import java.util.Locale;
 import java.util.Objects;
 import java.util.ResourceBundle;
 
@@ -50,6 +51,11 @@ public class LinkEditableElementParser implements EditableElementParser {
 		}
 
 		return jsonObject;
+	}
+
+	@Override
+	public String getRestrictedContentFieldValue(Locale locale, String mode) {
+		return StringPool.BLANK;
 	}
 
 	@Override
