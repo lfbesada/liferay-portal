@@ -70,9 +70,11 @@ import com.liferay.portal.kernel.portlet.bridges.mvc.MVCResourceCommand;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.servlet.PipingServletResponse;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.segments.SegmentsEntryRetriever;
 import com.liferay.segments.context.RequestContextMapper;
@@ -495,6 +497,10 @@ public class GetCollectionFieldMVCResourceCommand
 	private boolean _hasViewPermission(
 		HttpServletRequest httpServletRequest,
 		ListObjectReference listObjectReference) {
+
+		if (!GetterUtil.getBoolean(PropsUtil.get("feature.flag.LPS-169923"))) {
+			return true;
+		}
 
 		Class<? extends ListObjectReference> listObjectReferenceClass =
 			listObjectReference.getClass();

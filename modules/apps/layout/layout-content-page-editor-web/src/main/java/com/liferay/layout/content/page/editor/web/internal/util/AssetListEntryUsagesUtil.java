@@ -70,6 +70,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.security.PermissionsURLTag;
@@ -614,8 +615,9 @@ public class AssetListEntryUsagesUtil {
 		AssetListEntryUsage assetListEntryUsage,
 		LayoutStructure layoutStructure, PermissionChecker permissionChecker) {
 
-		if (assetListEntryUsage.getContainerType() !=
-				_getCollectionStyledLayoutStructureItemClassNameId()) {
+		if (!GetterUtil.getBoolean(PropsUtil.get("feature.flag.LPS-169923")) ||
+			(assetListEntryUsage.getContainerType() !=
+				_getCollectionStyledLayoutStructureItemClassNameId())) {
 
 			return true;
 		}
