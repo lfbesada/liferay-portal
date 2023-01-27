@@ -756,6 +756,8 @@ public class ContentUtil {
 		).put(
 			"classTypeId", layoutDisplayPageObjectProvider.getClassTypeId()
 		).put(
+			"isRestricted", false
+		).put(
 			"icon",
 			_getIcon(
 				layoutClassedModelUsage.getClassName(),
