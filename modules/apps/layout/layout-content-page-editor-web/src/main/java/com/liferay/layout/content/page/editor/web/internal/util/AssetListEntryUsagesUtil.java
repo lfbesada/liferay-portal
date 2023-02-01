@@ -94,7 +94,7 @@ public class AssetListEntryUsagesUtil {
 			HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse,
 			LayoutStructure layoutStructure, long plid,
-			List<String> restrictedItemIds)
+			List<String> hiddenItemIds)
 		throws PortalException {
 
 		JSONArray mappedContentsJSONArray = JSONFactoryUtil.createJSONArray();
@@ -112,10 +112,10 @@ public class AssetListEntryUsagesUtil {
 				assetListEntryUsage);
 
 			if (uniqueAssetListEntryUsagesKeys.contains(uniqueKey) ||
-				_isCollectionStyledLayoutStructureItemDeletedOrRestricted(
-					assetListEntryUsage, layoutStructure, restrictedItemIds) ||
-				_isFragmentEntryLinkDeletedOrRestricted(
-					assetListEntryUsage, layoutStructure, restrictedItemIds)) {
+				_isCollectionStyledLayoutStructureItemDeletedOrHidden(
+					assetListEntryUsage, layoutStructure, hiddenItemIds) ||
+				_isFragmentEntryLinkDeletedOrHidden(
+					assetListEntryUsage, layoutStructure, hiddenItemIds)) {
 
 				continue;
 			}
@@ -693,9 +693,9 @@ public class AssetListEntryUsagesUtil {
 	}
 
 	private static boolean
-		_isCollectionStyledLayoutStructureItemDeletedOrRestricted(
+		_isCollectionStyledLayoutStructureItemDeletedOrHidden(
 			AssetListEntryUsage assetListEntryUsage,
-			LayoutStructure layoutStructure, List<String> restrictedItemIds) {
+			LayoutStructure layoutStructure, List<String> hiddenItemIds) {
 
 		if (assetListEntryUsage.getContainerType() !=
 				_getCollectionStyledLayoutStructureItemClassNameId()) {
@@ -716,7 +716,7 @@ public class AssetListEntryUsagesUtil {
 
 		if (layoutStructure.isItemMarkedForDeletion(
 				layoutStructureItem.getItemId()) ||
-			restrictedItemIds.contains(layoutStructureItem.getItemId())) {
+			hiddenItemIds.contains(layoutStructureItem.getItemId())) {
 
 			return true;
 		}
@@ -724,9 +724,9 @@ public class AssetListEntryUsagesUtil {
 		return false;
 	}
 
-	private static boolean _isFragmentEntryLinkDeletedOrRestricted(
+	private static boolean _isFragmentEntryLinkDeletedOrHidden(
 		AssetListEntryUsage assetListEntryUsage,
-		LayoutStructure layoutStructure, List<String> restrictedItemIds) {
+		LayoutStructure layoutStructure, List<String> hiddenItemIds) {
 
 		if (assetListEntryUsage.getContainerType() !=
 				_getFragmentEntryLinkClassNameId()) {
@@ -756,7 +756,7 @@ public class AssetListEntryUsagesUtil {
 		if ((layoutStructureItem == null) ||
 			layoutStructure.isItemMarkedForDeletion(
 				layoutStructureItem.getItemId()) ||
-			restrictedItemIds.contains(layoutStructureItem.getItemId())) {
+			hiddenItemIds.contains(layoutStructureItem.getItemId())) {
 
 			return true;
 		}
