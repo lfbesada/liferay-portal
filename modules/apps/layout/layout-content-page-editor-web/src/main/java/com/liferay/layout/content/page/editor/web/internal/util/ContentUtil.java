@@ -78,7 +78,6 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
-import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -156,11 +155,11 @@ public class ContentUtil {
 			LayoutStructureUtil.getLayoutStructure(
 				themeDisplay.getScopeGroupId(), plid, segmentsExperienceId);
 
-		List<LayoutStructureItem> restrictedLayoutStructureItems =
-			_getRestrictedLayoutStructureItems(layoutStructure, themeDisplay);
+		List<String> restrictedItemIds = _getRestrictedItemIds(
+			layoutStructure, themeDisplay);
 
 		List<String> hiddenItemIds = _getHiddenItemIds(
-			layoutStructure, restrictedLayoutStructureItems);
+			layoutStructure, restrictedItemIds);
 
 		return JSONUtil.concat(
 			_getLayoutClassedModelPageContentsJSONArray(
@@ -168,10 +167,7 @@ public class ContentUtil {
 				segmentsExperienceId),
 			AssetListEntryUsagesUtil.getPageContentsJSONArray(
 				hiddenItemIds, httpServletRequest, httpServletResponse,
-				layoutStructure, plid,
-				ListUtil.toList(
-					restrictedLayoutStructureItems,
-					layoutStructureItem -> layoutStructureItem.getItemId())));
+				layoutStructure, plid, restrictedItemIds));
 	}
 
 	private static String _generateUniqueLayoutClassedModelUsageKey(
@@ -312,10 +308,16 @@ public class ContentUtil {
 	}
 
 	private static List<String> _getChildrenItemIds(
-		LayoutStructure layoutStructure,
-		LayoutStructureItem layoutStructureItem) {
+		String itemId, LayoutStructure layoutStructure) {
 
 		List<String> childrenItemIds = new ArrayList<>();
+
+		LayoutStructureItem layoutStructureItem =
+			layoutStructure.getLayoutStructureItem(itemId);
+
+		if (layoutStructureItem == null) {
+			return childrenItemIds;
+		}
 
 		for (String childItemId : layoutStructureItem.getChildrenItemIds()) {
 			childrenItemIds.add(childItemId);
@@ -324,7 +326,8 @@ public class ContentUtil {
 				layoutStructure.getLayoutStructureItem(childItemId);
 
 			childrenItemIds.addAll(
-				_getChildrenItemIds(layoutStructure, childLayoutStructureItem));
+				_getChildrenItemIds(
+					childLayoutStructureItem.getItemId(), layoutStructure));
 		}
 
 		return childrenItemIds;
@@ -470,17 +473,13 @@ public class ContentUtil {
 	}
 
 	private static List<String> _getHiddenItemIds(
-		LayoutStructure layoutStructure,
-		List<LayoutStructureItem> restrictedLayoutStructureItems) {
+		LayoutStructure layoutStructure, List<String> restrictedItemIds) {
 
 		List<String> hiddenItemIds = new ArrayList<>();
 
-		for (LayoutStructureItem restrictedLayoutStructureItem :
-				restrictedLayoutStructureItems) {
-
+		for (String restrictedItemId : restrictedItemIds) {
 			hiddenItemIds.addAll(
-				_getChildrenItemIds(
-					layoutStructure, restrictedLayoutStructureItem));
+				_getChildrenItemIds(restrictedItemId, layoutStructure));
 		}
 
 		return hiddenItemIds;
@@ -828,14 +827,13 @@ public class ContentUtil {
 		return _portletClassNameId;
 	}
 
-	private static List<LayoutStructureItem> _getRestrictedLayoutStructureItems(
+	private static List<String> _getRestrictedItemIds(
 		LayoutStructure layoutStructure, ThemeDisplay themeDisplay) {
 
-		List<LayoutStructureItem> restrictedLayoutStructureItems =
-			new ArrayList<>();
+		List<String> restrictedItemIds = new ArrayList<>();
 
 		if (!FeatureFlagManagerUtil.isEnabled("LPS-169923")) {
-			return restrictedLayoutStructureItems;
+			return restrictedItemIds;
 		}
 
 		for (FormStyledLayoutStructureItem formStyledLayoutStructureItem :
@@ -864,7 +862,7 @@ public class ContentUtil {
 				continue;
 			}
 
-			restrictedLayoutStructureItems.add(formStyledLayoutStructureItem);
+			restrictedItemIds.add(formStyledLayoutStructureItem.getItemId());
 		}
 
 		for (CollectionStyledLayoutStructureItem
@@ -931,11 +929,11 @@ public class ContentUtil {
 				continue;
 			}
 
-			restrictedLayoutStructureItems.add(
-				collectionStyledLayoutStructureItem);
+			restrictedItemIds.add(
+				collectionStyledLayoutStructureItem.getItemId());
 		}
 
-		return restrictedLayoutStructureItems;
+		return restrictedItemIds;
 	}
 
 	private static List<String> _getRestrictedPortletIds(
