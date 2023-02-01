@@ -37,8 +37,16 @@ import com.liferay.layout.content.page.editor.web.internal.security.permission.r
 import com.liferay.layout.content.page.editor.web.internal.util.layout.structure.LayoutStructureUtil;
 import com.liferay.layout.display.page.LayoutDisplayPageObjectProvider;
 import com.liferay.layout.display.page.LayoutDisplayPageProvider;
+import com.liferay.layout.list.permission.provider.LayoutListPermissionProvider;
+import com.liferay.layout.list.permission.provider.LayoutListPermissionProviderRegistry;
+import com.liferay.layout.list.retriever.LayoutListRetriever;
+import com.liferay.layout.list.retriever.LayoutListRetrieverRegistry;
+import com.liferay.layout.list.retriever.ListObjectReference;
+import com.liferay.layout.list.retriever.ListObjectReferenceFactory;
+import com.liferay.layout.list.retriever.ListObjectReferenceFactoryRegistry;
 import com.liferay.layout.model.LayoutClassedModelUsage;
 import com.liferay.layout.service.LayoutClassedModelUsageLocalServiceUtil;
+import com.liferay.layout.util.structure.CollectionStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.ContainerStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.FormStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
@@ -95,6 +103,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Víctor Galán
@@ -159,6 +168,30 @@ public class ContentUtil {
 			AssetListEntryUsagesUtil.getPageContentsJSONArray(
 				httpServletRequest, httpServletResponse, layoutStructure, plid,
 				hiddenItemIds));
+	}
+
+	@Reference(unbind = "-")
+	protected void setLayoutListPermissionProviderRegistry(
+		LayoutListPermissionProviderRegistry
+			layoutListPermissionProviderRegistry) {
+
+		_layoutListPermissionProviderRegistry =
+			layoutListPermissionProviderRegistry;
+	}
+
+	@Reference(unbind = "-")
+	protected void setLayoutListRetrieverRegistry(
+		LayoutListRetrieverRegistry layoutListRetrieverRegistry) {
+
+		_layoutListRetrieverRegistry = layoutListRetrieverRegistry;
+	}
+
+	@Reference(unbind = "-")
+	protected void setListObjectReferenceFactoryRegistry(
+		ListObjectReferenceFactoryRegistry listObjectReferenceFactoryRegistry) {
+
+		_listObjectReferenceFactoryRegistry =
+			listObjectReferenceFactoryRegistry;
 	}
 
 	private static String _generateUniqueLayoutClassedModelUsageKey(
@@ -494,6 +527,63 @@ public class ContentUtil {
 			hiddenItemIds.addAll(
 				_getChildrenItemIds(
 					layoutStructure, formStyledLayoutStructureItem));
+		}
+
+		for (CollectionStyledLayoutStructureItem
+				collectionStyledLayoutStructureItem :
+					layoutStructure.getCollectionStyledLayoutStructureItems()) {
+
+			JSONObject collectionJSONObject =
+				collectionStyledLayoutStructureItem.getCollectionJSONObject();
+
+			if ((collectionJSONObject == null) ||
+				(collectionJSONObject.length() <= 0)) {
+
+				continue;
+			}
+
+			String type = collectionJSONObject.getString("type");
+
+			LayoutListRetriever<?, ?> layoutListRetriever =
+				_layoutListRetrieverRegistry.getLayoutListRetriever(type);
+
+			if (layoutListRetriever == null) {
+				continue;
+			}
+
+			ListObjectReferenceFactory<?> listObjectReferenceFactory =
+				_listObjectReferenceFactoryRegistry.getListObjectReference(
+					type);
+
+			if (listObjectReferenceFactory == null) {
+				continue;
+			}
+
+			ListObjectReference listObjectReference =
+				listObjectReferenceFactory.getListObjectReference(
+					collectionJSONObject);
+
+			Class<? extends ListObjectReference> listObjectReferenceClass =
+				listObjectReference.getClass();
+
+			LayoutListPermissionProvider<ListObjectReference>
+				layoutListPermissionProvider =
+					(LayoutListPermissionProvider<ListObjectReference>)
+						_layoutListPermissionProviderRegistry.
+							getLayoutListPermissionProvider(
+								listObjectReferenceClass.getName());
+
+			if ((layoutListPermissionProvider == null) ||
+				layoutListPermissionProvider.hasPermission(
+					themeDisplay.getPermissionChecker(), listObjectReference,
+					ActionKeys.VIEW)) {
+
+				continue;
+			}
+
+			hiddenItemIds.addAll(
+				_getChildrenItemIds(
+					layoutStructure, collectionStyledLayoutStructureItem));
 		}
 
 		return hiddenItemIds;
@@ -995,6 +1085,11 @@ public class ContentUtil {
 	private static final Log _log = LogFactoryUtil.getLog(ContentUtil.class);
 
 	private static Long _fragmentEntryLinkClassNameId;
+	private static LayoutListPermissionProviderRegistry
+		_layoutListPermissionProviderRegistry;
+	private static LayoutListRetrieverRegistry _layoutListRetrieverRegistry;
+	private static ListObjectReferenceFactoryRegistry
+		_listObjectReferenceFactoryRegistry;
 	private static Long _portletClassNameId;
 
 }
