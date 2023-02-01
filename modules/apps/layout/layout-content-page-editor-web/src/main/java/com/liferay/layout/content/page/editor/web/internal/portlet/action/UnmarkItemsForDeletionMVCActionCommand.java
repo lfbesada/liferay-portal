@@ -84,7 +84,13 @@ public class UnmarkItemsForDeletionMVCActionCommand
 			ContentUtil.getPageContentsJSONArray(
 				_portal.getHttpServletRequest(actionRequest),
 				_portal.getHttpServletResponse(actionResponse),
-				themeDisplay.getPlid(), segmentsExperienceId)
+				themeDisplay.getPlid(),
+				ContentUtil.getRestrictedItemIds(
+					LayoutStructureUtil.getLayoutStructure(
+						themeDisplay.getScopeGroupId(), themeDisplay.getPlid(),
+						segmentsExperienceId),
+					themeDisplay),
+				segmentsExperienceId)
 		);
 	}
 

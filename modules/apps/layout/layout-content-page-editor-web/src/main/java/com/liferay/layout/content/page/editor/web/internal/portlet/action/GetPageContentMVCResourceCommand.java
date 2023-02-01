@@ -16,6 +16,7 @@ package com.liferay.layout.content.page.editor.web.internal.portlet.action;
 
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
 import com.liferay.layout.content.page.editor.web.internal.util.ContentUtil;
+import com.liferay.layout.content.page.editor.web.internal.util.layout.structure.LayoutStructureUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCResourceCommand;
@@ -66,7 +67,13 @@ public class GetPageContentMVCResourceCommand extends BaseMVCResourceCommand {
 		return ContentUtil.getPageContentsJSONArray(
 			_portal.getHttpServletRequest(resourceRequest),
 			_portal.getHttpServletResponse(resourceResponse),
-			themeDisplay.getPlid(), segmentsExperienceId);
+			themeDisplay.getPlid(),
+			ContentUtil.getRestrictedItemIds(
+				LayoutStructureUtil.getLayoutStructure(
+					themeDisplay.getScopeGroupId(), themeDisplay.getPlid(),
+					segmentsExperienceId),
+				themeDisplay),
+			segmentsExperienceId);
 	}
 
 	@Reference
