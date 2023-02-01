@@ -158,7 +158,7 @@ public class ContentUtil {
 			LayoutStructureUtil.getLayoutStructure(
 				themeDisplay.getScopeGroupId(), plid, segmentsExperienceId);
 
-		List<String> restrictedItemIds = _getRestrictedItemIds(
+		List<String> restrictedItemIds = getRestrictedItemIds(
 			layoutStructure, themeDisplay);
 
 		List<String> hiddenItemIds = _getHiddenItemIds(
@@ -171,6 +171,103 @@ public class ContentUtil {
 			AssetListEntryUsagesUtil.getPageContentsJSONArray(
 				hiddenItemIds, httpServletRequest, httpServletResponse,
 				layoutStructure, plid, restrictedItemIds));
+	}
+
+	public static List<String> getRestrictedItemIds(
+		LayoutStructure layoutStructure, ThemeDisplay themeDisplay) {
+
+		List<String> restrictedItemIds = new ArrayList<>();
+
+		if (!FeatureFlagManagerUtil.isEnabled("LPS-169923")) {
+			return restrictedItemIds;
+		}
+
+		for (FormStyledLayoutStructureItem formStyledLayoutStructureItem :
+				layoutStructure.getFormStyledLayoutStructureItems()) {
+
+			if (layoutStructure.isItemMarkedForDeletion(
+					formStyledLayoutStructureItem.getItemId()) ||
+				(formStyledLayoutStructureItem.getClassNameId() <= 0)) {
+
+				continue;
+			}
+
+			InfoItemServiceRegistry infoItemServiceRegistry =
+				InfoItemServiceRegistryUtil.getInfoItemServiceRegistry();
+
+			InfoPermissionProvider infoPermissionProvider =
+				infoItemServiceRegistry.getFirstInfoItemService(
+					InfoPermissionProvider.class,
+					PortalUtil.getClassName(
+						formStyledLayoutStructureItem.getClassNameId()));
+
+			if ((infoPermissionProvider == null) ||
+				infoPermissionProvider.hasViewPermission(
+					themeDisplay.getPermissionChecker())) {
+
+				continue;
+			}
+
+			restrictedItemIds.add(formStyledLayoutStructureItem.getItemId());
+		}
+
+		for (CollectionStyledLayoutStructureItem
+				collectionStyledLayoutStructureItem :
+					layoutStructure.getCollectionStyledLayoutStructureItems()) {
+
+			JSONObject collectionJSONObject =
+				collectionStyledLayoutStructureItem.getCollectionJSONObject();
+
+			if ((collectionJSONObject == null) ||
+				(collectionJSONObject.length() <= 0)) {
+
+				continue;
+			}
+
+			String type = collectionJSONObject.getString("type");
+
+			LayoutListRetriever<?, ?> layoutListRetriever =
+				_layoutListRetrieverRegistry.getLayoutListRetriever(type);
+
+			if (layoutListRetriever == null) {
+				continue;
+			}
+
+			ListObjectReferenceFactory<?> listObjectReferenceFactory =
+				_listObjectReferenceFactoryRegistry.getListObjectReference(
+					type);
+
+			if (listObjectReferenceFactory == null) {
+				continue;
+			}
+
+			ListObjectReference listObjectReference =
+				listObjectReferenceFactory.getListObjectReference(
+					collectionJSONObject);
+
+			Class<? extends ListObjectReference> listObjectReferenceClass =
+				listObjectReference.getClass();
+
+			LayoutListPermissionProvider<ListObjectReference>
+				layoutListPermissionProvider =
+					(LayoutListPermissionProvider<ListObjectReference>)
+						_layoutListPermissionProviderRegistry.
+							getLayoutListPermissionProvider(
+								listObjectReferenceClass.getName());
+
+			if ((layoutListPermissionProvider == null) ||
+				layoutListPermissionProvider.hasPermission(
+					themeDisplay.getPermissionChecker(), listObjectReference,
+					ActionKeys.VIEW)) {
+
+				continue;
+			}
+
+			restrictedItemIds.add(
+				collectionStyledLayoutStructureItem.getItemId());
+		}
+
+		return restrictedItemIds;
 	}
 
 	@Reference(unbind = "-")
@@ -852,103 +949,6 @@ public class ContentUtil {
 			Portlet.class.getName());
 
 		return _portletClassNameId;
-	}
-
-	private static List<String> _getRestrictedItemIds(
-		LayoutStructure layoutStructure, ThemeDisplay themeDisplay) {
-
-		List<String> restrictedItemIds = new ArrayList<>();
-
-		if (!FeatureFlagManagerUtil.isEnabled("LPS-169923")) {
-			return restrictedItemIds;
-		}
-
-		for (FormStyledLayoutStructureItem formStyledLayoutStructureItem :
-				layoutStructure.getFormStyledLayoutStructureItems()) {
-
-			if (layoutStructure.isItemMarkedForDeletion(
-					formStyledLayoutStructureItem.getItemId()) ||
-				(formStyledLayoutStructureItem.getClassNameId() <= 0)) {
-
-				continue;
-			}
-
-			InfoItemServiceRegistry infoItemServiceRegistry =
-				InfoItemServiceRegistryUtil.getInfoItemServiceRegistry();
-
-			InfoPermissionProvider infoPermissionProvider =
-				infoItemServiceRegistry.getFirstInfoItemService(
-					InfoPermissionProvider.class,
-					PortalUtil.getClassName(
-						formStyledLayoutStructureItem.getClassNameId()));
-
-			if ((infoPermissionProvider == null) ||
-				infoPermissionProvider.hasViewPermission(
-					themeDisplay.getPermissionChecker())) {
-
-				continue;
-			}
-
-			restrictedItemIds.add(formStyledLayoutStructureItem.getItemId());
-		}
-
-		for (CollectionStyledLayoutStructureItem
-				collectionStyledLayoutStructureItem :
-					layoutStructure.getCollectionStyledLayoutStructureItems()) {
-
-			JSONObject collectionJSONObject =
-				collectionStyledLayoutStructureItem.getCollectionJSONObject();
-
-			if ((collectionJSONObject == null) ||
-				(collectionJSONObject.length() <= 0)) {
-
-				continue;
-			}
-
-			String type = collectionJSONObject.getString("type");
-
-			LayoutListRetriever<?, ?> layoutListRetriever =
-				_layoutListRetrieverRegistry.getLayoutListRetriever(type);
-
-			if (layoutListRetriever == null) {
-				continue;
-			}
-
-			ListObjectReferenceFactory<?> listObjectReferenceFactory =
-				_listObjectReferenceFactoryRegistry.getListObjectReference(
-					type);
-
-			if (listObjectReferenceFactory == null) {
-				continue;
-			}
-
-			ListObjectReference listObjectReference =
-				listObjectReferenceFactory.getListObjectReference(
-					collectionJSONObject);
-
-			Class<? extends ListObjectReference> listObjectReferenceClass =
-				listObjectReference.getClass();
-
-			LayoutListPermissionProvider<ListObjectReference>
-				layoutListPermissionProvider =
-					(LayoutListPermissionProvider<ListObjectReference>)
-						_layoutListPermissionProviderRegistry.
-							getLayoutListPermissionProvider(
-								listObjectReferenceClass.getName());
-
-			if ((layoutListPermissionProvider == null) ||
-				layoutListPermissionProvider.hasPermission(
-					themeDisplay.getPermissionChecker(), listObjectReference,
-					ActionKeys.VIEW)) {
-
-				continue;
-			}
-
-			restrictedItemIds.add(
-				collectionStyledLayoutStructureItem.getItemId());
-		}
-
-		return restrictedItemIds;
 	}
 
 	private static List<String> _getRestrictedPortletIds(
