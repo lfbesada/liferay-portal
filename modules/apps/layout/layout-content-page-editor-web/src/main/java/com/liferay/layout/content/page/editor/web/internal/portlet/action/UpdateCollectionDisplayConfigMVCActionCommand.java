@@ -171,7 +171,10 @@ public class UpdateCollectionDisplayConfigMVCActionCommand
 				ContentUtil.getPageContentsJSONArray(
 					_portal.getHttpServletRequest(actionRequest),
 					_portal.getHttpServletResponse(actionResponse),
-					themeDisplay.getPlid(), segmentsExperienceId)
+					themeDisplay.getPlid(),
+					ContentUtil.getRestrictedItemIds(
+						layoutStructure, themeDisplay),
+					segmentsExperienceId)
 			);
 		}
 		catch (Exception exception) {

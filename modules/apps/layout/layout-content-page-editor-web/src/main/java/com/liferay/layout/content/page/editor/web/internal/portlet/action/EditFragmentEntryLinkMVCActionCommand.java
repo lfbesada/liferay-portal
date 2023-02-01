@@ -99,6 +99,8 @@ public class EditFragmentEntryLinkMVCActionCommand
 					_portal.getHttpServletRequest(actionRequest),
 					_portal.getHttpServletResponse(actionResponse),
 					themeDisplay.getPlid(),
+					ContentUtil.getRestrictedItemIds(
+						layoutStructure, themeDisplay),
 					ParamUtil.getLong(actionRequest, "segmentsExperienceId"))
 			));
 	}

@@ -67,22 +67,21 @@ public class UpdateRowColumnsMVCActionCommand
 				layoutStructure.updateRowColumnsLayoutStructureItem(
 					itemId, numberOfColumns));
 
-		return JSONUtil.put(
-			"layoutData",
-			() -> {
-				LayoutStructure layoutStructure =
-					LayoutStructureUtil.getLayoutStructure(
-						themeDisplay.getScopeGroupId(), themeDisplay.getPlid(),
-						segmentsExperienceId);
+		LayoutStructure layoutStructure =
+			LayoutStructureUtil.getLayoutStructure(
+				themeDisplay.getScopeGroupId(), themeDisplay.getPlid(),
+				segmentsExperienceId);
 
-				return layoutStructure.toJSONObject();
-			}
+		return JSONUtil.put(
+			"layoutData", layoutStructure.toJSONObject()
 		).put(
 			"pageContents",
 			ContentUtil.getPageContentsJSONArray(
 				_portal.getHttpServletRequest(actionRequest),
 				_portal.getHttpServletResponse(actionResponse),
-				themeDisplay.getPlid(), segmentsExperienceId)
+				themeDisplay.getPlid(),
+				ContentUtil.getRestrictedItemIds(layoutStructure, themeDisplay),
+				segmentsExperienceId)
 		);
 	}
 
