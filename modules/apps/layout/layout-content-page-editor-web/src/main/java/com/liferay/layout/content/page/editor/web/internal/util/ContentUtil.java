@@ -144,7 +144,7 @@ public class ContentUtil {
 	public static JSONArray getPageContentsJSONArray(
 			HttpServletRequest httpServletRequest,
 			HttpServletResponse httpServletResponse, long plid,
-			long segmentsExperienceId)
+			List<String> restrictedItemIds, long segmentsExperienceId)
 		throws PortalException {
 
 		ThemeDisplay themeDisplay =
@@ -154,9 +154,6 @@ public class ContentUtil {
 		LayoutStructure layoutStructure =
 			LayoutStructureUtil.getLayoutStructure(
 				themeDisplay.getScopeGroupId(), plid, segmentsExperienceId);
-
-		List<String> restrictedItemIds = getRestrictedItemIds(
-			layoutStructure, themeDisplay);
 
 		List<String> hiddenItemIds = _getHiddenItemIds(
 			layoutStructure, restrictedItemIds);
