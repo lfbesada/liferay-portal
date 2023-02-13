@@ -21,6 +21,7 @@ import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetLink;
 import com.liferay.asset.kernel.model.AssetLinkConstants;
 import com.liferay.asset.kernel.model.AssetTag;
+import com.liferay.asset.kernel.search.AssetSearcherFactoryUtil;
 import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.asset.kernel.service.AssetLinkLocalService;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
@@ -39,6 +40,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.module.util.SystemBundleUtil;
+import com.liferay.portal.kernel.search.BaseSearcher;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Hits;
 import com.liferay.portal.kernel.search.Indexer;
@@ -66,7 +68,6 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.view.count.ViewCountManagerUtil;
 import com.liferay.portlet.asset.service.base.AssetEntryLocalServiceBaseImpl;
 import com.liferay.portlet.asset.service.permission.AssetCategoryPermission;
-import com.liferay.portlet.asset.util.AssetSearcher;
 import com.liferay.social.kernel.model.SocialActivityConstants;
 import com.liferay.social.kernel.service.SocialActivityCounterLocalService;
 
@@ -1193,10 +1194,6 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 	protected Hits doSearch(long[] classNameIds, SearchContext searchContext)
 		throws Exception {
 
-		Indexer<?> indexer = AssetSearcher.getInstance();
-
-		AssetSearcher assetSearcher = (AssetSearcher)indexer;
-
 		AssetEntryQuery assetEntryQuery = new AssetEntryQuery();
 
 		assetEntryQuery.setClassNameIds(classNameIds);
@@ -1213,7 +1210,8 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 		queryConfig.setHighlightEnabled(false);
 		queryConfig.setScoreEnabled(_hasScoreSort(searchContext));
 
-		assetSearcher.setAssetEntryQuery(assetEntryQuery);
+		BaseSearcher assetSearcher =
+			AssetSearcherFactoryUtil.createAssetSearcher(assetEntryQuery);
 
 		return assetSearcher.search(searchContext);
 	}
@@ -1229,10 +1227,6 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 	protected long doSearchCount(
 			long[] classNameIds, SearchContext searchContext)
 		throws Exception {
-
-		Indexer<?> indexer = AssetSearcher.getInstance();
-
-		AssetSearcher assetSearcher = (AssetSearcher)indexer;
 
 		AssetEntryQuery assetEntryQuery = new AssetEntryQuery();
 
@@ -1250,7 +1244,8 @@ public class AssetEntryLocalServiceImpl extends AssetEntryLocalServiceBaseImpl {
 		queryConfig.setHighlightEnabled(false);
 		queryConfig.setScoreEnabled(false);
 
-		assetSearcher.setAssetEntryQuery(assetEntryQuery);
+		BaseSearcher assetSearcher =
+			AssetSearcherFactoryUtil.createAssetSearcher(assetEntryQuery);
 
 		return assetSearcher.searchCount(searchContext);
 	}
