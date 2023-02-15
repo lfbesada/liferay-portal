@@ -125,6 +125,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Image;
+import com.liferay.portal.kernel.model.PersistedModel;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
@@ -3690,6 +3691,23 @@ public class JournalArticleLocalServiceImpl
 
 		return getFirstArticle(
 			groupId, articleId, status, new ArticleVersionComparator(true));
+	}
+
+	@Override
+	public PersistedModel getPersistedModel(Serializable primaryKeyObj)
+		throws PortalException {
+
+		long classPK = GetterUtil.getLong(primaryKeyObj);
+
+		JournalArticle journalArticle =
+			journalArticleLocalService.fetchJournalArticle(classPK);
+
+		if (journalArticle != null) {
+			return journalArticle;
+		}
+
+		return journalArticleLocalService.getLatestArticle(
+			classPK, WorkflowConstants.STATUS_ANY);
 	}
 
 	/**
