@@ -40,6 +40,7 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.portlet.PortletPreferencesFactoryUtil;
@@ -460,6 +461,21 @@ public class UpdateArticleMVCActionCommand extends BaseMVCActionCommand {
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
+		Group group = themeDisplay.getScopeGroup();
+
+		List<Long> excludedGroupIds = new ArrayList<>();
+
+		excludedGroupIds.add(group.getGroupId());
+
+		if (group.isStagingGroup()) {
+			excludedGroupIds.add(group.getLiveGroupId());
+		}
+		else if (group.hasStagingGroup()) {
+			Group stagingGroup = group.getStagingGroup();
+
+			excludedGroupIds.add(stagingGroup.getGroupId());
+		}
+
 		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
 			actionRequest);
 
@@ -492,8 +508,10 @@ public class UpdateArticleMVCActionCommand extends BaseMVCActionCommand {
 
 			List<Long> groupIds = friendlyURLGroupIdsMap.computeIfAbsent(
 				currentFriendlyURL,
-				key -> _friendlyURLEntryLocalService.getGroupIdsByUrlTitle(
-					classNameId, themeDisplay.getCompanyId(), key));
+				key -> ListUtil.remove(
+					_friendlyURLEntryLocalService.getGroupIdsByUrlTitle(
+						classNameId, themeDisplay.getCompanyId(), key),
+					excludedGroupIds));
 
 			if (!groupIds.isEmpty() &&
 				((groupIds.size() > 1) ||
