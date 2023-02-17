@@ -324,7 +324,9 @@ Map<String, Object> componentContext = journalDisplayContext.getComponentContext
 							</c:if>
 
 							<span class="text-default">
-								<aui:workflow-status markupView="lexicon" showIcon="<%= false %>" showLabel="<%= false %>" status="<%= curFolder.getStatus() %>" />
+								<liferay-portal-workflow:status
+									status="<%= curFolder.getStatus() %>"
+								/>
 							</span>
 						</liferay-ui:search-container-column-text>
 
