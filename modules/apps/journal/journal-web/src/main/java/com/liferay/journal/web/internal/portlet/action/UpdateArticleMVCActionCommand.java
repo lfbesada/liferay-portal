@@ -551,6 +551,8 @@ public class UpdateArticleMVCActionCommand extends BaseMVCActionCommand {
 					return null;
 				}
 
+				Collections.reverse(friendlyURLDuplicatedLocales);
+
 				if (friendlyURLDuplicatedLocales.size() > 3) {
 					return _language.format(
 						themeDisplay.getLocale(),
