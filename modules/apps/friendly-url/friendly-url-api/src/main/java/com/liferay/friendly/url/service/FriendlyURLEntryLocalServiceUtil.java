@@ -502,6 +502,13 @@ public class FriendlyURLEntryLocalServiceUtil {
 			orderByComparator);
 	}
 
+	public static List<Long> getGroupIdsByUrlTitle(
+		long classNameId, long companyId, String urlTitle) {
+
+		return getService().getGroupIdsByUrlTitle(
+			classNameId, companyId, urlTitle);
+	}
+
 	public static
 		com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery
 			getIndexableActionableDynamicQuery() {

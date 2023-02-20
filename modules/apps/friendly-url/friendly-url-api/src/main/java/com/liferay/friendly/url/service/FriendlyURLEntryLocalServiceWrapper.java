@@ -561,6 +561,14 @@ public class FriendlyURLEntryLocalServiceWrapper
 	}
 
 	@Override
+	public java.util.List<Long> getGroupIdsByUrlTitle(
+		long classNameId, long companyId, String urlTitle) {
+
+		return _friendlyURLEntryLocalService.getGroupIdsByUrlTitle(
+			classNameId, companyId, urlTitle);
+	}
+
+	@Override
 	public com.liferay.portal.kernel.dao.orm.IndexableActionableDynamicQuery
 		getIndexableActionableDynamicQuery() {
 

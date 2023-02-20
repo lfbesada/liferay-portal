@@ -391,6 +391,10 @@ public interface FriendlyURLEntryLocalService
 		OrderByComparator<FriendlyURLEntryLocalization> orderByComparator);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<Long> getGroupIdsByUrlTitle(
+		long classNameId, long companyId, String urlTitle);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public IndexableActionableDynamicQuery getIndexableActionableDynamicQuery();
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
