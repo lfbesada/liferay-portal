@@ -197,7 +197,7 @@ public class JournalEditArticleDisplayContext {
 						new AssetDisplayPageSelectorCriterion();
 
 				assetDisplayPageSelectorCriterion.setClassNameId(
-					PortalUtil.getClassNameId(JournalArticle.class));
+					_getJournalArticleClassNameId());
 				assetDisplayPageSelectorCriterion.setClassTypeId(
 					getDDMStructureId());
 				assetDisplayPageSelectorCriterion.
@@ -476,8 +476,8 @@ public class JournalEditArticleDisplayContext {
 			}
 
 			_ddmStructure = DDMStructureLocalServiceUtil.fetchStructure(
-				groupId, PortalUtil.getClassNameId(JournalArticle.class),
-				getDDMStructureKey(), true);
+				groupId, _getJournalArticleClassNameId(), getDDMStructureKey(),
+				true);
 		}
 
 		return _ddmStructure;
@@ -546,7 +546,7 @@ public class JournalEditArticleDisplayContext {
 					_themeDisplay.getCompanyId(), ddmStructure.getGroupId(),
 					PortalUtil.getClassNameId(DDMStructure.class),
 					ddmStructure.getStructureId(),
-					PortalUtil.getClassNameId(JournalArticle.class), true,
+					_getJournalArticleClassNameId(), true,
 					WorkflowConstants.STATUS_APPROVED);
 
 			if (!ddmTemplates.isEmpty()) {
@@ -693,7 +693,7 @@ public class JournalEditArticleDisplayContext {
 			List<Long> groupIds = friendlyURLGroupIdsMap.computeIfAbsent(
 				entry.getValue(),
 				key -> FriendlyURLEntryLocalServiceUtil.getGroupIdsByUrlTitle(
-					PortalUtil.getClassNameId(JournalArticle.class),
+					_getJournalArticleClassNameId(),
 					_themeDisplay.getCompanyId(), key));
 
 			if (!groupIds.isEmpty() &&
@@ -1139,7 +1139,7 @@ public class JournalEditArticleDisplayContext {
 
 		AssetDisplayPageEntry assetDisplayPageEntry =
 			AssetDisplayPageEntryLocalServiceUtil.fetchAssetDisplayPageEntry(
-				getGroupId(), PortalUtil.getClassNameId(JournalArticle.class),
+				getGroupId(), _getJournalArticleClassNameId(),
 				_article.getResourcePrimKey());
 
 		if (assetDisplayPageEntry != null) {
@@ -1221,8 +1221,7 @@ public class JournalEditArticleDisplayContext {
 		_defaultLayoutPageTemplateEntry =
 			LayoutPageTemplateEntryServiceUtil.
 				fetchDefaultLayoutPageTemplateEntry(
-					getGroupId(),
-					PortalUtil.getClassNameId(JournalArticle.class),
+					getGroupId(), _getJournalArticleClassNameId(),
 					getDDMStructureId());
 
 		return _defaultLayoutPageTemplateEntry;
@@ -1240,6 +1239,17 @@ public class JournalEditArticleDisplayContext {
 				getFolderId());
 
 		return _inheritedWorkflowDDMStructuresFolderId;
+	}
+
+	private long _getJournalArticleClassNameId() {
+		if (_journalArticleClassNameId != null) {
+			return _journalArticleClassNameId;
+		}
+
+		_journalArticleClassNameId = PortalUtil.getClassNameId(
+			JournalArticle.class);
+
+		return _journalArticleClassNameId;
 	}
 
 	private String _getLayoutUuid() {
@@ -1267,7 +1277,7 @@ public class JournalEditArticleDisplayContext {
 			new AssetDisplayPageSelectorCriterion();
 
 		assetDisplayPageSelectorCriterion.setClassNameId(
-			PortalUtil.getClassNameId(JournalArticle.class));
+			_getJournalArticleClassNameId());
 		assetDisplayPageSelectorCriterion.setClassTypeId(getDDMStructureId());
 		assetDisplayPageSelectorCriterion.setDesiredItemSelectorReturnTypes(
 			new UUIDItemSelectorReturnType());
@@ -1491,6 +1501,7 @@ public class JournalEditArticleDisplayContext {
 	private final HttpServletRequest _httpServletRequest;
 	private Long _inheritedWorkflowDDMStructuresFolderId;
 	private final ItemSelector _itemSelector;
+	private Long _journalArticleClassNameId;
 	private final LiferayPortletResponse _liferayPortletResponse;
 	private Boolean _neverExpire;
 	private Boolean _neverReview;
