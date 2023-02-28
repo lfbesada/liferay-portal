@@ -14,7 +14,6 @@
 
 package com.liferay.journal.internal.upgrade.v4_4_3;
 
-import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.publisher.constants.AssetPublisherPortletKeys;
 import com.liferay.journal.model.JournalArticle;
@@ -31,6 +30,7 @@ import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.PortletKeys;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -73,10 +73,11 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 
 		ServiceContext serviceContext = new ServiceContext();
 
-		try (PreparedStatement selectPreparedStatement =
+		try (LoggingTimer loggingTimer = new LoggingTimer();
+			PreparedStatement selectPreparedStatement =
 				connection.prepareStatement(
-					"select groupId, resourcePrimKey, articleId from " +
-						"JournalArticle")) {
+					"select distinct groupId, resourcePrimKey, " +
+						"companyId, articleId from JournalArticle")) {
 
 			try (ResultSet resultSet = selectPreparedStatement.executeQuery()) {
 				while (resultSet.next()) {
@@ -98,30 +99,30 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 						journalArticleClassNameId, portletClassNameId,
 						serviceContext);
 
-					AssetEntry assetEntry = _assetEntryLocalService.fetchEntry(
+					String assetEntryClassUuid = _getAssetEntryClassUuid(
 						journalArticleClassNameId, resourcePrimKey);
 
-					if ((assetEntry == null) ||
-						Validator.isNull(assetEntry.getClassUuid())) {
-
+					if (Validator.isNull(assetEntryClassUuid)) {
 						continue;
 					}
 
+					long companyId = resultSet.getLong("companyId");
+
 					_addAssetPublisherPortletPreferencesLayoutClassedModelUsages(
-						assetEntry.getClassUuid(), resourcePrimKey, groupId,
+						assetEntryClassUuid, resourcePrimKey, groupId,
 						journalArticleClassNameId, portletClassNameId,
 						_portletPreferencesLocalService.getPortletPreferences(
-							assetEntry.getCompanyId(), groupId,
+							companyId, groupId,
 							PortletKeys.PREFS_OWNER_ID_DEFAULT,
 							PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
 							AssetPublisherPortletKeys.ASSET_PUBLISHER, true),
 						serviceContext);
 
 					_addAssetPublisherPortletPreferencesLayoutClassedModelUsages(
-						assetEntry.getClassUuid(), resourcePrimKey, groupId,
+						assetEntryClassUuid, resourcePrimKey, groupId,
 						journalArticleClassNameId, portletClassNameId,
 						_portletPreferencesLocalService.getPortletPreferences(
-							assetEntry.getCompanyId(), groupId,
+							companyId, groupId,
 							PortletKeys.PREFS_OWNER_ID_DEFAULT,
 							PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
 							AssetPublisherPortletKeys.ASSET_PUBLISHER, false),
@@ -142,40 +143,44 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 		List<PortletPreferences> portletPreferencesList,
 		ServiceContext serviceContext) {
 
-		for (PortletPreferences portletPreferences : portletPreferencesList) {
-			javax.portlet.PortletPreferences jxPortletPreferences =
-				_portletPreferenceValueLocalService.getPreferences(
-					portletPreferences);
+		try (LoggingTimer loggingTimer = new LoggingTimer()) {
+			for (PortletPreferences portletPreferences :
+					portletPreferencesList) {
 
-			String selectionStyle = jxPortletPreferences.getValue(
-				"selectionStyle", "dynamic");
+				javax.portlet.PortletPreferences jxPortletPreferences =
+					_portletPreferenceValueLocalService.getPreferences(
+						portletPreferences);
 
-			if (!StringUtil.equals(selectionStyle, "manual")) {
-				continue;
+				String selectionStyle = jxPortletPreferences.getValue(
+					"selectionStyle", "dynamic");
+
+				if (!StringUtil.equals(selectionStyle, "manual")) {
+					continue;
+				}
+
+				String assetEntryXml = jxPortletPreferences.getValue(
+					"assetEntryXml", StringPool.BLANK);
+
+				if (!assetEntryXml.contains(assetEntryClassUuid)) {
+					continue;
+				}
+
+				LayoutClassedModelUsage layoutClassedModelUsage =
+					_layoutClassedModelUsageLocalService.
+						fetchLayoutClassedModelUsage(
+							journalArticleClassNameId, classPK,
+							portletPreferences.getPortletId(),
+							portletClassNameId, portletPreferences.getPlid());
+
+				if (layoutClassedModelUsage != null) {
+					continue;
+				}
+
+				_layoutClassedModelUsageLocalService.addLayoutClassedModelUsage(
+					groupId, journalArticleClassNameId, classPK,
+					portletPreferences.getPortletId(), portletClassNameId,
+					portletPreferences.getPlid(), serviceContext);
 			}
-
-			String assetEntryXml = jxPortletPreferences.getValue(
-				"assetEntryXml", StringPool.BLANK);
-
-			if (!assetEntryXml.contains(assetEntryClassUuid)) {
-				continue;
-			}
-
-			LayoutClassedModelUsage layoutClassedModelUsage =
-				_layoutClassedModelUsageLocalService.
-					fetchLayoutClassedModelUsage(
-						journalArticleClassNameId, classPK,
-						portletPreferences.getPortletId(), portletClassNameId,
-						portletPreferences.getPlid());
-
-			if (layoutClassedModelUsage != null) {
-				continue;
-			}
-
-			_layoutClassedModelUsageLocalService.addLayoutClassedModelUsage(
-				groupId, journalArticleClassNameId, classPK,
-				portletPreferences.getPortletId(), portletClassNameId,
-				portletPreferences.getPlid(), serviceContext);
 		}
 	}
 
@@ -185,7 +190,8 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 			ServiceContext serviceContext)
 		throws Exception {
 
-		try (PreparedStatement preparedStatement = connection.prepareStatement(
+		try (LoggingTimer loggingTimer = new LoggingTimer();
+			PreparedStatement preparedStatement = connection.prepareStatement(
 				"select privateLayout, layoutId, portletId from " +
 					"JournalContentSearch where groupId = ? and articleId = " +
 						"?")) {
@@ -224,6 +230,26 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 				}
 			}
 		}
+	}
+
+	private String _getAssetEntryClassUuid(long classNameId, long classPK)
+		throws Exception {
+
+		try (PreparedStatement preparedStatement = connection.prepareStatement(
+				"select classUuid from AssetEntry where classNameId = ? and " +
+					"classPK = ?")) {
+
+			preparedStatement.setLong(1, classNameId);
+			preparedStatement.setLong(2, classPK);
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				if (resultSet.next()) {
+					return resultSet.getString("classUuid");
+				}
+			}
+		}
+
+		return null;
 	}
 
 	private final AssetEntryLocalService _assetEntryLocalService;
