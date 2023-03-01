@@ -14,7 +14,6 @@
 
 package com.liferay.journal.internal.upgrade.v4_4_3;
 
-import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.publisher.constants.AssetPublisherPortletKeys;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.layout.service.LayoutClassedModelUsageLocalService;
@@ -22,9 +21,6 @@ import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.dao.orm.common.SQLTransformer;
 import com.liferay.portal.kernel.model.Portlet;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
-import com.liferay.portal.kernel.service.LayoutLocalService;
-import com.liferay.portal.kernel.service.PortletPreferenceValueLocalService;
-import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -41,21 +37,13 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 	extends UpgradeProcess {
 
 	public JournalArticleLayoutClassedModelUsageUpgradeProcess(
-		AssetEntryLocalService assetEntryLocalService,
 		ClassNameLocalService classNameLocalService,
-		LayoutLocalService layoutLocalService,
-		LayoutClassedModelUsageLocalService layoutClassedModelUsageLocalService,
-		PortletPreferencesLocalService portletPreferencesLocalService,
-		PortletPreferenceValueLocalService portletPreferenceValueLocalService) {
+		LayoutClassedModelUsageLocalService
+			layoutClassedModelUsageLocalService) {
 
-		_assetEntryLocalService = assetEntryLocalService;
 		_classNameLocalService = classNameLocalService;
-		_layoutLocalService = layoutLocalService;
 		_layoutClassedModelUsageLocalService =
 			layoutClassedModelUsageLocalService;
-		_portletPreferencesLocalService = portletPreferencesLocalService;
-		_portletPreferenceValueLocalService =
-			portletPreferenceValueLocalService;
 	}
 
 	@Override
@@ -218,14 +206,8 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 		}
 	}
 
-	private final AssetEntryLocalService _assetEntryLocalService;
 	private final ClassNameLocalService _classNameLocalService;
 	private final LayoutClassedModelUsageLocalService
 		_layoutClassedModelUsageLocalService;
-	private final LayoutLocalService _layoutLocalService;
-	private final PortletPreferencesLocalService
-		_portletPreferencesLocalService;
-	private final PortletPreferenceValueLocalService
-		_portletPreferenceValueLocalService;
 
 }
