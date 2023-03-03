@@ -111,16 +111,13 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 			"%' and not exists (select 1 from LayoutClassedModelUsage where ",
 			"LayoutClassedModelUsage.classPK = AssetEntry.classPK and ",
 			"LayoutClassedModelUsage.classNameId = ", journalArticleClassNameId,
-			" and LayoutClassedModelUsage.containerKey = ",
+			" and ((LayoutClassedModelUsage.containerKey = ",
 			"PortletPreferences.portletId and ",
 			"LayoutClassedModelUsage.containerType = ", portletClassNameId,
-			" and LayoutClassedModelUsage.plid = PortletPreferences.plid) and ",
-			"not exists (select 1 from LayoutClassedModelUsage where ",
-			"LayoutClassedModelUsage.classPK = AssetEntry.classPK and ",
-			"LayoutClassedModelUsage.classNameId = ", journalArticleClassNameId,
-			" and LayoutClassedModelUsage.containerKey is null and ",
+			" and LayoutClassedModelUsage.plid = PortletPreferences.plid) or ",
+			"(LayoutClassedModelUsage.containerKey is null and ",
 			"LayoutClassedModelUsage.containerType = 0 and ",
-			"LayoutClassedModelUsage.plid = 0 )");
+			"LayoutClassedModelUsage.plid = 0 )))");
 
 		try (LoggingTimer loggingTimer = new LoggingTimer()) {
 			processConcurrently(
