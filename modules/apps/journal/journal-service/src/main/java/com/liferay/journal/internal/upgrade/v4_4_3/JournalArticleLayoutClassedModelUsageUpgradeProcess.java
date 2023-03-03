@@ -14,31 +14,21 @@
 
 package com.liferay.journal.internal.upgrade.v4_4_3;
 
-import com.liferay.asset.kernel.model.AssetEntry;
-import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.publisher.constants.AssetPublisherPortletKeys;
 import com.liferay.journal.model.JournalArticle;
-import com.liferay.layout.model.LayoutClassedModelUsage;
 import com.liferay.layout.service.LayoutClassedModelUsageLocalService;
-import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.model.Layout;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.dao.orm.common.SQLTransformer;
 import com.liferay.portal.kernel.model.Portlet;
-import com.liferay.portal.kernel.model.PortletPreferences;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
-import com.liferay.portal.kernel.service.LayoutLocalService;
-import com.liferay.portal.kernel.service.PortletPreferenceValueLocalService;
-import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.PortletKeys;
-import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.Validator;
 
-import java.sql.PreparedStatement;
-import java.sql.ResultSet;
-
-import java.util.List;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  * @author Lourdes Fernández Besada
@@ -47,21 +37,13 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 	extends UpgradeProcess {
 
 	public JournalArticleLayoutClassedModelUsageUpgradeProcess(
-		AssetEntryLocalService assetEntryLocalService,
 		ClassNameLocalService classNameLocalService,
-		LayoutLocalService layoutLocalService,
-		LayoutClassedModelUsageLocalService layoutClassedModelUsageLocalService,
-		PortletPreferencesLocalService portletPreferencesLocalService,
-		PortletPreferenceValueLocalService portletPreferenceValueLocalService) {
+		LayoutClassedModelUsageLocalService
+			layoutClassedModelUsageLocalService) {
 
-		_assetEntryLocalService = assetEntryLocalService;
 		_classNameLocalService = classNameLocalService;
-		_layoutLocalService = layoutLocalService;
 		_layoutClassedModelUsageLocalService =
 			layoutClassedModelUsageLocalService;
-		_portletPreferencesLocalService = portletPreferencesLocalService;
-		_portletPreferenceValueLocalService =
-			portletPreferenceValueLocalService;
 	}
 
 	@Override
@@ -73,167 +55,159 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 
 		ServiceContext serviceContext = new ServiceContext();
 
-		try (PreparedStatement selectPreparedStatement =
-				connection.prepareStatement(
-					"select groupId, resourcePrimKey, articleId from " +
-						"JournalArticle")) {
+		try (LoggingTimer loggingTimer = new LoggingTimer()) {
+			Map<Long, Long> resourcePrimKeysMap = new HashMap<>();
 
-			try (ResultSet resultSet = selectPreparedStatement.executeQuery()) {
-				while (resultSet.next()) {
-					long resourcePrimKey = resultSet.getLong("resourcePrimKey");
+			_addJournalContentSearchLayoutClassedModelUsages(
+				journalArticleClassNameId, portletClassNameId,
+				resourcePrimKeysMap, serviceContext);
 
-					if (_layoutClassedModelUsageLocalService.
-							hasDefaultLayoutClassedModelUsage(
-								journalArticleClassNameId, resourcePrimKey)) {
+			_addAssetPublisherPortletPreferencesLayoutClassedModelUsages(
+				journalArticleClassNameId, portletClassNameId,
+				resourcePrimKeysMap, serviceContext);
 
-						continue;
-					}
-
-					String articleId = GetterUtil.getString(
-						resultSet.getString("articleId"));
-					long groupId = resultSet.getLong("groupId");
-
-					_addJournalContentSearchLayoutClassedModelUsages(
-						articleId, resourcePrimKey, groupId,
-						journalArticleClassNameId, portletClassNameId,
-						serviceContext);
-
-					AssetEntry assetEntry = _assetEntryLocalService.fetchEntry(
-						journalArticleClassNameId, resourcePrimKey);
-
-					if ((assetEntry == null) ||
-						Validator.isNull(assetEntry.getClassUuid())) {
-
-						continue;
-					}
-
-					_addAssetPublisherPortletPreferencesLayoutClassedModelUsages(
-						assetEntry.getClassUuid(), resourcePrimKey, groupId,
-						journalArticleClassNameId, portletClassNameId,
-						_portletPreferencesLocalService.getPortletPreferences(
-							assetEntry.getCompanyId(), groupId,
-							PortletKeys.PREFS_OWNER_ID_DEFAULT,
-							PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
-							AssetPublisherPortletKeys.ASSET_PUBLISHER, true),
-						serviceContext);
-
-					_addAssetPublisherPortletPreferencesLayoutClassedModelUsages(
-						assetEntry.getClassUuid(), resourcePrimKey, groupId,
-						journalArticleClassNameId, portletClassNameId,
-						_portletPreferencesLocalService.getPortletPreferences(
-							assetEntry.getCompanyId(), groupId,
-							PortletKeys.PREFS_OWNER_ID_DEFAULT,
-							PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
-							AssetPublisherPortletKeys.ASSET_PUBLISHER, false),
-						serviceContext);
-
-					_layoutClassedModelUsageLocalService.
-						addDefaultLayoutClassedModelUsage(
-							groupId, journalArticleClassNameId, resourcePrimKey,
-							serviceContext);
-				}
+			for (Map.Entry<Long, Long> entry : resourcePrimKeysMap.entrySet()) {
+				_layoutClassedModelUsageLocalService.
+					addDefaultLayoutClassedModelUsage(
+						entry.getValue(), journalArticleClassNameId,
+						entry.getKey(), serviceContext);
 			}
 		}
 	}
 
 	private void _addAssetPublisherPortletPreferencesLayoutClassedModelUsages(
-		String assetEntryClassUuid, long classPK, long groupId,
-		long journalArticleClassNameId, long portletClassNameId,
-		List<PortletPreferences> portletPreferencesList,
-		ServiceContext serviceContext) {
-
-		for (PortletPreferences portletPreferences : portletPreferencesList) {
-			javax.portlet.PortletPreferences jxPortletPreferences =
-				_portletPreferenceValueLocalService.getPreferences(
-					portletPreferences);
-
-			String selectionStyle = jxPortletPreferences.getValue(
-				"selectionStyle", "dynamic");
-
-			if (!StringUtil.equals(selectionStyle, "manual")) {
-				continue;
-			}
-
-			String assetEntryXml = jxPortletPreferences.getValue(
-				"assetEntryXml", StringPool.BLANK);
-
-			if (!assetEntryXml.contains(assetEntryClassUuid)) {
-				continue;
-			}
-
-			LayoutClassedModelUsage layoutClassedModelUsage =
-				_layoutClassedModelUsageLocalService.
-					fetchLayoutClassedModelUsage(
-						journalArticleClassNameId, classPK,
-						portletPreferences.getPortletId(), portletClassNameId,
-						portletPreferences.getPlid());
-
-			if (layoutClassedModelUsage != null) {
-				continue;
-			}
-
-			_layoutClassedModelUsageLocalService.addLayoutClassedModelUsage(
-				groupId, journalArticleClassNameId, classPK,
-				portletPreferences.getPortletId(), portletClassNameId,
-				portletPreferences.getPlid(), serviceContext);
-		}
-	}
-
-	private void _addJournalContentSearchLayoutClassedModelUsages(
-			String articleId, long classPK, long groupId,
 			long journalArticleClassNameId, long portletClassNameId,
-			ServiceContext serviceContext)
+			Map<Long, Long> resourcePrimKeysMap, ServiceContext serviceContext)
 		throws Exception {
 
-		try (PreparedStatement preparedStatement = connection.prepareStatement(
-				"select privateLayout, layoutId, portletId from " +
-					"JournalContentSearch where groupId = ? and articleId = " +
-						"?")) {
+		String sql = StringBundler.concat(
+			"select distinct AssetEntry.groupId, AssetEntry.classPK, ",
+			"PortletPreferences.plid, PortletPreferences.portletId from ",
+			"PortletPreferences inner join AssetEntry as AssetEntry on ",
+			"AssetEntry.classNameId = ", journalArticleClassNameId,
+			" and AssetEntry.visible = 1 and AssetEntry.classUuid is not null ",
+			"and CAST_TEXT(AssetEntry.classUuid) != '' inner join ",
+			"PortletPreferenceValue as PortletPreferenceValue1 on ",
+			"PortletPreferenceValue1.portletPreferencesId = ",
+			"PortletPreferences.portletPreferencesId and ",
+			"PortletPreferenceValue1.name = 'selectionStyle' and ",
+			"(PortletPreferenceValue1.smallValue = 'manual' or ",
+			"PortletPreferenceValue1.largeValue = 'manual') inner join ",
+			"PortletPreferenceValue as PortletPreferenceValue2 on ",
+			"PortletPreferenceValue2.portletPreferencesId = ",
+			"PortletPreferences.portletPreferencesId and ",
+			"PortletPreferenceValue2.name = 'assetEntryXml' and ",
+			"(PortletPreferenceValue2.smallValue like CONCAT('%', ",
+			"AssetEntry.classUuid, '%') or PortletPreferenceValue2.largeValue ",
+			"like CONCAT('%', AssetEntry.classUuid, '%')) where ",
+			"PortletPreferences.companyId = AssetEntry.companyId and ",
+			"PortletPreferences.ownerId = ", PortletKeys.PREFS_OWNER_ID_DEFAULT,
+			" and PortletPreferences.ownerType = ",
+			PortletKeys.PREFS_OWNER_TYPE_LAYOUT,
+			" and PortletPreferences.portletId like '",
+			AssetPublisherPortletKeys.ASSET_PUBLISHER,
+			"%' and not exists (select 1 from LayoutClassedModelUsage where ",
+			"LayoutClassedModelUsage.classPK = AssetEntry.classPK and ",
+			"LayoutClassedModelUsage.classNameId = ", journalArticleClassNameId,
+			" and LayoutClassedModelUsage.containerKey = ",
+			"PortletPreferences.portletId and ",
+			"LayoutClassedModelUsage.containerType = ", portletClassNameId,
+			" and LayoutClassedModelUsage.plid = PortletPreferences.plid) and ",
+			"not exists (select 1 from LayoutClassedModelUsage where ",
+			"LayoutClassedModelUsage.classPK = AssetEntry.classPK and ",
+			"LayoutClassedModelUsage.classNameId = ", journalArticleClassNameId,
+			" and LayoutClassedModelUsage.containerKey is null and ",
+			"LayoutClassedModelUsage.containerType = 0 and ",
+			"LayoutClassedModelUsage.plid = 0 )");
 
-			preparedStatement.setLong(1, groupId);
-			preparedStatement.setString(2, articleId);
-
-			try (ResultSet resultSet = preparedStatement.executeQuery()) {
-				while (resultSet.next()) {
-					Layout layout = _layoutLocalService.fetchLayout(
-						groupId, resultSet.getBoolean("privateLayout"),
-						resultSet.getLong("layoutId"));
-
-					if (layout == null) {
-						continue;
-					}
-
-					String portletId = GetterUtil.getString(
-						resultSet.getString("portletId"));
-
-					LayoutClassedModelUsage layoutClassedModelUsage =
-						_layoutClassedModelUsageLocalService.
-							fetchLayoutClassedModelUsage(
-								journalArticleClassNameId, classPK, portletId,
-								portletClassNameId, layout.getPlid());
-
-					if (layoutClassedModelUsage != null) {
-						continue;
-					}
+		try (LoggingTimer loggingTimer = new LoggingTimer()) {
+			processConcurrently(
+				SQLTransformer.transform(sql),
+				resultSet -> new Object[] {
+					resultSet.getLong("groupId"), resultSet.getLong("classPK"),
+					resultSet.getLong("plid"),
+					GetterUtil.getString(resultSet.getString("portletId"))
+				},
+				values -> {
+					long groupId = (Long)values[0];
+					long classPK = (Long)values[1];
+					long plid = (Long)values[2];
+					String portletId = (String)values[3];
 
 					_layoutClassedModelUsageLocalService.
 						addLayoutClassedModelUsage(
 							groupId, journalArticleClassNameId, classPK,
-							portletId, portletClassNameId, layout.getPlid(),
+							portletId, portletClassNameId, plid,
 							serviceContext);
-				}
-			}
+
+					resourcePrimKeysMap.computeIfAbsent(
+						classPK, key -> groupId);
+				},
+				"Unable to create manual selection asset publisher layout " +
+					"classed model usages");
 		}
 	}
 
-	private final AssetEntryLocalService _assetEntryLocalService;
+	private void _addJournalContentSearchLayoutClassedModelUsages(
+			long journalArticleClassNameId, long portletClassNameId,
+			Map<Long, Long> resourcePrimKeysMap, ServiceContext serviceContext)
+		throws Exception {
+
+		String sql = StringBundler.concat(
+			"select distinct JournalArticle.resourcePrimKey, ",
+			"JournalArticle.groupId, JournalContentSearch.portletId, ",
+			"Layout.plid from JournalArticle inner join JournalContentSearch ",
+			"on JournalContentSearch.groupId = JournalArticle.groupId and ",
+			"JournalContentSearch.articleId = JournalArticle.articleId inner ",
+			"join Layout on Layout.privateLayout = ",
+			"JournalContentSearch.privateLayout and Layout.layoutId = ",
+			"JournalContentSearch.layoutId and Layout.groupId = ",
+			"JournalArticle.groupId and not exists (select 1 from ",
+			"LayoutClassedModelUsage where LayoutClassedModelUsage.classPK = ",
+			"JournalArticle.resourcePrimKey and ",
+			"LayoutClassedModelUsage.classNameId = ", journalArticleClassNameId,
+			" and LayoutClassedModelUsage.containerKey = ",
+			"JournalContentSearch.portletId and ",
+			"LayoutClassedModelUsage.containerType = ", portletClassNameId,
+			" and LayoutClassedModelUsage.plid = Layout.plid) where not ",
+			"exists (select 1 from LayoutClassedModelUsage where ",
+			"LayoutClassedModelUsage.classPK = JournalArticle.resourcePrimKey ",
+			"and LayoutClassedModelUsage.classNameId = ",
+			journalArticleClassNameId,
+			" and LayoutClassedModelUsage.containerKey is null and ",
+			"LayoutClassedModelUsage.containerType = 0 and ",
+			"LayoutClassedModelUsage.plid = 0 )");
+
+		try (LoggingTimer loggingTimer = new LoggingTimer()) {
+			processConcurrently(
+				sql,
+				resultSet -> new Object[] {
+					resultSet.getLong("resourcePrimKey"),
+					resultSet.getLong("groupId"),
+					GetterUtil.getString(resultSet.getString("portletId")),
+					resultSet.getLong("plid")
+				},
+				values -> {
+					long resourcePrimKey = (Long)values[0];
+					long groupId = (Long)values[1];
+					String portletId = (String)values[2];
+					long plid = (Long)values[3];
+
+					_layoutClassedModelUsageLocalService.
+						addLayoutClassedModelUsage(
+							groupId, journalArticleClassNameId, resourcePrimKey,
+							portletId, portletClassNameId, plid,
+							serviceContext);
+
+					resourcePrimKeysMap.put(resourcePrimKey, groupId);
+				},
+				"Unable to create journal articles search layout classed " +
+					"model usages");
+		}
+	}
+
 	private final ClassNameLocalService _classNameLocalService;
 	private final LayoutClassedModelUsageLocalService
 		_layoutClassedModelUsageLocalService;
-	private final LayoutLocalService _layoutLocalService;
-	private final PortletPreferencesLocalService
-		_portletPreferencesLocalService;
-	private final PortletPreferenceValueLocalService
-		_portletPreferenceValueLocalService;
 
 }
