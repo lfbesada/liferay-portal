@@ -122,32 +122,32 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 			"LayoutClassedModelUsage.containerType = 0 and ",
 			"LayoutClassedModelUsage.plid = 0 )");
 
-		try (LoggingTimer loggingTimer = new LoggingTimer()) {
-			processConcurrently(
-				SQLTransformer.transform(sql),
-				StringBundler.concat(
-					"insert into LayoutClassedModelUsage (uuid_, ",
-					"layoutClassedModelUsageId, groupId, companyId, ",
-					"createDate, modifiedDate, classNameId, classPK, ",
-					"containerKey, containerType, plid, type_ ) values (?, ?, ",
-					"?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"),
-				resultSet -> new Object[] {
-					resultSet.getLong("groupId"),
-					resultSet.getLong("companyId"),
-					resultSet.getLong("classPK"), resultSet.getLong("plid"),
-					GetterUtil.getString(resultSet.getString("portletId"))
-				},
-				(values, preparedStatement) -> {
-					long groupId = (Long)values[0];
-					long companyId = (Long)values[1];
-					long classPK = (Long)values[2];
-					long plid = (Long)values[3];
-					String portletId = (String)values[4];
+		try (LoggingTimer loggingTimer = new LoggingTimer();
+			PreparedStatement preparedStatement1 = connection.prepareStatement(
+				SQLTransformer.transform(sql));
+			PreparedStatement preparedStatement2 =
+				AutoBatchPreparedStatementUtil.concurrentAutoBatch(
+					connection,
+					StringBundler.concat(
+						"insert into LayoutClassedModelUsage (uuid_, ",
+						"layoutClassedModelUsageId, groupId, companyId, ",
+						"createDate, modifiedDate, classNameId, classPK, ",
+						"containerKey, containerType, plid, type_ ) values ",
+						"(?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"))) {
+
+			try (ResultSet resultSet = preparedStatement1.executeQuery()) {
+				while (resultSet.next()) {
+					long groupId = resultSet.getLong("groupId");
+					long companyId = resultSet.getLong("companyId");
+					long classPK = resultSet.getLong("classPK");
+					long plid = resultSet.getLong("plid");
+					String portletId = GetterUtil.getString(
+						resultSet.getString("portletId"));
 
 					_addBatch(
 						groupId, journalArticleClassNameId, classPK, companyId,
 						portletId, portletClassNameId,
-						layoutClassedModelUsageTypes, plid, preparedStatement,
+						layoutClassedModelUsageTypes, plid, preparedStatement2,
 						resourcePrimKeysMap);
 
 					Map<Long, Long> companyResourcePrimKeysMap =
@@ -156,9 +156,8 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcess
 
 					companyResourcePrimKeysMap.computeIfAbsent(
 						classPK, key -> groupId);
-				},
-				"Unable to create manual selection asset publisher layout " +
-					"classed model usages");
+				}
+			}
 		}
 	}
 
