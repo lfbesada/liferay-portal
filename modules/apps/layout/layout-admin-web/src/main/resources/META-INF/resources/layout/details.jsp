@@ -154,14 +154,6 @@ String friendlyURLBase = StringPool.BLANK;
 	</liferay-util:include>
 </div>
 
-<c:if test="<%= !selLayout.isTypeAssetDisplay() %>">
-	<clay:sheet-section>
-		<h3 class="sheet-subtitle"><liferay-ui:message key="categorization" /></h3>
-
-		<liferay-util:include page="/layout/categorization.jsp" servletContext="<%= application %>" />
-	</clay:sheet-section>
-</c:if>
-
 <aui:script sandbox="<%= true %>">
 	Liferay.Util.toggleBoxes(
 		'<portlet:namespace />layoutPrototypeLinkEnabled',
