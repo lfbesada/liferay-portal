@@ -40,29 +40,42 @@ public class JournalArticleLocalServiceWrapper
 		_journalArticleLocalService = journalArticleLocalService;
 	}
 
+	@Override
+	public JournalArticle addArticle(
+			String externalReferenceCode, long userId, long groupId,
+			long folderId, long classNameId, long classPK, String articleId,
+			boolean autoArticleId, double version,
+			java.util.Map<java.util.Locale, String> titleMap,
+			java.util.Map<java.util.Locale, String> descriptionMap,
+			java.util.Map<java.util.Locale, String> friendlyURLMap,
+			String content, long ddmStructureId, String ddmTemplateKey,
+			String layoutUuid, int displayDateMonth, int displayDateDay,
+			int displayDateYear, int displayDateHour, int displayDateMinute,
+			int expirationDateMonth, int expirationDateDay,
+			int expirationDateYear, int expirationDateHour,
+			int expirationDateMinute, boolean neverExpire, int reviewDateMonth,
+			int reviewDateDay, int reviewDateYear, int reviewDateHour,
+			int reviewDateMinute, boolean neverReview, boolean indexable,
+			boolean smallImage, String smallImageURL,
+			java.io.File smallImageFile, java.util.Map<String, byte[]> images,
+			String articleURL,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _journalArticleLocalService.addArticle(
+			externalReferenceCode, userId, groupId, folderId, classNameId,
+			classPK, articleId, autoArticleId, version, titleMap,
+			descriptionMap, friendlyURLMap, content, ddmStructureId,
+			ddmTemplateKey, layoutUuid, displayDateMonth, displayDateDay,
+			displayDateYear, displayDateHour, displayDateMinute,
+			expirationDateMonth, expirationDateDay, expirationDateYear,
+			expirationDateHour, expirationDateMinute, neverExpire,
+			reviewDateMonth, reviewDateDay, reviewDateYear, reviewDateHour,
+			reviewDateMinute, neverReview, indexable, smallImage, smallImageURL,
+			smallImageFile, images, articleURL, serviceContext);
+	}
+
 	/**
-	 * Adds a web content article with additional parameters. All scheduling
-	 * parameters (display date, expiration date, and review date) use the
-	 * current user's timezone.
-	 *
-	 * <p>
-	 * The web content articles hold HTML content wrapped in XML. The XML lets
-	 * you specify the article's default locale and available locales. Here is a
-	 * content example:
-	 * </p>
-	 *
-	 * <p>
-	 * <pre>
-	 * <code>
-	 * &lt;?xml version='1.0' encoding='UTF-8'?&gt;
-	 * &lt;root default-locale="en_US" available-locales="en_US"&gt;
-	 * 	&lt;static-content language-id="en_US"&gt;
-	 * 		&lt;![CDATA[&lt;p&gt;&lt;b&gt;&lt;i&gt;test&lt;i&gt; content&lt;b&gt;&lt;/p&gt;]]&gt;
-	 * 	&lt;/static-content&gt;
-	 * &lt;/root&gt;
-	 * </code>
-	 * </pre></p>
-	 *
 	 * @param externalReferenceCode the external reference code of the web
 	 content article
 	 * @param userId the primary key of the web content article's creator/owner
@@ -139,7 +152,9 @@ public class JournalArticleLocalServiceWrapper
 	 whether to add the default guest and group permissions.
 	 * @return the web content article
 	 * @throws PortalException if a portal exception occurred
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #addArticle(String, long, long, long, long, long, String, boolean, double, Map, Map, Map, String, long, String, String, int, int, int, int, int, int, int, int, int, int, boolean, int, int, int, int, int, boolean, boolean, boolean, String, File, Map, String, ServiceContext)}
 	 */
+	@Deprecated
 	@Override
 	public JournalArticle addArticle(
 			String externalReferenceCode, long userId, long groupId,
@@ -175,9 +190,22 @@ public class JournalArticleLocalServiceWrapper
 			smallImageFile, images, articleURL, serviceContext);
 	}
 
+	@Override
+	public JournalArticle addArticle(
+			String externalReferenceCode, long userId, long groupId,
+			long folderId, java.util.Map<java.util.Locale, String> titleMap,
+			java.util.Map<java.util.Locale, String> descriptionMap,
+			String content, long ddmStructureId, String ddmTemplateKey,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _journalArticleLocalService.addArticle(
+			externalReferenceCode, userId, groupId, folderId, titleMap,
+			descriptionMap, content, ddmStructureId, ddmTemplateKey,
+			serviceContext);
+	}
+
 	/**
-	 * Adds a web content article.
-	 *
 	 * @param externalReferenceCode the external reference code of the web
 	 content article.
 	 * @param userId the primary key of the web content article's creator/owner
@@ -206,7 +234,9 @@ public class JournalArticleLocalServiceWrapper
 	 set whether to add the default guest and group permissions.
 	 * @return the web content article
 	 * @throws PortalException if a portal exception occurred
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #addArticle(String, long, long, long, Map, Map, String, long, String, ServiceContext)}
 	 */
+	@Deprecated
 	@Override
 	public JournalArticle addArticle(
 			String externalReferenceCode, long userId, long groupId,
@@ -222,6 +252,39 @@ public class JournalArticleLocalServiceWrapper
 			serviceContext);
 	}
 
+	@Override
+	public JournalArticle addArticleDefaultValues(
+			long userId, long groupId, long classNameId, long classPK,
+			java.util.Map<java.util.Locale, String> titleMap,
+			java.util.Map<java.util.Locale, String> descriptionMap,
+			String content, long ddmStructureId, String ddmTemplateKey,
+			String layoutUuid, int displayDateMonth, int displayDateDay,
+			int displayDateYear, int displayDateHour, int displayDateMinute,
+			int expirationDateMonth, int expirationDateDay,
+			int expirationDateYear, int expirationDateHour,
+			int expirationDateMinute, boolean neverExpire, int reviewDateMonth,
+			int reviewDateDay, int reviewDateYear, int reviewDateHour,
+			int reviewDateMinute, boolean neverReview, boolean indexable,
+			boolean smallImage, String smallImageURL,
+			java.io.File smallImageFile,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _journalArticleLocalService.addArticleDefaultValues(
+			userId, groupId, classNameId, classPK, titleMap, descriptionMap,
+			content, ddmStructureId, ddmTemplateKey, layoutUuid,
+			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
+			displayDateMinute, expirationDateMonth, expirationDateDay,
+			expirationDateYear, expirationDateHour, expirationDateMinute,
+			neverExpire, reviewDateMonth, reviewDateDay, reviewDateYear,
+			reviewDateHour, reviewDateMinute, neverReview, indexable,
+			smallImage, smallImageURL, smallImageFile, serviceContext);
+	}
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #addArticleDefaultValues(long, long, long, long, Map, Map, String, long, String, String, int, int, int, int, int, int, int, int, int, int, boolean, int, int, int, int, int, boolean, boolean, boolean, String, File, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
 	public JournalArticle addArticleDefaultValues(
 			long userId, long groupId, long classNameId, long classPK,
@@ -3730,11 +3793,38 @@ public class JournalArticleLocalServiceWrapper
 			groupId, userId, ddmStructureId);
 	}
 
+	@Override
+	public JournalArticle updateArticle(
+			long userId, long groupId, long folderId, String articleId,
+			double version, java.util.Map<java.util.Locale, String> titleMap,
+			java.util.Map<java.util.Locale, String> descriptionMap,
+			java.util.Map<java.util.Locale, String> friendlyURLMap,
+			String content, String ddmTemplateKey, String layoutUuid,
+			int displayDateMonth, int displayDateDay, int displayDateYear,
+			int displayDateHour, int displayDateMinute, int expirationDateMonth,
+			int expirationDateDay, int expirationDateYear,
+			int expirationDateHour, int expirationDateMinute,
+			boolean neverExpire, int reviewDateMonth, int reviewDateDay,
+			int reviewDateYear, int reviewDateHour, int reviewDateMinute,
+			boolean neverReview, boolean indexable, boolean smallImage,
+			String smallImageURL, java.io.File smallImageFile,
+			java.util.Map<String, byte[]> images, String articleURL,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _journalArticleLocalService.updateArticle(
+			userId, groupId, folderId, articleId, version, titleMap,
+			descriptionMap, friendlyURLMap, content, ddmTemplateKey, layoutUuid,
+			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
+			displayDateMinute, expirationDateMonth, expirationDateDay,
+			expirationDateYear, expirationDateHour, expirationDateMinute,
+			neverExpire, reviewDateMonth, reviewDateDay, reviewDateYear,
+			reviewDateHour, reviewDateMinute, neverReview, indexable,
+			smallImage, smallImageURL, smallImageFile, images, articleURL,
+			serviceContext);
+	}
+
 	/**
-	 * Updates the web content article with additional parameters. All
-	 * scheduling parameters (display date, expiration date, and review date)
-	 * use the current user's timezone.
-	 *
 	 * @param userId the primary key of the user updating the web content
 	 article
 	 * @param groupId the primary key of the web content article's group
@@ -3815,7 +3905,9 @@ public class JournalArticleLocalServiceWrapper
 	 add activity.
 	 * @return the updated web content article
 	 * @throws PortalException if a portal exception occurred
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #updateArticle(long, long, long, String, double, Map, Map, Map, String, String, String, int, int, int, int, int, int, int, int, int, int, boolean, int, int, int, int, int, boolean, boolean, boolean, String, File, Map, String, ServiceContext)}
 	 */
+	@Deprecated
 	@Override
 	public JournalArticle updateArticle(
 			long userId, long groupId, long folderId, String articleId,
@@ -3896,11 +3988,37 @@ public class JournalArticleLocalServiceWrapper
 			descriptionMap, content, layoutUuid, serviceContext);
 	}
 
+	@Override
+	public JournalArticle updateArticle(
+			long userId, long groupId, long folderId, String articleId,
+			double version, java.util.Map<java.util.Locale, String> titleMap,
+			java.util.Map<java.util.Locale, String> descriptionMap,
+			String content, String ddmTemplateKey, String layoutUuid,
+			int displayDateMonth, int displayDateDay, int displayDateYear,
+			int displayDateHour, int displayDateMinute, int expirationDateMonth,
+			int expirationDateDay, int expirationDateYear,
+			int expirationDateHour, int expirationDateMinute,
+			boolean neverExpire, int reviewDateMonth, int reviewDateDay,
+			int reviewDateYear, int reviewDateHour, int reviewDateMinute,
+			boolean neverReview, boolean indexable, boolean smallImage,
+			String smallImageURL, java.io.File smallImageFile,
+			java.util.Map<String, byte[]> images, String articleURL,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _journalArticleLocalService.updateArticle(
+			userId, groupId, folderId, articleId, version, titleMap,
+			descriptionMap, content, ddmTemplateKey, layoutUuid,
+			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
+			displayDateMinute, expirationDateMonth, expirationDateDay,
+			expirationDateYear, expirationDateHour, expirationDateMinute,
+			neverExpire, reviewDateMonth, reviewDateDay, reviewDateYear,
+			reviewDateHour, reviewDateMinute, neverReview, indexable,
+			smallImage, smallImageURL, smallImageFile, images, articleURL,
+			serviceContext);
+	}
+
 	/**
-	 * Updates the web content article with additional parameters. All
-	 * scheduling parameters (display date, expiration date, and review date)
-	 * use the current user's timezone.
-	 *
 	 * @param userId the primary key of the user updating the web content
 	 article
 	 * @param groupId the primary key of the web content article's group
@@ -3979,7 +4097,9 @@ public class JournalArticleLocalServiceWrapper
 	 add activity.
 	 * @return the updated web content article
 	 * @throws PortalException if a portal exception occurred
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #updateArticle(long, long, long, String, double, Map, Map, String, String, String, int, int, int, int, int, int, int, int, int, int, boolean, int, int, int, int, int, boolean, boolean, boolean, String, File, Map, String, ServiceContext)}
 	 */
+	@Deprecated
 	@Override
 	public JournalArticle updateArticle(
 			long userId, long groupId, long folderId, String articleId,
@@ -4067,6 +4187,38 @@ public class JournalArticleLocalServiceWrapper
 		return _journalArticleLocalService.updateArticle(id, urlTitle);
 	}
 
+	@Override
+	public JournalArticle updateArticleDefaultValues(
+			long userId, long groupId, String articleId,
+			java.util.Map<java.util.Locale, String> titleMap,
+			java.util.Map<java.util.Locale, String> descriptionMap,
+			String content, String ddmTemplateKey, String layoutUuid,
+			int displayDateMonth, int displayDateDay, int displayDateYear,
+			int displayDateHour, int displayDateMinute, int expirationDateMonth,
+			int expirationDateDay, int expirationDateYear,
+			int expirationDateHour, int expirationDateMinute,
+			boolean neverExpire, int reviewDateMonth, int reviewDateDay,
+			int reviewDateYear, int reviewDateHour, int reviewDateMinute,
+			boolean neverReview, boolean indexable, boolean smallImage,
+			String smallImageURL, java.io.File smallImageFile,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _journalArticleLocalService.updateArticleDefaultValues(
+			userId, groupId, articleId, titleMap, descriptionMap, content,
+			ddmTemplateKey, layoutUuid, displayDateMonth, displayDateDay,
+			displayDateYear, displayDateHour, displayDateMinute,
+			expirationDateMonth, expirationDateDay, expirationDateYear,
+			expirationDateHour, expirationDateMinute, neverExpire,
+			reviewDateMonth, reviewDateDay, reviewDateYear, reviewDateHour,
+			reviewDateMinute, neverReview, indexable, smallImage, smallImageURL,
+			smallImageFile, serviceContext);
+	}
+
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link #updateArticleDefaultValues(long, long, String, Map, Map, String, String, String, int, int, int, int, int, int, int, int, int, int, boolean, int, int, int, int, int, boolean, boolean, boolean, String, File, ServiceContext)}
+	 */
+	@Deprecated
 	@Override
 	public JournalArticle updateArticleDefaultValues(
 			long userId, long groupId, String articleId,
