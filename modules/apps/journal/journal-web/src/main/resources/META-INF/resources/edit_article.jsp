@@ -26,7 +26,7 @@ JournalEditArticleDisplayContext journalEditArticleDisplayContext = new JournalE
 
 <portlet:actionURL var="editArticleActionURL" windowState="<%= WindowState.MAXIMIZED.toString() %>">
 	<portlet:param name="mvcPath" value="/edit_article.jsp" />
-	<portlet:param name="ddmStructureKey" value="<%= journalEditArticleDisplayContext.getDDMStructureKey() %>" />
+	<portlet:param name="ddmStructureId" value="<%= journalEditArticleDisplayContext.getDDMStructureId() %>" />
 </portlet:actionURL>
 
 <portlet:renderURL var="editArticleRenderURL" windowState="<%= WindowState.MAXIMIZED.toString() %>">

@@ -181,13 +181,11 @@ public class SaveAsDraftArticleMVCActionCommand extends BaseMVCActionCommand {
 		Map<Locale, String> titleMap = _localization.getLocalizationMap(
 			actionRequest, "titleMapAsXML");
 
-		String ddmStructureKey = ParamUtil.getString(
-			uploadPortletRequest, "ddmStructureKey");
+		long ddmStructureId = ParamUtil.getLong(
+			uploadPortletRequest, "ddmStructureId");
 
 		DDMStructure ddmStructure = _ddmStructureLocalService.getStructure(
-			_portal.getSiteGroupId(groupId),
-			_portal.getClassNameId(JournalArticle.class), ddmStructureKey,
-			true);
+			ddmStructureId);
 
 		ServiceContext serviceContext = ServiceContextFactory.getInstance(
 			JournalArticle.class.getName(), uploadPortletRequest);
@@ -351,7 +349,7 @@ public class SaveAsDraftArticleMVCActionCommand extends BaseMVCActionCommand {
 			article = _journalArticleService.addArticle(
 				null, groupId, folderId, classNameId, classPK, articleId,
 				autoArticleId, titleMap, descriptionMap, friendlyURLMap,
-				content, ddmStructureKey, ddmTemplateKey, layoutUuid,
+				content, ddmStructureId, ddmTemplateKey, layoutUuid,
 				displayDateMonth, displayDateDay, displayDateYear,
 				displayDateHour, displayDateMinute, expirationDateMonth,
 				expirationDateDay, expirationDateYear, expirationDateHour,
@@ -373,7 +371,7 @@ public class SaveAsDraftArticleMVCActionCommand extends BaseMVCActionCommand {
 			if (Objects.equals(cmd, Constants.UPDATE)) {
 				article = _journalArticleService.updateArticle(
 					groupId, folderId, articleId, version, titleMap,
-					descriptionMap, friendlyURLMap, content, ddmStructureKey,
+					descriptionMap, friendlyURLMap, content, ddmStructureId,
 					ddmTemplateKey, layoutUuid, displayDateMonth,
 					displayDateDay, displayDateYear, displayDateHour,
 					displayDateMinute, expirationDateMonth, expirationDateDay,
