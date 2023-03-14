@@ -246,7 +246,7 @@ public class JournalArticleExpirationTest {
 				article.getFolderId(), article.getArticleId(),
 				article.getVersion(), article.getTitleMap(),
 				article.getDescriptionMap(), article.getContent(),
-				article.getDDMStructureKey(), article.getDDMTemplateKey(),
+				article.getDDMTemplateKey(),
 				article.getLayoutUuid(),
 				displayDateCalendar.get(Calendar.MONTH),
 				displayDateCalendar.get(Calendar.DAY_OF_MONTH),

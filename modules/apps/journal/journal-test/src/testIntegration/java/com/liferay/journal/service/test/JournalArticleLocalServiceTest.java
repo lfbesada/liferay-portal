@@ -1265,7 +1265,7 @@ public class JournalArticleLocalServiceTest {
 			journalArticle.getFolderId(), journalArticle.getArticleId(),
 			journalArticle.getVersion(), journalArticle.getTitleMap(),
 			journalArticle.getDescriptionMap(), friendlyURLMap,
-			journalArticle.getContent(), journalArticle.getDDMStructureKey(),
+			journalArticle.getContent(),
 			journalArticle.getDDMTemplateKey(), journalArticle.getLayoutUuid(),
 			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
 			displayDateMinute, 0, 0, 0, 0, 0, true, 0, 0, 0, 0, 0, true,

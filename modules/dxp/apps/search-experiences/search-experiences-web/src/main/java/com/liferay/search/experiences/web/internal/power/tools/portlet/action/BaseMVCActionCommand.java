@@ -14,6 +14,8 @@
 
 package com.liferay.search.experiences.web.internal.power.tools.portlet.action;
 
+import com.liferay.dynamic.data.mapping.model.DDMStructure;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.petra.string.StringBundler;
@@ -23,6 +25,7 @@ import com.liferay.portal.kernel.service.ServiceContextFactory;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PwdGenerator;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -54,6 +57,11 @@ public abstract class BaseMVCActionCommand
 		serviceContext.setAddGuestPermissions(true);
 		serviceContext.setAssetTagNames(assetTagNames);
 
+		DDMStructure ddmStructure =
+			ddmStructureLocalService.getStructure(themeDisplay.getScopeGroupId(),
+				portal.getClassNameId(JournalArticle.class.getName()), "BASIC-WEB-CONTENT", true);
+
+
 		return journalArticleLocalService.addArticle(
 			null, themeDisplay.getUserId(), themeDisplay.getScopeGroupId(), 0,
 			HashMapBuilder.put(
@@ -63,12 +71,19 @@ public abstract class BaseMVCActionCommand
 				themeDisplay.getLocale(),
 				StringUtil.shorten(HtmlUtil.stripHtml(content), 500)
 			).build(),
-			_toXML(content, themeDisplay.getLanguageId()), "BASIC-WEB-CONTENT",
+			_toXML(content, themeDisplay.getLanguageId()),
+			ddmStructure.getStructureId(),
 			"BASIC-WEB-CONTENT", serviceContext);
 	}
 
 	@Reference
+	protected DDMStructureLocalService ddmStructureLocalService;
+
+	@Reference
 	protected JournalArticleLocalService journalArticleLocalService;
+
+	@Reference
+	protected Portal portal;
 
 	@Reference
 	protected JSONFactory jsonFactory;

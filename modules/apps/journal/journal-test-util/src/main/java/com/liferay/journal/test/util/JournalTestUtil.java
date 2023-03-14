@@ -1036,7 +1036,7 @@ public class JournalTestUtil {
 		return JournalArticleLocalServiceUtil.updateArticle(
 			userId, article.getGroupId(), article.getFolderId(),
 			article.getArticleId(), article.getVersion(), titleMap,
-			article.getDescriptionMap(), content, article.getDDMStructureKey(),
+			article.getDescriptionMap(), content,
 			article.getDDMTemplateKey(), article.getLayoutUuid(),
 			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
 			displayDateMinute, 0, 0, 0, 0, 0, true, 0, 0, 0, 0, 0, true,

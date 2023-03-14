@@ -536,7 +536,6 @@ public class StructuredContentResourceImpl
 					_toPatchedFields(
 						structuredContent.getContentFields(), journalArticle),
 					journalArticle.getGroupId()),
-				journalArticle.getDDMStructureKey(),
 				_getDDMTemplateKey(ddmStructure),
 				journalArticle.getLayoutUuid(),
 				localDateTime.getMonthValue() - 1,
@@ -1253,7 +1252,6 @@ public class StructuredContentResourceImpl
 						titleMap.keySet(), structuredContent.getContentFields(),
 						journalArticle),
 					journalArticle.getGroupId()),
-				journalArticle.getDDMStructureKey(),
 				_getDDMTemplateKey(ddmStructure),
 				journalArticle.getLayoutUuid(),
 				localDateTime.getMonthValue() - 1,
