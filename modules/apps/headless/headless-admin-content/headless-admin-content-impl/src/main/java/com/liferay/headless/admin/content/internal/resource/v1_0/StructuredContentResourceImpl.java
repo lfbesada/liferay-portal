@@ -327,7 +327,7 @@ public class StructuredContentResourceImpl
 						_getRootDDMFormFields(ddmStructure)),
 					_jsonDDMFormValuesSerializer, _ddmFormValuesValidator,
 					ddmStructure, _journalConverter),
-				ddmStructure.getStructureKey(),
+				ddmStructure.getStructureId(),
 				_getDDMTemplateKey(ddmStructure), null,
 				localDateTime.getMonthValue() - 1,
 				localDateTime.getDayOfMonth(), localDateTime.getYear(),

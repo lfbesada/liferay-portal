@@ -16,6 +16,7 @@ package com.liferay.asset.search.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.asset.kernel.service.persistence.AssetEntryQuery;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.petra.function.transform.TransformUtil;
@@ -76,6 +77,8 @@ public class AssetSearcherStagingTest {
 	@Before
 	public void setUp() throws Exception {
 		_group = GroupTestUtil.addGroup();
+
+		_journalArticleFixture.setDDMStructureLocalService(_ddmStructureLocalService);
 
 		_journalArticleFixture.setGroup(_group);
 
@@ -231,5 +234,7 @@ public class AssetSearcherStagingTest {
 	private final List<UserGroupRole> _userGroupRoles = new ArrayList<>();
 
 	private final List<User> _users = new ArrayList<>();
+	@Inject
+	private static DDMStructureLocalService _ddmStructureLocalService;
 
 }

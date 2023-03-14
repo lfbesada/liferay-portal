@@ -118,7 +118,7 @@ public class JournalFolderTableReferenceDefinitionTest
 					defaultLocale, RandomTestUtil.randomString()
 				).build(),
 				LocaleUtil.toLanguageId(defaultLocale)),
-			_ddmStructure.getStructureKey(), _ddmTemplate.getTemplateKey(),
+			_ddmStructure.getStructureId(), _ddmTemplate.getTemplateKey(),
 			null, displayCalendar.get(Calendar.MONTH),
 			displayCalendar.get(Calendar.DATE),
 			displayCalendar.get(Calendar.YEAR),

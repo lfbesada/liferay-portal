@@ -452,7 +452,7 @@ public class JournalTestUtil {
 			externalReferenceCode, serviceContext.getUserId(), groupId,
 			folderId, classNameId, 0, articleId, autoArticleId,
 			JournalArticleConstants.VERSION_DEFAULT, titleMap, descriptionMap,
-			friendlyUrlMap, content, ddmStructure.getStructureKey(),
+			friendlyUrlMap, content, ddmStructure.getStructureId(),
 			ddmTemplate.getTemplateKey(), layoutUuid, displayDateMonth,
 			displayDateDay, displayDateYear, displayDateHour, displayDateMinute,
 			expirationDateMonth, expirationDateDay, expirationDateYear,
@@ -619,6 +619,8 @@ public class JournalTestUtil {
 			Map<String, byte[]> images, ServiceContext serviceContext)
 		throws Exception {
 
+		DDMStructure ddmStructure = DDMStructureLocalServiceUtil.getStructure(serviceContext.getScopeGroupId(), PortalUtil.getClassNameId(JournalArticle.class.getName()), ddmStructureKey, true);
+
 		return JournalArticleLocalServiceUtil.addArticle(
 			null, serviceContext.getUserId(), serviceContext.getScopeGroupId(),
 			folderId, classNameId, classPK, StringPool.BLANK, true, 0,
@@ -629,7 +631,7 @@ public class JournalTestUtil {
 			HashMapBuilder.put(
 				defaultLocale, RandomTestUtil.randomString()
 			).build(),
-			xml, ddmStructureKey, ddmTemplateKey, null, 1, 1, 1965, 0, 0, 0, 0,
+			xml, ddmStructure.getStructureId(), ddmTemplateKey, null, 1, 1, 1965, 0, 0, 0, 0,
 			0, 0, 0, true, 0, 0, 0, 0, 0, true, true, false, null, null, images,
 			null, serviceContext);
 	}

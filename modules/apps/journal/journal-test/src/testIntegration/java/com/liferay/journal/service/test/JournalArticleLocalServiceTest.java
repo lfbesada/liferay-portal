@@ -1164,7 +1164,7 @@ public class JournalArticleLocalServiceTest {
 				HashMapBuilder.put(
 					LocaleUtil.US, title
 				).build(),
-				null, content, ddmStructure.getStructureKey(),
+				null, content, ddmStructure.getStructureId(),
 				ddmTemplate.getTemplateKey(), null, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 				0, true, 0, 0, 0, 0, 0, true, true, false, null, null,
 				serviceContext);

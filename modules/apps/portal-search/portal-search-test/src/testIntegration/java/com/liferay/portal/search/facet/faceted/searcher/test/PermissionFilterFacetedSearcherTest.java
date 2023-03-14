@@ -15,6 +15,8 @@
 package com.liferay.portal.search.facet.faceted.searcher.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.dynamic.data.mapping.model.DDMStructure;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestUtil;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.model.JournalFolder;
@@ -39,6 +41,7 @@ import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.search.facet.type.AssetEntriesFacetFactory;
 import com.liferay.portal.search.test.util.FacetsAssert;
 import com.liferay.portal.test.rule.Inject;
@@ -129,10 +132,12 @@ public class PermissionFilterFacetedSearcherTest
 
 		String content = DDMStructureTestUtil.getSampleStructuredContent();
 
+		DDMStructure ddmStructure = ddmStructureLocalService.getStructure(group.getGroupId(), portal.getClassNameId(JournalArticle.class.getName()), "BASIC-WEB-CONTENT", true);
+
 		JournalArticle article = journalArticleLocalService.addArticle(
 			null, user.getUserId(), group.getGroupId(), folderId,
 			Collections.singletonMap(LocaleUtil.US, title), null, content,
-			"BASIC-WEB-CONTENT", "BASIC-WEB-CONTENT", serviceContext);
+			ddmStructure.getStructureId(), "BASIC-WEB-CONTENT", serviceContext);
 
 		_articles.add(article);
 	}
@@ -173,6 +178,8 @@ public class PermissionFilterFacetedSearcherTest
 
 	@Inject
 	protected static AssetEntriesFacetFactory assetEntriesFacetFactory;
+	@Inject
+	protected static DDMStructureLocalService ddmStructureLocalService;
 
 	@Inject
 	protected static ConfigurationAdmin configurationAdmin;
@@ -193,5 +200,8 @@ public class PermissionFilterFacetedSearcherTest
 	private final List<JournalFolder> _folders = new ArrayList<>();
 
 	private PermissionChecker _originalPermissionChecker;
+
+	@Inject
+	protected static Portal portal;
 
 }
