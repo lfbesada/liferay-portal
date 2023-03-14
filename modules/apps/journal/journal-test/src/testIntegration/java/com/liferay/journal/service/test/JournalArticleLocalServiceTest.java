@@ -1164,7 +1164,7 @@ public class JournalArticleLocalServiceTest {
 				HashMapBuilder.put(
 					LocaleUtil.US, title
 				).build(),
-				null, content, ddmStructure.getStructureKey(),
+				null, content, ddmStructure.getStructureId(),
 				ddmTemplate.getTemplateKey(), null, 0, 0, 0, 0, 0, 0, 0, 0, 0,
 				0, true, 0, 0, 0, 0, 0, true, true, false, null, null,
 				serviceContext);
@@ -1265,11 +1265,11 @@ public class JournalArticleLocalServiceTest {
 			journalArticle.getFolderId(), journalArticle.getArticleId(),
 			journalArticle.getVersion(), journalArticle.getTitleMap(),
 			journalArticle.getDescriptionMap(), friendlyURLMap,
-			journalArticle.getContent(), journalArticle.getDDMStructureKey(),
-			journalArticle.getDDMTemplateKey(), journalArticle.getLayoutUuid(),
-			displayDateMonth, displayDateDay, displayDateYear, displayDateHour,
-			displayDateMinute, 0, 0, 0, 0, 0, true, 0, 0, 0, 0, 0, true,
-			journalArticle.isIndexable(), false, null, null, null, null,
+			journalArticle.getContent(), journalArticle.getDDMTemplateKey(),
+			journalArticle.getLayoutUuid(), displayDateMonth, displayDateDay,
+			displayDateYear, displayDateHour, displayDateMinute, 0, 0, 0, 0, 0,
+			true, 0, 0, 0, 0, 0, true, journalArticle.isIndexable(), false,
+			null, null, null, null,
 			ServiceContextTestUtil.getServiceContext(
 				journalArticle.getGroupId(), TestPropsValues.getUserId()));
 	}
