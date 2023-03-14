@@ -371,7 +371,7 @@ public class SaveAsDraftArticleMVCActionCommand extends BaseMVCActionCommand {
 			if (Objects.equals(cmd, Constants.UPDATE)) {
 				article = _journalArticleService.updateArticle(
 					groupId, folderId, articleId, version, titleMap,
-					descriptionMap, friendlyURLMap, content, ddmStructureId,
+					descriptionMap, friendlyURLMap, content,
 					ddmTemplateKey, layoutUuid, displayDateMonth,
 					displayDateDay, displayDateYear, displayDateHour,
 					displayDateMinute, expirationDateMonth, expirationDateDay,

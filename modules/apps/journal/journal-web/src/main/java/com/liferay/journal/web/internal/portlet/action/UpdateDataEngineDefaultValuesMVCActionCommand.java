@@ -288,7 +288,7 @@ public class UpdateDataEngineDefaultValuesMVCActionCommand
 
 			article = _journalArticleService.updateArticleDefaultValues(
 				groupId, articleId, titleMap, descriptionMap, content,
-				ddmStructureId, ddmTemplateKey, layoutUuid, displayDateMonth,
+				ddmTemplateKey, layoutUuid, displayDateMonth,
 				displayDateDay, displayDateYear, displayDateHour,
 				displayDateMinute, expirationDateMonth, expirationDateDay,
 				expirationDateYear, expirationDateHour, expirationDateMinute,
