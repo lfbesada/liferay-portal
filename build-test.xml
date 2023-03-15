@@ -16370,7 +16370,7 @@ database.type=sqlserver
 				/>
 			</then>
 			<else>
-				<property name="upgrade.client.timeout" value="900000" />
+				<property name="upgrade.client.timeout" value="3600000" />
 			</else>
 		</if>
 
