@@ -23,6 +23,7 @@ import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.test.util.search.FileEntryBlueprint;
 import com.liferay.document.library.test.util.search.FileEntrySearchFixture;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.test.util.search.JournalArticleBlueprintBuilder;
@@ -47,6 +48,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.searcher.SearchRequestBuilder;
 import com.liferay.portal.search.searcher.SearchRequestBuilderFactory;
@@ -88,6 +90,10 @@ public class IndexerScoreDistortionTest {
 	public static final AggregateTestRule aggregateTestRule =
 		new LiferayIntegrationTestRule();
 
+	@Inject
+	protected static DDMStructureLocalService ddmStructureLocalService;
+	@Inject
+	protected static Portal portal;
 	@Before
 	public void setUp() throws Exception {
 		BlogsEntrySearchFixture blogsEntrySearchFixture =
@@ -99,7 +105,7 @@ public class IndexerScoreDistortionTest {
 		GroupSearchFixture groupSearchFixture = new GroupSearchFixture();
 
 		JournalArticleSearchFixture journalArticleSearchFixture =
-			new JournalArticleSearchFixture(journalArticleLocalService);
+			new JournalArticleSearchFixture(ddmStructureLocalService, journalArticleLocalService, portal);
 
 		_blogsEntries = blogsEntrySearchFixture.getBlogsEntries();
 		_blogsEntrySearchFixture = blogsEntrySearchFixture;

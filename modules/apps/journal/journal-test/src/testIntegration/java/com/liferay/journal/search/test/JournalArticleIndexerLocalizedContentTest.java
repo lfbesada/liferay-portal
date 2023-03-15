@@ -15,6 +15,7 @@
 package com.liferay.journal.search.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.test.util.search.JournalArticleBlueprint;
@@ -34,6 +35,7 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.search.legacy.searcher.SearchRequestBuilderFactory;
 import com.liferay.portal.search.searcher.SearchResponse;
@@ -70,6 +72,11 @@ public class JournalArticleIndexerLocalizedContentTest {
 	public static final AggregateTestRule aggregateTestRule =
 		new LiferayIntegrationTestRule();
 
+
+	@Inject
+	private static DDMStructureLocalService _ddmStructureLocalService;
+	@Inject
+	private static Portal _portal;
 	@Before
 	public void setUp() throws Exception {
 		_group = GroupTestUtil.addGroup();
@@ -77,8 +84,9 @@ public class JournalArticleIndexerLocalizedContentTest {
 		_indexerFixture = new IndexerFixture<>(
 			JournalArticle.class, _searchRequestBuilderFactory);
 
+
 		_journalArticleSearchFixture = new JournalArticleSearchFixture(
-			_journalArticleLocalService);
+			_ddmStructureLocalService, _journalArticleLocalService, _portal);
 
 		_journalArticleSearchFixture.setUp();
 

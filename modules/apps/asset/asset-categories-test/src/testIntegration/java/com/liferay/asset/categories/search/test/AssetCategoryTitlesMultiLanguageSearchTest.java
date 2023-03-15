@@ -20,6 +20,7 @@ import com.liferay.asset.kernel.model.AssetCategoryConstants;
 import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.asset.kernel.service.AssetCategoryService;
 import com.liferay.asset.kernel.service.AssetVocabularyLocalService;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.test.util.search.JournalArticleBlueprint;
@@ -45,6 +46,7 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleThreadLocal;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.workflow.WorkflowThreadLocal;
 import com.liferay.portal.search.facet.category.CategoryFacetFactory;
 import com.liferay.portal.search.test.util.DocumentsAssert;
@@ -88,7 +90,8 @@ public class AssetCategoryTitlesMultiLanguageSearchTest {
 		WorkflowThreadLocal.setEnabled(false);
 
 		JournalArticleSearchFixture journalArticleSearchFixture =
-			new JournalArticleSearchFixture(journalArticleLocalService);
+			new JournalArticleSearchFixture(
+				ddmStructureLocalService, journalArticleLocalService, portal);
 
 		GroupSearchFixture groupSearchFixture = new GroupSearchFixture();
 
@@ -404,6 +407,11 @@ public class AssetCategoryTitlesMultiLanguageSearchTest {
 
 	@Inject(filter = "component.name=*.JournalArticleIndexer")
 	protected static Indexer<JournalArticle> indexer;
+
+	@Inject
+	protected static DDMStructureLocalService ddmStructureLocalService;
+	@Inject
+	protected static Portal portal;
 
 	@Inject
 	protected static JournalArticleLocalService journalArticleLocalService;

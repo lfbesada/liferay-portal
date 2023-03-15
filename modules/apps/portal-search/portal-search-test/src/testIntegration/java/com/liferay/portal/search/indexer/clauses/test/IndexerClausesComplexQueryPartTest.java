@@ -19,6 +19,7 @@ import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.BlogsEntryLocalService;
 import com.liferay.blogs.test.util.search.BlogsEntryBlueprint.BlogsEntryBlueprintBuilder;
 import com.liferay.blogs.test.util.search.BlogsEntrySearchFixture;
+import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.test.util.search.JournalArticleBlueprintBuilder;
@@ -47,6 +48,7 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.search.filter.ComplexQueryPart;
 import com.liferay.portal.search.filter.ComplexQueryPartBuilderFactory;
 import com.liferay.portal.search.query.MatchQuery;
@@ -87,7 +89,10 @@ public class IndexerClausesComplexQueryPartTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new LiferayIntegrationTestRule();
-
+	@Inject
+	protected static DDMStructureLocalService ddmStructureLocalService;
+	@Inject
+	protected static Portal portal;
 	@Before
 	public void setUp() throws Exception {
 		Assume.assumeTrue(!_isSearchEngine("Solr"));
@@ -98,7 +103,7 @@ public class IndexerClausesComplexQueryPartTest {
 		GroupSearchFixture groupSearchFixture = new GroupSearchFixture();
 
 		JournalArticleSearchFixture journalArticleSearchFixture =
-			new JournalArticleSearchFixture(journalArticleLocalService);
+			new JournalArticleSearchFixture(ddmStructureLocalService, journalArticleLocalService, portal);
 
 		_blogsEntries = blogsEntrySearchFixture.getBlogsEntries();
 		_blogsEntrySearchFixture = blogsEntrySearchFixture;

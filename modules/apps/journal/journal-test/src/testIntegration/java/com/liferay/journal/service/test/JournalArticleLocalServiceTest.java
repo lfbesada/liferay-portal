@@ -793,6 +793,10 @@ public class JournalArticleLocalServiceTest {
 			FileUtil.getBytes(getClass(), "dependencies/image.jpg"), null, null,
 			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
+		DDMStructure ddmStructure = _ddmStructureLocalService.getStructure(
+			_group.getGroupId(), _portal.getClassNameId(JournalArticle.class.getName()),
+			dataDefinition.getDataDefinitionKey());
+
 		JournalArticle journalArticle =
 			JournalArticleLocalServiceUtil.addArticle(
 				null, TestPropsValues.getUserId(), _group.getGroupId(), 0, 0,
@@ -817,7 +821,7 @@ public class JournalArticleLocalServiceTest {
 					_readFileToString(
 						"journal_content_with_different_locales.xml"),
 					"[$DOCUMENT_JSON$]", _toJSON(fileEntry)),
-				dataDefinition.getDataDefinitionKey(), null, null, 1, 1, 1965,
+				ddmStructure.getStructureId(), null, null, 1, 1, 1965,
 				0, 0, 0, 0, 0, 0, 0, true, 0, 0, 0, 0, 0, true, true, false,
 				null, null, null, null,
 				ServiceContextTestUtil.getServiceContext(
@@ -862,6 +866,11 @@ public class JournalArticleLocalServiceTest {
 			FileUtil.getBytes(getClass(), "dependencies/image.jpg"), null, null,
 			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
+
+		DDMStructure ddmStructure = _ddmStructureLocalService.getStructure(
+			_group.getGroupId(), _portal.getClassNameId(JournalArticle.class.getName()),
+			dataDefinition.getDataDefinitionKey());
+
 		JournalArticle journalArticle =
 			JournalArticleLocalServiceUtil.addArticle(
 				null, TestPropsValues.getUserId(), _group.getGroupId(), 0, 0,
@@ -887,7 +896,7 @@ public class JournalArticleLocalServiceTest {
 						"journal_content_nested_fields_with_different_" +
 							"locales.xml"),
 					"[$DOCUMENT_JSON$]", _toJSON(fileEntry)),
-				dataDefinition.getDataDefinitionKey(), null, null, 1, 1, 1965,
+				ddmStructure.getStructureId(), null, null, 1, 1, 1965,
 				0, 0, 0, 0, 0, 0, 0, true, 0, 0, 0, 0, 0, true, true, false,
 				null, null, null, null,
 				ServiceContextTestUtil.getServiceContext(
