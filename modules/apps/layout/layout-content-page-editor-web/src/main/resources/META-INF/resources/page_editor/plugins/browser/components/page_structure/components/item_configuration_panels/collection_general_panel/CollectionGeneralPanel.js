@@ -15,7 +15,6 @@
 import ClayAlert from '@clayui/alert';
 import ClayButton from '@clayui/button';
 import ClayLabel from '@clayui/label';
-import {useModal} from '@clayui/modal';
 import ClayPopover from '@clayui/popover';
 import {openConfirmModal, sub} from 'frontend-js-web';
 import PropTypes from 'prop-types';
@@ -46,7 +45,6 @@ import useCache from '../../../../../../../app/utils/useCache';
 import Collapse from '../../../../../../../common/components/Collapse';
 import CollectionSelector from '../../../../../../../common/components/CollectionSelector';
 import {useId} from '../../../../../../../common/hooks/useId';
-import CollectionFilterConfigurationModal from '../../CollectionFilterConfigurationModal';
 import {CommonStyles} from '../CommonStyles';
 import {FlexOptions} from '../FlexOptions';
 import {EmptyCollectionOptions} from './EmptyCollectionOptions';
@@ -91,13 +89,6 @@ export function CollectionGeneralPanel({item}) {
 	);
 
 	const [availableListItemStyles, setAvailableListItemStyles] = useState([]);
-	const [collectionConfiguration, setCollectionConfiguration] = useState(
-		null
-	);
-	const [
-		filterConfigurationVisible,
-		setFilterConfigurationVisible,
-	] = useState(false);
 
 	const collectionConfig = getResponsiveConfig(
 		item.config,
@@ -113,11 +104,6 @@ export function CollectionGeneralPanel({item}) {
 	const dispatch = useDispatch();
 	const getState = useGetState();
 
-	const {
-		observer: filterConfigurationObserver,
-		onClose: onFilterConfigurationClose,
-	} = useModal({onClose: () => setFilterConfigurationVisible(false)});
-
 	const editConfigurationURL = useCache({
 		fetcher: () =>
 			CollectionService.getCollectionEditConfigurationUrl({
@@ -131,56 +117,34 @@ export function CollectionGeneralPanel({item}) {
 	const previewItem = useDisplayPagePreviewItem();
 
 	const optionsMenuItems = useMemo(() => {
-		if (Liferay.FeatureFlags['LPS-166036']) {
-			if (!editConfigurationURL) {
-				return [];
-			}
+		if (!editConfigurationURL) {
+			return [];
+		}
 
-			const url = new URL(editConfigurationURL);
+		const url = new URL(editConfigurationURL);
 
+		url.searchParams.set(`${config.portletNamespace}type`, collection.type);
+
+		if (previewItem) {
 			url.searchParams.set(
-				`${config.portletNamespace}type`,
-				collection.type
+				`${config.portletNamespace}classNameId`,
+				previewItem.data.classNameId
 			);
 
-			if (previewItem) {
-				url.searchParams.set(
-					`${config.portletNamespace}classNameId`,
-					previewItem.data.classNameId
-				);
-
-				url.searchParams.set(
-					`${config.portletNamespace}classPK`,
-					previewItem.data.classPK
-				);
-			}
-
-			return [
-				{
-					href: url.href,
-					label: Liferay.Language.get('filter-collection'),
-					symbolLeft: 'filter',
-				},
-			];
+			url.searchParams.set(
+				`${config.portletNamespace}classPK`,
+				previewItem.data.classPK
+			);
 		}
-		else {
-			return collectionConfiguration
-				? [
-						{
-							label: Liferay.Language.get('prefilter-collection'),
-							onClick: () => setFilterConfigurationVisible(true),
-							symbolLeft: 'filter',
-						},
-				  ]
-				: [];
-		}
-	}, [
-		collection,
-		collectionConfiguration,
-		editConfigurationURL,
-		previewItem,
-		setFilterConfigurationVisible,
-	]);
+
+		return [
+			{
+				href: url.href,
+				label: Liferay.Language.get('filter-collection'),
+				symbolLeft: 'filter',
+			},
+		];
+	}, [collection, editConfigurationURL, previewItem]);
 
 	const handleCollectionSelect = (collection = {}) => {
 		dispatch(
@@ -275,28 +239,6 @@ export function CollectionGeneralPanel({item}) {
 				});
 		}
 	}, [collection, listStyle]);
-
-	useEffect(() => {
-		if (collection?.key) {
-			CollectionService.getCollectionConfiguration(collection)
-				.then((nextCollectionConfiguration) => {
-					if (
-						nextCollectionConfiguration?.fieldSets.some(
-							(fieldSet) => fieldSet?.fields?.length
-						)
-					) {
-						setCollectionConfiguration(nextCollectionConfiguration);
-					}
-					else {
-						setCollectionConfiguration(null);
-					}
-				})
-				.catch(() => setCollectionConfiguration(null));
-		}
-		else {
-			setCollectionConfiguration(null);
-		}
-	}, [collection]);
 
 	if (
 		Liferay.FeatureFlags['LPS-169923'] &&
@@ -475,16 +417,6 @@ export function CollectionGeneralPanel({item}) {
 						</>
 					)}
 				</Collapse>
-
-				{filterConfigurationVisible ? (
-					<CollectionFilterConfigurationModal
-						collectionConfiguration={collectionConfiguration}
-						handleConfigurationChanged={handleConfigurationChanged}
-						itemConfig={item.config}
-						observer={filterConfigurationObserver}
-						onClose={onFilterConfigurationClose}
-					/>
-				) : null}
 			</div>
 
 			<CommonStyles
