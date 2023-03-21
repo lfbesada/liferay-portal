@@ -439,13 +439,11 @@ function StructureTreeNodeContent({
 				nameInfo={node.nameInfo}
 				onEditName={onEditName}
 				ref={nodeRef}
-				showPermissionRestriction={
-					Liferay.FeatureFlags['LPS-169923'] &&
-					((node.type === LAYOUT_DATA_ITEM_TYPES.form &&
-						formIsRestricted(item)) ||
-						(node.type === LAYOUT_DATA_ITEM_TYPES.collection &&
-							restrictedItemIds.has(item.itemId)))
-				}
+				showPermissionRestriction={isRestricted(
+					item,
+					node,
+					restrictedItemIds
+				)}
 				showUnavailableWarning={
 					Liferay.FeatureFlags['LPS-169923'] &&
 					node.type === LAYOUT_DATA_ITEM_TYPES.form &&
@@ -882,4 +880,19 @@ function getItemPosition(item, monitor, targetRefs) {
 	const elevation = targetPositionWithMiddle !== TARGET_POSITIONS.MIDDLE;
 
 	return [targetPositionWithMiddle, targetPositionWithoutMiddle, elevation];
+}
+
+function isRestricted(item, node, restrictedItemIds) {
+	if (!Liferay.FeatureFlags['LPS-169923']) {
+		return false;
+	}
+	else if (node.type === LAYOUT_DATA_ITEM_TYPES.form) {
+		return formIsRestricted(item);
+	}
+	else if (
+		node.type === LAYOUT_DATA_ITEM_TYPES.collection ||
+		node.type === LAYOUT_DATA_ITEM_TYPES.fragment
+	) {
+		return restrictedItemIds.has(item.itemId);
+	}
 }
