@@ -253,6 +253,19 @@ export function CollectionGeneralPanel({item}) {
 		);
 	}
 
+	if (
+		Liferay.FeatureFlags['LPS-169923'] &&
+		restrictedItemIds.has(item.itemId)
+	) {
+		return (
+			<ClayAlert displayType="secondary" role={null}>
+				{Liferay.Language.get(
+					'this-content-cannot-be-displayed-due-to-permission-restrictions'
+				)}
+			</ClayAlert>
+		);
+	}
+
 	return (
 		<>
 			<div className="mb-3">
