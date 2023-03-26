@@ -398,7 +398,7 @@ public class JournalArticleItemSelectorViewDisplayContext {
 				}
 
 				return JournalFolderServiceUtil.getFoldersAndArticles(
-					_getGroupId(), 0, _getFolderId(), _getDDMStructureKey(),
+					_getGroupId(), 0, _getFolderId(), _getDDMStructureId(),
 					_infoItemItemSelectorCriterion.getStatus(),
 					_themeDisplay.getLocale(),
 					articleAndFolderSearchContainer.getStart(),
@@ -406,7 +406,7 @@ public class JournalArticleItemSelectorViewDisplayContext {
 					folderOrderByComparator);
 			},
 			JournalFolderServiceUtil.getFoldersAndArticlesCount(
-				_getGroupId(), 0, _getFolderId(), _getDDMStructureKey(),
+				_getGroupId(), 0, _getFolderId(), _getDDMStructureId(),
 				_infoItemItemSelectorCriterion.getStatus()));
 
 		_articleSearchContainer = articleAndFolderSearchContainer;
@@ -472,39 +472,17 @@ public class JournalArticleItemSelectorViewDisplayContext {
 		return ddmStructure.getStructureId();
 	}
 
-	private String _getDDMStructureKey() {
-		if (_ddmStructureKey != null) {
-			return _ddmStructureKey;
+	private long _getDDMStructureId() {
+		if (_ddmStructureId != null) {
+			return _ddmStructureId;
 		}
 
-		String ddmStructureKey = ParamUtil.getString(
-			_httpServletRequest, "ddmStructureKey");
+		_ddmStructureId = ParamUtil.getLong(
+			_httpServletRequest, "ddmStructureId",
+			GetterUtil.getLong(
+				_infoItemItemSelectorCriterion.getItemSubtype()));
 
-		if (Validator.isNull(ddmStructureKey)) {
-			ddmStructureKey = _infoItemItemSelectorCriterion.getItemSubtype();
-
-			long ddmStructureId = ParamUtil.getLong(
-				_httpServletRequest, "ddmStructureId");
-
-			if (ddmStructureId == 0) {
-				ddmStructureId = GetterUtil.getLong(
-					_infoItemItemSelectorCriterion.getItemSubtype());
-			}
-
-			if (ddmStructureId > 0) {
-				DDMStructure ddmStructure =
-					DDMStructureLocalServiceUtil.fetchDDMStructure(
-						ddmStructureId);
-
-				if (ddmStructure != null) {
-					ddmStructureKey = ddmStructure.getStructureKey();
-				}
-			}
-		}
-
-		_ddmStructureKey = ddmStructureKey;
-
-		return _ddmStructureKey;
+		return _ddmStructureId;
 	}
 
 	private JournalFolder _getFolder() {
@@ -741,7 +719,7 @@ public class JournalArticleItemSelectorViewDisplayContext {
 	}
 
 	private SearchContainer<?> _articleSearchContainer;
-	private String _ddmStructureKey;
+	private Long _ddmStructureId;
 	private String _displayStyle;
 	private JournalFolder _folder;
 	private Long _folderId;
