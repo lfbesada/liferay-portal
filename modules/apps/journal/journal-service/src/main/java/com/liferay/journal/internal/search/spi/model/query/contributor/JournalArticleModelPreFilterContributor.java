@@ -121,11 +121,11 @@ public class JournalArticleModelPreFilterContributor
 			}
 		}
 
-		String ddmStructureKey = (String)searchContext.getAttribute(
-			"ddmStructureKey");
+		long ddmStructureId = (Long)searchContext.getAttribute(
+			"ddmStructureId");
 
-		if (Validator.isNotNull(ddmStructureKey)) {
-			booleanFilter.addRequiredTerm("ddmStructureKey", ddmStructureKey);
+		if (ddmStructureId > 0) {
+			booleanFilter.addRequiredTerm("ddmStructureId", ddmStructureId);
 		}
 
 		String ddmTemplateKey = (String)searchContext.getAttribute(
