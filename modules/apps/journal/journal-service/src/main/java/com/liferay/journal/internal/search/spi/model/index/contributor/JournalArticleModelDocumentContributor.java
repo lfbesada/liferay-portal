@@ -142,7 +142,7 @@ public class JournalArticleModelDocumentContributor
 			StringUtil.split(journalArticle.getTreePath(), CharPool.SLASH));
 		document.addKeyword(Field.VERSION, journalArticle.getVersion());
 		document.addKeyword(
-			"ddmStructureKey", journalArticle.getDDMStructureKey());
+			"ddmStructureId", journalArticle.getDDMStructureId());
 		document.addKeyword(
 			"ddmTemplateKey", journalArticle.getDDMTemplateKey());
 
