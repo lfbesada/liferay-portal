@@ -648,10 +648,14 @@ public class JournalArticleItemSelectorViewDisplayContext {
 			Field.CLASS_NAME_ID, JournalArticleConstants.CLASS_NAME_ID_DEFAULT);
 		searchContext.setAttribute(
 			Field.STATUS, _infoItemItemSelectorCriterion.getStatus());
-		searchContext.setAttribute("ddmStructureKey", _getDDMStructureKey());
 		searchContext.setAttribute("head", Boolean.TRUE);
 		searchContext.setAttribute("latest", Boolean.TRUE);
 		searchContext.setAttribute("showNonindexable", Boolean.TRUE);
+
+		if (_getDDMStructureId() > 0) {
+			searchContext.setClassTypeIds(new long[] {_getDDMStructureId()});
+		}
+
 		searchContext.setCompanyId(_themeDisplay.getCompanyId());
 		searchContext.setEnd(end);
 		searchContext.setFolderIds(folderIds);
