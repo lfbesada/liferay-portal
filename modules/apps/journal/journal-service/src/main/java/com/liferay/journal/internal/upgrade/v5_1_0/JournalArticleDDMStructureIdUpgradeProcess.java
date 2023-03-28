@@ -44,6 +44,10 @@ public class JournalArticleDDMStructureIdUpgradeProcess extends UpgradeProcess {
 
 	@Override
 	protected void doUpgrade() throws Exception {
+		if (!hasColumn("JournalArticle", "DDMStructureKey")) {
+			return;
+		}
+
 		Map<String, Map<Long, Long>> ddmStructureKeysMap =
 			new ConcurrentHashMap<>();
 
