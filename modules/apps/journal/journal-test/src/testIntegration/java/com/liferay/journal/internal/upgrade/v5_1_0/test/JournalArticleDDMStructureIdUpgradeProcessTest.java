@@ -15,8 +15,9 @@
 package com.liferay.journal.internal.upgrade.v5_1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.asset.kernel.model.AssetEntry;
+import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.service.DDMStructureLocalService;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestUtil;
 import com.liferay.journal.constants.JournalArticleConstants;
 import com.liferay.journal.model.JournalArticle;
@@ -25,6 +26,8 @@ import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.MultiVMPool;
+import com.liferay.portal.kernel.dao.db.DBInspector;
+import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -36,13 +39,15 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.upgrade.UpgradeStep;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.test.log.LogCapture;
 import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
 
 import java.util.Objects;
 
@@ -67,6 +72,10 @@ public class JournalArticleDDMStructureIdUpgradeProcessTest {
 
 	@Test
 	public void testUpgradeProcess() throws Exception {
+		if (!_hasColumn("JournalArticle", "DDMStructureKey")) {
+			return;
+		}
+
 		Company company = _companyLocalService.getCompany(
 			TestPropsValues.getCompanyId());
 
@@ -124,6 +133,11 @@ public class JournalArticleDDMStructureIdUpgradeProcessTest {
 				DDMStructureTestUtil.getSampleStructuredContent(),
 				_companyGroupDDMStructure.getStructureKey(), StringPool.BLANK);
 
+		_setDDMStructureKey(
+			_companyGroupJournalArticle, group1JournalArticle,
+			group1LayoutGroupJournalArticle, group2JournalArticle,
+			group2CompanyGroupDDMStructureJournalArticle);
+
 		_unsetDDMStructureId(
 			_companyGroupJournalArticle, group1JournalArticle,
 			group1LayoutGroupJournalArticle, group2JournalArticle,
@@ -141,17 +155,23 @@ public class JournalArticleDDMStructureIdUpgradeProcessTest {
 		throws Exception {
 
 		for (JournalArticle journalArticle : journalArticles) {
-			DDMStructure ddmStructure = _ddmStructureLocalService.getStructure(
-				_portal.getSiteGroupId(journalArticle.getGroupId()),
-				_classNameLocalService.getClassNameId(JournalArticle.class),
-				journalArticle.getDDMStructureKey(), true);
+			AssetEntry assetEntry = _assetEntryLocalService.fetchEntry(
+				JournalArticle.class.getName(), journalArticle.getId());
+
+			if (assetEntry == null) {
+				assetEntry = _assetEntryLocalService.fetchEntry(
+					JournalArticle.class.getName(),
+					journalArticle.getResourcePrimKey());
+			}
+
+			Assert.assertNotNull(assetEntry);
 
 			JournalArticle updatedJournalArticle =
 				_journalArticleLocalService.getJournalArticle(
 					journalArticle.getId());
 
 			Assert.assertEquals(
-				ddmStructure.getStructureId(),
+				assetEntry.getClassTypeId(),
 				updatedJournalArticle.getDDMStructureId());
 		}
 	}
@@ -175,6 +195,16 @@ public class JournalArticleDDMStructureIdUpgradeProcessTest {
 		return upgradeProcesses[0];
 	}
 
+	private boolean _hasColumn(String tableName, String columnName)
+		throws Exception {
+
+		try (Connection connection = DataAccess.getConnection()) {
+			DBInspector dbInspector = new DBInspector(connection);
+
+			return dbInspector.hasColumn(tableName, columnName);
+		}
+	}
+
 	private void _runUpgrade() throws Exception {
 		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
 				_CLASS_NAME, LoggerTestUtil.OFF)) {
@@ -185,6 +215,30 @@ public class JournalArticleDDMStructureIdUpgradeProcessTest {
 
 			_multiVMPool.clear();
 		}
+	}
+
+	private void _setDDMStructureKey(JournalArticle... journalArticles)
+		throws Exception {
+
+		try (Connection connection = DataAccess.getConnection();
+			PreparedStatement preparedStatement = connection.prepareStatement(
+				"update JournalArticle set DDMStructureKey = ? where id_ = " +
+					"?")) {
+
+			for (JournalArticle journalArticle : journalArticles) {
+				DDMStructure ddmStructure = journalArticle.getDDMStructure();
+
+				preparedStatement.setString(1, ddmStructure.getStructureKey());
+
+				preparedStatement.setLong(2, journalArticle.getId());
+
+				preparedStatement.addBatch();
+			}
+
+			preparedStatement.executeBatch();
+		}
+
+		_multiVMPool.clear();
 	}
 
 	private void _unsetDDMStructureId(JournalArticle... journalArticles) {
@@ -209,6 +263,9 @@ public class JournalArticleDDMStructureIdUpgradeProcessTest {
 	private static UpgradeStepRegistrator _upgradeStepRegistrator;
 
 	@Inject
+	private AssetEntryLocalService _assetEntryLocalService;
+
+	@Inject
 	private ClassNameLocalService _classNameLocalService;
 
 	@DeleteAfterTestRun
@@ -219,9 +276,6 @@ public class JournalArticleDDMStructureIdUpgradeProcessTest {
 
 	@Inject
 	private CompanyLocalService _companyLocalService;
-
-	@Inject
-	private DDMStructureLocalService _ddmStructureLocalService;
 
 	@DeleteAfterTestRun
 	private Group _group1;
@@ -234,8 +288,5 @@ public class JournalArticleDDMStructureIdUpgradeProcessTest {
 
 	@Inject
 	private MultiVMPool _multiVMPool;
-
-	@Inject
-	private Portal _portal;
 
 }
