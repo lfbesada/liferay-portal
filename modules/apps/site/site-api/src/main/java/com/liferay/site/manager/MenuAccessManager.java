@@ -14,6 +14,7 @@
 
 package com.liferay.site.manager;
 
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
@@ -37,6 +38,10 @@ public class MenuAccessManager {
 
 	public static boolean isShowControlMenu(
 		HttpServletRequest httpServletRequest) {
+
+		if (!FeatureFlagManagerUtil.isEnabled("LPS-176136")) {
+			return true;
+		}
 
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)httpServletRequest.getAttribute(
