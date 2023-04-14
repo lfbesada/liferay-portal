@@ -66,8 +66,7 @@ public class MenuAccessManager {
 
 				for (Role role : roles) {
 					if (ArrayUtil.contains(
-							rolesCanSeeControlMenu,
-							String.valueOf(role.getRoleId()))) {
+							rolesCanSeeControlMenu, role.getName())) {
 
 						return true;
 					}
