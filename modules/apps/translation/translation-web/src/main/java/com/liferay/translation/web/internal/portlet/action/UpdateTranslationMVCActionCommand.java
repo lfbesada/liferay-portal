@@ -188,12 +188,16 @@ public class UpdateTranslationMVCActionCommand extends BaseMVCActionCommand {
 					InfoFieldValue<Object> sourceInfoFieldValue =
 						sourceInfoFieldValues.get(i);
 
+					Locale targetLocale = _getTargetLocale(actionRequest);
+
 					infoFieldValues.add(
 						new InfoFieldValue<>(
 							infoField,
 							InfoLocalizedValue.builder(
+							).defaultLocale(
+								targetLocale
 							).value(
-								_getTargetLocale(actionRequest),
+								targetLocale,
 								infoFieldParameterValue[i]
 							).value(
 								sourceLocale,

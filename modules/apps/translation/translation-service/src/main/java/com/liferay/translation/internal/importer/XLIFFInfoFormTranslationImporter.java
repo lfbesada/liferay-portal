@@ -126,6 +126,8 @@ public class XLIFFInfoFormTranslationImporter
 			namespaceAndNameArray[1]
 		).labelInfoLocalizedValue(
 			InfoLocalizedValue.<String>builder(
+			).defaultLocale(
+				locale
 			).value(
 				locale, value
 			).build()
@@ -421,6 +423,8 @@ public class XLIFFInfoFormTranslationImporter
 						new InfoFieldValue<>(
 							_createInfoField(targetLocale, iTextUnit.getId()),
 							InfoLocalizedValue.builder(
+							).defaultLocale(
+								targetLocale
 							).value(
 								targetLocale, targetTextFragment.toText()
 							).value(
@@ -463,6 +467,8 @@ public class XLIFFInfoFormTranslationImporter
 					new InfoFieldValue<>(
 						_createInfoField(targetLocale, unit.getId()),
 						InfoLocalizedValue.builder(
+						).defaultLocale(
+							targetLocale
 						).value(
 							targetLocale, targetFragment.getPlainText()
 						).value(
