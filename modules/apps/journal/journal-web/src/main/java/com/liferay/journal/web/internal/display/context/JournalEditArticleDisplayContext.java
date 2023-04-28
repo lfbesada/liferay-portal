@@ -41,6 +41,7 @@ import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.service.JournalArticleServiceUtil;
 import com.liferay.journal.service.JournalFolderLocalServiceUtil;
 import com.liferay.journal.web.internal.configuration.FFJournalAutoSaveDraftConfiguration;
+import com.liferay.journal.web.internal.configuration.provider.JournalArticleAICreatorConfigurationProvider;
 import com.liferay.journal.web.internal.security.permission.resource.JournalArticlePermission;
 import com.liferay.journal.web.internal.security.permission.resource.JournalFolderPermission;
 import com.liferay.journal.web.internal.util.RecentGroupManagerUtil;
@@ -122,6 +123,11 @@ public class JournalEditArticleDisplayContext {
 					FFJournalAutoSaveDraftConfiguration.class.getName());
 		_itemSelector = (ItemSelector)httpServletRequest.getAttribute(
 			ItemSelector.class.getName());
+		_journalArticleAICreatorConfigurationProvider =
+			(JournalArticleAICreatorConfigurationProvider)
+				httpServletRequest.getAttribute(
+					JournalArticleAICreatorConfigurationProvider.class.
+						getName());
 
 		_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -144,6 +150,10 @@ public class JournalEditArticleDisplayContext {
 			_liferayPortletResponse.getNamespace() + "selectSite";
 
 		return HashMapBuilder.<String, Object>put(
+			"aiCreatorEnabled",
+			() -> _journalArticleAICreatorConfigurationProvider.isEnabled(
+				_themeDisplay.getCompanyId(), _themeDisplay.getScopeGroupId())
+		).put(
 			"newArticle",
 			(_article == null) || Validator.isNull(_article.getArticleId())
 		).put(
@@ -1517,6 +1527,8 @@ public class JournalEditArticleDisplayContext {
 	private final HttpServletRequest _httpServletRequest;
 	private Long _inheritedWorkflowDDMStructuresFolderId;
 	private final ItemSelector _itemSelector;
+	private final JournalArticleAICreatorConfigurationProvider
+		_journalArticleAICreatorConfigurationProvider;
 	private final LiferayPortletResponse _liferayPortletResponse;
 	private Boolean _neverExpire;
 	private Boolean _neverReview;
