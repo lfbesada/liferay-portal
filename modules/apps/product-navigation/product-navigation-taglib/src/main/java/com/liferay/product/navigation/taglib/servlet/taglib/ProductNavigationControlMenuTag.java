@@ -26,8 +26,8 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.product.navigation.control.menu.util.ProductNavigationControlMenuManager;
 import com.liferay.product.navigation.taglib.internal.servlet.ServletContextUtil;
-import com.liferay.site.manager.MenuAccessManager;
 import com.liferay.taglib.util.IncludeTag;
 
 import java.io.IOException;
@@ -126,13 +126,17 @@ public class ProductNavigationControlMenuTag extends IncludeTag {
 			return false;
 		}
 
+		ProductNavigationControlMenuManager
+			productNavigationControlMenuManager =
+				ServletContextUtil.getProductNavigationControlMenuManager();
+
 		HttpServletRequest httpServletRequest = getRequest();
 
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		if (!MenuAccessManager.isShowControlMenu(
+		if (!productNavigationControlMenuManager.isShowControlMenu(
 				themeDisplay.getScopeGroup(), themeDisplay.getLayout(),
 				themeDisplay.getUserId())) {
 
