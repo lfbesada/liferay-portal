@@ -65,7 +65,7 @@ public class MenuAccessConfigurationProviderTest {
 		_menuAccessConfigurationProvider.addRoleToMenuAccess(role);
 
 		Assert.assertArrayEquals(
-			new String[] {role.getName()},
+			new String[] {String.valueOf(role.getRoleId())},
 			_menuAccessConfigurationProvider.getRolesCanSeeControlMenu(
 				_group.getGroupId()));
 	}
@@ -88,7 +88,7 @@ public class MenuAccessConfigurationProviderTest {
 		_menuAccessConfigurationProvider.deleteRoleFromMenuAccess(role1);
 
 		Assert.assertArrayEquals(
-			new String[] {role2.getName()},
+			new String[] {String.valueOf(role2.getRoleId())},
 			_menuAccessConfigurationProvider.getRolesCanSeeControlMenu(
 				_group.getGroupId()));
 	}
