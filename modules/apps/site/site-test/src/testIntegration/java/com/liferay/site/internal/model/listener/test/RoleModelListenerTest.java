@@ -12,15 +12,22 @@
  * details.
  */
 
-package com.liferay.site.configuration.test;
+package com.liferay.site.internal.model.listener.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.Role;
+import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
+import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -35,10 +42,11 @@ import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
- * @author Mikel Lorza
+ * @author Lourdes Fernández Besada
  */
+@FeatureFlags("LPS-176136")
 @RunWith(Arquillian.class)
-public class MenuAccessConfigurationProviderTest {
+public class RoleModelListenerTest {
 
 	@ClassRule
 	@Rule
@@ -61,19 +69,43 @@ public class MenuAccessConfigurationProviderTest {
 	}
 
 	@Test
-	public void testUpdateMenuAccessConfiguration() throws Exception {
-		String[] expectedRolesCanSeeControlMenu = {"test1", "test2"};
-
-		_menuAccessConfigurationProvider.updateMenuAccessConfiguration(
-			_group.getGroupId(), expectedRolesCanSeeControlMenu, true);
+	public void testAddRole() throws Exception {
+		Role role = _roleLocalService.addRole(
+			TestPropsValues.getUserId(), null, 0, StringUtil.randomString(),
+			null, null, RoleConstants.TYPE_SITE, null,
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		Assert.assertArrayEquals(
-			expectedRolesCanSeeControlMenu,
+			new String[] {String.valueOf(role.getRoleId())},
+			_menuAccessConfigurationProvider.getRolesCanSeeControlMenu(
+				_group.getGroupId()));
+	}
+
+	@Test
+	public void testDeleteRole() throws Exception {
+		Role role1 = _roleLocalService.addRole(
+			TestPropsValues.getUserId(), null, 0, StringUtil.randomString(),
+			null, null, RoleConstants.TYPE_SITE, null,
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
+
+		Role role2 = _roleLocalService.addRole(
+			TestPropsValues.getUserId(), null, 0, StringUtil.randomString(),
+			null, null, RoleConstants.TYPE_SITE, null,
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
+
+		Assert.assertArrayEquals(
+			new String[] {
+				String.valueOf(role1.getRoleId()),
+				String.valueOf(role2.getRoleId())
+			},
 			_menuAccessConfigurationProvider.getRolesCanSeeControlMenu(
 				_group.getGroupId()));
 
-		Assert.assertTrue(
-			_menuAccessConfigurationProvider.isShowControlMenuByRole(
+		_roleLocalService.deleteRole(role1);
+
+		Assert.assertArrayEquals(
+			new String[] {String.valueOf(role2.getRoleId())},
+			_menuAccessConfigurationProvider.getRolesCanSeeControlMenu(
 				_group.getGroupId()));
 	}
 
@@ -85,5 +117,8 @@ public class MenuAccessConfigurationProviderTest {
 
 	@Inject
 	private MenuAccessConfigurationProvider _menuAccessConfigurationProvider;
+
+	@Inject
+	private RoleLocalService _roleLocalService;
 
 }
