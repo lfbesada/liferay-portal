@@ -91,7 +91,15 @@ public class MenuAccessConfigurationProviderTest {
 			null, null, RoleConstants.TYPE_SITE, null,
 			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
-		_menuAccessConfigurationProvider.deleteRoleFromMenuAccess(role1);
+		Assert.assertArrayEquals(
+			new String[] {
+				String.valueOf(role1.getRoleId()),
+				String.valueOf(role2.getRoleId())
+			},
+			_menuAccessConfigurationProvider.getRolesCanSeeControlMenu(
+				_group.getGroupId()));
+
+		_roleLocalService.deleteRole(role1);
 
 		Assert.assertArrayEquals(
 			new String[] {String.valueOf(role2.getRoleId())},
