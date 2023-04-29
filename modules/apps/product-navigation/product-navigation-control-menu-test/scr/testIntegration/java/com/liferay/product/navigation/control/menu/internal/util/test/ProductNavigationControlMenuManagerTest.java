@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.site.manager.test;
+package com.liferay.product.navigation.control.menu.internal.util.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.layout.test.util.LayoutTestUtil;
@@ -33,8 +33,8 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
+import com.liferay.product.navigation.control.menu.util.ProductNavigationControlMenuManager;
 import com.liferay.site.configuration.MenuAccessConfigurationProvider;
-import com.liferay.site.manager.MenuAccessManager;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -47,7 +47,7 @@ import org.junit.runner.RunWith;
  * @author Mikel Lorza
  */
 @RunWith(Arquillian.class)
-public class MenuAccessManagerTest {
+public class ProductNavigationControlMenuManagerTest {
 
 	@ClassRule
 	@Rule
@@ -74,10 +74,8 @@ public class MenuAccessManagerTest {
 		_menuAccessConfigurationProvider.updateMenuAccessConfiguration(
 			_group.getGroupId(), new String[0], true);
 
-		MenuAccessManager menuAccessManager = new MenuAccessManager();
-
 		Assert.assertTrue(
-			menuAccessManager.isShowControlMenu(
+			_productNavigationControlMenuManager.isShowControlMenu(
 				_group, _layout, TestPropsValues.getUserId()));
 	}
 
@@ -94,10 +92,8 @@ public class MenuAccessManagerTest {
 
 		User user = UserTestUtil.addUser();
 
-		MenuAccessManager menuAccessManager = new MenuAccessManager();
-
 		Assert.assertFalse(
-			menuAccessManager.isShowControlMenu(
+			_productNavigationControlMenuManager.isShowControlMenu(
 				_group, _layout, user.getUserId()));
 	}
 
@@ -119,10 +115,8 @@ public class MenuAccessManagerTest {
 
 		_roleLocalService.addUserRole(user.getUserId(), role);
 
-		MenuAccessManager menuAccessManager = new MenuAccessManager();
-
 		Assert.assertTrue(
-			menuAccessManager.isShowControlMenu(
+			_productNavigationControlMenuManager.isShowControlMenu(
 				_group, _layout, user.getUserId()));
 	}
 
@@ -137,10 +131,8 @@ public class MenuAccessManagerTest {
 		_menuAccessConfigurationProvider.updateMenuAccessConfiguration(
 			_group.getGroupId(), new String[0], true);
 
-		MenuAccessManager menuAccessManager = new MenuAccessManager();
-
 		Assert.assertTrue(
-			menuAccessManager.isShowControlMenu(
+			_productNavigationControlMenuManager.isShowControlMenu(
 				_group, _layout, TestPropsValues.getUserId()));
 	}
 
@@ -155,10 +147,8 @@ public class MenuAccessManagerTest {
 		_menuAccessConfigurationProvider.updateMenuAccessConfiguration(
 			_group.getGroupId(), new String[0], true);
 
-		MenuAccessManager menuAccessManager = new MenuAccessManager();
-
 		Assert.assertTrue(
-			menuAccessManager.isShowControlMenu(
+			_productNavigationControlMenuManager.isShowControlMenu(
 				_group, _layout, TestPropsValues.getUserId()));
 	}
 
@@ -172,6 +162,10 @@ public class MenuAccessManagerTest {
 
 	@Inject
 	private Portal _portal;
+
+	@Inject
+	private ProductNavigationControlMenuManager
+		_productNavigationControlMenuManager;
 
 	@Inject
 	private RoleLocalService _roleLocalService;
