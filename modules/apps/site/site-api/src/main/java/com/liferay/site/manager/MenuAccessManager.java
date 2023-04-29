@@ -17,6 +17,7 @@ package com.liferay.site.manager;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
@@ -48,9 +49,12 @@ public class MenuAccessManager {
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
+		Group group = themeDisplay.getScopeGroup();
 		Layout layout = themeDisplay.getLayout();
 
-		if (layout.isTypeControlPanel() || layout.isDraftLayout()) {
+		if (!group.isSite() || layout.isTypeControlPanel() ||
+			layout.isDraftLayout()) {
+
 			return true;
 		}
 
