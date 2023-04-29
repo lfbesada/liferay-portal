@@ -20,18 +20,13 @@ import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.site.configuration.MenuAccessConfiguration;
 
 import java.util.Objects;
-
-import javax.servlet.http.HttpServletRequest;
 
 /**
  * @author Mikel Lorza
@@ -39,20 +34,10 @@ import javax.servlet.http.HttpServletRequest;
 public class MenuAccessManager {
 
 	public static boolean isShowControlMenu(
-		HttpServletRequest httpServletRequest) {
+		Group group, Layout layout, long userId) {
 
-		if (!FeatureFlagManagerUtil.isEnabled("LPS-176136")) {
-			return true;
-		}
-
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		Group group = themeDisplay.getScopeGroup();
-		Layout layout = themeDisplay.getLayout();
-
-		if (!group.isSite() || layout.isTypeControlPanel() ||
+		if (!FeatureFlagManagerUtil.isEnabled("LPS-176136") ||
+			!group.isSite() || layout.isTypeControlPanel() ||
 			layout.isDraftLayout()) {
 
 			return true;
@@ -61,25 +46,21 @@ public class MenuAccessManager {
 		try {
 			MenuAccessConfiguration menuAccessConfiguration =
 				ConfigurationProviderUtil.getGroupConfiguration(
-					MenuAccessConfiguration.class,
-					themeDisplay.getScopeGroupId());
+					MenuAccessConfiguration.class, group.getGroupId());
 
 			if ((menuAccessConfiguration != null) &&
 				menuAccessConfiguration.showControlMenuByRole()) {
 
-				User user = themeDisplay.getUser();
-
 				Role administratorRole = RoleLocalServiceUtil.getRole(
-					themeDisplay.getCompanyId(), RoleConstants.ADMINISTRATOR);
+					group.getCompanyId(), RoleConstants.ADMINISTRATOR);
 
 				Role siteAdministratorRole = RoleLocalServiceUtil.getRole(
-					themeDisplay.getCompanyId(),
-					RoleConstants.SITE_ADMINISTRATOR);
+					group.getCompanyId(), RoleConstants.SITE_ADMINISTRATOR);
 
 				String[] rolesCanSeeControlMenu =
 					menuAccessConfiguration.rolesCanSeeControlMenu();
 
-				for (Role role : user.getRoles()) {
+				for (Role role : RoleLocalServiceUtil.getUserRoles(userId)) {
 					if (Objects.equals(
 							role.getRoleId(), administratorRole.getRoleId()) ||
 						Objects.equals(
