@@ -122,8 +122,19 @@ public class ProductNavigationControlMenuTag extends IncludeTag {
 		String layoutMode = ParamUtil.getString(
 			getOriginalServletRequest(), "p_l_mode", Constants.VIEW);
 
-		if (layoutMode.equals(Constants.PREVIEW) ||
-			!MenuAccessManager.isShowControlMenu(getRequest())) {
+		if (layoutMode.equals(Constants.PREVIEW)) {
+			return false;
+		}
+
+		HttpServletRequest httpServletRequest = getRequest();
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		if (!MenuAccessManager.isShowControlMenu(
+				themeDisplay.getScopeGroup(), themeDisplay.getLayout(),
+				themeDisplay.getUserId())) {
 
 			return false;
 		}
@@ -134,17 +145,7 @@ public class ProductNavigationControlMenuTag extends IncludeTag {
 
 		// Temporary workaround for LPS-175648
 
-		if (_ROLE_NAMES.length == 0) {
-			return true;
-		}
-
-		HttpServletRequest httpServletRequest = getRequest();
-
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		if (!themeDisplay.isSignedIn()) {
+		if ((_ROLE_NAMES.length == 0) || !themeDisplay.isSignedIn()) {
 			return true;
 		}
 
