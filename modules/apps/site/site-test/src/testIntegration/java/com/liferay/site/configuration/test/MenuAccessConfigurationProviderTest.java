@@ -73,8 +73,6 @@ public class MenuAccessConfigurationProviderTest {
 			null, null, RoleConstants.TYPE_SITE, null,
 			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
-		_menuAccessConfigurationProvider.addRoleToMenuAccess(role);
-
 		Assert.assertArrayEquals(
 			new String[] {String.valueOf(role.getRoleId())},
 			_menuAccessConfigurationProvider.getRolesCanSeeControlMenu(
@@ -92,9 +90,6 @@ public class MenuAccessConfigurationProviderTest {
 			TestPropsValues.getUserId(), null, 0, StringUtil.randomString(),
 			null, null, RoleConstants.TYPE_SITE, null,
 			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
-
-		_menuAccessConfigurationProvider.addRoleToMenuAccess(role1);
-		_menuAccessConfigurationProvider.addRoleToMenuAccess(role2);
 
 		_menuAccessConfigurationProvider.deleteRoleFromMenuAccess(role1);
 
