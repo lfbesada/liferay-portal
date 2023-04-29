@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.service.RoleLocalService;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
@@ -69,6 +70,37 @@ public class RoleModelListenerTest {
 	}
 
 	@Test
+	public void testAddOtherRoleTypes() throws Exception {
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId());
+
+		_roleLocalService.addRole(
+			TestPropsValues.getUserId(), null, 0, StringUtil.randomString(),
+			null, null, RoleConstants.TYPE_ACCOUNT, null, serviceContext);
+
+		_roleLocalService.addRole(
+			TestPropsValues.getUserId(), null, 0, StringUtil.randomString(),
+			null, null, RoleConstants.TYPE_DEPOT, null, serviceContext);
+
+		_roleLocalService.addRole(
+			TestPropsValues.getUserId(), null, 0, StringUtil.randomString(),
+			null, null, RoleConstants.TYPE_PROVIDER, null, serviceContext);
+
+		_roleLocalService.addRole(
+			TestPropsValues.getUserId(), null, 0, StringUtil.randomString(),
+			null, null, RoleConstants.TYPE_ORGANIZATION, null, serviceContext);
+
+		_roleLocalService.addRole(
+			TestPropsValues.getUserId(), null, 0, StringUtil.randomString(),
+			null, null, RoleConstants.TYPE_PUBLICATIONS, null, serviceContext);
+
+		Assert.assertArrayEquals(
+			new String[0],
+			_menuAccessConfigurationProvider.getRolesCanSeeControlMenu(
+				_group.getGroupId()));
+	}
+
+	@Test
 	public void testAddRole() throws Exception {
 		Role role = _roleLocalService.addRole(
 			TestPropsValues.getUserId(), null, 0, StringUtil.randomString(),
@@ -85,7 +117,7 @@ public class RoleModelListenerTest {
 	public void testDeleteRole() throws Exception {
 		Role role1 = _roleLocalService.addRole(
 			TestPropsValues.getUserId(), null, 0, StringUtil.randomString(),
-			null, null, RoleConstants.TYPE_SITE, null,
+			null, null, RoleConstants.TYPE_REGULAR, null,
 			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
 		Role role2 = _roleLocalService.addRole(
