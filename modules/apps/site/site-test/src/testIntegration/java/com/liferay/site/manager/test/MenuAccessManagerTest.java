@@ -22,16 +22,14 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
-import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RoleTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -44,8 +42,6 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
-
-import org.springframework.mock.web.MockHttpServletRequest;
 
 /**
  * @author Mikel Lorza
@@ -63,6 +59,8 @@ public class MenuAccessManagerTest {
 	@Before
 	public void setUp() throws Exception {
 		_group = GroupTestUtil.addGroup();
+
+		_layout = LayoutTestUtil.addTypeContentLayout(_group);
 	}
 
 	@Test
@@ -76,17 +74,11 @@ public class MenuAccessManagerTest {
 		_menuAccessConfigurationProvider.updateMenuAccessConfiguration(
 			_group.getGroupId(), new String[0], true);
 
-		MockHttpServletRequest mockHttpServletRequest =
-			new MockHttpServletRequest();
-
-		mockHttpServletRequest.setAttribute(
-			WebKeys.THEME_DISPLAY,
-			_getThemeDisplay(UserTestUtil.getAdminUser(_group.getCompanyId())));
-
 		MenuAccessManager menuAccessManager = new MenuAccessManager();
 
 		Assert.assertTrue(
-			menuAccessManager.isShowControlMenu(mockHttpServletRequest));
+			menuAccessManager.isShowControlMenu(
+				_group, _layout, TestPropsValues.getUserId()));
 	}
 
 	@Test
@@ -100,16 +92,13 @@ public class MenuAccessManagerTest {
 		_menuAccessConfigurationProvider.updateMenuAccessConfiguration(
 			_group.getGroupId(), new String[0], true);
 
-		MockHttpServletRequest mockHttpServletRequest =
-			new MockHttpServletRequest();
-
-		mockHttpServletRequest.setAttribute(
-			WebKeys.THEME_DISPLAY, _getThemeDisplay(UserTestUtil.addUser()));
+		User user = UserTestUtil.addUser();
 
 		MenuAccessManager menuAccessManager = new MenuAccessManager();
 
 		Assert.assertFalse(
-			menuAccessManager.isShowControlMenu(mockHttpServletRequest));
+			menuAccessManager.isShowControlMenu(
+				_group, _layout, user.getUserId()));
 	}
 
 	@Test
@@ -120,25 +109,21 @@ public class MenuAccessManagerTest {
 			return;
 		}
 
-		User user = UserTestUtil.addUser();
-
 		Role role = RoleTestUtil.addRole(RoleConstants.TYPE_SITE);
 
 		_menuAccessConfigurationProvider.updateMenuAccessConfiguration(
-			_group.getGroupId(), new String[] {role.getName()}, true);
+			_group.getGroupId(),
+			new String[] {String.valueOf(role.getRoleId())}, true);
+
+		User user = UserTestUtil.addUser();
 
 		_roleLocalService.addUserRole(user.getUserId(), role);
-
-		MockHttpServletRequest mockHttpServletRequest =
-			new MockHttpServletRequest();
-
-		mockHttpServletRequest.setAttribute(
-			WebKeys.THEME_DISPLAY, _getThemeDisplay(user));
 
 		MenuAccessManager menuAccessManager = new MenuAccessManager();
 
 		Assert.assertTrue(
-			menuAccessManager.isShowControlMenu(mockHttpServletRequest));
+			menuAccessManager.isShowControlMenu(
+				_group, _layout, user.getUserId()));
 	}
 
 	@Test
@@ -152,20 +137,11 @@ public class MenuAccessManagerTest {
 		_menuAccessConfigurationProvider.updateMenuAccessConfiguration(
 			_group.getGroupId(), new String[0], true);
 
-		MockHttpServletRequest mockHttpServletRequest =
-			new MockHttpServletRequest();
-
-		mockHttpServletRequest.setAttribute(
-			WebKeys.THEME_DISPLAY,
-			_getThemeDisplay(
-				_layoutLocalService.getLayout(
-					_portal.getControlPanelPlid(_group.getCompanyId())),
-				UserTestUtil.addUser()));
-
 		MenuAccessManager menuAccessManager = new MenuAccessManager();
 
 		Assert.assertTrue(
-			menuAccessManager.isShowControlMenu(mockHttpServletRequest));
+			menuAccessManager.isShowControlMenu(
+				_group, _layout, TestPropsValues.getUserId()));
 	}
 
 	@Test
@@ -176,43 +152,20 @@ public class MenuAccessManagerTest {
 			return;
 		}
 
-		MockHttpServletRequest mockHttpServletRequest =
-			new MockHttpServletRequest();
-
-		mockHttpServletRequest.setAttribute(
-			WebKeys.THEME_DISPLAY,
-			_getThemeDisplay(UserTestUtil.addGroupAdminUser(_group)));
-
 		_menuAccessConfigurationProvider.updateMenuAccessConfiguration(
 			_group.getGroupId(), new String[0], true);
 
 		MenuAccessManager menuAccessManager = new MenuAccessManager();
 
 		Assert.assertTrue(
-			menuAccessManager.isShowControlMenu(mockHttpServletRequest));
-	}
-
-	private ThemeDisplay _getThemeDisplay(Layout layout, User user) {
-		ThemeDisplay themeDisplay = new ThemeDisplay();
-
-		themeDisplay.setLayout(layout);
-		themeDisplay.setScopeGroupId(_group.getGroupId());
-		themeDisplay.setSiteGroupId(_group.getGroupId());
-		themeDisplay.setUser(user);
-
-		return themeDisplay;
-	}
-
-	private ThemeDisplay _getThemeDisplay(User user) throws Exception {
-		return _getThemeDisplay(
-			LayoutTestUtil.addTypeContentLayout(_group), user);
+			menuAccessManager.isShowControlMenu(
+				_group, _layout, TestPropsValues.getUserId()));
 	}
 
 	@DeleteAfterTestRun
 	private Group _group;
 
-	@Inject
-	private LayoutLocalService _layoutLocalService;
+	private Layout _layout;
 
 	@Inject
 	private MenuAccessConfigurationProvider _menuAccessConfigurationProvider;
