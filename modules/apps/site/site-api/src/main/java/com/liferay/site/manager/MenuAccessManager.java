@@ -22,12 +22,13 @@ import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
+import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.site.configuration.MenuAccessConfiguration;
 
-import java.util.List;
+import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
 
@@ -64,17 +65,25 @@ public class MenuAccessManager {
 
 				User user = themeDisplay.getUser();
 
-				List<Role> roles = user.getRoles();
+				Role administratorRole = RoleLocalServiceUtil.getRole(
+					themeDisplay.getCompanyId(), RoleConstants.ADMINISTRATOR);
+
+				Role siteAdministratorRole = RoleLocalServiceUtil.getRole(
+					themeDisplay.getCompanyId(),
+					RoleConstants.SITE_ADMINISTRATOR);
 
 				String[] rolesCanSeeControlMenu =
 					menuAccessConfiguration.rolesCanSeeControlMenu();
 
-				for (Role role : roles) {
-					if (ArrayUtil.contains(
-							rolesCanSeeControlMenu, role.getName()) ||
-						RoleConstants.SITE_ADMINISTRATOR.equals(
-							role.getName()) ||
-						RoleConstants.ADMINISTRATOR.equals(role.getName())) {
+				for (Role role : user.getRoles()) {
+					if (Objects.equals(
+							role.getRoleId(), administratorRole.getRoleId()) ||
+						Objects.equals(
+							role.getRoleId(),
+							siteAdministratorRole.getRoleId()) ||
+						ArrayUtil.contains(
+							rolesCanSeeControlMenu,
+							String.valueOf(role.getRoleId()))) {
 
 						return true;
 					}
