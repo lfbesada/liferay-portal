@@ -14,77 +14,14 @@
 
 package com.liferay.product.navigation.control.menu.util;
 
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.model.Role;
-import com.liferay.portal.kernel.model.role.RoleConstants;
-import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
-import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
-import com.liferay.portal.kernel.util.ArrayUtil;
-import com.liferay.site.configuration.MenuAccessConfiguration;
-
-import java.util.Objects;
 
 /**
  * @author Mikel Lorza
  */
-public class ProductNavigationControlMenuManager {
+public interface ProductNavigationControlMenuManager {
 
-	public static boolean isShowControlMenu(
-		Group group, Layout layout, long userId) {
-
-		if (!FeatureFlagManagerUtil.isEnabled("LPS-176136") ||
-			!group.isSite() || layout.isTypeControlPanel() ||
-			layout.isDraftLayout()) {
-
-			return true;
-		}
-
-		try {
-			MenuAccessConfiguration menuAccessConfiguration =
-				ConfigurationProviderUtil.getGroupConfiguration(
-					MenuAccessConfiguration.class, group.getGroupId());
-
-			if ((menuAccessConfiguration != null) &&
-				menuAccessConfiguration.showControlMenuByRole()) {
-
-				Role administratorRole = RoleLocalServiceUtil.getRole(
-					group.getCompanyId(), RoleConstants.ADMINISTRATOR);
-
-				Role siteAdministratorRole = RoleLocalServiceUtil.getRole(
-					group.getCompanyId(), RoleConstants.SITE_ADMINISTRATOR);
-
-				String[] rolesCanSeeControlMenu =
-					menuAccessConfiguration.rolesCanSeeControlMenu();
-
-				for (Role role : RoleLocalServiceUtil.getUserRoles(userId)) {
-					if (Objects.equals(
-							role.getRoleId(), administratorRole.getRoleId()) ||
-						Objects.equals(
-							role.getRoleId(),
-							siteAdministratorRole.getRoleId()) ||
-						ArrayUtil.contains(
-							rolesCanSeeControlMenu,
-							String.valueOf(role.getRoleId()))) {
-
-						return true;
-					}
-				}
-
-				return false;
-			}
-		}
-		catch (Exception exception) {
-			_log.error(exception);
-		}
-
-		return true;
-	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		ProductNavigationControlMenuManager.class);
+	public boolean isShowControlMenu(Group group, Layout layout, long userId);
 
 }
