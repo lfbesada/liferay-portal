@@ -15,11 +15,14 @@
 package com.liferay.site.configuration.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -27,12 +30,18 @@ import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.site.configuration.MenuAccessConfiguration;
 import com.liferay.site.configuration.MenuAccessConfigurationProvider;
 
+import java.util.Arrays;
+import java.util.Dictionary;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.cm.ConfigurationAdmin;
 
 /**
  * @author Mikel Lorza
@@ -67,15 +76,37 @@ public class MenuAccessConfigurationProviderTest {
 		_menuAccessConfigurationProvider.updateMenuAccessConfiguration(
 			_group.getGroupId(), expectedRolesCanSeeControlMenu, true);
 
+		String filterString = StringBundler.concat(
+			"(&(service.factoryPid=", MenuAccessConfiguration.class.getName(),
+			".scoped)(",
+			ExtendedObjectClassDefinition.Scope.GROUP.getPropertyKey(), "=",
+			_group.getGroupId(), "))");
+
+		Configuration[] configurations = _configurationAdmin.listConfigurations(
+			filterString);
+
+		Assert.assertNotNull(configurations);
+
+		Assert.assertEquals(
+			Arrays.toString(configurations), 1, configurations.length);
+
+		Configuration configuration = configurations[0];
+
+		Dictionary<String, Object> properties = configuration.getProperties();
+
+		String[] rolesCanSeeControlMenu = (String[])properties.get(
+			"rolesCanSeeControlMenu");
+
 		Assert.assertArrayEquals(
-			expectedRolesCanSeeControlMenu,
-			_menuAccessConfigurationProvider.getRolesCanSeeControlMenu(
-				_group.getGroupId()));
+			Arrays.toString(rolesCanSeeControlMenu),
+			expectedRolesCanSeeControlMenu, rolesCanSeeControlMenu);
 
 		Assert.assertTrue(
-			_menuAccessConfigurationProvider.isShowControlMenuByRole(
-				_group.getGroupId()));
+			GetterUtil.getBoolean(properties.get("showControlMenuByRole")));
 	}
+
+	@Inject
+	private ConfigurationAdmin _configurationAdmin;
 
 	@Inject
 	private ConfigurationProvider _configurationProvider;

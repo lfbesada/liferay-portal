@@ -15,6 +15,8 @@
 package com.liferay.site.admin.web.internal.portlet.action.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
@@ -34,11 +36,15 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.site.configuration.MenuAccessConfiguration;
+
+import java.util.Arrays;
+import java.util.Dictionary;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -49,6 +55,9 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.cm.ConfigurationAdmin;
 
 /**
  * @author Mikel Lorza
@@ -93,15 +102,7 @@ public class EditMenuAccessConfigurationMVCActionCommandTest {
 			mockLiferayPortletActionRequest,
 			new MockLiferayPortletActionResponse());
 
-		MenuAccessConfiguration menuAccessConfiguration =
-			_configurationProvider.getGroupConfiguration(
-				MenuAccessConfiguration.class, _group.getGroupId());
-
-		Assert.assertArrayEquals(
-			new String[] {String.valueOf(role.getRoleId())},
-			menuAccessConfiguration.rolesCanSeeControlMenu());
-
-		Assert.assertTrue(menuAccessConfiguration.showControlMenuByRole());
+		_assertConfiguration(new String[] {String.valueOf(role.getRoleId())});
 	}
 
 	@Test(expected = PortalException.class)
@@ -129,6 +130,38 @@ public class EditMenuAccessConfigurationMVCActionCommandTest {
 			new MockLiferayPortletActionResponse());
 	}
 
+	private void _assertConfiguration(String[] expectedRolesCanSeeControlMenu)
+		throws Exception {
+
+		String filterString = StringBundler.concat(
+			"(&(service.factoryPid=", MenuAccessConfiguration.class.getName(),
+			".scoped)(",
+			ExtendedObjectClassDefinition.Scope.GROUP.getPropertyKey(), "=",
+			_group.getGroupId(), "))");
+
+		Configuration[] configurations = _configurationAdmin.listConfigurations(
+			filterString);
+
+		Assert.assertNotNull(configurations);
+
+		Assert.assertEquals(
+			Arrays.toString(configurations), 1, configurations.length);
+
+		Configuration configuration = configurations[0];
+
+		Dictionary<String, Object> properties = configuration.getProperties();
+
+		String[] rolesCanSeeControlMenu = (String[])properties.get(
+			"rolesCanSeeControlMenu");
+
+		Assert.assertArrayEquals(
+			Arrays.toString(rolesCanSeeControlMenu),
+			expectedRolesCanSeeControlMenu, rolesCanSeeControlMenu);
+
+		Assert.assertTrue(
+			GetterUtil.getBoolean(properties.get("showControlMenuByRole")));
+	}
+
 	private ThemeDisplay _getThemeDisplay() throws Exception {
 		return _getThemeDisplay(TestPropsValues.getUser());
 	}
@@ -144,6 +177,9 @@ public class EditMenuAccessConfigurationMVCActionCommandTest {
 
 		return themeDisplay;
 	}
+
+	@Inject
+	private ConfigurationAdmin _configurationAdmin;
 
 	@Inject
 	private ConfigurationProvider _configurationProvider;

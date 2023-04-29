@@ -15,6 +15,8 @@
 package com.liferay.site.internal.model.listener.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.role.RoleConstants;
@@ -26,6 +28,7 @@ import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.test.rule.FeatureFlags;
@@ -35,12 +38,18 @@ import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.site.configuration.MenuAccessConfiguration;
 import com.liferay.site.configuration.MenuAccessConfigurationProvider;
 
+import java.util.Arrays;
+import java.util.Dictionary;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.osgi.service.cm.Configuration;
+import org.osgi.service.cm.ConfigurationAdmin;
 
 /**
  * @author Lourdes Fernández Besada
@@ -94,10 +103,7 @@ public class RoleModelListenerTest {
 			TestPropsValues.getUserId(), null, 0, StringUtil.randomString(),
 			null, null, RoleConstants.TYPE_PUBLICATIONS, null, serviceContext);
 
-		Assert.assertArrayEquals(
-			new String[0],
-			_menuAccessConfigurationProvider.getRolesCanSeeControlMenu(
-				_group.getGroupId()));
+		_assertConfiguration(new String[0]);
 	}
 
 	@Test
@@ -107,10 +113,7 @@ public class RoleModelListenerTest {
 			null, null, RoleConstants.TYPE_SITE, null,
 			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
-		Assert.assertArrayEquals(
-			new String[] {String.valueOf(role.getRoleId())},
-			_menuAccessConfigurationProvider.getRolesCanSeeControlMenu(
-				_group.getGroupId()));
+		_assertConfiguration(new String[] {String.valueOf(role.getRoleId())});
 	}
 
 	@Test
@@ -125,21 +128,51 @@ public class RoleModelListenerTest {
 			null, null, RoleConstants.TYPE_SITE, null,
 			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
 
-		Assert.assertArrayEquals(
+		_assertConfiguration(
 			new String[] {
 				String.valueOf(role1.getRoleId()),
 				String.valueOf(role2.getRoleId())
-			},
-			_menuAccessConfigurationProvider.getRolesCanSeeControlMenu(
-				_group.getGroupId()));
+			});
 
 		_roleLocalService.deleteRole(role1);
 
-		Assert.assertArrayEquals(
-			new String[] {String.valueOf(role2.getRoleId())},
-			_menuAccessConfigurationProvider.getRolesCanSeeControlMenu(
-				_group.getGroupId()));
+		_assertConfiguration(new String[] {String.valueOf(role2.getRoleId())});
 	}
+
+	private void _assertConfiguration(String[] expectedRolesCanSeeControlMenu)
+		throws Exception {
+
+		String filterString = StringBundler.concat(
+			"(&(service.factoryPid=", MenuAccessConfiguration.class.getName(),
+			".scoped)(",
+			ExtendedObjectClassDefinition.Scope.GROUP.getPropertyKey(), "=",
+			_group.getGroupId(), "))");
+
+		Configuration[] configurations = _configurationAdmin.listConfigurations(
+			filterString);
+
+		Assert.assertNotNull(configurations);
+
+		Assert.assertEquals(
+			Arrays.toString(configurations), 1, configurations.length);
+
+		Configuration configuration = configurations[0];
+
+		Dictionary<String, Object> properties = configuration.getProperties();
+
+		String[] rolesCanSeeControlMenu = (String[])properties.get(
+			"rolesCanSeeControlMenu");
+
+		Assert.assertArrayEquals(
+			Arrays.toString(rolesCanSeeControlMenu),
+			expectedRolesCanSeeControlMenu, rolesCanSeeControlMenu);
+
+		Assert.assertTrue(
+			GetterUtil.getBoolean(properties.get("showControlMenuByRole")));
+	}
+
+	@Inject
+	private ConfigurationAdmin _configurationAdmin;
 
 	@Inject
 	private ConfigurationProvider _configurationProvider;
