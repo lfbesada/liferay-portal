@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.site.manager;
+package com.liferay.product.navigation.control.menu.util;
 
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -31,7 +31,7 @@ import java.util.Objects;
 /**
  * @author Mikel Lorza
  */
-public class MenuAccessManager {
+public class ProductNavigationControlMenuManager {
 
 	public static boolean isShowControlMenu(
 		Group group, Layout layout, long userId) {
@@ -85,6 +85,6 @@ public class MenuAccessManager {
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
-		MenuAccessManager.class);
+		ProductNavigationControlMenuManager.class);
 
 }
