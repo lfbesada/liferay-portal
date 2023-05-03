@@ -46,6 +46,7 @@ EditJournalArticleAICreatorConfigurationDisplayContext editJournalArticleAICreat
 		>
 			<clay:checkbox
 				checked="<%= editJournalArticleAICreatorConfigurationDisplayContext.isEnabled() %>"
+				disabled="<%= editJournalArticleAICreatorConfigurationDisplayContext.disallowEnableOpenAI() %>"
 				id='<%= liferayPortletResponse.getNamespace() + "enableOpenAI" %>'
 				label='<%= LanguageUtil.get(request, "enable-openai-to-create-content-in-your-sites") %>'
 				name='<%= liferayPortletResponse.getNamespace() + "enableOpenAI" %>'

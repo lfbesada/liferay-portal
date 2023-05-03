@@ -40,7 +40,7 @@ public class JournalArticleAICreatorConfigurationProvider {
 		return journalArticleAICreatorCompanyConfiguration.apiKey();
 	}
 
-	public String getApiKey(long companyId, long groupId)
+	public String getApiKey(long companyId, long groupId, boolean strict)
 		throws ConfigurationException {
 
 		JournalArticleAICreatorGroupConfiguration
@@ -48,7 +48,8 @@ public class JournalArticleAICreatorConfigurationProvider {
 				_configurationProvider.getGroupConfiguration(
 					JournalArticleAICreatorGroupConfiguration.class, groupId);
 
-		if (Validator.isNotNull(
+		if (strict ||
+			Validator.isNotNull(
 				journalArticleAICreatorGroupConfiguration.apiKey())) {
 
 			return journalArticleAICreatorGroupConfiguration.apiKey();

@@ -27,10 +27,11 @@ import javax.servlet.http.HttpServletRequest;
 public class EditJournalArticleAICreatorConfigurationDisplayContext {
 
 	public EditJournalArticleAICreatorConfigurationDisplayContext(
-		HttpServletRequest httpServletRequest,
+		boolean company, HttpServletRequest httpServletRequest,
 		JournalArticleAICreatorConfigurationProvider
 			journalArticleAICreatorConfigurationProvider) {
 
+		_company = company;
 		_journalArticleAICreatorConfigurationProvider =
 			journalArticleAICreatorConfigurationProvider;
 
@@ -38,16 +39,37 @@ public class EditJournalArticleAICreatorConfigurationDisplayContext {
 			WebKeys.THEME_DISPLAY);
 	}
 
-	public String getApiKey() throws ConfigurationException {
-		return _journalArticleAICreatorConfigurationProvider.getApiKey(
+	public boolean disallowEnableOpenAI() throws ConfigurationException {
+		if (_company) {
+			return false;
+		}
+
+		return !_journalArticleAICreatorConfigurationProvider.isEnabled(
 			_themeDisplay.getCompanyId());
+	}
+
+	public String getApiKey() throws ConfigurationException {
+		if (_company) {
+			return _journalArticleAICreatorConfigurationProvider.getApiKey(
+				_themeDisplay.getCompanyId());
+		}
+
+		return _journalArticleAICreatorConfigurationProvider.getApiKey(
+			_themeDisplay.getCompanyId(), _themeDisplay.getScopeGroupId(),
+			true);
 	}
 
 	public boolean isEnabled() throws ConfigurationException {
+		if (_company) {
+			return _journalArticleAICreatorConfigurationProvider.isEnabled(
+				_themeDisplay.getCompanyId());
+		}
+
 		return _journalArticleAICreatorConfigurationProvider.isEnabled(
-			_themeDisplay.getCompanyId());
+			_themeDisplay.getCompanyId(), _themeDisplay.getScopeGroupId());
 	}
 
+	private final boolean _company;
 	private final JournalArticleAICreatorConfigurationProvider
 		_journalArticleAICreatorConfigurationProvider;
 	private final ThemeDisplay _themeDisplay;

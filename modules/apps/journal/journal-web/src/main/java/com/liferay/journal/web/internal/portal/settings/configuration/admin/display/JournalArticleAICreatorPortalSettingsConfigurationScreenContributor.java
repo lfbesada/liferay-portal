@@ -84,7 +84,7 @@ public class JournalArticleAICreatorPortalSettingsConfigurationScreenContributor
 			EditJournalArticleAICreatorConfigurationDisplayContext.class.
 				getName(),
 			new EditJournalArticleAICreatorConfigurationDisplayContext(
-				httpServletRequest,
+				true, httpServletRequest,
 				_journalArticleAICreatorConfigurationProvider));
 	}
 
