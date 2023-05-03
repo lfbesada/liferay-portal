@@ -113,6 +113,19 @@ public class JournalArticleAICreatorConfigurationProvider {
 			).build());
 	}
 
+	public void saveGroupConfiguration(
+			long groupId, String apiKey, boolean enabled)
+		throws ConfigurationException {
+
+		_configurationProvider.saveGroupConfiguration(
+			JournalArticleAICreatorGroupConfiguration.class, groupId,
+			HashMapDictionaryBuilder.<String, Object>put(
+				"apiKey", apiKey
+			).put(
+				"enableOpenAIToCreateContentInYourSites", enabled
+			).build());
+	}
+
 	@Reference
 	private ConfigurationProvider _configurationProvider;
 

@@ -22,7 +22,8 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
  * @author Lourdes Fernández Besada
  */
 @ExtendedObjectClassDefinition(
-	category = "ai-creator", scope = ExtendedObjectClassDefinition.Scope.GROUP
+	category = "ai-creator", generateUI = false,
+	scope = ExtendedObjectClassDefinition.Scope.GROUP
 )
 @Meta.OCD(
 	description = "journal-article-ai-creator-group-configuration-description",
