@@ -18,6 +18,7 @@ import com.liferay.journal.web.internal.configuration.JournalArticleAICreatorCom
 import com.liferay.journal.web.internal.configuration.JournalArticleAICreatorGroupConfiguration;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
+import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.Validator;
 
 import org.osgi.service.component.annotations.Component;
@@ -97,6 +98,19 @@ public class JournalArticleAICreatorConfigurationProvider {
 		}
 
 		return false;
+	}
+
+	public void saveCompanyConfiguration(
+			long companyId, String apiKey, boolean enabled)
+		throws ConfigurationException {
+
+		_configurationProvider.saveCompanyConfiguration(
+			JournalArticleAICreatorCompanyConfiguration.class, companyId,
+			HashMapDictionaryBuilder.<String, Object>put(
+				"apiKey", apiKey
+			).put(
+				"enableOpenAIToCreateContentInYourSites", enabled
+			).build());
 	}
 
 	@Reference
