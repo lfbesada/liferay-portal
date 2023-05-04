@@ -12,7 +12,7 @@
  * details.
  */
 
-package com.liferay.journal.web.internal.configuration.provider;
+package com.liferay.journal.web.internal.configuration.manager;
 
 import com.liferay.journal.web.internal.configuration.JournalArticleAICreatorCompanyConfiguration;
 import com.liferay.journal.web.internal.configuration.JournalArticleAICreatorGroupConfiguration;
@@ -27,10 +27,12 @@ import org.osgi.service.component.annotations.Reference;
 /**
  * @author Lourdes Fernández Besada
  */
-@Component(service = JournalArticleAICreatorConfigurationProvider.class)
-public class JournalArticleAICreatorConfigurationProvider {
+@Component(service = JournalArticleAICreatorConfigurationManager.class)
+public class JournalArticleAICreatorConfigurationManager {
 
-	public String getApiKey(long companyId) throws ConfigurationException {
+	public String getAICreatorCompanyApiKey(long companyId)
+		throws ConfigurationException {
+
 		JournalArticleAICreatorCompanyConfiguration
 			journalArticleAICreatorCompanyConfiguration =
 				_configurationProvider.getCompanyConfiguration(
@@ -40,7 +42,8 @@ public class JournalArticleAICreatorConfigurationProvider {
 		return journalArticleAICreatorCompanyConfiguration.apiKey();
 	}
 
-	public String getApiKey(long companyId, long groupId, boolean strict)
+	public String getAICreatorGroupApiKey(
+			long companyId, long groupId, boolean strict)
 		throws ConfigurationException {
 
 		JournalArticleAICreatorGroupConfiguration
@@ -64,7 +67,9 @@ public class JournalArticleAICreatorConfigurationProvider {
 		return journalArticleAICreatorCompanyConfiguration.apiKey();
 	}
 
-	public boolean isEnabled(long companyId) throws ConfigurationException {
+	public boolean isAICreatorCompanyEnabled(long companyId)
+		throws ConfigurationException {
+
 		JournalArticleAICreatorCompanyConfiguration
 			journalArticleAICreatorCompanyConfiguration =
 				_configurationProvider.getCompanyConfiguration(
@@ -80,10 +85,10 @@ public class JournalArticleAICreatorConfigurationProvider {
 		return false;
 	}
 
-	public boolean isEnabled(long companyId, long groupId)
+	public boolean isAICreatorGroupEnabled(long companyId, long groupId)
 		throws ConfigurationException {
 
-		if (!isEnabled(companyId)) {
+		if (!isAICreatorCompanyEnabled(companyId)) {
 			return false;
 		}
 

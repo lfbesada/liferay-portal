@@ -15,7 +15,7 @@
 package com.liferay.journal.web.internal.portlet.action;
 
 import com.liferay.configuration.admin.constants.ConfigurationAdminPortletKeys;
-import com.liferay.journal.web.internal.configuration.provider.JournalArticleAICreatorConfigurationProvider;
+import com.liferay.journal.web.internal.configuration.manager.JournalArticleAICreatorConfigurationManager;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
@@ -55,7 +55,7 @@ public class SaveJournalArticleAICreatorGroupConfigurationMVCActionCommand
 			themeDisplay.getPermissionChecker(), themeDisplay.getScopeGroup(),
 			ActionKeys.UPDATE);
 
-		_journalArticleAICreatorConfigurationProvider.saveGroupConfiguration(
+		_journalArticleAICreatorConfigurationManager.saveGroupConfiguration(
 			themeDisplay.getScopeGroupId(),
 			ParamUtil.getString(actionRequest, "apiKey"),
 			ParamUtil.getBoolean(actionRequest, "enableOpenAI"));
@@ -65,7 +65,7 @@ public class SaveJournalArticleAICreatorGroupConfigurationMVCActionCommand
 	private GroupPermission _groupPermission;
 
 	@Reference
-	private JournalArticleAICreatorConfigurationProvider
-		_journalArticleAICreatorConfigurationProvider;
+	private JournalArticleAICreatorConfigurationManager
+		_journalArticleAICreatorConfigurationManager;
 
 }

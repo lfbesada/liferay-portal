@@ -14,7 +14,7 @@
 
 package com.liferay.journal.web.internal.portal.settings.configuration.admin.display;
 
-import com.liferay.journal.web.internal.configuration.provider.JournalArticleAICreatorConfigurationProvider;
+import com.liferay.journal.web.internal.configuration.manager.JournalArticleAICreatorConfigurationManager;
 import com.liferay.journal.web.internal.display.context.EditJournalArticleAICreatorConfigurationDisplayContext;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.Language;
@@ -86,12 +86,12 @@ public class JournalArticleAICreatorSiteSettingsConfigurationScreenContributor
 				getName(),
 			new EditJournalArticleAICreatorConfigurationDisplayContext(
 				false, httpServletRequest,
-				_journalArticleAICreatorConfigurationProvider));
+				_journalArticleAICreatorConfigurationManager));
 	}
 
 	@Reference
-	private JournalArticleAICreatorConfigurationProvider
-		_journalArticleAICreatorConfigurationProvider;
+	private JournalArticleAICreatorConfigurationManager
+		_journalArticleAICreatorConfigurationManager;
 
 	@Reference
 	private Language _language;

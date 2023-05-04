@@ -65,7 +65,7 @@ import com.liferay.journal.util.JournalConverter;
 import com.liferay.journal.util.JournalHelper;
 import com.liferay.journal.web.internal.configuration.FFJournalAutoSaveDraftConfiguration;
 import com.liferay.journal.web.internal.configuration.JournalWebConfiguration;
-import com.liferay.journal.web.internal.configuration.provider.JournalArticleAICreatorConfigurationProvider;
+import com.liferay.journal.web.internal.configuration.manager.JournalArticleAICreatorConfigurationManager;
 import com.liferay.journal.web.internal.helper.JournalDDMTemplateHelper;
 import com.liferay.journal.web.internal.portlet.action.ActionUtil;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
@@ -186,8 +186,8 @@ public class JournalPortlet extends MVCPortlet {
 			_fieldsToDDMFormValuesConverter);
 		renderRequest.setAttribute(ItemSelector.class.getName(), _itemSelector);
 		renderRequest.setAttribute(
-			JournalArticleAICreatorConfigurationProvider.class.getName(),
-			_journalArticleAICreatorConfigurationProvider);
+			JournalArticleAICreatorConfigurationManager.class.getName(),
+			_journalArticleAICreatorConfigurationManager);
 		renderRequest.setAttribute(
 			JournalHelper.class.getName(), _journalHelper);
 		renderRequest.setAttribute(
@@ -223,8 +223,8 @@ public class JournalPortlet extends MVCPortlet {
 		resourceRequest.setAttribute(
 			ItemSelector.class.getName(), _itemSelector);
 		resourceRequest.setAttribute(
-			JournalArticleAICreatorConfigurationProvider.class.getName(),
-			_journalArticleAICreatorConfigurationProvider);
+			JournalArticleAICreatorConfigurationManager.class.getName(),
+			_journalArticleAICreatorConfigurationManager);
 		resourceRequest.setAttribute(
 			JournalHelper.class.getName(), _journalHelper);
 		resourceRequest.setAttribute(
@@ -395,8 +395,8 @@ public class JournalPortlet extends MVCPortlet {
 	private ItemSelector _itemSelector;
 
 	@Reference
-	private JournalArticleAICreatorConfigurationProvider
-		_journalArticleAICreatorConfigurationProvider;
+	private JournalArticleAICreatorConfigurationManager
+		_journalArticleAICreatorConfigurationManager;
 
 	@Reference
 	private JournalContent _journalContent;

@@ -15,7 +15,7 @@
 package com.liferay.journal.web.internal.portlet.action;
 
 import com.liferay.configuration.admin.constants.ConfigurationAdminPortletKeys;
-import com.liferay.journal.web.internal.configuration.provider.JournalArticleAICreatorConfigurationProvider;
+import com.liferay.journal.web.internal.configuration.manager.JournalArticleAICreatorConfigurationManager;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
@@ -64,14 +64,14 @@ public class SaveJournalArticleAICreatorCompanyConfigurationMVCActionCommand
 			throw new PortletException(principalException);
 		}
 
-		_journalArticleAICreatorConfigurationProvider.saveCompanyConfiguration(
+		_journalArticleAICreatorConfigurationManager.saveCompanyConfiguration(
 			themeDisplay.getCompanyId(),
 			ParamUtil.getString(actionRequest, "apiKey"),
 			ParamUtil.getBoolean(actionRequest, "enableOpenAI"));
 	}
 
 	@Reference
-	private JournalArticleAICreatorConfigurationProvider
-		_journalArticleAICreatorConfigurationProvider;
+	private JournalArticleAICreatorConfigurationManager
+		_journalArticleAICreatorConfigurationManager;
 
 }

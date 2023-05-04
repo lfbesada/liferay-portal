@@ -14,7 +14,7 @@
 
 package com.liferay.journal.web.internal.display.context;
 
-import com.liferay.journal.web.internal.configuration.provider.JournalArticleAICreatorConfigurationProvider;
+import com.liferay.journal.web.internal.configuration.manager.JournalArticleAICreatorConfigurationManager;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -28,12 +28,12 @@ public class EditJournalArticleAICreatorConfigurationDisplayContext {
 
 	public EditJournalArticleAICreatorConfigurationDisplayContext(
 		boolean company, HttpServletRequest httpServletRequest,
-		JournalArticleAICreatorConfigurationProvider
-			journalArticleAICreatorConfigurationProvider) {
+		JournalArticleAICreatorConfigurationManager
+			journalArticleAICreatorConfigurationManager) {
 
 		_company = company;
-		_journalArticleAICreatorConfigurationProvider =
-			journalArticleAICreatorConfigurationProvider;
+		_journalArticleAICreatorConfigurationManager =
+			journalArticleAICreatorConfigurationManager;
 
 		_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
@@ -44,34 +44,36 @@ public class EditJournalArticleAICreatorConfigurationDisplayContext {
 			return false;
 		}
 
-		return !_journalArticleAICreatorConfigurationProvider.isEnabled(
-			_themeDisplay.getCompanyId());
+		return !_journalArticleAICreatorConfigurationManager.
+			isAICreatorCompanyEnabled(_themeDisplay.getCompanyId());
 	}
 
 	public String getApiKey() throws ConfigurationException {
 		if (_company) {
-			return _journalArticleAICreatorConfigurationProvider.getApiKey(
-				_themeDisplay.getCompanyId());
+			return _journalArticleAICreatorConfigurationManager.
+				getAICreatorCompanyApiKey(_themeDisplay.getCompanyId());
 		}
 
-		return _journalArticleAICreatorConfigurationProvider.getApiKey(
-			_themeDisplay.getCompanyId(), _themeDisplay.getScopeGroupId(),
-			true);
+		return _journalArticleAICreatorConfigurationManager.
+			getAICreatorGroupApiKey(
+				_themeDisplay.getCompanyId(), _themeDisplay.getScopeGroupId(),
+				true);
 	}
 
 	public boolean isEnabled() throws ConfigurationException {
 		if (_company) {
-			return _journalArticleAICreatorConfigurationProvider.isEnabled(
-				_themeDisplay.getCompanyId());
+			return _journalArticleAICreatorConfigurationManager.
+				isAICreatorCompanyEnabled(_themeDisplay.getCompanyId());
 		}
 
-		return _journalArticleAICreatorConfigurationProvider.isEnabled(
-			_themeDisplay.getCompanyId(), _themeDisplay.getScopeGroupId());
+		return _journalArticleAICreatorConfigurationManager.
+			isAICreatorGroupEnabled(
+				_themeDisplay.getCompanyId(), _themeDisplay.getScopeGroupId());
 	}
 
 	private final boolean _company;
-	private final JournalArticleAICreatorConfigurationProvider
-		_journalArticleAICreatorConfigurationProvider;
+	private final JournalArticleAICreatorConfigurationManager
+		_journalArticleAICreatorConfigurationManager;
 	private final ThemeDisplay _themeDisplay;
 
 }

@@ -41,7 +41,7 @@ import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.service.JournalArticleServiceUtil;
 import com.liferay.journal.service.JournalFolderLocalServiceUtil;
 import com.liferay.journal.web.internal.configuration.FFJournalAutoSaveDraftConfiguration;
-import com.liferay.journal.web.internal.configuration.provider.JournalArticleAICreatorConfigurationProvider;
+import com.liferay.journal.web.internal.configuration.manager.JournalArticleAICreatorConfigurationManager;
 import com.liferay.journal.web.internal.security.permission.resource.JournalArticlePermission;
 import com.liferay.journal.web.internal.security.permission.resource.JournalFolderPermission;
 import com.liferay.journal.web.internal.util.RecentGroupManagerUtil;
@@ -123,10 +123,10 @@ public class JournalEditArticleDisplayContext {
 					FFJournalAutoSaveDraftConfiguration.class.getName());
 		_itemSelector = (ItemSelector)httpServletRequest.getAttribute(
 			ItemSelector.class.getName());
-		_journalArticleAICreatorConfigurationProvider =
-			(JournalArticleAICreatorConfigurationProvider)
+		_journalArticleAICreatorConfigurationManager =
+			(JournalArticleAICreatorConfigurationManager)
 				httpServletRequest.getAttribute(
-					JournalArticleAICreatorConfigurationProvider.class.
+					JournalArticleAICreatorConfigurationManager.class.
 						getName());
 
 		_themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
@@ -151,8 +151,11 @@ public class JournalEditArticleDisplayContext {
 
 		return HashMapBuilder.<String, Object>put(
 			"aiCreatorEnabled",
-			() -> _journalArticleAICreatorConfigurationProvider.isEnabled(
-				_themeDisplay.getCompanyId(), _themeDisplay.getScopeGroupId())
+			() ->
+				_journalArticleAICreatorConfigurationManager.
+					isAICreatorGroupEnabled(
+						_themeDisplay.getCompanyId(),
+						_themeDisplay.getScopeGroupId())
 		).put(
 			"newArticle",
 			(_article == null) || Validator.isNull(_article.getArticleId())
@@ -1527,8 +1530,8 @@ public class JournalEditArticleDisplayContext {
 	private final HttpServletRequest _httpServletRequest;
 	private Long _inheritedWorkflowDDMStructuresFolderId;
 	private final ItemSelector _itemSelector;
-	private final JournalArticleAICreatorConfigurationProvider
-		_journalArticleAICreatorConfigurationProvider;
+	private final JournalArticleAICreatorConfigurationManager
+		_journalArticleAICreatorConfigurationManager;
 	private final LiferayPortletResponse _liferayPortletResponse;
 	private Boolean _neverExpire;
 	private Boolean _neverReview;
