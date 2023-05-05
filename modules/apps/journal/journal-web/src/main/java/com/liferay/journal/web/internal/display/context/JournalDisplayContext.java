@@ -1022,6 +1022,49 @@ public class JournalDisplayContext {
 		return _tabs1;
 	}
 
+	public List<TabsItem> getTabsItems() throws PortalException {
+		TabsItemList tabsItemList = new TabsItemList();
+
+		if (hasResults()) {
+			String tabName = StringUtil.appendParentheticalSuffix(
+				LanguageUtil.get(_httpServletRequest, "web-content"),
+				getTotalItems());
+
+			tabsItemList.add(
+				tabsItem -> {
+					tabsItem.setActive(true);
+					tabsItem.setLabel(tabName);
+					tabsItem.setPanelId("view_entries");
+				});
+		}
+
+		if (hasVersionsResults()) {
+			String tabName = StringUtil.appendParentheticalSuffix(
+				LanguageUtil.get(_httpServletRequest, "versions"),
+				getVersionsTotal());
+
+			tabsItemList.add(
+				tabsItem -> {
+					tabsItem.setLabel(tabName);
+					tabsItem.setPanelId("view_versions");
+				});
+		}
+
+		if (hasCommentsResults()) {
+			String tabName = StringUtil.appendParentheticalSuffix(
+				LanguageUtil.get(_httpServletRequest, "comments"),
+				getCommentsTotal());
+
+			tabsItemList.add(
+				tabsItem -> {
+					tabsItem.setLabel(tabName);
+					tabsItem.setPanelId("view_comments");
+				});
+		}
+
+		return tabsItemList;
+	}
+
 	public int getTotalItems() throws PortalException {
 		SearchContainer<?> articleSearch = _getArticlesSearchContainer();
 
