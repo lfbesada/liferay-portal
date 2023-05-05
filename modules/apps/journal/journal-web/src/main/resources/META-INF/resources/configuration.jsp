@@ -67,9 +67,9 @@ String emailFromName = ParamUtil.getString(request, "preferences--emailFromName-
 					</liferay-frontend:fieldset>
 				</div>
 
-			<%
-			Map<String, String> emailDefinitionTerms = JournalUtil.getEmailDefinitionTerms(renderRequest, emailFromAddress, emailFromName);
-			%>
+				<%
+				Map<String, String> emailDefinitionTerms = JournalUtil.getEmailDefinitionTerms(renderRequest, emailFromAddress, emailFromName);
+				%>
 
 				<div>
 					<liferay-frontend:email-notification-settings
