@@ -17,8 +17,10 @@ package com.liferay.journal.web.internal.editor.configuration;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.portal.kernel.editor.configuration.BaseEditorConfigContributor;
 import com.liferay.portal.kernel.editor.configuration.EditorConfigContributor;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.theme.PortletDisplay;
@@ -67,7 +69,22 @@ public class JournalArticleContentEditorConfigContributor
 			"contentsCss", contentsCSSJSONArray
 		).put(
 			"resize_enabled", true
+		).put(
+			"toolbar", _getToolbarJSONArray()
 		);
+
+		if (FeatureFlagManagerUtil.isEnabled("LPS-179483")) {
+			String extraPlugins = jsonObject.getString("extraPlugins");
+
+			if (Validator.isNotNull(extraPlugins)) {
+				extraPlugins = extraPlugins + ",aicreator";
+			}
+			else {
+				extraPlugins = "aicreator";
+			}
+
+			jsonObject.put("extraPlugins", extraPlugins);
+		}
 
 		String removePlugins = jsonObject.getString("removePlugins");
 
@@ -92,6 +109,22 @@ public class JournalArticleContentEditorConfigContributor
 					"/journal/upload_image"
 				).buildString());
 		}
+	}
+
+	private JSONArray _getToolbarJSONArray() {
+		JSONArray toolbarJSONArray = JSONUtil.putAll(
+			JSONUtil.putAll("Undo", "Redo"), JSONUtil.putAll("Styles"),
+			JSONUtil.putAll("Bold", "Italic", "Underline"),
+			JSONUtil.putAll("NumberedList", "BulletedList"),
+			JSONUtil.putAll("Link", "Unlink"),
+			JSONUtil.putAll("Table", "ImageSelector", "VideoSelector"),
+			JSONUtil.putAll("Source"));
+
+		if (FeatureFlagManagerUtil.isEnabled("LPS-179483")) {
+			toolbarJSONArray.put(JSONUtil.putAll("AICreator"));
+		}
+
+		return toolbarJSONArray;
 	}
 
 	@Reference
