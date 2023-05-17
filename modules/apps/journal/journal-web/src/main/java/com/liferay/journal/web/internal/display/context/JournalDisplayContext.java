@@ -1031,6 +1031,7 @@ public class JournalDisplayContext {
 			tabsItemList.add(
 				tabsItem -> {
 					tabsItem.setActive(true);
+					tabsItem.setHref(getPortletURL("web-content"));
 					tabsItem.setLabel(tabName);
 					tabsItem.setPanelId("view_entries");
 				});
@@ -1043,6 +1044,7 @@ public class JournalDisplayContext {
 
 			tabsItemList.add(
 				tabsItem -> {
+					tabsItem.setHref(getPortletURL("versions"));
 					tabsItem.setLabel(tabName);
 					tabsItem.setPanelId("view_versions");
 				});
@@ -1055,6 +1057,7 @@ public class JournalDisplayContext {
 
 			tabsItemList.add(
 				tabsItem -> {
+					tabsItem.setHref(getPortletURL("comments"));
 					tabsItem.setLabel(tabName);
 					tabsItem.setPanelId("view_comments");
 				});
