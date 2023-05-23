@@ -55,6 +55,7 @@ export default function Preview({activeSize, previewRef}: IPreviewProps) {
 				style={activeSize.screenSize}
 			>
 				<iframe
+					id="simulationDeviceIframe"
 					className="border-0 h-100 w-100"
 					src={createIframeURL()}
 				/>
