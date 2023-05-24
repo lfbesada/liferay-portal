@@ -50,7 +50,7 @@ if (!group.isLayoutPrototype() && selLayoutType.isURLFriendliable() && !layoutsA
 <aui:input name="originalFriendlyURL" type="hidden" value="<%= (selLayout != null) ? HttpComponentsUtil.decodeURL(selLayout.getFriendlyURL()) : StringPool.BLANK %>" />
 
 <c:if test="<%= group.isLayoutSetPrototype() %>">
-	<c:if test='<%= SessionMessages.contains(renderRequest, "friendlyURLConflictWithSiteLayouts") %>'>
+	<c:if test='<%= FeatureFlagManagerUtil.isEnabled("LPS-174417") && SessionMessages.contains(renderRequest, "friendlyURLConflictWithSiteLayouts") %>'>
 		<aui:script>
 			Liferay.Util.openToast({
 			autoClose: 10000,
@@ -61,7 +61,7 @@ if (!group.isLayoutPrototype() && selLayoutType.isURLFriendliable() && !layoutsA
 		</aui:script>
 	</c:if>
 
-	<c:if test="<%= layoutsAdminDisplayContext.isShowLayoutSetPrototypeFriendlyURLConflictSitesLayouts() %>">
+	<c:if test='<%= FeatureFlagManagerUtil.isEnabled("LPS-174417") && layoutsAdminDisplayContext.isShowLayoutSetPrototypeFriendlyURLConflictSitesLayouts() %>'>
 		<div class="alert alert-warning">
 			<liferay-ui:message key="layout-config-layout-set-prototype-friendly-url-collision" />
 
@@ -102,7 +102,7 @@ if (!group.isLayoutPrototype() && selLayoutType.isURLFriendliable() && !layoutsA
 </c:if>
 
 <c:if test="<%= !group.isLayoutSetPrototype() && selLayoutSet.isLayoutSetPrototypeLinkEnabled() %>">
-	<c:if test='<%= SessionMessages.contains(renderRequest, "friendlyURLConflictWithSiteLayoutSetPrototypeLayout") %>'>
+	<c:if test='<%= FeatureFlagManagerUtil.isEnabled("LPS-174417") && SessionMessages.contains(renderRequest, "friendlyURLConflictWithSiteLayoutSetPrototypeLayout") %>'>
 		<aui:script>
 			Liferay.Util.openToast({
 			autoClose: 10000,
@@ -113,7 +113,7 @@ if (!group.isLayoutPrototype() && selLayoutType.isURLFriendliable() && !layoutsA
 		</aui:script>
 	</c:if>
 
-	<c:if test="<%= layoutsAdminDisplayContext.isShowLayoutSetPrototypeFriendlyURLConflictLayout() %>">
+	<c:if test='<%= FeatureFlagManagerUtil.isEnabled("LPS-174417") && layoutsAdminDisplayContext.isShowLayoutSetPrototypeFriendlyURLConflictLayout() %>'>
 		<div class="alert alert-warning">
 			<liferay-ui:message key="the-friendly-url-of-this-page-is-conflicting-with-a-friendly-url-of-a-page-in-the-site-template-from-which-this-site-was-created" />
 
