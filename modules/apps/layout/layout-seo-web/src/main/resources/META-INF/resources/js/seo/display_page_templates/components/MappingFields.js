@@ -20,22 +20,22 @@ import MappingInput from './MappingInput';
 import MappingSelector from './MappingSelector';
 
 function MappingFields({fields, inputs, selectedSource}) {
-	return inputs.map((props) => {
-		const filteredFields = fields.filter(
-			({type}) => type === props.fieldType
+	return inputs.map(({fieldTypes = [], name, ...props}) => {
+		const filteredFields = fields.filter(({type}) =>
+			fieldTypes.includes(type)
 		);
 
-		return props.fieldType === FIELD_TYPES.TEXT ? (
+		return fieldTypes.includes(FIELD_TYPES.TEXT) ? (
 			<MappingInput
 				fields={filteredFields}
-				key={props.name}
+				key={name}
 				selectedSource={selectedSource}
 				{...props}
 			/>
 		) : (
 			<MappingSelector
 				fields={filteredFields}
-				key={props.name}
+				key={name}
 				selectedSource={selectedSource}
 				{...props}
 			/>
@@ -52,6 +52,7 @@ MappingFields.propTypes = {
 	).isRequired,
 	inputs: PropTypes.arrayOf(
 		PropTypes.shape({
+			fieldTypes: PropTypes.array,
 			label: PropTypes.string,
 			name: PropTypes.string,
 			selectedFieldKey: PropTypes.string,
