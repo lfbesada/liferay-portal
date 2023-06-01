@@ -17,13 +17,19 @@ package com.liferay.ai.creator.openai.web.internal.editor.configuration;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.portal.kernel.editor.configuration.BaseEditorConfigContributor;
 import com.liferay.portal.kernel.editor.configuration.EditorConfigContributor;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
+import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Lourdes Fernández Besada
@@ -43,6 +49,35 @@ public class AICreatorOpenAIEditorConfigContributor
 		JSONObject jsonObject, Map<String, Object> inputEditorTaglibAttributes,
 		ThemeDisplay themeDisplay,
 		RequestBackedPortletURLFactory requestBackedPortletURLFactory) {
+
+		if (!FeatureFlagManagerUtil.isEnabled("LPS-179483")) {
+			return;
+		}
+
+		JSONArray toolbarJSONArray = jsonObject.getJSONArray("toolbar");
+
+		if (toolbarJSONArray == null) {
+			toolbarJSONArray = JSONUtil.put(JSONUtil.putAll("AICreator"));
+		}
+		else {
+			toolbarJSONArray.put(JSONUtil.putAll("AICreator"));
+		}
+
+		jsonObject.put("toolbar", toolbarJSONArray);
+
+		String extraPlugins = jsonObject.getString("extraPlugins");
+
+		if (Validator.isNotNull(extraPlugins)) {
+			extraPlugins = extraPlugins + ",aicreator";
+		}
+		else {
+			extraPlugins = "aicreator";
+		}
+
+		jsonObject.put("extraPlugins", extraPlugins);
 	}
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 }
