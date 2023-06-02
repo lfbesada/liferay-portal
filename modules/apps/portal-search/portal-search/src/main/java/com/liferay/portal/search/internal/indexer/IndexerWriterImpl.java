@@ -223,7 +223,7 @@ public class IndexerWriterImpl<T extends BaseModel<?>>
 				document);
 		}
 		else if (indexerWriterMode == IndexerWriterMode.DELETE) {
-			delete(baseModel);
+			_delete(baseModel, notify);
 		}
 		else if (indexerWriterMode == IndexerWriterMode.SKIP) {
 			if (_log.isDebugEnabled()) {
