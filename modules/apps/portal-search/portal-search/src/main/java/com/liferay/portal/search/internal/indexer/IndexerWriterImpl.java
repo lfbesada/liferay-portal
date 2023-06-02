@@ -233,11 +233,7 @@ public class IndexerWriterImpl<T extends BaseModel<?>>
 				document);
 		}
 		else if (indexerWriterMode == IndexerWriterMode.DELETE) {
-			long companyId = _modelIndexerWriterContributor.getCompanyId(
-				baseModel);
-			String uid = _indexerDocumentBuilder.getDocumentUID(baseModel);
-
-			delete(companyId, uid);
+			delete(baseModel);
 		}
 		else if (indexerWriterMode == IndexerWriterMode.SKIP) {
 			if (_log.isDebugEnabled()) {
