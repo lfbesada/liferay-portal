@@ -70,26 +70,6 @@ public class AICreatorOpenAIEditorConfigContributor
 			return;
 		}
 
-		JSONArray toolbarJSONArray = jsonObject.getJSONArray("toolbar");
-
-		if (toolbarJSONArray == null) {
-			toolbarJSONArray = JSONUtil.put(JSONUtil.putAll("AICreator"));
-		}
-		else {
-			toolbarJSONArray.put(JSONUtil.putAll("AICreator"));
-		}
-
-		jsonObject.put("toolbar", toolbarJSONArray);
-
-		String extraPlugins = jsonObject.getString("extraPlugins");
-
-		if (Validator.isNotNull(extraPlugins)) {
-			extraPlugins = extraPlugins + ",aicreator";
-		}
-		else {
-			extraPlugins = "aicreator";
-		}
-
 		jsonObject.put(
 			"aiCreatorOpenAIURL",
 			() -> {
@@ -116,8 +96,31 @@ public class AICreatorOpenAIEditorConfigContributor
 				portletURL.setParameter("mvcPath", "/view.jsp");
 
 				return portletURL.toString();
-			}).put(
-			"extraPlugins", extraPlugins
+			}
+		).put(
+			"extraPlugins",
+			() -> {
+				String extraPlugins = jsonObject.getString("extraPlugins");
+
+				if (Validator.isNotNull(extraPlugins)) {
+					return extraPlugins + ",aicreator";
+				}
+
+				return "aicreator";
+			}
+		).put(
+			"toolbar",
+			() -> {
+				JSONArray toolbarJSONArray = jsonObject.getJSONArray("toolbar");
+
+				if (toolbarJSONArray == null) {
+					return JSONUtil.put(JSONUtil.putAll("AICreator"));
+				}
+
+				toolbarJSONArray.put(JSONUtil.putAll("AICreator"));
+
+				return toolbarJSONArray;
+			}
 		);
 	}
 
