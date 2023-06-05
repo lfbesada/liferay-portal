@@ -14,6 +14,7 @@
 
 package com.liferay.ai.creator.openai.web.internal.editor.configuration;
 
+import com.liferay.ai.creator.openai.configuration.manager.AICreatorOpenAIConfigurationManager;
 import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.portal.kernel.editor.configuration.BaseEditorConfigContributor;
 import com.liferay.portal.kernel.editor.configuration.EditorConfigContributor;
@@ -22,6 +23,9 @@ import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Validator;
@@ -51,7 +55,10 @@ public class AICreatorOpenAIEditorConfigContributor
 		ThemeDisplay themeDisplay,
 		RequestBackedPortletURLFactory requestBackedPortletURLFactory) {
 
-		if (!FeatureFlagManagerUtil.isEnabled("LPS-179483")) {
+		if (!FeatureFlagManagerUtil.isEnabled("LPS-179483") ||
+			!_isAICreatorOpenAIGroupEnabled(
+				themeDisplay.getCompanyId(), themeDisplay.getScopeGroupId())) {
+
 			return;
 		}
 
@@ -77,6 +84,32 @@ public class AICreatorOpenAIEditorConfigContributor
 
 		jsonObject.put("extraPlugins", extraPlugins);
 	}
+
+	private boolean _isAICreatorOpenAIGroupEnabled(
+		long companyId, long groupId) {
+
+		try {
+			if (_aiCreatorOpenAIConfigurationManager.
+					isAICreatorOpenAIGroupEnabled(companyId, groupId)) {
+
+				return true;
+			}
+		}
+		catch (ConfigurationException configurationException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(configurationException);
+			}
+		}
+
+		return false;
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		AICreatorOpenAIEditorConfigContributor.class);
+
+	@Reference
+	private AICreatorOpenAIConfigurationManager
+		_aiCreatorOpenAIConfigurationManager;
 
 	@Reference
 	private JSONFactory _jsonFactory;
