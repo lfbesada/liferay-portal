@@ -23,14 +23,20 @@
 		init(editor) {
 			const plugin = this;
 
-			const handleDialogClose = () => {
-				editor.insertText('Sample text');
-			};
-
 			editor.addCommand('openAICreatorDialog', {
 				exec: () => {
+					const closeModalHandler = Liferay.on(
+						'closeModal',
+						(event) => {
+							closeModalHandler.detach();
+							editor.insertText(event.text);
+						}
+					);
+
 					Liferay.Util.openModal({
-						onClose: handleDialogClose,
+						height: '500px',
+						onClose: () => closeModalHandler.detach(),
+						size: 'lg',
 						title: Liferay.Language.get('ai-creator'),
 						url: editor.config.aiCreatorDialogUrl,
 					});
