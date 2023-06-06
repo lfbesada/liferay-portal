@@ -109,6 +109,27 @@ public class AICreatorOpenAIEditorConfigContributor
 				return "aicreator";
 			}
 		).put(
+			"isAICreatorOpenAIAPIKey",
+			() -> {
+				try {
+					if (Validator.isNotNull(
+							_aiCreatorOpenAIConfigurationManager.
+								getAICreatorOpenAIGroupAPIKey(
+									themeDisplay.getCompanyId(),
+									themeDisplay.getScopeGroupId()))) {
+
+						return true;
+					}
+				}
+				catch (ConfigurationException configurationException) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(configurationException);
+					}
+				}
+
+				return false;
+			}
+		).put(
 			"toolbar",
 			() -> {
 				JSONArray toolbarJSONArray = jsonObject.getJSONArray("toolbar");
