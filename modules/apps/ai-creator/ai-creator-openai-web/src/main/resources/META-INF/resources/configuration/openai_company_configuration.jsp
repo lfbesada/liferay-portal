@@ -58,3 +58,21 @@ AICreatorOpenAICompanyConfigurationDisplayContext aiCreatorOpenAICompanyConfigur
 </clay:content-row>
 
 <%@ include file="/configuration/error_ai_creator_openai_client_exception.jspf" %>
+
+<clay:content-row>
+	<clay:content-col>
+		<aui:input label="create" name="create" type="button" />
+	</clay:content-col>
+</clay:content-row>
+
+<aui:script>
+	var createButton = document.getElementById('<portlet:namespace />create');
+
+	createButton.addEventListener('click', (event) => {
+		Liferay.Util.openModal({
+			title: 'AI Creator OpenAI',
+			url:
+				'<%= HtmlUtil.escapeJS(aiCreatorOpenAICompanyConfigurationDisplayContext.getAICreatorOpenAIPortletURL(request)) %>',
+		});
+	});
+</aui:script>
