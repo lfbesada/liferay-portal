@@ -90,17 +90,7 @@ public class IndexerWriterImpl<T extends BaseModel<?>>
 
 	@Override
 	public void delete(T baseModel) {
-		if (baseModel == null) {
-			return;
-		}
-
-		long companyId = _modelIndexerWriterContributor.getCompanyId(baseModel);
-
-		String uid = _indexerDocumentBuilder.getDocumentUID(baseModel);
-
-		delete(companyId, uid);
-
-		_modelIndexerWriterContributor.modelDeleted(baseModel);
+		_delete(baseModel, true);
 	}
 
 	@Override
@@ -233,11 +223,7 @@ public class IndexerWriterImpl<T extends BaseModel<?>>
 				document);
 		}
 		else if (indexerWriterMode == IndexerWriterMode.DELETE) {
-			long companyId = _modelIndexerWriterContributor.getCompanyId(
-				baseModel);
-			String uid = _indexerDocumentBuilder.getDocumentUID(baseModel);
-
-			delete(companyId, uid);
+			_delete(baseModel, notify);
 		}
 		else if (indexerWriterMode == IndexerWriterMode.SKIP) {
 			if (_log.isDebugEnabled()) {
@@ -260,6 +246,22 @@ public class IndexerWriterImpl<T extends BaseModel<?>>
 		_searchPermissionIndexWriter.updatePermissionFields(
 			baseModel, _modelIndexerWriterContributor.getCompanyId(baseModel),
 			_modelSearchSettings.isCommitImmediately());
+	}
+
+	private void _delete(T baseModel, boolean notify) {
+		if (baseModel == null) {
+			return;
+		}
+
+		long companyId = _modelIndexerWriterContributor.getCompanyId(baseModel);
+
+		String uid = _indexerDocumentBuilder.getDocumentUID(baseModel);
+
+		delete(companyId, uid);
+
+		if (notify) {
+			_modelIndexerWriterContributor.modelDeleted(baseModel);
+		}
 	}
 
 	private IndexerWriterMode _getIndexerWriterMode(T baseModel) {
