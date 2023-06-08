@@ -18,6 +18,9 @@ import com.liferay.ai.creator.openai.web.internal.constants.AICreatorOpenAIPortl
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.url.builder.ResourceURLBuilder;
+import com.liferay.portal.kernel.util.HashMapBuilder;
+
+import java.util.Map;
 
 import javax.portlet.ResourceURL;
 
@@ -34,16 +37,23 @@ public class AICreatorOpenAIDisplayContext {
 		_httpServletRequest = httpServletRequest;
 	}
 
-	public String getGetCompletionURL() {
-		RequestBackedPortletURLFactory requestBackedPortletURLFactory =
-			RequestBackedPortletURLFactoryUtil.create(_httpServletRequest);
+	public Map<String, Object> getProps() {
+		return HashMapBuilder.<String, Object>put(
+			"getCompletionURL",
+			() -> {
+				RequestBackedPortletURLFactory requestBackedPortletURLFactory =
+					RequestBackedPortletURLFactoryUtil.create(
+						_httpServletRequest);
 
-		return ResourceURLBuilder.createResourceURL(
-			(ResourceURL)requestBackedPortletURLFactory.createResourceURL(
-				AICreatorOpenAIPortletKeys.AI_CREATOR_OPENAI)
-		).setResourceID(
-			"/ai_creator_openai/get_completion"
-		).buildString();
+				return ResourceURLBuilder.createResourceURL(
+					(ResourceURL)
+						requestBackedPortletURLFactory.createResourceURL(
+							AICreatorOpenAIPortletKeys.AI_CREATOR_OPENAI)
+				).setResourceID(
+					"/ai_creator_openai/get_completion"
+				).buildString();
+			}
+		).build();
 	}
 
 	private final HttpServletRequest _httpServletRequest;
