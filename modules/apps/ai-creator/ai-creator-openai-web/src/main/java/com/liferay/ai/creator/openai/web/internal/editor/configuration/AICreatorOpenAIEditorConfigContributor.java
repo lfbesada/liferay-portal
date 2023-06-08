@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.Validator;
 
 import java.util.Map;
 
@@ -91,6 +92,27 @@ public class AICreatorOpenAIEditorConfigContributor
 				portletURL.setParameter("mvcPath", "/view.jsp");
 
 				return portletURL.toString();
+			}
+		).put(
+			"isAICreatorOpenAIAPIKey",
+			() -> {
+				try {
+					if (Validator.isNotNull(
+							_aiCreatorOpenAIConfigurationManager.
+								getAICreatorOpenAIGroupAPIKey(
+									themeDisplay.getCompanyId(),
+									themeDisplay.getScopeGroupId()))) {
+
+						return true;
+					}
+				}
+				catch (ConfigurationException configurationException) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(configurationException);
+					}
+				}
+
+				return false;
 			}
 		);
 	}
