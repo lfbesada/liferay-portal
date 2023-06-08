@@ -16,76 +16,12 @@
 
 <%@ include file="/init.jsp" %>
 
-<%
-AICreatorOpenAIDisplayContext aiCreatorOpenAIDisplayContext = (AICreatorOpenAIDisplayContext)request.getAttribute(AICreatorOpenAIDisplayContext.class.getName());
-%>
+<div>
+	<div class="inline-item my-5 p-5 w-100">
+		<span aria-hidden="true" class="loading-animation"></span>
+	</div>
 
-<clay:content-row>
-	<clay:content-col
-		expand="<%= true %>"
-	>
-		<aui:input label="description" name="content" type="text" />
-	</clay:content-col>
-</clay:content-row>
-
-<clay:content-row>
-	<clay:content-col>
-		<aui:input label="tone" name="tone" type="text" />
-	</clay:content-col>
-
-	<clay:content-col>
-		<aui:input label="words" name="words" type="number" />
-	</clay:content-col>
-</clay:content-row>
-
-<clay:content-row>
-	<clay:content-col
-		expand="<%= true %>"
-	>
-		<aui:input label="create" name="create" type="button" />
-	</clay:content-col>
-</clay:content-row>
-
-<aui:script>
-	var createButton = document.getElementById('<portlet:namespace />create');
-
-	var completionURL =
-		'<%= aiCreatorOpenAIDisplayContext.getGetCompletionURL() %>';
-
-	createButton.addEventListener('click', (event) => {
-		var fields = {
-			<portlet:namespace />content: document.getElementById(
-				'<portlet:namespace />content'
-			).value,
-			<portlet:namespace />words: document.getElementById(
-				'<portlet:namespace />words'
-			).value,
-			<portlet:namespace />tone: document.getElementById(
-				'<portlet:namespace />tone'
-			).value,
-		};
-
-		Liferay.Util.fetch(completionURL, {
-			body: Liferay.Util.objectToFormData(fields),
-			method: 'POST',
-		})
-			.then((response) => {
-				return response.ok ? response.text() : Promise.reject();
-			})
-			.then((data) => {
-				var responseData = {};
-
-				try {
-					responseData = JSON.parse(data);
-				}
-				catch (e) {}
-
-				if (responseData.error) {
-					alert('Error! ' + responseData.error.message);
-				}
-				else if (responseData.completion) {
-					alert('Text created! ' + responseData.completion.content);
-				}
-			});
-	});
-</aui:script>
+	<react:component
+		module="ai_creator_modal/AICreatorModal"
+	/>
+</div>

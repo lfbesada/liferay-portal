@@ -70,6 +70,8 @@ AICreatorOpenAICompanyConfigurationDisplayContext aiCreatorOpenAICompanyConfigur
 
 	createButton.addEventListener('click', (event) => {
 		Liferay.Util.openModal({
+			height: '500px',
+			size: 'lg',
 			title: 'AI Creator OpenAI',
 			url:
 				'<%= HtmlUtil.escapeJS(aiCreatorOpenAICompanyConfigurationDisplayContext.getAICreatorOpenAIPortletURL(request)) %>',
