@@ -30,10 +30,13 @@ export function ErrorMessage({message}: Props) {
 				<span className="alert-indicator">
 					<ClayIcon symbol="exclamation-full" />
 				</span>
+
 				<strong className="lead">
 					{Liferay.Language.get('error')}
 				</strong>{' '}
+
 				<span className="d-inline-block">{message}</span>{' '}
+
 				<ClayButton
 					className="btn-link text-underline"
 					displayType="unstyled"
