@@ -109,6 +109,8 @@ public class SessionKeysCheck extends BaseFileCheck {
 					(c != CharPool.DASH) && (c != CharPool.UNDERLINE)) {
 
 					alphaNumericKey = false;
+
+					break;
 				}
 			}
 
