@@ -51,20 +51,22 @@ public class AICreatorOpenAIClientException extends RuntimeException {
 		if ((_responseCode == HttpURLConnection.HTTP_UNAUTHORIZED) ||
 			Objects.equals(_code, "invalid_api_key")) {
 
-			return LanguageUtil.get(
-				locale,
-				"incorrect-api-key-provided.-ensure-the-api-key-used-is-" +
-					"correct,-clear-your-browser-cache,-or-generate-a-new-key");
+			return LanguageUtil.get(locale, INCORRECT_API_KEY_MESSAGE_KEY);
 		}
 
-		return LanguageUtil.get(
-			locale,
-			"an-unexpected-error-occurred-while-validating-the-api-key");
+		return LanguageUtil.get(locale, AN_UNEXPECTED_ERROR_MESSAGE_KEY);
 	}
 
 	public int getResponseCode() {
 		return _responseCode;
 	}
+
+	protected static final String AN_UNEXPECTED_ERROR_MESSAGE_KEY =
+		"an-unexpected-error-occurred-while-validating-the-api-key";
+
+	protected static final String INCORRECT_API_KEY_MESSAGE_KEY =
+		"incorrect-api-key-provided.-ensure-the-api-key-used-is-correct,-" +
+			"clear-your-browser-cache,-or-generate-a-new-key";
 
 	private String _code = "unexpected_error";
 	private int _responseCode;
