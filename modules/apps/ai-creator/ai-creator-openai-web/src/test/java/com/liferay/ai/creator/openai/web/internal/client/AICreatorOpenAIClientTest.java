@@ -112,7 +112,7 @@ public class AICreatorOpenAIClientTest {
 
 		_assertOptions(
 			apiKey, content, ContentTypes.APPLICATION_JSON,
-			"https://api.openai.com/v1/chat/completions");
+			AICreatorOpenAIClient.CHAT_COMPLETION_ENDPOINT);
 
 		_assertMessageRoleSystemContent(LocaleUtil.getDefault(), tone, words);
 
@@ -127,7 +127,7 @@ public class AICreatorOpenAIClientTest {
 
 		_testIOException(
 			content, ContentTypes.APPLICATION_JSON,
-			"https://api.openai.com/v1/chat/completions",
+			AICreatorOpenAIClient.CHAT_COMPLETION_ENDPOINT,
 			apiKey -> _aiCreatorOpenAIClient.getCompletion(
 				apiKey, content, LocaleUtil.getDefault(),
 				RandomTestUtil.randomString(), RandomTestUtil.randomInt()));
@@ -141,7 +141,7 @@ public class AICreatorOpenAIClientTest {
 
 		_testResponseWithErrorKey(
 			content, ContentTypes.APPLICATION_JSON,
-			"https://api.openai.com/v1/chat/completions",
+			AICreatorOpenAIClient.CHAT_COMPLETION_ENDPOINT,
 			apiKey -> _aiCreatorOpenAIClient.getCompletion(
 				apiKey, content, LocaleUtil.getDefault(),
 				RandomTestUtil.randomString(), RandomTestUtil.randomInt()));
@@ -155,7 +155,7 @@ public class AICreatorOpenAIClientTest {
 
 		_testUnauthorizedResponseCode(
 			content, ContentTypes.APPLICATION_JSON,
-			"https://api.openai.com/v1/chat/completions",
+			AICreatorOpenAIClient.CHAT_COMPLETION_ENDPOINT,
 			apiKey -> _aiCreatorOpenAIClient.getCompletion(
 				apiKey, content, LocaleUtil.getDefault(),
 				RandomTestUtil.randomString(), RandomTestUtil.randomInt()));
@@ -172,8 +172,7 @@ public class AICreatorOpenAIClientTest {
 
 		_aiCreatorOpenAIClient.validateAPIKey(apiKey);
 
-		_assertOptions(
-			apiKey, "https://api.openai.com/v1/models/text-davinci-003");
+		_assertOptions(apiKey, AICreatorOpenAIClient.VALIDATE_API_KEY_ENDPOINT);
 
 		_assertResponseJSONObject(responseJSONObject);
 
@@ -183,21 +182,21 @@ public class AICreatorOpenAIClientTest {
 	@Test
 	public void testValidateAPIKeyIOException() throws Exception {
 		_testIOException(
-			null, null, "https://api.openai.com/v1/models/text-davinci-003",
+			null, null, AICreatorOpenAIClient.VALIDATE_API_KEY_ENDPOINT,
 			apiKey -> _aiCreatorOpenAIClient.validateAPIKey(apiKey));
 	}
 
 	@Test
 	public void testValidateAPIKeyResponseWithErrorKey() throws Exception {
 		_testResponseWithErrorKey(
-			null, null, "https://api.openai.com/v1/models/text-davinci-003",
+			null, null, AICreatorOpenAIClient.VALIDATE_API_KEY_ENDPOINT,
 			apiKey -> _aiCreatorOpenAIClient.validateAPIKey(apiKey));
 	}
 
 	@Test
 	public void testValidateAPIKeyUnauthorizedResponseCode() throws Exception {
 		_testUnauthorizedResponseCode(
-			null, null, "https://api.openai.com/v1/models/text-davinci-003",
+			null, null, AICreatorOpenAIClient.VALIDATE_API_KEY_ENDPOINT,
 			apiKey -> _aiCreatorOpenAIClient.validateAPIKey(apiKey));
 	}
 
