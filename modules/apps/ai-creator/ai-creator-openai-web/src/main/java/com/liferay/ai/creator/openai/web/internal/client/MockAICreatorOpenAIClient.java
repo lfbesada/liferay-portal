@@ -33,7 +33,7 @@ import org.osgi.service.component.annotations.Component;
  * @author Lourdes Fernández Besada
  */
 @Component(
-	property = "service.ranking:Integer=200",
+	enabled = false, property = "service.ranking:Integer=200",
 	service = AICreatorOpenAIClient.class
 )
 public class MockAICreatorOpenAIClient implements AICreatorOpenAIClient {
