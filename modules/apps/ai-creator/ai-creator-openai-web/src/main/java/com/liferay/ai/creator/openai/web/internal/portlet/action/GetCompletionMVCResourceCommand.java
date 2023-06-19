@@ -33,6 +33,8 @@ import javax.portlet.ResourceResponse;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
+import org.osgi.service.component.annotations.ReferencePolicy;
+import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Lourdes Fernández Besada
@@ -131,8 +133,11 @@ public class GetCompletionMVCResourceCommand extends BaseMVCResourceCommand {
 		}
 	}
 
-	@Reference
-	protected AICreatorOpenAIClient aiCreatorOpenAIClient;
+	@Reference(
+		policy = ReferencePolicy.DYNAMIC,
+		policyOption = ReferencePolicyOption.GREEDY
+	)
+	protected volatile AICreatorOpenAIClient aiCreatorOpenAIClient;
 
 	@Reference
 	private AICreatorOpenAIConfigurationManager
