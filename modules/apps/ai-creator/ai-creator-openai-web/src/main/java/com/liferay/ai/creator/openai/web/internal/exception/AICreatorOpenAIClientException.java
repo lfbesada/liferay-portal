@@ -43,6 +43,10 @@ public class AICreatorOpenAIClientException extends RuntimeException {
 		super(throwable.getMessage(), throwable);
 	}
 
+	public String getCode() {
+		return _code;
+	}
+
 	public String getLocalizedMessage(Locale locale) {
 		if ((_responseCode == HttpURLConnection.HTTP_UNAUTHORIZED) ||
 			Objects.equals(_code, "invalid_api_key")) {
@@ -56,6 +60,10 @@ public class AICreatorOpenAIClientException extends RuntimeException {
 		return LanguageUtil.get(
 			locale,
 			"an-unexpected-error-occurred-while-validating-the-api-key");
+	}
+
+	public int getResponseCode() {
+		return _responseCode;
 	}
 
 	private String _code = "unexpected_error";
