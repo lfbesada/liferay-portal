@@ -32,7 +32,10 @@ import org.osgi.service.component.annotations.Component;
 /**
  * @author Lourdes Fernández Besada
  */
-@Component(service = AICreatorOpenAIClient.class)
+@Component(
+	property = "service.ranking:Integer=200",
+	service = AICreatorOpenAIClient.class
+)
 public class MockAICreatorOpenAIClient implements AICreatorOpenAIClient {
 
 	@Override
