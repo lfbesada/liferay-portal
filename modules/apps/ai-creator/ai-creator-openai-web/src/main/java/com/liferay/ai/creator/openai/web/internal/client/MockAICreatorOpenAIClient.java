@@ -43,12 +43,21 @@ public class MockAICreatorOpenAIClient implements AICreatorOpenAIClient {
 			return "OPENAI_API_COMPLETION_RESPONSE_CONTENT";
 		}
 
+		if (Validator.isNotNull(apiKey) &&
+			apiKey.startsWith(_VALID_API_KEY_PREFIX)) {
+
+			apiKey = apiKey.substring(_VALID_API_KEY_PREFIX.length());
+		}
+
 		throw _getAICreatorOpenAIClientException(apiKey);
 	}
 
 	@Override
 	public void validateAPIKey(String apiKey) {
-		if (Objects.equals(apiKey, _VALID_API_KEY)) {
+		if (Objects.equals(apiKey, _VALID_API_KEY) ||
+			(Validator.isNotNull(apiKey) &&
+			 apiKey.startsWith(_VALID_API_KEY_PREFIX))) {
+
 			return;
 		}
 
@@ -83,5 +92,7 @@ public class MockAICreatorOpenAIClient implements AICreatorOpenAIClient {
 	}
 
 	private static final String _VALID_API_KEY = "VALID_API_KEY";
+
+	private static final String _VALID_API_KEY_PREFIX = "VALID_API_KEY_";
 
 }
