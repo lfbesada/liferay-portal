@@ -71,7 +71,6 @@ public class AICreatorOpenAIEditorConfigurationTest {
 		_originalAPIKey =
 			_aiCreatorOpenAIConfigurationManager.
 				getAICreatorOpenAICompanyAPIKey(_group.getCompanyId());
-
 		_originalEnabled =
 			_aiCreatorOpenAIConfigurationManager.
 				isAICreatorOpenAICompanyEnabled(_group.getCompanyId());
@@ -109,7 +108,6 @@ public class AICreatorOpenAIEditorConfigurationTest {
 		_aiCreatorOpenAIConfigurationManager.
 			saveAICreatorOpenAICompanyConfiguration(
 				_group.getCompanyId(), StringPool.BLANK, true);
-
 		_aiCreatorOpenAIConfigurationManager.
 			saveAICreatorOpenAIGroupConfiguration(
 				_group.getGroupId(), RandomTestUtil.randomString(), true);
@@ -125,7 +123,6 @@ public class AICreatorOpenAIEditorConfigurationTest {
 		_aiCreatorOpenAIConfigurationManager.
 			saveAICreatorOpenAICompanyConfiguration(
 				_group.getCompanyId(), RandomTestUtil.randomString(), true);
-
 		_aiCreatorOpenAIConfigurationManager.
 			saveAICreatorOpenAIGroupConfiguration(
 				_group.getGroupId(), RandomTestUtil.randomString(), true);
@@ -141,7 +138,6 @@ public class AICreatorOpenAIEditorConfigurationTest {
 		_aiCreatorOpenAIConfigurationManager.
 			saveAICreatorOpenAICompanyConfiguration(
 				_group.getCompanyId(), StringPool.BLANK, true);
-
 		_aiCreatorOpenAIConfigurationManager.
 			saveAICreatorOpenAIGroupConfiguration(
 				_group.getGroupId(), StringPool.BLANK, true);
@@ -157,7 +153,6 @@ public class AICreatorOpenAIEditorConfigurationTest {
 		_aiCreatorOpenAIConfigurationManager.
 			saveAICreatorOpenAICompanyConfiguration(
 				_group.getCompanyId(), StringPool.BLANK, false);
-
 		_aiCreatorOpenAIConfigurationManager.
 			saveAICreatorOpenAIGroupConfiguration(
 				_group.getGroupId(), RandomTestUtil.randomString(), true);
@@ -173,7 +168,6 @@ public class AICreatorOpenAIEditorConfigurationTest {
 		_aiCreatorOpenAIConfigurationManager.
 			saveAICreatorOpenAICompanyConfiguration(
 				_group.getCompanyId(), RandomTestUtil.randomString(), true);
-
 		_aiCreatorOpenAIConfigurationManager.
 			saveAICreatorOpenAIGroupConfiguration(
 				_group.getGroupId(), RandomTestUtil.randomString(), false);
@@ -207,10 +201,8 @@ public class AICreatorOpenAIEditorConfigurationTest {
 
 		Assert.assertEquals(
 			expectedEnabled, configJSONObject.has("aiCreatorOpenAIURL"));
-
 		Assert.assertEquals(
 			expectedEnabled, configJSONObject.has("isAICreatorOpenAIAPIKey"));
-
 		Assert.assertEquals(
 			expectedAPIKey && expectedEnabled,
 			configJSONObject.getBoolean("isAICreatorOpenAIAPIKey"));
@@ -218,7 +210,6 @@ public class AICreatorOpenAIEditorConfigurationTest {
 		String extraPlugins = configJSONObject.getString("extraPlugins");
 
 		Assert.assertNotNull(extraPlugins);
-
 		Assert.assertEquals(
 			expectedEnabled, extraPlugins.contains("aicreator"));
 
