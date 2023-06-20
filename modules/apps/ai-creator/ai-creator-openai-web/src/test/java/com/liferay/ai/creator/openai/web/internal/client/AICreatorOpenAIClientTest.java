@@ -97,10 +97,9 @@ public class AICreatorOpenAIClientTest {
 		Http.Response response = _getMockResponse(
 			HttpURLConnection.HTTP_OK, responseJSONObject);
 
-		String apiKey = RandomTestUtil.randomString();
-
 		_mockLanguage();
 
+		String apiKey = RandomTestUtil.randomString();
 		String content = RandomTestUtil.randomString();
 		String tone = RandomTestUtil.randomString();
 		int words = RandomTestUtil.randomInt();
@@ -110,11 +109,11 @@ public class AICreatorOpenAIClientTest {
 			_aiCreatorOpenAIClient.getCompletion(
 				apiKey, content, LocaleUtil.getDefault(), tone, words));
 
+		_assertMessageRoleSystemContent(LocaleUtil.getDefault(), tone, words);
+
 		_assertOptions(
 			apiKey, content, ContentTypes.APPLICATION_JSON,
 			AICreatorOpenAIClient.CHAT_COMPLETION_ENDPOINT);
-
-		_assertMessageRoleSystemContent(LocaleUtil.getDefault(), tone, words);
 
 		_assertResponse(response);
 	}
@@ -174,9 +173,9 @@ public class AICreatorOpenAIClientTest {
 
 		_assertOptions(apiKey, AICreatorOpenAIClient.VALIDATE_API_KEY_ENDPOINT);
 
-		_assertResponseJSONObject(responseJSONObject);
-
 		_assertResponse(response);
+
+		_assertResponseJSONObject(responseJSONObject);
 	}
 
 	@Test
@@ -213,12 +212,6 @@ public class AICreatorOpenAIClientTest {
 	}
 
 	private void _assertBody(String content, Http.Body body) throws Exception {
-		if (Validator.isNull(content)) {
-			Assert.assertNull(body);
-
-			return;
-		}
-
 		Assert.assertNotNull(body);
 
 		Assert.assertEquals(
@@ -300,10 +293,16 @@ public class AICreatorOpenAIClientTest {
 
 		Http.Options options = argumentCaptor.getValue();
 
-		Assert.assertEquals(location, options.getLocation());
 		Assert.assertEquals(
 			"Bearer " + apiKey, options.getHeader("Authorization"));
 		Assert.assertEquals(contentType, options.getHeader("Content-Type"));
+		Assert.assertEquals(location, options.getLocation());
+
+		if (Validator.isNull(content)) {
+			Assert.assertNull(options.getBody());
+
+			return;
+		}
 
 		_assertBody(content, options.getBody());
 	}
