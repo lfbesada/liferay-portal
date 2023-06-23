@@ -16,6 +16,10 @@ package com.liferay.segments.web.internal.field.customizer;
 
 import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
+import com.liferay.asset.tags.item.selector.AssetTagsItemSelectorReturnType;
+import com.liferay.asset.tags.item.selector.criterion.AssetTagsItemSelectorCriterion;
+import com.liferay.item.selector.ItemSelector;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ClassedModel;
@@ -23,6 +27,9 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
+import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
+
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -92,27 +99,30 @@ public class AssetTagSegmentsFieldCustomizer
 	@Override
 	public Field.SelectEntity getSelectEntity(PortletRequest portletRequest) {
 		try {
-			PortletURL portletURL = PortletProviderUtil.getPortletURL(
-				portletRequest, AssetTag.class.getName(),
-				PortletProvider.Action.BROWSE);
+			AssetTagsItemSelectorCriterion assetTagsItemSelectorCriterion =
+				new AssetTagsItemSelectorCriterion();
 
-			if (portletURL == null) {
-				return null;
-			}
+			assetTagsItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
+				new AssetTagsItemSelectorReturnType());
+
 
 			Group companyGroup = _groupLocalService.getCompanyGroup(
 				CompanyThreadLocal.getCompanyId());
 
-			portletURL.setParameter("mvcPath", "/select_single.jsp");
-			portletURL.setParameter(
-				"groupIds",
-				StringUtil.merge(
-					new long[] {
-						companyGroup.getGroupId(),
-						_portal.getScopeGroupId(portletRequest)
-					}));
-			portletURL.setParameter("eventName", "selectEntity");
-			portletURL.setWindowState(LiferayWindowState.POP_UP);
+			assetTagsItemSelectorCriterion.setGroupIds(new long[] {
+				companyGroup.getGroupId(),
+				_portal.getScopeGroupId(portletRequest)
+			});
+
+			PortletURL portletURL = PortletURLBuilder.create(_itemSelector.getItemSelectorURL(
+				RequestBackedPortletURLFactoryUtil.create(portletRequest),
+				"selectTag", assetTagsItemSelectorCriterion)
+			).setParameter("selectedTagNames", "{selectedTagNames}"
+			).buildPortletURL();
+
+			if (portletURL == null) {
+				return null;
+			}
 
 			return new Field.SelectEntity(
 				"selectEntity",
@@ -148,6 +158,9 @@ public class AssetTagSegmentsFieldCustomizer
 
 	@Reference
 	private AssetTagLocalService _assetTagLocalService;
+
+	@Reference
+	private ItemSelector _itemSelector;
 
 	@Reference
 	private GroupLocalService _groupLocalService;

@@ -44,7 +44,6 @@ import javax.portlet.RenderRequest;
 
 import javax.portlet.RenderResponse;
 import javax.servlet.http.HttpServletRequest;
-import java.util.Collections;
 
 /**
  * @author Stefan Tanasie
@@ -57,6 +56,7 @@ public class AssetTagsDisplayContext {
 		RenderResponse renderResponse, RenderRequest renderRequest,
 		AssetTagsItemSelectorCriterion assetTagsItemSelectorCriterion) {
 
+		_assetTagsItemSelectorCriterion = assetTagsItemSelectorCriterion;
 		_httpServletRequest = httpServletRequest;
 		_itemSelector = itemSelector;
 		_portletURL = portletURL;
@@ -65,24 +65,8 @@ public class AssetTagsDisplayContext {
 		_rowChecker = false;
 	}
 
-	public String getSelectAssetTagsURL() {
-		if (_selectSegmentsEntryURL != null) {
-			return _selectSegmentsEntryURL;
-		}
-
-		AssetTagsItemSelectorCriterion assetTagsItemSelectorCriterion =
-			new AssetTagsItemSelectorCriterion();
-
-		assetTagsItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
-			Collections.singletonList(
-				new AssetTagsItemSelectorReturnType()));
-
-		_selectSegmentsEntryURL = String.valueOf(
-			_itemSelector.getItemSelectorURL(
-				RequestBackedPortletURLFactoryUtil.create(_renderRequest),
-				"selectEntity", assetTagsItemSelectorCriterion));
-
-		return _selectSegmentsEntryURL;
+	public boolean isMultiple () {
+		return _assetTagsItemSelectorCriterion.getIsMultiple();
 	}
 
 	public SearchContainer<AssetTag> getTagSearchContainer() {
@@ -163,6 +147,10 @@ public class AssetTagsDisplayContext {
 	private long[] _getGroupIds() {
 		if (ArrayUtil.isNotEmpty(_groupIds)) {
 			return _groupIds;
+		}
+
+		if (isMultiple()){
+			return _assetTagsItemSelectorCriterion.getGroupIds();
 		}
 
 		long[] groupIds = StringUtil.split(
@@ -251,6 +239,7 @@ public class AssetTagsDisplayContext {
 	private static final Log _log = LogFactoryUtil.getLog(
 		AssetTagsDisplayContext.class);
 
+	private final AssetTagsItemSelectorCriterion _assetTagsItemSelectorCriterion;
 	private final RenderResponse _renderResponse;
 	private String _mvcPath;
 	private String _keywords;

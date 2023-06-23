@@ -22,13 +22,21 @@ import com.liferay.item.selector.BaseItemSelectorCriterion;
 public class AssetTagsItemSelectorCriterion
 	extends BaseItemSelectorCriterion {
 
-	public long getGroupId() {
-		return _groupId;
+	public long[] getGroupIds() {
+		return _groupIds;
 	}
 
-	public void setGroupId(long groupId) {
-		_groupId = groupId;
+	public boolean getIsMultiple() {
+		return _isMultiple;
 	}
 
-	long _groupId;
+	public void setGroupIds(long[] groupIds) {
+		_groupIds = groupIds;
+	}
+
+	public void setMultiple(boolean isMultiple) {_isMultiple = isMultiple; }
+
+	boolean _isMultiple;
+
+	long[] _groupIds;
 }

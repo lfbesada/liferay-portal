@@ -96,7 +96,7 @@ public class AssetTagsItemSelectorView
 			httpServletRequest, servletResponse,
 			assetTagsItemSelectorCriterion, portletURL, itemSelectedEventName,
 			search,
-			new AssetTagsItemSelectorViewDescriptor(
+			new AssetTagsItemSelectorViewDescriptor(assetTagsItemSelectorCriterion,
 				httpServletRequest, assetTagsDisplayContext));
 	}
 

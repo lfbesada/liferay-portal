@@ -220,15 +220,13 @@ public class AssetTagsSelectorTag extends IncludeTag {
 
 	protected PortletURL getPortletURL() {
 		try {
-			PortletRequest portletRequest =
-				(PortletRequest)getRequest().getAttribute(
-					JavaConstants.JAVAX_PORTLET_REQUEST);
-
 			AssetTagsItemSelectorCriterion assetTagsItemSelectorCriterion =
 				new AssetTagsItemSelectorCriterion();
 
 			assetTagsItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
 					new AssetTagsItemSelectorReturnType());
+
+			assetTagsItemSelectorCriterion.setMultiple(true);
 
 			return PortletURLBuilder.create(ItemSelectorUtil.getItemSelector().getItemSelectorURL(
 				RequestBackedPortletURLFactoryUtil.create(getRequest()),
