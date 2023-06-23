@@ -51,17 +51,7 @@ public class AssetTagsItemDescriptor
 
 	@Override
 	public String getPayload() {
-		ThemeDisplay themeDisplay =
-			(ThemeDisplay)_httpServletRequest.getAttribute(
-				WebKeys.THEME_DISPLAY);
-
-		return JSONUtil.put(
-			"tagId",
-			String.valueOf(_assetTag.getTagId())
-		).put(
-			"tagName",
-			_assetTag.getName()
-		).toString();
+		return _assetTag.getName();
 	}
 
 	@Override
