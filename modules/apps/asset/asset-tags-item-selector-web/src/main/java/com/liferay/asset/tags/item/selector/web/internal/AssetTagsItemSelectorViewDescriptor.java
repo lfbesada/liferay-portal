@@ -59,6 +59,11 @@ public class AssetTagsItemSelectorViewDescriptor
 	}
 
 	@Override
+	public String[] getOrderByKeys() {
+		return new String[] {"name"};
+	}
+
+	@Override
 	public ItemSelectorReturnType getItemSelectorReturnType() {
 		return new AssetTagsItemSelectorReturnType();
 	}
@@ -72,6 +77,11 @@ public class AssetTagsItemSelectorViewDescriptor
 	@Override
 	public TableItemView getTableItemView(AssetTag assetTag) {
 		return new AssetTagsTableItemView(assetTag, _themeDisplay);
+	}
+
+	@Override
+	public boolean isMultipleSelection() {
+		return true;
 	}
 
 	@Override
