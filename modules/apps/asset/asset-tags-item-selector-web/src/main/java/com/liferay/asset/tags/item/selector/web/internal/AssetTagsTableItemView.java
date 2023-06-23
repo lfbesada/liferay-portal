@@ -59,7 +59,7 @@ public class AssetTagsTableItemView implements TableItemView {
 
 		nameTextSearchEntry.setName(HtmlUtil.escape(_assetTag.getName()));
 		nameTextSearchEntry.setCssClass(
-			"entry entry-selector table-cell-expand table-cell-minw-200");
+			"entry entry-selector table-cell-expand-smaller table-cell-minw-80");
 		nameTextSearchEntry.setData(
 			HashMapBuilder.<String, Object>put(
 				"entityid", _assetTag.getTagId()
