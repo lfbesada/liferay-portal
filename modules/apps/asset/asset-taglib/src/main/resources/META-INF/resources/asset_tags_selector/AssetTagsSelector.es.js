@@ -133,7 +133,7 @@ function AssetTagsSelector({
 		const sub = (str, object) =>
 			str.replace(/\{([^}]+)\}/g, (_, m) => object[m]);
 
-		const url = sub(decodeURIComponent(portletURL), {
+		const url = sub(portletURL, {
 			selectedTagNames: selectedItems.map((item) => item.value).join(),
 		});
 
