@@ -14,12 +14,26 @@
 
 import {fetch, getOpener, openToast} from 'frontend-js-web';
 
-export default function ({namespace}) {
-	const addButton = document.getElementById(`${namespace}addButton`);
+import {checkFriendlyURL} from './checkFriendlyURL';
 
-	const form = document.getElementById(`${namespace}fm`);
+interface Options {
+	getFriendlyURLWarningURL: string;
+	namespace: string;
+	shouldCheckFriendlyURL: boolean;
+}
 
-	form.addEventListener('submit', (event) => {
+export default function AddLayout({
+	getFriendlyURLWarningURL,
+	namespace,
+	shouldCheckFriendlyURL,
+}: Options) {
+	const addButton = document.getElementById(
+		`${namespace}addButton`
+	) as HTMLButtonElement;
+
+	const form = document.getElementById(`${namespace}fm`) as HTMLFormElement;
+
+	const onSubmit = async (event: Event) => {
 		event.preventDefault();
 		event.stopPropagation();
 
@@ -30,6 +44,19 @@ export default function ({namespace}) {
 		addButton.disabled = true;
 
 		const formData = new FormData(form);
+
+		if (shouldCheckFriendlyURL) {
+			const {shouldSubmit} = await checkFriendlyURL(
+				getFriendlyURLWarningURL,
+				formData
+			);
+
+			if (!shouldSubmit) {
+				addButton.disabled = false;
+
+				return;
+			}
+		}
 
 		fetch(form.action, {
 			body: formData,
@@ -73,5 +100,13 @@ export default function ({namespace}) {
 					});
 				}
 			});
-	});
+	};
+
+	form.addEventListener('submit', onSubmit);
+
+	return {
+		dispose() {
+			form.removeEventListener('submit', onSubmit);
+		},
+	};
 }
