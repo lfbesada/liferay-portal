@@ -38,7 +38,6 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
@@ -55,7 +54,6 @@ import org.springframework.mock.web.MockHttpServletRequest;
 /**
  * @author Lourdes Fernández Besada
  */
-@FeatureFlags("LPS-179483")
 @RunWith(Arquillian.class)
 public class AICreatorOpenAIEditorConfigurationTest {
 
