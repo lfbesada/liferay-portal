@@ -30,6 +30,9 @@ import com.liferay.headless.delivery.dto.v1_0.ContentSubtype;
 import com.liferay.headless.delivery.dto.v1_0.ContentType;
 import com.liferay.headless.delivery.dto.v1_0.DisplayPageTemplate;
 import com.liferay.headless.delivery.dto.v1_0.PageDefinition;
+import com.liferay.info.item.InfoItemFormVariation;
+import com.liferay.info.item.InfoItemServiceRegistry;
+import com.liferay.info.item.provider.InfoItemFormVariationsProvider;
 import com.liferay.layout.exporter.LayoutsExporter;
 import com.liferay.layout.internal.headless.delivery.dto.v1_0.util.MasterPageUtil;
 import com.liferay.layout.internal.headless.delivery.dto.v1_0.util.PageTemplateCollectionUtil;
@@ -55,6 +58,7 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portletfilerepository.PortletFileRepositoryUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.zip.ZipWriter;
 import com.liferay.portal.kernel.zip.ZipWriterFactory;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
@@ -243,6 +247,30 @@ public class LayoutsExporterImpl implements LayoutsExporter {
 		}
 
 		return null;
+	}
+
+	private String _getSubtypeKey(
+		LayoutPageTemplateEntry layoutPageTemplateEntry) {
+
+		InfoItemFormVariationsProvider<?> infoItemFormVariationsProvider =
+			_infoItemServiceRegistry.getFirstInfoItemService(
+				InfoItemFormVariationsProvider.class,
+				layoutPageTemplateEntry.getClassName());
+
+		if (infoItemFormVariationsProvider == null) {
+			return null;
+		}
+
+		InfoItemFormVariation infoItemFormVariation =
+			infoItemFormVariationsProvider.getInfoItemFormVariation(
+				layoutPageTemplateEntry.getGroupId(),
+				String.valueOf(layoutPageTemplateEntry.getClassTypeId()));
+
+		if (infoItemFormVariation == null) {
+			return null;
+		}
+
+		return infoItemFormVariation.getExternalKey();
 	}
 
 	private void _populateDisplayPagesZipWriter(
@@ -488,6 +516,8 @@ public class LayoutsExporterImpl implements LayoutsExporter {
 							{
 								subtypeId =
 									layoutPageTemplateEntry.getClassTypeId();
+								subtypeKey = _getSubtypeKey(
+									layoutPageTemplateEntry);
 							}
 						};
 					});
@@ -516,6 +546,9 @@ public class LayoutsExporterImpl implements LayoutsExporter {
 	private DTOConverterRegistry _dtoConverterRegistry;
 
 	@Reference
+	private InfoItemServiceRegistry _infoItemServiceRegistry;
+
+	@Reference
 	private LayoutLocalService _layoutLocalService;
 
 	@Reference
@@ -533,6 +566,9 @@ public class LayoutsExporterImpl implements LayoutsExporter {
 	@Reference
 	private LayoutUtilityPageEntryLocalService
 		_layoutUtilityPageEntryLocalService;
+
+	@Reference
+	private Portal _portal;
 
 	@Reference
 	private ZipWriterFactory _zipWriterFactory;
