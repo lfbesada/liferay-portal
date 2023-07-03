@@ -60,8 +60,32 @@ public class FileEntryInfoItemFormVariationsProvider
 		}
 
 		return new InfoItemFormVariation(
-			dlFileEntryType.getFileEntryTypeKey(),
-			groupId, String.valueOf(dlFileEntryType.getFileEntryTypeId()),
+			dlFileEntryType.getFileEntryTypeKey(), groupId,
+			String.valueOf(dlFileEntryType.getFileEntryTypeId()),
+			InfoLocalizedValue.<String>builder(
+			).defaultLocale(
+				LocaleUtil.fromLanguageId(
+					dlFileEntryType.getDefaultLanguageId())
+			).values(
+				dlFileEntryType.getNameMap()
+			).build());
+	}
+
+	@Override
+	public InfoItemFormVariation getInfoItemFormVariation(
+		String formVariationKey) {
+
+		DLFileEntryType dlFileEntryType =
+			_dlFileEntryTypeLocalService.fetchDLFileEntryType(
+				GetterUtil.getLong(formVariationKey));
+
+		if (dlFileEntryType == null) {
+			return null;
+		}
+
+		return new InfoItemFormVariation(
+			dlFileEntryType.getFileEntryTypeKey(), dlFileEntryType.getGroupId(),
+			String.valueOf(dlFileEntryType.getFileEntryTypeId()),
 			InfoLocalizedValue.<String>builder(
 			).defaultLocale(
 				LocaleUtil.fromLanguageId(

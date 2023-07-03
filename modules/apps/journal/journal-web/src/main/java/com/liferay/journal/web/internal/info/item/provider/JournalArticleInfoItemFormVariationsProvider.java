@@ -74,6 +74,28 @@ public class JournalArticleInfoItemFormVariationsProvider
 	}
 
 	@Override
+	public InfoItemFormVariation getInfoItemFormVariation(
+		String formVariationKey) {
+
+		DDMStructure ddmStructure = _ddmStructureLocalService.fetchStructure(
+			GetterUtil.getLong(formVariationKey));
+
+		if (ddmStructure == null) {
+			return null;
+		}
+
+		return new InfoItemFormVariation(
+			ddmStructure.getStructureKey(), ddmStructure.getGroupId(),
+			String.valueOf(ddmStructure.getStructureId()),
+			InfoLocalizedValue.<String>builder(
+			).defaultLocale(
+				LocaleUtil.fromLanguageId(ddmStructure.getDefaultLanguageId())
+			).values(
+				ddmStructure.getNameMap()
+			).build());
+	}
+
+	@Override
 	public InfoItemFormVariation getInfoItemFormVariationByExternalKey(
 		String externalKey, long groupId) {
 
