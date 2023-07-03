@@ -1922,7 +1922,7 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 				contentType.getClassName());
 
 			long classTypeId = _getClassTypeId(
-				displayPageTemplate, classNameId);
+				contentType.getClassName(), displayPageTemplate);
 
 			LayoutPageTemplateEntry layoutPageTemplateEntry =
 				_layoutPageTemplateEntryLocalService.
@@ -1963,7 +1963,7 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 		}
 
 		private long _getClassTypeId(
-			DisplayPageTemplate displayPageTemplate, long classNameId) {
+			String className, DisplayPageTemplate displayPageTemplate) {
 
 			ContentSubtype contentSubtype =
 				displayPageTemplate.getContentSubtype();
@@ -1986,8 +1986,7 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 
 			InfoItemFormVariationsProvider<?> infoItemFormVariationsProvider =
 				_infoItemServiceRegistry.getFirstInfoItemService(
-					InfoItemFormVariationsProvider.class,
-					_portal.getClassName(classNameId));
+					InfoItemFormVariationsProvider.class, className);
 
 			if (infoItemFormVariationsProvider == null) {
 				return 0;
