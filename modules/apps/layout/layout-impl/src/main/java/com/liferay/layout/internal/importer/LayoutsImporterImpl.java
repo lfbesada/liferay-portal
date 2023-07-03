@@ -2032,7 +2032,21 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 				return subtypeId;
 			}
 
-			throw new PortalException();
+			infoItemFormVariation =
+				infoItemFormVariationsProvider.getInfoItemFormVariation(key);
+
+			if (infoItemFormVariation != null) {
+				infoItemFormVariation =
+					infoItemFormVariationsProvider.
+						getInfoItemFormVariationByExternalKey(
+							infoItemFormVariation.getExternalKey(), groupId);
+			}
+
+			if (infoItemFormVariation == null) {
+				throw new PortalException();
+			}
+
+			return GetterUtil.getLong(infoItemFormVariation.getKey());
 		}
 
 		private final DisplayPageTemplateEntry _displayPageTemplateEntry;
