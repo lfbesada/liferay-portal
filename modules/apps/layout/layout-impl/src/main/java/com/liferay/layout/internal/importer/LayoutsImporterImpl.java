@@ -1997,10 +1997,17 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 					_groupId, subtypeKey);
 
 			if (infoItemFormVariation == null) {
-				return 0;
+				infoItemFormVariation =
+					infoItemFormVariationsProvider.
+						getInfoItemFormVariationByExternalKey(
+							subtypeKey, _groupId);
 			}
 
-			return GetterUtil.getLong(infoItemFormVariation.getKey());
+			if (infoItemFormVariation != null) {
+				return GetterUtil.getLong(infoItemFormVariation.getKey());
+			}
+
+			return 0;
 		}
 
 		private final DisplayPageTemplateEntry _displayPageTemplateEntry;
