@@ -63,6 +63,7 @@ public class JournalArticleInfoItemFormVariationsProvider
 		}
 
 		return new InfoItemFormVariation(
+			ddmStructure.getStructureKey(),
 			groupId, String.valueOf(ddmStructure.getStructureId()),
 			InfoLocalizedValue.<String>builder(
 			).defaultLocale(
@@ -99,6 +100,7 @@ public class JournalArticleInfoItemFormVariationsProvider
 
 			infoItemFormVariations.add(
 				new InfoItemFormVariation(
+					ddmStructure.getStructureKey(),
 					ddmStructure.getGroupId(),
 					String.valueOf(ddmStructure.getStructureId()),
 					InfoLocalizedValue.<String>builder(

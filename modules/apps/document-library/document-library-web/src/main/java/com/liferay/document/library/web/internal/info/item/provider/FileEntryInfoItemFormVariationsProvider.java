@@ -60,6 +60,7 @@ public class FileEntryInfoItemFormVariationsProvider
 		}
 
 		return new InfoItemFormVariation(
+			dlFileEntryType.getFileEntryTypeKey(),
 			groupId, String.valueOf(dlFileEntryType.getFileEntryTypeId()),
 			InfoLocalizedValue.<String>builder(
 			).defaultLocale(
@@ -101,6 +102,7 @@ public class FileEntryInfoItemFormVariationsProvider
 
 			infoItemFormVariations.add(
 				new InfoItemFormVariation(
+					dlFileEntryType.getFileEntryTypeKey(),
 					dlFileEntryType.getGroupId(),
 					String.valueOf(dlFileEntryType.getFileEntryTypeId()),
 					InfoLocalizedValue.<String>builder(
@@ -121,6 +123,7 @@ public class FileEntryInfoItemFormVariationsProvider
 				DLFileEntryTypeConstants.FILE_ENTRY_TYPE_ID_BASIC_DOCUMENT);
 
 		return new InfoItemFormVariation(
+			basicDocumentDLFileEntryType.getFileEntryTypeKey(),
 			basicDocumentDLFileEntryType.getGroupId(),
 			String.valueOf(basicDocumentDLFileEntryType.getFileEntryTypeId()),
 			InfoLocalizedValue.localize(
