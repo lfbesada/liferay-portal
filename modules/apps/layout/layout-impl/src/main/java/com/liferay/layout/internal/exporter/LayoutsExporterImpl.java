@@ -26,9 +26,11 @@ import com.fasterxml.jackson.databind.ser.impl.SimpleBeanPropertyFilter;
 import com.fasterxml.jackson.databind.ser.impl.SimpleFilterProvider;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
+import com.liferay.headless.delivery.dto.v1_0.ContentSubtype;
+import com.liferay.headless.delivery.dto.v1_0.ContentType;
+import com.liferay.headless.delivery.dto.v1_0.DisplayPageTemplate;
 import com.liferay.headless.delivery.dto.v1_0.PageDefinition;
 import com.liferay.layout.exporter.LayoutsExporter;
-import com.liferay.layout.internal.headless.delivery.dto.v1_0.util.DisplayPageTemplateUtil;
 import com.liferay.layout.internal.headless.delivery.dto.v1_0.util.MasterPageUtil;
 import com.liferay.layout.internal.headless.delivery.dto.v1_0.util.PageTemplateCollectionUtil;
 import com.liferay.layout.internal.headless.delivery.dto.v1_0.util.PageTemplateUtil;
@@ -266,8 +268,7 @@ public class LayoutsExporterImpl implements LayoutsExporter {
 				LayoutPageTemplateExportImportConstants.
 					FILE_NAME_DISPLAY_PAGE_TEMPLATE,
 			objectWriter.writeValueAsString(
-				DisplayPageTemplateUtil.toDisplayPageTemplate(
-					layoutPageTemplateEntry)));
+				_toDisplayPageTemplate(layoutPageTemplateEntry)));
 
 		Layout layout = _layoutLocalService.fetchLayout(
 			layoutPageTemplateEntry.getPlid());
@@ -463,6 +464,35 @@ public class LayoutsExporterImpl implements LayoutsExporter {
 					previewFileEntry.getExtension(),
 				previewFileEntry.getContentStream());
 		}
+	}
+
+	private DisplayPageTemplate _toDisplayPageTemplate(
+		LayoutPageTemplateEntry layoutPageTemplateEntry) {
+
+		return new DisplayPageTemplate() {
+			{
+				contentType = new ContentType() {
+					{
+						className = layoutPageTemplateEntry.getClassName();
+					}
+				};
+				name = layoutPageTemplateEntry.getName();
+
+				setContentSubtype(
+					() -> {
+						if (layoutPageTemplateEntry.getClassTypeId() == 0) {
+							return null;
+						}
+
+						return new ContentSubtype() {
+							{
+								subtypeId =
+									layoutPageTemplateEntry.getClassTypeId();
+							}
+						};
+					});
+			}
+		};
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
