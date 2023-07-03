@@ -41,6 +41,22 @@ public interface InfoItemFormVariationsProvider<T> {
 		return null;
 	}
 
+	public default InfoItemFormVariation getInfoItemFormVariationByExternalKey(
+		String externalKey, long groupId) {
+
+		for (InfoItemFormVariation infoItemFormVariation :
+				getInfoItemFormVariations(groupId)) {
+
+			if (Objects.equals(
+					externalKey, infoItemFormVariation.getExternalKey())) {
+
+				return infoItemFormVariation;
+			}
+		}
+
+		return null;
+	}
+
 	public Collection<InfoItemFormVariation> getInfoItemFormVariations(
 		long groupId);
 
