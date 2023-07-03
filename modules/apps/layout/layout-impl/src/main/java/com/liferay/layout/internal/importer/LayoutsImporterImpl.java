@@ -1975,7 +1975,8 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 			String subtypeKey = contentSubtype.getSubtypeKey();
 
 			if (Validator.isNull(subtypeKey)) {
-				return _getClassTypeId(contentSubtype.getSubtypeId());
+				return _getClassTypeId(
+					className, _groupId, contentSubtype.getSubtypeId());
 			}
 
 			InfoItemFormVariationsProvider<?> infoItemFormVariationsProvider =
@@ -1983,7 +1984,8 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 					InfoItemFormVariationsProvider.class, className);
 
 			if (infoItemFormVariationsProvider == null) {
-				return _getClassTypeId(contentSubtype.getSubtypeId());
+				return _getClassTypeId(
+					className, _groupId, contentSubtype.getSubtypeId());
 			}
 
 			InfoItemFormVariation infoItemFormVariation =
@@ -2001,11 +2003,32 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 				return GetterUtil.getLong(infoItemFormVariation.getKey());
 			}
 
-			return _getClassTypeId(contentSubtype.getSubtypeId());
+			return _getClassTypeId(
+				className, _groupId, contentSubtype.getSubtypeId());
 		}
 
-		private long _getClassTypeId(Long subtypeId) {
-			if (subtypeId != null) {
+		private long _getClassTypeId(
+			String className, long groupId, Long subtypeId) {
+
+			if (subtypeId == null) {
+				return 0;
+			}
+
+			InfoItemFormVariationsProvider<?> infoItemFormVariationsProvider =
+				_infoItemServiceRegistry.getFirstInfoItemService(
+					InfoItemFormVariationsProvider.class, className);
+
+			if (infoItemFormVariationsProvider == null) {
+				return 0;
+			}
+
+			String key = String.valueOf(subtypeId);
+
+			InfoItemFormVariation infoItemFormVariation =
+				infoItemFormVariationsProvider.getInfoItemFormVariation(
+					groupId, key);
+
+			if (infoItemFormVariation != null) {
 				return subtypeId;
 			}
 
