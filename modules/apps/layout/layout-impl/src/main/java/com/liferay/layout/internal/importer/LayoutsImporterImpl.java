@@ -1972,16 +1972,10 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 				return 0;
 			}
 
-			Long subtypeId = contentSubtype.getSubtypeId();
-
-			if (subtypeId != null) {
-				return subtypeId;
-			}
-
 			String subtypeKey = contentSubtype.getSubtypeKey();
 
 			if (Validator.isNull(subtypeKey)) {
-				return 0;
+				return _getClassTypeId(contentSubtype.getSubtypeId());
 			}
 
 			InfoItemFormVariationsProvider<?> infoItemFormVariationsProvider =
@@ -1989,7 +1983,7 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 					InfoItemFormVariationsProvider.class, className);
 
 			if (infoItemFormVariationsProvider == null) {
-				return 0;
+				return _getClassTypeId(contentSubtype.getSubtypeId());
 			}
 
 			InfoItemFormVariation infoItemFormVariation =
@@ -2005,6 +1999,14 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 
 			if (infoItemFormVariation != null) {
 				return GetterUtil.getLong(infoItemFormVariation.getKey());
+			}
+
+			return _getClassTypeId(contentSubtype.getSubtypeId());
+		}
+
+		private long _getClassTypeId(Long subtypeId) {
+			if (subtypeId != null) {
+				return subtypeId;
 			}
 
 			return 0;
