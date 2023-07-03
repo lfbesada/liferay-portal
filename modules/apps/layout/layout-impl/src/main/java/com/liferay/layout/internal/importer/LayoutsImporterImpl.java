@@ -1963,7 +1963,8 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 		}
 
 		private long _getClassTypeId(
-			String className, DisplayPageTemplate displayPageTemplate) {
+				String className, DisplayPageTemplate displayPageTemplate)
+			throws Exception {
 
 			ContentSubtype contentSubtype =
 				displayPageTemplate.getContentSubtype();
@@ -1972,11 +1973,15 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 				return 0;
 			}
 
+			long subtypeId = GetterUtil.getLong(contentSubtype.getSubtypeId());
 			String subtypeKey = contentSubtype.getSubtypeKey();
 
+			if ((subtypeId <= 0) && Validator.isNull(subtypeKey)) {
+				return 0;
+			}
+
 			if (Validator.isNull(subtypeKey)) {
-				return _getClassTypeId(
-					className, _groupId, contentSubtype.getSubtypeId());
+				return _getClassTypeId(className, _groupId, subtypeId);
 			}
 
 			InfoItemFormVariationsProvider<?> infoItemFormVariationsProvider =
@@ -1984,8 +1989,7 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 					InfoItemFormVariationsProvider.class, className);
 
 			if (infoItemFormVariationsProvider == null) {
-				return _getClassTypeId(
-					className, _groupId, contentSubtype.getSubtypeId());
+				throw new PortalException();
 			}
 
 			InfoItemFormVariation infoItemFormVariation =
@@ -2003,23 +2007,19 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 				return GetterUtil.getLong(infoItemFormVariation.getKey());
 			}
 
-			return _getClassTypeId(
-				className, _groupId, contentSubtype.getSubtypeId());
+			return _getClassTypeId(className, _groupId, subtypeId);
 		}
 
 		private long _getClassTypeId(
-			String className, long groupId, Long subtypeId) {
-
-			if (subtypeId == null) {
-				return 0;
-			}
+				String className, long groupId, long subtypeId)
+			throws Exception {
 
 			InfoItemFormVariationsProvider<?> infoItemFormVariationsProvider =
 				_infoItemServiceRegistry.getFirstInfoItemService(
 					InfoItemFormVariationsProvider.class, className);
 
 			if (infoItemFormVariationsProvider == null) {
-				return 0;
+				throw new PortalException();
 			}
 
 			String key = String.valueOf(subtypeId);
@@ -2032,7 +2032,7 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 				return subtypeId;
 			}
 
-			return 0;
+			throw new PortalException();
 		}
 
 		private final DisplayPageTemplateEntry _displayPageTemplateEntry;
