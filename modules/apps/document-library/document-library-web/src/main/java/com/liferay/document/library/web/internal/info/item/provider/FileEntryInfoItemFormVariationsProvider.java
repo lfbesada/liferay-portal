@@ -55,7 +55,7 @@ public class FileEntryInfoItemFormVariationsProvider
 			_dlFileEntryTypeLocalService.fetchDLFileEntryType(
 				GetterUtil.getLong(formVariationKey));
 
-		if (dlFileEntryType == null) {
+		if (!_isAssignableFromGroup(dlFileEntryType, groupId)) {
 			return null;
 		}
 
@@ -171,6 +171,24 @@ public class FileEntryInfoItemFormVariationsProvider
 				depotEntryLocalService.getGroupConnectedDepotEntries(
 					groupId, true, QueryUtil.ALL_POS, QueryUtil.ALL_POS),
 				DepotEntry::getGroupId));
+	}
+
+	private boolean _isAssignableFromGroup(
+		DLFileEntryType dlFileEntryType, long groupId) {
+
+		if (dlFileEntryType == null) {
+			return false;
+		}
+
+		try {
+			return ArrayUtil.contains(
+				_getCurrentAndAncestorSiteGroupIds(groupId),
+				dlFileEntryType.getGroupId());
+		}
+		catch (PortalException portalException) {
+			throw new RuntimeException(
+				"An unexpected error occurred", portalException);
+		}
 	}
 
 	private static final Snapshot<DepotEntryLocalService>

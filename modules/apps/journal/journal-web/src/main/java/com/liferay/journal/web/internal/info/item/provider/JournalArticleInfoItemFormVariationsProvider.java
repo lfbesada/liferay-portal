@@ -58,7 +58,7 @@ public class JournalArticleInfoItemFormVariationsProvider
 				formVariationKey);
 		}
 
-		if (ddmStructure == null) {
+		if (!_isAssignableFromGroup(ddmStructure, groupId)) {
 			return null;
 		}
 
@@ -175,6 +175,24 @@ public class JournalArticleInfoItemFormVariationsProvider
 				depotEntryLocalService.getGroupConnectedDepotEntries(
 					groupId, true, QueryUtil.ALL_POS, QueryUtil.ALL_POS),
 				DepotEntry::getGroupId));
+	}
+
+	private boolean _isAssignableFromGroup(
+		DDMStructure ddmStructure, long groupId) {
+
+		if (ddmStructure == null) {
+			return false;
+		}
+
+		try {
+			return ArrayUtil.contains(
+				_getCurrentAndAncestorSiteGroupIds(groupId),
+				ddmStructure.getGroupId());
+		}
+		catch (PortalException portalException) {
+			throw new RuntimeException(
+				"An unexpected error occurred", portalException);
+		}
 	}
 
 	private static final Snapshot<DepotEntryLocalService>
