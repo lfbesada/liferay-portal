@@ -16,7 +16,6 @@ package com.liferay.layout.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.layout.service.LayoutClassedModelUsageLocalService;
-import com.liferay.layout.service.LayoutClassedModelUsageLocalServiceUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
@@ -40,7 +39,7 @@ import org.junit.runner.RunWith;
  * @author Yurena Cabrera
  */
 @RunWith(Arquillian.class)
-public class LayoutClassedModelUsageLocalServiceUtilTest {
+public class LayoutClassedModelUsageLocalServiceTest {
 
 	@ClassRule
 	@Rule
@@ -62,7 +61,7 @@ public class LayoutClassedModelUsageLocalServiceUtilTest {
 
 		Assert.assertEquals(
 			3,
-			LayoutClassedModelUsageLocalServiceUtil.
+			_layoutClassedModelUsageLocalService.
 				getUniqueLayoutClassedModelUsagesCount(
 					_layout.getClassNameId(), _layout.getPlid(),
 					StringPool.BLANK));
