@@ -191,7 +191,7 @@ public class LayoutClassedModelUsageLocalServiceImpl
 						).or(
 							LayoutClassedModelUsageTable.INSTANCE.
 								classedModelExternalReferenceCode.isNull()
-						)
+						).withParentheses()
 				)
 			));
 	}
