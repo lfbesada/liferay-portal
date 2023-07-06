@@ -15,18 +15,32 @@
 package com.liferay.layout.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.asset.kernel.model.AssetEntry;
+import com.liferay.asset.kernel.service.AssetEntryLocalService;
+import com.liferay.asset.publisher.constants.AssetPublisherPortletKeys;
+import com.liferay.journal.constants.JournalFolderConstants;
+import com.liferay.journal.model.JournalArticle;
+import com.liferay.journal.test.util.JournalTestUtil;
+import com.liferay.layout.model.LayoutClassedModelUsage;
 import com.liferay.layout.service.LayoutClassedModelUsageLocalService;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.portlet.PortletLayoutListener;
+import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
-import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.xml.Document;
+import com.liferay.portal.kernel.xml.Element;
+import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+
+import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -54,26 +68,81 @@ public class LayoutClassedModelUsageLocalServiceTest {
 	}
 
 	@Test
-	public void testGetUniqueLayoutClassedModelUsagesCount() {
-		_addLayoutUsage();
-		_addLayoutUsage();
-		_addLayoutUsage();
+	public void testGetUniqueLayoutClassedModelUsagesCount() throws Exception {
+		JournalArticle journalArticle = JournalTestUtil.addArticle(
+			_group.getGroupId(),
+			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID);
+
+		_addLayoutClassedModelUsage(journalArticle.getResourcePrimKey());
+		_addLayoutClassedModelUsage(journalArticle.getResourcePrimKey());
+		_addLayoutClassedModelUsage(journalArticle.getResourcePrimKey());
 
 		Assert.assertEquals(
 			3,
 			_layoutClassedModelUsageLocalService.
 				getUniqueLayoutClassedModelUsagesCount(
-					_layout.getClassNameId(), _layout.getPlid(),
-					StringPool.BLANK));
+					_classNameLocalService.getClassNameId(
+						JournalArticle.class.getName()),
+					journalArticle.getResourcePrimKey(),
+					journalArticle.getExternalReferenceCode()));
 	}
 
-	private void _addLayoutUsage() {
-		_layoutClassedModelUsageLocalService.addLayoutClassedModelUsage(
-			_group.getGroupId(), _layout.getClassNameId(), _layout.getClassPK(),
-			StringPool.BLANK, RandomTestUtil.randomString(),
-			RandomTestUtil.randomLong(), RandomTestUtil.randomLong(),
-			new ServiceContext());
+	private void _addLayoutClassedModelUsage(long resourcePrimKey)
+		throws Exception {
+
+		Layout layout = LayoutTestUtil.addTypePortletLayout(_group);
+
+		AssetEntry assetEntry = _assetEntryLocalService.getEntry(
+			JournalArticle.class.getName(), resourcePrimKey);
+
+		Document document = SAXReaderUtil.createDocument(StringPool.UTF8);
+
+		Element assetEntryElement = document.addElement("asset-entry");
+
+		assetEntryElement.addElement("asset-entry-type");
+
+		Element assetEntryUuidElement = assetEntryElement.addElement(
+			"asset-entry-uuid");
+
+		assetEntryUuidElement.addText(assetEntry.getClassUuid());
+
+		List<LayoutClassedModelUsage> layoutClassedModelUsages1 =
+			_layoutClassedModelUsageLocalService.
+				getLayoutClassedModelUsagesByPlid(layout.getPlid());
+
+		String portletId = LayoutTestUtil.addPortletToLayout(
+			layout, AssetPublisherPortletKeys.ASSET_PUBLISHER,
+			HashMapBuilder.put(
+				"assetEntryXml",
+				new String[] {document.formattedString(StringPool.BLANK)}
+			).put(
+				"selectionStyle", new String[] {"manual"}
+			).build());
+
+		_portletLayoutListener.onSetup(portletId, layout.getPlid());
+
+		List<LayoutClassedModelUsage> layoutClassedModelUsages2 =
+			ListUtil.remove(
+				_layoutClassedModelUsageLocalService.
+					getLayoutClassedModelUsagesByPlid(layout.getPlid()),
+				layoutClassedModelUsages1);
+
+		Assert.assertEquals(
+			layoutClassedModelUsages2.toString(), 1,
+			layoutClassedModelUsages2.size());
+
+		LayoutClassedModelUsage layoutClassedModelUsage =
+			layoutClassedModelUsages2.get(0);
+
+		Assert.assertEquals(
+			resourcePrimKey, layoutClassedModelUsage.getClassPK());
 	}
+
+	@Inject
+	private AssetEntryLocalService _assetEntryLocalService;
+
+	@Inject
+	private ClassNameLocalService _classNameLocalService;
 
 	@DeleteAfterTestRun
 	private Group _group;
@@ -83,5 +152,10 @@ public class LayoutClassedModelUsageLocalServiceTest {
 	@Inject
 	private LayoutClassedModelUsageLocalService
 		_layoutClassedModelUsageLocalService;
+
+	@Inject(
+		filter = "(&(component.name=com.liferay.asset.publisher.web.internal.portlet.layout.listener.AssetPublisherPortletLayoutListener))"
+	)
+	private PortletLayoutListener _portletLayoutListener;
 
 }
