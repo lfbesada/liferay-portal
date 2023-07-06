@@ -108,10 +108,33 @@ public class LayoutClassedModelUsageLocalServiceTest {
 					journalArticle.getExternalReferenceCode()));
 	}
 
-	private void _addLayoutClassedModelUsage(long resourcePrimKey)
+	@Test
+	public void testGetUniqueLayoutClassedModelUsagesCountMultipleUsagesOnTheSamePage()
 		throws Exception {
 
-		Layout layout = LayoutTestUtil.addTypePortletLayout(_group);
+		JournalArticle journalArticle = JournalTestUtil.addArticle(
+			_group.getGroupId(),
+			JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID);
+
+		_addLayoutClassedModelUsage(journalArticle.getResourcePrimKey());
+		_addLayoutClassedModelUsage(
+			_layout, journalArticle.getResourcePrimKey());
+		_addLayoutClassedModelUsage(
+			_layout, journalArticle.getResourcePrimKey());
+
+		Assert.assertEquals(
+			2,
+			_layoutClassedModelUsageLocalService.
+				getUniqueLayoutClassedModelUsagesCount(
+					_classNameLocalService.getClassNameId(
+						JournalArticle.class.getName()),
+					journalArticle.getResourcePrimKey(),
+					journalArticle.getExternalReferenceCode()));
+	}
+
+	private void _addLayoutClassedModelUsage(
+			Layout layout, long resourcePrimKey)
+		throws Exception {
 
 		AssetEntry assetEntry = _assetEntryLocalService.getEntry(
 			JournalArticle.class.getName(), resourcePrimKey);
@@ -157,6 +180,14 @@ public class LayoutClassedModelUsageLocalServiceTest {
 
 		Assert.assertEquals(
 			resourcePrimKey, layoutClassedModelUsage.getClassPK());
+	}
+
+	private void _addLayoutClassedModelUsage(long resourcePrimKey)
+		throws Exception {
+
+		Layout layout = LayoutTestUtil.addTypePortletLayout(_group);
+
+		_addLayoutClassedModelUsage(layout, resourcePrimKey);
 	}
 
 	private void _pushServiceContext() throws Exception {
