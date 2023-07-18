@@ -73,8 +73,7 @@ public class FileEntryFileEntryItemSelectorReturnTypeResolver
 		}
 
 		return JSONUtil.put(
-			"classNameId",
-			String.valueOf(_portal.getClassNameId(FileEntry.class.getName()))
+			"classNameId", _getClassNameId()
 		).put(
 			"extension", fileEntry.getExtension()
 		).put(
@@ -110,6 +109,19 @@ public class FileEntryFileEntryItemSelectorReturnTypeResolver
 			"uuid", fileEntry.getUuid()
 		).toString();
 	}
+
+	private String _getClassNameId() {
+		if (_classNameId != null) {
+			return _classNameId;
+		}
+
+		_classNameId = String.valueOf(
+			_portal.getClassNameId(FileEntry.class.getName()));
+
+		return _classNameId;
+	}
+
+	private String _classNameId;
 
 	@Reference
 	private DLURLHelper _dlURLHelper;
