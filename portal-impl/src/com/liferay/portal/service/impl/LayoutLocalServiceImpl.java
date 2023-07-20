@@ -1413,6 +1413,57 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 	}
 
 	@Override
+	public List<Long> getLayoutPlids(
+		long groupId, boolean privateLayout, long parentLayoutId, int start,
+		int end, OrderByComparator<Layout> orderByComparator) {
+
+		if (MergeLayoutPrototypesThreadLocal.isInProgress()) {
+			return _getLayoutPlids(
+				groupId, privateLayout, parentLayoutId, start, end,
+				orderByComparator);
+		}
+
+		try {
+			List<Long> plids = _getLayoutPlids(
+				groupId, privateLayout, parentLayoutId, start, end,
+				orderByComparator);
+
+			Group group = _groupLocalService.getGroup(groupId);
+
+			LayoutSet layoutSet = _layoutSetLocalService.getLayoutSet(
+				groupId, privateLayout);
+
+			if (!group.isUser() ||
+				(parentLayoutId == LayoutConstants.DEFAULT_PARENT_LAYOUT_ID) ||
+				(layoutSet.isLayoutSetPrototypeLinkActive() &&
+				 !_mergeLayouts(
+					 group, layoutSet, groupId, privateLayout, parentLayoutId,
+					 start, end, orderByComparator)) ) {
+
+				return plids;
+			}
+
+			List<UserGroup> userUserGroups =
+					_userGroupLocalService.getUserUserGroups(
+						group.getClassPK());
+
+			for (UserGroup userGroup : userUserGroups) {
+				Group userGroupGroup = userGroup.getGroup();
+
+				plids.addAll(
+					_getLayoutPlids(
+						userGroupGroup.getGroupId(),
+						layoutSet.isPrivateLayout(), parentLayoutId));
+			}
+
+			return plids;
+		}
+		catch (PortalException portalException) {
+			throw new SystemException(portalException);
+		}
+	}
+
+	@Override
 	public List<Layout> getLayouts(long companyId) {
 		return layoutPersistence.findByCompanyId(companyId);
 	}
@@ -3829,6 +3880,47 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 					_classNameLocalService.getClassNameId(Layout.class))
 			)
 		);
+	}
+
+	private List<Long> _getLayoutPlids(
+		long groupId, boolean privateLayout, long parentLayoutId) {
+
+		return _getLayoutPlids(
+			groupId, privateLayout, parentLayoutId, -1, -1, null);
+	}
+
+	private List<Long> _getLayoutPlids(
+		long groupId, boolean privateLayout, long parentLayoutId, int start,
+		int end, OrderByComparator<Layout> orderByComparator) {
+
+		return dslQuery(
+			DSLQueryFactoryUtil.select(
+				LayoutTable.INSTANCE.plid
+			).from(
+				LayoutTable.INSTANCE
+			).where(
+				LayoutTable.INSTANCE.groupId.eq(
+					groupId
+				).and(
+					LayoutTable.INSTANCE.privateLayout.eq(privateLayout)
+				).and(
+					LayoutTable.INSTANCE.parentLayoutId.eq(parentLayoutId)
+				).and(
+					LayoutTable.INSTANCE.system.eq(false)
+				)
+			).orderBy(
+				orderByStep -> {
+					if (orderByComparator == null) {
+						return orderByStep.orderBy(
+							LayoutTable.INSTANCE.priority.ascending());
+					}
+
+					return orderByStep.orderBy(
+						LayoutTable.INSTANCE, orderByComparator);
+				}
+			).limit(
+				start, end
+			));
 	}
 
 	private long _getParentPlid(
