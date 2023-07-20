@@ -1413,6 +1413,44 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 	}
 
 	@Override
+	public List<Layout> getLayoutPlids(long groupId, boolean privateLayout) {
+		return getLayoutPlids(groupId, privateLayout, -1, -1, null);
+	}
+
+	@Override
+	public List<Layout> getLayoutPlids(
+		long groupId, boolean privateLayout, int start, int end,
+		OrderByComparator<Layout> orderByComparator) {
+
+		return dslQuery(
+			DSLQueryFactoryUtil.select(
+				LayoutTable.INSTANCE.plid
+			).from(
+				LayoutTable.INSTANCE
+			).where(
+				LayoutTable.INSTANCE.groupId.eq(
+					groupId
+				).and(
+					LayoutTable.INSTANCE.privateLayout.eq(privateLayout)
+				).and(
+					LayoutTable.INSTANCE.system.eq(false)
+				)
+			).orderBy(
+				orderByStep -> {
+					if (orderByComparator == null) {
+						return orderByStep.orderBy(
+							LayoutTable.INSTANCE.priority.ascending());
+					}
+
+					return orderByStep.orderBy(
+						LayoutTable.INSTANCE, orderByComparator);
+				}
+			).limit(
+				start, end
+			));
+	}
+
+	@Override
 	public List<Long> getLayoutPlids(
 		long groupId, boolean privateLayout, long parentLayoutId, int start,
 		int end, OrderByComparator<Layout> orderByComparator) {
@@ -1438,14 +1476,13 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 				(layoutSet.isLayoutSetPrototypeLinkActive() &&
 				 !_mergeLayouts(
 					 group, layoutSet, groupId, privateLayout, parentLayoutId,
-					 start, end, orderByComparator)) ) {
+					 start, end, orderByComparator))) {
 
 				return plids;
 			}
 
 			List<UserGroup> userUserGroups =
-					_userGroupLocalService.getUserUserGroups(
-						group.getClassPK());
+				_userGroupLocalService.getUserUserGroups(group.getClassPK());
 
 			for (UserGroup userGroup : userUserGroups) {
 				Group userGroupGroup = userGroup.getGroup();
