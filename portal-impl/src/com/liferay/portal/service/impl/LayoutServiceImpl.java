@@ -1610,6 +1610,38 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 		return layoutTypePortlet.getPortletIds();
 	}
 
+	private List<Layout> _filterLayouts(List<Long> plids)
+		throws PortalException {
+
+		List<Layout> filteredLayouts = new ArrayList<>();
+
+		for (Long plid : plids) {
+			if (LayoutPermissionUtil.contains(
+					getPermissionChecker(), plid, ActionKeys.VIEW)) {
+
+				filteredLayouts.add(layoutLocalService.getLayout(plid));
+			}
+		}
+
+		return filteredLayouts;
+	}
+
+	private List<Layout> _filterLayouts(List<Long> plids, int start, int end)
+		throws PortalException {
+
+		List<Layout> filteredLayouts = _filterLayouts(plids);
+
+		if (filteredLayouts.size() < end) {
+			end = filteredLayouts.size();
+		}
+
+		if (end <= start) {
+			return Collections.emptyList();
+		}
+
+		return filteredLayouts.subList(start, end);
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		LayoutServiceImpl.class);
 
