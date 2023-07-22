@@ -120,6 +120,7 @@ public class ContentLayoutTypeController extends BaseLayoutTypeControllerImpl {
 
 		String layoutMode = ParamUtil.getString(
 			httpServletRequest, "p_l_mode", Constants.VIEW);
+		boolean lockedLayout = false;
 
 		if (layoutMode.equals(Constants.EDIT)) {
 			if (hasUpdatePermissions == null) {
@@ -129,6 +130,9 @@ public class ContentLayoutTypeController extends BaseLayoutTypeControllerImpl {
 
 			if (!hasUpdatePermissions) {
 				layoutMode = Constants.VIEW;
+			}
+			else if (!layout.isUnlocked(layoutMode, themeDisplay.getUserId())) {
+				lockedLayout = true;
 			}
 		}
 
@@ -150,7 +154,10 @@ public class ContentLayoutTypeController extends BaseLayoutTypeControllerImpl {
 
 		String page = getViewPage();
 
-		if (layoutMode.equals(Constants.EDIT)) {
+		if (lockedLayout) {
+			page = _LOCKED_LAYOUT_PAGE;
+		}
+		else if (layoutMode.equals(Constants.EDIT)) {
 			page = _EDIT_LAYOUT_PAGE;
 		}
 
@@ -385,6 +392,9 @@ public class ContentLayoutTypeController extends BaseLayoutTypeControllerImpl {
 
 	private static final String _EDIT_LAYOUT_PAGE =
 		"/layout/edit_layout/content.jsp";
+
+	private static final String _LOCKED_LAYOUT_PAGE =
+		"/layout/edit_layout/locked.jsp";
 
 	private static final String _URL =
 		"${liferay:mainPath}/portal/layout?p_l_id=${liferay:plid}" +
