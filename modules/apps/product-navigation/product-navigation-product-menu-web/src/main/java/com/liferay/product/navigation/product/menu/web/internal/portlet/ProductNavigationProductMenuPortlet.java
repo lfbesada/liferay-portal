@@ -85,17 +85,13 @@ public class ProductNavigationProductMenuPortlet extends MVCPortlet {
 			_portal.getOriginalServletRequest(httpServletRequest), "p_l_mode",
 			Constants.VIEW);
 
-		if (layoutMode.equals(Constants.PREVIEW)) {
-			return;
-		}
-
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
 		if (!_productNavigationControlMenuManager.isShowControlMenu(
 				themeDisplay.getScopeGroup(), themeDisplay.getLayout(),
-				themeDisplay.getUserId())) {
+				layoutMode, themeDisplay.getUserId())) {
 
 			return;
 		}

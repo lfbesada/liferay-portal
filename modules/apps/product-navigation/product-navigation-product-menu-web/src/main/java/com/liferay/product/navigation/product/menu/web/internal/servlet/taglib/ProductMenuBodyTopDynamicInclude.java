@@ -73,10 +73,6 @@ public class ProductMenuBodyTopDynamicInclude extends BaseDynamicInclude {
 		String layoutMode = ParamUtil.getString(
 			httpServletRequest, "p_l_mode", Constants.VIEW);
 
-		if (layoutMode.equals(Constants.PREVIEW)) {
-			return;
-		}
-
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
@@ -84,7 +80,7 @@ public class ProductMenuBodyTopDynamicInclude extends BaseDynamicInclude {
 		Group scopeGroup = themeDisplay.getScopeGroup();
 
 		if (!_productNavigationControlMenuManager.isShowControlMenu(
-				scopeGroup, themeDisplay.getLayout(),
+				scopeGroup, themeDisplay.getLayout(), layoutMode,
 				themeDisplay.getUserId())) {
 
 			return;

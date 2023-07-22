@@ -22,6 +22,7 @@ import com.liferay.portal.kernel.model.Layout;
  */
 public interface ProductNavigationControlMenuManager {
 
-	public boolean isShowControlMenu(Group group, Layout layout, long userId);
+	public boolean isShowControlMenu(
+		Group group, Layout layout, String layoutMode, long userId);
 
 }

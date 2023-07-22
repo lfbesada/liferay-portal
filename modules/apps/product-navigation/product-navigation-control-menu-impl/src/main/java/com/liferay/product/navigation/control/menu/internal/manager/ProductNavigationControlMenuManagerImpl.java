@@ -23,6 +23,7 @@ import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.Constants;
 import com.liferay.product.navigation.control.menu.manager.ProductNavigationControlMenuManager;
 import com.liferay.site.configuration.MenuAccessConfiguration;
 
@@ -39,7 +40,13 @@ public class ProductNavigationControlMenuManagerImpl
 	implements ProductNavigationControlMenuManager {
 
 	@Override
-	public boolean isShowControlMenu(Group group, Layout layout, long userId) {
+	public boolean isShowControlMenu(
+		Group group, Layout layout, String layoutMode, long userId) {
+
+		if (layoutMode.equals(Constants.PREVIEW)) {
+			return false;
+		}
+
 		if (!group.isSite() || layout.isDraftLayout() ||
 			layout.isTypeControlPanel()) {
 

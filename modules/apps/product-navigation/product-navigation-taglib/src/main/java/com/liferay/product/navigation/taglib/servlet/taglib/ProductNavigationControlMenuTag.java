@@ -121,10 +121,6 @@ public class ProductNavigationControlMenuTag extends IncludeTag {
 		String layoutMode = ParamUtil.getString(
 			getOriginalServletRequest(), "p_l_mode", Constants.VIEW);
 
-		if (layoutMode.equals(Constants.PREVIEW)) {
-			return false;
-		}
-
 		HttpServletRequest httpServletRequest = getRequest();
 
 		ThemeDisplay themeDisplay =
@@ -137,7 +133,7 @@ public class ProductNavigationControlMenuTag extends IncludeTag {
 
 		if (!productNavigationControlMenuManager.isShowControlMenu(
 				themeDisplay.getScopeGroup(), themeDisplay.getLayout(),
-				themeDisplay.getUserId())) {
+				layoutMode, themeDisplay.getUserId())) {
 
 			return false;
 		}
