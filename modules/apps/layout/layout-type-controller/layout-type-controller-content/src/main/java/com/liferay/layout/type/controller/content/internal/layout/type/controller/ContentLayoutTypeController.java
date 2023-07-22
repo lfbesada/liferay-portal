@@ -169,27 +169,8 @@ public class ContentLayoutTypeController extends BaseLayoutTypeControllerImpl {
 			RequestDispatcher.INCLUDE_SERVLET_PATH);
 
 		try {
-			LayoutPageTemplateEntry layoutPageTemplateEntry = null;
-
-			if (layoutMode.equals(Constants.EDIT)) {
-				layoutPageTemplateEntry = _fetchLayoutPageTemplateEntry(layout);
-			}
-
-			if (layoutPageTemplateEntry != null) {
-				httpServletRequest.setAttribute(
-					ContentPageEditorWebKeys.CLASS_NAME,
-					LayoutPageTemplateEntry.class.getName());
-				httpServletRequest.setAttribute(
-					ContentPageEditorWebKeys.CLASS_PK,
-					layoutPageTemplateEntry.getLayoutPageTemplateEntryId());
-			}
-			else {
-				httpServletRequest.setAttribute(
-					ContentPageEditorWebKeys.CLASS_NAME,
-					Layout.class.getName());
-				httpServletRequest.setAttribute(
-					ContentPageEditorWebKeys.CLASS_PK, layout.getPlid());
-			}
+			_addContentPageEditorAttributes(
+				httpServletRequest, layout, layoutMode);
 
 			addAttributes(httpServletRequest);
 
@@ -302,6 +283,32 @@ public class ContentLayoutTypeController extends BaseLayoutTypeControllerImpl {
 	@Override
 	protected String getViewPage() {
 		return _VIEW_PAGE;
+	}
+
+	private void _addContentPageEditorAttributes(
+		HttpServletRequest httpServletRequest, Layout layout,
+		String layoutMode) {
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry = null;
+
+		if (layoutMode.equals(Constants.EDIT)) {
+			layoutPageTemplateEntry = _fetchLayoutPageTemplateEntry(layout);
+		}
+
+		if (layoutPageTemplateEntry != null) {
+			httpServletRequest.setAttribute(
+				ContentPageEditorWebKeys.CLASS_NAME,
+				LayoutPageTemplateEntry.class.getName());
+			httpServletRequest.setAttribute(
+				ContentPageEditorWebKeys.CLASS_PK,
+				layoutPageTemplateEntry.getLayoutPageTemplateEntryId());
+		}
+		else {
+			httpServletRequest.setAttribute(
+				ContentPageEditorWebKeys.CLASS_NAME, Layout.class.getName());
+			httpServletRequest.setAttribute(
+				ContentPageEditorWebKeys.CLASS_PK, layout.getPlid());
+		}
 	}
 
 	private LayoutPageTemplateEntry _fetchLayoutPageTemplateEntry(
