@@ -22,6 +22,7 @@ import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServ
 import com.liferay.layout.security.permission.resource.LayoutContentModelResourcePermission;
 import com.liferay.layout.service.LayoutLocalizationLocalService;
 import com.liferay.layout.type.controller.BaseLayoutTypeControllerImpl;
+import com.liferay.layout.type.controller.content.internal.display.context.ContentLayoutLockedDisplayContext;
 import com.liferay.petra.io.unsync.UnsyncStringWriter;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
@@ -176,8 +177,17 @@ public class ContentLayoutTypeController extends BaseLayoutTypeControllerImpl {
 			RequestDispatcher.INCLUDE_SERVLET_PATH);
 
 		try {
-			_addContentPageEditorAttributes(
-				httpServletRequest, layout, layoutMode);
+			if (lockedLayout) {
+				httpServletRequest.setAttribute(
+					ContentLayoutLockedDisplayContext.class.getName(),
+					new ContentLayoutLockedDisplayContext(
+						_servletContext.getContextPath(), httpServletRequest,
+						_portal));
+			}
+			else {
+				_addContentPageEditorAttributes(
+					httpServletRequest, layout, layoutMode);
+			}
 
 			addAttributes(httpServletRequest);
 

@@ -15,3 +15,51 @@
 --%>
 
 <%@ include file="/layout/edit_layout/init.jsp" %>
+
+<%
+ContentLayoutLockedDisplayContext contentLayoutLockedDisplayContext = (ContentLayoutLockedDisplayContext)request.getAttribute(ContentLayoutLockedDisplayContext.class.getName());
+%>
+
+<clay:container-fluid>
+	<clay:content-row
+		cssClass="c-mt-5 text-info"
+	>
+		<clay:content-col>
+			<img src="<%= contentLayoutLockedDisplayContext.getImagesPath() %>/blocked_page.png" />
+		</clay:content-col>
+	</clay:content-row>
+
+	<clay:content-row
+		cssClass="c-mt-3 text-info"
+	>
+		<clay:content-col
+			expand="<%= true %>"
+		>
+			<h1><liferay-ui:message key="page-in-use" /></h1>
+		</clay:content-col>
+	</clay:content-row>
+
+	<clay:content-row
+		cssClass="c-mt-3"
+	>
+		<clay:content-col
+			expand="<%= true %>"
+		>
+			<liferay-ui:message key="this-page-is-currently-being-edited-by-another-user.-if-you-need-to-take-control-over-this-page,-you-can-contact-your-admin-to-unlock-it" />
+		</clay:content-col>
+	</clay:content-row>
+
+	<c:if test="<%= contentLayoutLockedDisplayContext.isShowGoBackButton() %>">
+		<clay:content-row
+			cssClass="c-mt-3"
+		>
+			<clay:content-col>
+				<clay:button
+					displayType="primary"
+					label="go-back"
+					onClick='<%= "location.href='" + HtmlUtil.escapeJS(contentLayoutLockedDisplayContext.getBackURL()) + "';" %>'
+				/>
+			</clay:content-col>
+		</clay:content-row>
+	</c:if>
+</clay:container-fluid>
