@@ -82,6 +82,13 @@ public class LayoutEditorToolbarControlMenuJSPDynamicInclude
 
 		Layout layout = themeDisplay.getLayout();
 
+		String mode = ParamUtil.getString(
+			httpServletRequest, "p_l_mode", Constants.VIEW);
+
+		if (!layout.isUnlocked(mode, themeDisplay.getUserId())) {
+			return false;
+		}
+
 		if (layout.isSystem() && layout.isTypeContent() &&
 			!_isConversionLayout(layout)) {
 
@@ -91,9 +98,6 @@ public class LayoutEditorToolbarControlMenuJSPDynamicInclude
 		if (!layout.isTypeAssetDisplay() && !layout.isTypeContent()) {
 			return false;
 		}
-
-		String mode = ParamUtil.getString(
-			httpServletRequest, "p_l_mode", Constants.VIEW);
 
 		if (!Objects.equals(mode, Constants.EDIT) ||
 			(!LayoutPermissionUtil.containsLayoutUpdatePermission(
