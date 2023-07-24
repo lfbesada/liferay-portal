@@ -14,6 +14,7 @@
 
 package com.liferay.product.navigation.control.menu.internal.manager;
 
+import com.liferay.portal.kernel.lock.LockManager;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
@@ -43,7 +44,9 @@ public class ProductNavigationControlMenuManagerImpl
 	public boolean isShowControlMenu(
 		Group group, Layout layout, String layoutMode, long userId) {
 
-		if (layoutMode.equals(Constants.PREVIEW)) {
+		if (Objects.equals(layoutMode, Constants.PREVIEW) ||
+			!layout.isUnlocked(layoutMode, userId)) {
+
 			return false;
 		}
 
@@ -90,6 +93,9 @@ public class ProductNavigationControlMenuManagerImpl
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		ProductNavigationControlMenuManagerImpl.class);
+
+	@Reference
+	private LockManager _lockManager;
 
 	@Reference
 	private RoleLocalService _roleLocalService;
