@@ -20,9 +20,11 @@ import com.liferay.portal.kernel.scheduler.StorageType;
 import com.liferay.portal.kernel.scheduler.TimeUnit;
 import com.liferay.portal.kernel.scheduler.TriggerFactory;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -78,9 +80,13 @@ public class SchedulerResponseManagerTest {
 
 		_company = CompanyTestUtil.addCompany();
 
+		String originalName = PrincipalThreadLocal.getName();
+
 		try (SafeCloseable safeCloseable =
 				CompanyThreadLocal.setWithSafeCloseable(
 					_company.getCompanyId())) {
+
+			PrincipalThreadLocal.setName(TestPropsValues.getUserId());
 
 			_schedulerResponseManager.run(
 				CompanyThreadLocal.getCompanyId(), _TEST_NAME, _TEST_NAME,
@@ -100,6 +106,8 @@ public class SchedulerResponseManagerTest {
 				_TEST_NAME, _TEST_NAME, StorageType.MEMORY_CLUSTERED);
 
 			CompanyLocalServiceUtil.deleteCompany(_company);
+
+			PrincipalThreadLocal.setName(originalName);
 		}
 	}
 
