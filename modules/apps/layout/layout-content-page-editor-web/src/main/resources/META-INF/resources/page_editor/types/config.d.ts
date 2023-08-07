@@ -203,6 +203,7 @@ export interface Config {
 		toolbarPluginId: string;
 	}>;
 
+	unlockDraftLayoutURL:string;
 	unmarkItemsForDeletionURL: string;
 	updateCollectionDisplayConfigURL: string;
 	updateConfigurationValuesURL: string;
