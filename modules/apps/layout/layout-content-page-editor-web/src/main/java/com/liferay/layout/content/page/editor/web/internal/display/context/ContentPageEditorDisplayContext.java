@@ -638,6 +638,13 @@ public class ContentPageEditorDisplayContext {
 			).put(
 				"themeColorsCssClasses", _getThemeColorsCssClasses()
 			).put(
+				"unlockDraftLayoutURL",
+				PortletURLBuilder.createActionURL(
+					renderResponse
+				).setActionName(
+					"/layout_content_page_editor/unlock_draft_layout"
+				).buildString()
+			).put(
 				"unmarkItemsForDeletionURL",
 				getFragmentEntryActionURL(
 					"/layout_content_page_editor/unmark_items_for_deletion")
