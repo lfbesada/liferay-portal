@@ -103,6 +103,7 @@ page import="com.liferay.site.admin.web.internal.display.context.AddGroupDisplay
 page import="com.liferay.site.admin.web.internal.display.context.DefaultUserAssociationsDisplayContext" %><%@
 page import="com.liferay.site.admin.web.internal.display.context.DisplaySettingsDisplayContext" %><%@
 page import="com.liferay.site.admin.web.internal.display.context.LockedLayoutsDisplayContext" %><%@
+page import="com.liferay.site.admin.web.internal.display.context.LockedLayoutsSearchContainerManagementToolbarDisplayContext" %><%@
 page import="com.liferay.site.admin.web.internal.display.context.MenuAccessConfigurationDisplayContext" %><%@
 page import="com.liferay.site.admin.web.internal.display.context.SelectSiteInitializerDisplayContext" %><%@
 page import="com.liferay.site.admin.web.internal.display.context.SiteAdminDisplayContext" %><%@
