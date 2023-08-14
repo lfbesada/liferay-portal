@@ -56,6 +56,11 @@ public class LockedLayoutsSiteSettingsConfigurationScreenContributor
 	}
 
 	@Override
+	public String getSaveMVCActionCommandName() {
+		return "/site_admin/unlock_layouts";
+	}
+
+	@Override
 	public ServletContext getServletContext() {
 		return _servletContext;
 	}
