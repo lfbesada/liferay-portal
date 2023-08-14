@@ -29,6 +29,9 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
+import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.lock.model.LockTable;
@@ -73,6 +76,16 @@ public class LockedLayoutsDisplayContext {
 		return true;
 	}
 
+	public String getKeywords() {
+		if (_keywords != null) {
+			return _keywords;
+		}
+
+		_keywords = ParamUtil.getString(_liferayPortletRequest, "keywords");
+
+		return _keywords;
+	}
+
 	public SearchContainer<LockedLayoutDTO> getSearchContainer() {
 		if (_searchContainer != null) {
 			return _searchContainer;
@@ -85,7 +98,7 @@ public class LockedLayoutsDisplayContext {
 			ListUtil.fromArray("name", "type", "current-user", "last-autosave"),
 			"there-are-no-locked-pages");
 
-		List<LockedLayoutDTO> lockedLayoutDTOs = _getLockedLayoutDTOs();
+		List<LockedLayoutDTO> lockedLayoutDTOs = _getFilteredLockedLayoutDTOs();
 
 		searchContainer.setResultsAndTotal(
 			() -> lockedLayoutDTOs, lockedLayoutDTOs.size());
@@ -139,6 +152,20 @@ public class LockedLayoutsDisplayContext {
 			return HtmlUtil.escape(_userName);
 		}
 
+		public boolean hasKeywords(String keywords) {
+			if (StringUtil.contains(
+					StringUtil.toLowerCase(_name), keywords,
+					StringPool.BLANK) ||
+				StringUtil.contains(
+					StringUtil.toLowerCase(_userName), keywords,
+					StringPool.BLANK)) {
+
+				return true;
+			}
+
+			return false;
+		}
+
 		private final long _classPK;
 		private final Date _lastAutoSaveDate;
 		private final String _name;
@@ -146,6 +173,26 @@ public class LockedLayoutsDisplayContext {
 		private final String _type;
 		private final String _userName;
 
+	}
+
+	private List<LockedLayoutDTO> _getFilteredLockedLayoutDTOs() {
+		if (_filteredLockedLayoutDTOs != null) {
+			return _filteredLockedLayoutDTOs;
+		}
+
+		if (Validator.isNull(getKeywords())) {
+			_filteredLockedLayoutDTOs = _getLockedLayoutDTOs();
+
+			return _getLockedLayoutDTOs();
+		}
+
+		String keywords = StringUtil.toLowerCase(getKeywords());
+
+		_filteredLockedLayoutDTOs = ListUtil.filter(
+			_getLockedLayoutDTOs(),
+			lockedLayoutDTO -> lockedLayoutDTO.hasKeywords(keywords));
+
+		return _filteredLockedLayoutDTOs;
 	}
 
 	private String _getLayoutPageTemplateEntryTypeLabel(
@@ -280,6 +327,8 @@ public class LockedLayoutsDisplayContext {
 		return _lockedLayoutDTOs;
 	}
 
+	private List<LockedLayoutDTO> _filteredLockedLayoutDTOs;
+	private String _keywords;
 	private final Language _language;
 	private final LayoutLocalService _layoutLocalService;
 	private final LayoutPageTemplateEntryLocalService
