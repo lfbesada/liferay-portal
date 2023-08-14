@@ -5,8 +5,16 @@
 
 package com.liferay.site.admin.web.internal.display.context;
 
+import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
+import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
+import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
+import com.liferay.layout.utility.page.kernel.LayoutUtilityPageEntryViewRenderer;
+import com.liferay.layout.utility.page.kernel.LayoutUtilityPageEntryViewRendererRegistryUtil;
+import com.liferay.layout.utility.page.model.LayoutUtilityPageEntry;
+import com.liferay.layout.utility.page.service.LayoutUtilityPageEntryLocalService;
 import com.liferay.petra.sql.dsl.DSLFunctionFactoryUtil;
 import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.language.Language;
@@ -30,6 +38,7 @@ import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Lourdes Fernández Besada
@@ -38,11 +47,17 @@ public class LockedLayoutsDisplayContext {
 
 	public LockedLayoutsDisplayContext(
 		Language language, LayoutLocalService layoutLocalService,
+		LayoutPageTemplateEntryLocalService layoutPageTemplateEntryLocalService,
+		LayoutUtilityPageEntryLocalService layoutUtilityPageEntryLocalService,
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse) {
 
 		_language = language;
 		_layoutLocalService = layoutLocalService;
+		_layoutPageTemplateEntryLocalService =
+			layoutPageTemplateEntryLocalService;
+		_layoutUtilityPageEntryLocalService =
+			layoutUtilityPageEntryLocalService;
 		_liferayPortletRequest = liferayPortletRequest;
 		_liferayPortletResponse = liferayPortletResponse;
 
@@ -59,7 +74,7 @@ public class LockedLayoutsDisplayContext {
 			_liferayPortletRequest,
 			PortletURLUtil.getCurrent(
 				_liferayPortletRequest, _liferayPortletResponse),
-			ListUtil.fromArray("name", "current-user", "last-autosave"),
+			ListUtil.fromArray("name", "type", "current-user", "last-autosave"),
 			"there-are-no-locked-pages");
 
 		List<LockedLayoutDTO> lockedLayoutDTOs = _getLockedLayoutDTOs();
@@ -99,6 +114,11 @@ public class LockedLayoutsDisplayContext {
 					true));
 		}
 
+		public String getLayoutType() {
+			return _language.get(
+				_themeDisplay.getLocale(), _getLayoutType(_classPK, _type));
+		}
+
 		public String getName() {
 			return HtmlUtil.escape(_name);
 		}
@@ -118,6 +138,82 @@ public class LockedLayoutsDisplayContext {
 		private final String _type;
 		private final String _userName;
 
+	}
+
+	private String _getLayoutPageTemplateEntryTypeLabel(
+		LayoutPageTemplateEntry layoutPageTemplateEntry) {
+
+		if (Objects.equals(
+				layoutPageTemplateEntry.getType(),
+				LayoutPageTemplateEntryTypeConstants.TYPE_BASIC)) {
+
+			return "content-page-template";
+		}
+
+		if (Objects.equals(
+				layoutPageTemplateEntry.getType(),
+				LayoutPageTemplateEntryTypeConstants.TYPE_DISPLAY_PAGE)) {
+
+			return "display-page-template";
+		}
+
+		if (Objects.equals(
+				layoutPageTemplateEntry.getType(),
+				LayoutPageTemplateEntryTypeConstants.TYPE_MASTER_LAYOUT)) {
+
+			return "master";
+		}
+
+		return StringPool.BLANK;
+	}
+
+	private String _getLayoutType(long classPK, String type) {
+		if (Objects.equals(type, LayoutConstants.TYPE_ASSET_DISPLAY)) {
+			return "display-page-template";
+		}
+
+		if (Objects.equals(type, LayoutConstants.TYPE_COLLECTION)) {
+			return "collection-page";
+		}
+
+		if (!Objects.equals(type, LayoutConstants.TYPE_CONTENT)) {
+			return StringPool.BLANK;
+		}
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			_layoutPageTemplateEntryLocalService.
+				fetchLayoutPageTemplateEntryByPlid(classPK);
+
+		if (layoutPageTemplateEntry != null) {
+			return _getLayoutPageTemplateEntryTypeLabel(
+				layoutPageTemplateEntry);
+		}
+
+		LayoutUtilityPageEntry layoutUtilityPageEntry =
+			_layoutUtilityPageEntryLocalService.
+				fetchLayoutUtilityPageEntryByPlid(classPK);
+
+		if (layoutUtilityPageEntry != null) {
+			return _getLayoutUtilityPageEntryTypeLabel(layoutUtilityPageEntry);
+		}
+
+		return "content-page";
+	}
+
+	private String _getLayoutUtilityPageEntryTypeLabel(
+		LayoutUtilityPageEntry layoutUtilityPageEntry) {
+
+		LayoutUtilityPageEntryViewRenderer layoutUtilityPageEntryViewRenderer =
+			LayoutUtilityPageEntryViewRendererRegistryUtil.
+				getLayoutUtilityPageEntryViewRenderer(
+					layoutUtilityPageEntry.getType());
+
+		if (layoutUtilityPageEntryViewRenderer == null) {
+			return StringPool.BLANK;
+		}
+
+		return layoutUtilityPageEntryViewRenderer.getLabel(
+			_themeDisplay.getLocale());
 	}
 
 	private List<LockedLayoutDTO> _getLockedLayoutDTOs() {
@@ -178,6 +274,10 @@ public class LockedLayoutsDisplayContext {
 
 	private final Language _language;
 	private final LayoutLocalService _layoutLocalService;
+	private final LayoutPageTemplateEntryLocalService
+		_layoutPageTemplateEntryLocalService;
+	private final LayoutUtilityPageEntryLocalService
+		_layoutUtilityPageEntryLocalService;
 	private final LiferayPortletRequest _liferayPortletRequest;
 	private final LiferayPortletResponse _liferayPortletResponse;
 	private List<LockedLayoutDTO> _lockedLayoutDTOs;

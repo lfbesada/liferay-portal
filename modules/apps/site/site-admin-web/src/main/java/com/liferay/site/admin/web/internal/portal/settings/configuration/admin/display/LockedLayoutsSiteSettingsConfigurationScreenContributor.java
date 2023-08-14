@@ -5,6 +5,8 @@
 
 package com.liferay.site.admin.web.internal.portal.settings.configuration.admin.display;
 
+import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
+import com.liferay.layout.utility.page.service.LayoutUtilityPageEntryLocalService;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
@@ -76,6 +78,8 @@ public class LockedLayoutsSiteSettingsConfigurationScreenContributor
 			LockedLayoutsDisplayContext.class.getName(),
 			new LockedLayoutsDisplayContext(
 				_language, _layoutLocalService,
+				_layoutPageTemplateEntryLocalService,
+				_layoutUtilityPageEntryLocalService,
 				_portal.getLiferayPortletRequest(
 					(PortletRequest)httpServletRequest.getAttribute(
 						JavaConstants.JAVAX_PORTLET_REQUEST)),
@@ -89,6 +93,14 @@ public class LockedLayoutsSiteSettingsConfigurationScreenContributor
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
+
+	@Reference
+	private LayoutPageTemplateEntryLocalService
+		_layoutPageTemplateEntryLocalService;
+
+	@Reference
+	private LayoutUtilityPageEntryLocalService
+		_layoutUtilityPageEntryLocalService;
 
 	@Reference
 	private Portal _portal;

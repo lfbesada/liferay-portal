@@ -45,6 +45,12 @@ LockedLayoutsDisplayContext lockedLayoutsDisplayContext = (LockedLayoutsDisplayC
 
 					<liferay-ui:search-container-column-text
 						cssClass="modify-text"
+						name="type"
+						value="<%= lockedLayoutDTO.getLayoutType() %>"
+					/>
+
+					<liferay-ui:search-container-column-text
+						cssClass="modify-text"
 						name="current-user"
 						value="<%= lockedLayoutDTO.getUserName() %>"
 					/>
