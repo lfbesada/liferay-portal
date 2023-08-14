@@ -23,6 +23,16 @@ LockedLayoutsDisplayContext lockedLayoutsDisplayContext = (LockedLayoutsDisplayC
 		</clay:content-col>
 	</clay:content-row>
 
+	<c:if test="<%= lockedLayoutsDisplayContext.existLockedLayouts() %>">
+		<clay:content-row>
+			<clay:content-col
+				expand="<%= true %>"
+			>
+				<p class="text-secondary"><liferay-ui:message key="select-the-pages-that-you-want-to-manually-unlock-and-save.-please-note-that-the-current-user-may-lose-control-over-the-edition" /></p>
+			</clay:content-col>
+		</clay:content-row>
+	</c:if>
+
 	<clay:content-row>
 		<clay:content-col
 			expand="<%= true %>"

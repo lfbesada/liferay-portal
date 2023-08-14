@@ -65,6 +65,14 @@ public class LockedLayoutsDisplayContext {
 			WebKeys.THEME_DISPLAY);
 	}
 
+	public boolean existLockedLayouts() {
+		if (ListUtil.isEmpty(_getLockedLayoutDTOs())) {
+			return false;
+		}
+
+		return true;
+	}
+
 	public SearchContainer<LockedLayoutDTO> getSearchContainer() {
 		if (_searchContainer != null) {
 			return _searchContainer;
