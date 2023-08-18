@@ -3,8 +3,10 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.layout.internal.upgrade.v1_4_1;
+package com.liferay.layout.internal.verify;
 
+import com.liferay.counter.kernel.service.CounterLocalService;
+import com.liferay.counter.kernel.service.CounterLocalServiceUtil;
 import com.liferay.layout.content.LayoutContentProvider;
 import com.liferay.layout.util.LayoutServiceContextHelper;
 import com.liferay.petra.string.StringBundler;
@@ -19,10 +21,13 @@ import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
+import com.liferay.portal.kernel.uuid.PortalUUID;
 import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
+import com.liferay.portal.verify.VerifyProcess;
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
@@ -32,25 +37,32 @@ import java.util.Locale;
 /**
  * @author Lourdes Fernández Besada
  */
-public class LayoutLocalizationUpgradeProcess extends UpgradeProcess {
+@Component(
+	property = "run.on.portal.upgrade=true",
+	service = VerifyProcess.class
+)
+public class LayoutLocalizationVerifyProcess extends VerifyProcess {
 
-	public LayoutLocalizationUpgradeProcess(
-		ClassNameLocalService classNameLocalService,
-		CompanyLocalService companyLocalService, Language language,
-		LayoutContentProvider layoutContentProvider,
-		LayoutLocalService layoutLocalService,
-		LayoutServiceContextHelper layoutServiceContextHelper) {
 
-		_classNameLocalService = classNameLocalService;
-		_companyLocalService = companyLocalService;
-		_language = language;
-		_layoutContentProvider = layoutContentProvider;
-		_layoutLocalService = layoutLocalService;
-		_layoutServiceContextHelper = layoutServiceContextHelper;
-	}
+	@Reference
+	private ClassNameLocalService _classNameLocalService;
+
+	@Reference
+	private CompanyLocalService _companyLocalService;
+	@Reference
+	private Language _language;
+
+	@Reference
+	private LayoutContentProvider _layoutContentProvider;
+
+	@Reference
+	private LayoutLocalService _layoutLocalService;
+
+	@Reference
+	private LayoutServiceContextHelper _layoutServiceContextHelper;
 
 	@Override
-	protected void doUpgrade() throws Exception {
+	protected void doVerify() throws Exception {
 		try (LoggingTimer loggingTimer = new LoggingTimer()) {
 			long classNameId = _classNameLocalService.getClassNameId(
 				Layout.class.getName());
@@ -131,8 +143,8 @@ public class LayoutLocalizationUpgradeProcess extends UpgradeProcess {
 			long plid, PreparedStatement preparedStatement)
 		throws Exception {
 
-		preparedStatement.setString(1, PortalUUIDUtil.generate());
-		preparedStatement.setLong(2, increment());
+		preparedStatement.setString(1, _portalUUID.generate());
+		preparedStatement.setLong(2, _counterLocalService.increment());
 		preparedStatement.setLong(3, groupId);
 		preparedStatement.setLong(4, companyId);
 
@@ -148,13 +160,11 @@ public class LayoutLocalizationUpgradeProcess extends UpgradeProcess {
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
-		LayoutLocalizationUpgradeProcess.class);
+		LayoutLocalizationVerifyProcess.class);
 
-	private final ClassNameLocalService _classNameLocalService;
-	private final CompanyLocalService _companyLocalService;
-	private final Language _language;
-	private final LayoutContentProvider _layoutContentProvider;
-	private final LayoutLocalService _layoutLocalService;
-	private final LayoutServiceContextHelper _layoutServiceContextHelper;
+	@Reference
+	private PortalUUID _portalUUID;
+	@Reference
+	private CounterLocalService _counterLocalService;
 
 }
