@@ -10,7 +10,6 @@ import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
 import com.liferay.change.tracking.service.CTCollectionLocalService;
 import com.liferay.change.tracking.service.CTEntryLocalService;
-import com.liferay.layout.content.LayoutContentProvider;
 import com.liferay.layout.internal.upgrade.v1_0_0.LayoutClassedModelUsageUpgradeProcess;
 import com.liferay.layout.internal.upgrade.v1_0_0.LayoutPermissionsUpgradeProcess;
 import com.liferay.layout.internal.upgrade.v1_0_0.LayoutUpgradeProcess;
@@ -20,10 +19,6 @@ import com.liferay.layout.internal.upgrade.v1_2_2.LayoutSEOUpgradeProcess;
 import com.liferay.layout.internal.upgrade.v1_2_3.LayoutRevisionUpgradeProcess;
 import com.liferay.layout.internal.upgrade.v1_3_0.util.LayoutLocalizationTable;
 import com.liferay.layout.internal.upgrade.v1_3_1.LayoutLocalizationUpgradeProcess;
-import com.liferay.layout.util.LayoutServiceContextHelper;
-import com.liferay.portal.kernel.language.Language;
-import com.liferay.portal.kernel.service.ClassNameLocalService;
-import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutBranchLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
@@ -87,14 +82,6 @@ public class LayoutServiceUpgradeStepRegistrator
 			UpgradeProcessFactory.addColumns(
 				"LayoutClassedModelUsage",
 				"cmExternalReferenceCode VARCHAR(75) null"));
-
-		registry.register(
-			"1.4.0", "1.4.1",
-			new com.liferay.layout.internal.upgrade.v1_4_1.
-				LayoutLocalizationUpgradeProcess(
-					_classNameLocalService, _companyLocalService, _language,
-					_layoutContentProvider, _layoutLocalService,
-					_layoutServiceContextHelper));
 	}
 
 	@Reference
@@ -107,12 +94,6 @@ public class LayoutServiceUpgradeStepRegistrator
 	private AssetTagLocalService _assetTagLocalService;
 
 	@Reference
-	private ClassNameLocalService _classNameLocalService;
-
-	@Reference
-	private CompanyLocalService _companyLocalService;
-
-	@Reference
 	private CTCollectionLocalService _ctCollectionLocalService;
 
 	@Reference
@@ -122,22 +103,13 @@ public class LayoutServiceUpgradeStepRegistrator
 	private GroupLocalService _groupLocalService;
 
 	@Reference
-	private Language _language;
-
-	@Reference
 	private LayoutBranchLocalService _layoutBranchLocalService;
-
-	@Reference
-	private LayoutContentProvider _layoutContentProvider;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
 
 	@Reference
 	private LayoutRevisionLocalService _layoutRevisionLocalService;
-
-	@Reference
-	private LayoutServiceContextHelper _layoutServiceContextHelper;
 
 	@Reference
 	private LayoutSetBranchLocalService _layoutSetBranchLocalService;
