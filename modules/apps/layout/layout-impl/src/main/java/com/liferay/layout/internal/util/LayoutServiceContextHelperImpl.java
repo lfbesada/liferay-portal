@@ -802,7 +802,9 @@ public class LayoutServiceContextHelperImpl
 		}
 
 		private void _setCompanyServiceContext() throws PortalException {
-			CompanyThreadLocal.setCompanyId(_company.getCompanyId());
+			if (!Objects.equals(_originalCompanyId, _company.getCompanyId())) {
+				CompanyThreadLocal.setCompanyId(_company.getCompanyId());
+			}
 
 			PermissionThreadLocal.setPermissionChecker(_permissionChecker);
 
