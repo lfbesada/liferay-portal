@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.layout.internal.upgrade.v1_4_1.test;
+package com.liferay.layout.internal.verify;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.fragment.contributor.FragmentCollectionContributorRegistry;
@@ -22,7 +22,6 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
-import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -32,8 +31,8 @@ import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
-import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
-import com.liferay.portal.upgrade.test.util.UpgradeTestUtil;
+import com.liferay.portal.verify.VerifyProcess;
+import com.liferay.portal.verify.test.util.BaseVerifyProcessTestCase;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
 
 import java.util.List;
@@ -49,7 +48,9 @@ import org.junit.runner.RunWith;
  * @author Lourdes Fernández Besada
  */
 @RunWith(Arquillian.class)
-public class LayoutLocalizationUpgradeProcessTest {
+public class LayoutLocalizationVerifyProcessTest
+	extends BaseVerifyProcessTestCase {
+
 
 	@ClassRule
 	@Rule
@@ -59,12 +60,23 @@ public class LayoutLocalizationUpgradeProcessTest {
 			PermissionCheckerMethodTestRule.INSTANCE);
 
 	@Before
+	@Override
 	public void setUp() throws Exception {
+		super.setUp();
+
 		_group = GroupTestUtil.addGroup();
 	}
+	@Override
+	protected VerifyProcess getVerifyProcess() {
+		return _verifyProcess;
+	}
 
+	@Inject(
+		filter = "component.name=com.liferay.layout.internal.verify.LayoutLocalizationVerifyProcess"
+	)
+	private VerifyProcess _verifyProcess;
 	@Test
-	public void testUpgradeProcess() throws Exception {
+	public void testDoVerify() throws Exception {
 		String headingText = RandomTestUtil.randomString();
 
 		String languageId = LocaleUtil.toLanguageId(
@@ -75,7 +87,7 @@ public class LayoutLocalizationUpgradeProcessTest {
 		int expectedLayoutLocalizationsSize = _deleteLayoutLocalizations(
 			layout.getPlid());
 
-		List<LogEntry> logEntries = _getRunUpgradeLogEntries();
+		List<LogEntry> logEntries = _getDoVerifyLogEntries();
 
 		Assert.assertEquals(logEntries.toString(), 0, logEntries.size());
 
@@ -99,7 +111,33 @@ public class LayoutLocalizationUpgradeProcessTest {
 	}
 
 	@Test
-	public void testUpgradeProcessPublishedDraftLayout() throws Exception {
+	public void testDoVerifyExistingLayoutLocalizations() throws Exception {
+		String languageId = LocaleUtil.toLanguageId(
+			_portal.getSiteDefaultLocale(_group));
+
+		Layout layout = _addTypeContentLayout(languageId, true, RandomTestUtil.randomString());
+
+		List<LayoutLocalization> layoutLocalizations1 =
+			_layoutLocalizationLocalService.getLayoutLocalizations(layout.getPlid());
+
+		Assert.assertFalse(
+			layoutLocalizations1.toString(), layoutLocalizations1.isEmpty());
+
+		List<LogEntry> logEntries = _getDoVerifyLogEntries();
+
+		Assert.assertEquals(logEntries.toString(), 0, logEntries.size());
+
+		List<LayoutLocalization> layoutLocalizations2 =
+			_layoutLocalizationLocalService.getLayoutLocalizations(
+				layout.getPlid());
+
+		Assert.assertEquals(
+			layoutLocalizations2.toString(), layoutLocalizations1,
+			layoutLocalizations2);
+	}
+
+	@Test
+	public void testDoVerifyPublishedDraftLayout() throws Exception {
 		String headingText1 = RandomTestUtil.randomString();
 		String headingText2 = RandomTestUtil.randomString();
 
@@ -113,7 +151,7 @@ public class LayoutLocalizationUpgradeProcessTest {
 		int expectedLayoutLocalizationsSize = _deleteLayoutLocalizations(
 			layout.getPlid());
 
-		List<LogEntry> logEntries = _getRunUpgradeLogEntries();
+		List<LogEntry> logEntries = _getDoVerifyLogEntries();
 
 		Assert.assertEquals(logEntries.toString(), 0, logEntries.size());
 
@@ -141,7 +179,7 @@ public class LayoutLocalizationUpgradeProcessTest {
 	}
 
 	@Test
-	public void testUpgradeProcessUnpublishedDraftLayout() throws Exception {
+	public void testDoVerifyUnpublishedDraftLayout() throws Exception {
 		String headingText = RandomTestUtil.randomString();
 
 		String languageId = LocaleUtil.toLanguageId(
@@ -156,7 +194,7 @@ public class LayoutLocalizationUpgradeProcessTest {
 		Assert.assertTrue(
 			layoutLocalizations.toString(), layoutLocalizations.isEmpty());
 
-		List<LogEntry> logEntries = _getRunUpgradeLogEntries();
+		List<LogEntry> logEntries = _getDoVerifyLogEntries();
 
 		Assert.assertEquals(logEntries.toString(), 0, logEntries.size());
 
@@ -245,14 +283,11 @@ public class LayoutLocalizationUpgradeProcessTest {
 		return originalLayoutLocalizationsSize;
 	}
 
-	private List<LogEntry> _getRunUpgradeLogEntries() throws Exception {
+	private List<LogEntry> _getDoVerifyLogEntries() throws Exception {
 		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
 				_CLASS_NAME, LoggerTestUtil.WARN)) {
 
-			UpgradeProcess upgradeProcess = UpgradeTestUtil.getUpgradeStep(
-				_upgradeStepRegistrator, _CLASS_NAME);
-
-			upgradeProcess.upgrade();
+			doVerify();
 
 			_multiVMPool.clear();
 
@@ -261,13 +296,7 @@ public class LayoutLocalizationUpgradeProcessTest {
 	}
 
 	private static final String _CLASS_NAME =
-		"com.liferay.layout.internal.upgrade.v1_4_1." +
-			"LayoutLocalizationUpgradeProcess";
-
-	@Inject(
-		filter = "(&(component.name=com.liferay.layout.internal.upgrade.registry.LayoutServiceUpgradeStepRegistrator))"
-	)
-	private static UpgradeStepRegistrator _upgradeStepRegistrator;
+		"com.liferay.layout.internal.verify.LayoutLocalizationVerifyProcess";
 
 	@Inject
 	private FragmentCollectionContributorRegistry

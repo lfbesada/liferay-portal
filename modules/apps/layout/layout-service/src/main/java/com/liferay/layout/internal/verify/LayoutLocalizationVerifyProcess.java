@@ -6,7 +6,6 @@
 package com.liferay.layout.internal.verify;
 
 import com.liferay.counter.kernel.service.CounterLocalService;
-import com.liferay.counter.kernel.service.CounterLocalServiceUtil;
 import com.liferay.layout.content.LayoutContentProvider;
 import com.liferay.layout.util.LayoutServiceContextHelper;
 import com.liferay.petra.string.StringBundler;
@@ -24,42 +23,23 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.uuid.PortalUUID;
-import com.liferay.portal.kernel.uuid.PortalUUIDUtil;
 import com.liferay.portal.verify.VerifyProcess;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 import java.sql.PreparedStatement;
 import java.sql.Timestamp;
 
 import java.util.Locale;
 
+import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
+
 /**
  * @author Lourdes Fernández Besada
  */
 @Component(
-	property = "run.on.portal.upgrade=true",
-	service = VerifyProcess.class
+	property = "run.on.portal.upgrade=true", service = VerifyProcess.class
 )
 public class LayoutLocalizationVerifyProcess extends VerifyProcess {
-
-
-	@Reference
-	private ClassNameLocalService _classNameLocalService;
-
-	@Reference
-	private CompanyLocalService _companyLocalService;
-	@Reference
-	private Language _language;
-
-	@Reference
-	private LayoutContentProvider _layoutContentProvider;
-
-	@Reference
-	private LayoutLocalService _layoutLocalService;
-
-	@Reference
-	private LayoutServiceContextHelper _layoutServiceContextHelper;
 
 	@Override
 	protected void doVerify() throws Exception {
@@ -163,8 +143,27 @@ public class LayoutLocalizationVerifyProcess extends VerifyProcess {
 		LayoutLocalizationVerifyProcess.class);
 
 	@Reference
-	private PortalUUID _portalUUID;
+	private ClassNameLocalService _classNameLocalService;
+
+	@Reference
+	private CompanyLocalService _companyLocalService;
+
 	@Reference
 	private CounterLocalService _counterLocalService;
+
+	@Reference
+	private Language _language;
+
+	@Reference
+	private LayoutContentProvider _layoutContentProvider;
+
+	@Reference
+	private LayoutLocalService _layoutLocalService;
+
+	@Reference
+	private LayoutServiceContextHelper _layoutServiceContextHelper;
+
+	@Reference
+	private PortalUUID _portalUUID;
 
 }
