@@ -6,6 +6,7 @@
 package com.liferay.layout.content.page.editor.web.internal.configuration;
 
 import aQute.bnd.annotation.metatype.Meta;
+
 import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClassDefinition;
 
 /**
@@ -16,9 +17,8 @@ import com.liferay.portal.configuration.metatype.annotations.ExtendedObjectClass
 	scope = ExtendedObjectClassDefinition.Scope.COMPANY
 )
 @Meta.OCD(
-	id = "com.liferay.layout.content.page.editor.web.internal.LockedPagesCompanyConfiguration",
-	localization = "content/Language",
-	name = "locked-pages"
+	id = "com.liferay.layout.content.page.editor.web.internal.configuration.LockedPagesCompanyConfiguration",
+	localization = "content/Language", name = "locked-pages-configuration-name"
 )
 public interface LockedPagesCompanyConfiguration {
 
@@ -29,15 +29,15 @@ public interface LockedPagesCompanyConfiguration {
 	public boolean allowAutomaticUnlockingProcess();
 
 	@Meta.AD(
-		deflt = "15", description = "set-in-minutes.-valid-values-between-1-and-99.999",
-		max = "99999", min = "1", name = "lock-review-frequency",
-		required = true)
+		deflt = "15",
+		max = "99999", min = "1", name = "lock-review-frequency"
+	)
 	public int lockReviewFrequency();
 
 	@Meta.AD(
-		deflt = "5", description = "set-in-minutes.-valid-values-between-1-and-99.999",
-		max = "99999", min = "1", name = "time-without-autosave",
-		required = true)
+		deflt = "5",
+		max = "99999", min = "1", name = "time-without-autosave"
+	)
 	public int timeWithoutAutosave();
 
 }
