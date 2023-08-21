@@ -29,14 +29,12 @@ public interface LockedPagesCompanyConfiguration {
 	public boolean allowAutomaticUnlockingProcess();
 
 	@Meta.AD(
-		deflt = "15",
-		max = "99999", min = "1", name = "lock-review-frequency"
+		deflt = "15", max = "99999", min = "1", name = "lock-review-frequency"
 	)
 	public int lockReviewFrequency();
 
 	@Meta.AD(
-		deflt = "5",
-		max = "99999", min = "1", name = "time-without-autosave"
+		deflt = "5", max = "99999", min = "1", name = "time-without-autosave"
 	)
 	public int timeWithoutAutosave();
 
