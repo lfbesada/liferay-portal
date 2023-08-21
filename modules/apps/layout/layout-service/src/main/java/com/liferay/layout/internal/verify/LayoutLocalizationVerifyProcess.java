@@ -23,7 +23,6 @@ import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
-import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.uuid.PortalUUID;
 import com.liferay.portal.verify.VerifyProcess;
 
@@ -111,6 +110,7 @@ public class LayoutLocalizationVerifyProcess extends VerifyProcess {
 				}
 				catch (Exception exception) {
 					exception.printStackTrace();
+
 					if (_log.isWarnEnabled()) {
 						_log.warn(
 							"Unable to add LayoutLocalization for plid " + plid,
