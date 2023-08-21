@@ -132,13 +132,6 @@ public class LayoutServiceContextHelperImpl
 
 	private class MockHttpServletRequest implements HttpServletRequest {
 
-		private MockHttpServletRequest() {
-			_attributes = ConcurrentHashMapBuilder.<String, Object>put(
-				WebKeys.CTX,
-				ServletContextPool.get(_portal.getServletContextName())
-			).build();
-		}
-
 		@Override
 		public boolean authenticate(HttpServletResponse httpServletResponse)
 			throws IOException, ServletException {
@@ -493,6 +486,13 @@ public class LayoutServiceContextHelperImpl
 			throws IOException, ServletException {
 
 			return null;
+		}
+
+		private MockHttpServletRequest() {
+			_attributes = ConcurrentHashMapBuilder.<String, Object>put(
+				WebKeys.CTX,
+				ServletContextPool.get(_portal.getServletContextName())
+			).build();
 		}
 
 		private final Map<String, Object> _attributes;
