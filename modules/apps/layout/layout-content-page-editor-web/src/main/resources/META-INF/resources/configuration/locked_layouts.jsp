@@ -63,7 +63,7 @@ LockedLayoutsConfigurationDisplayContext lockedLayoutsConfigurationDisplayContex
 				<aui:validator name="max">99999</aui:validator>
 			</aui:input>
 
-			<p class="text-3 text-secondary" id="<portlet:namespace />lockReviewFrequencyHiddenDescription"><liferay-ui:message key="set-in-minutes.-valid-values-between-1-and-99.999"/></p>
+			<p class="text-3 text-secondary" id="<portlet:namespace />lockReviewFrequencyHiddenDescription"><liferay-ui:message key="set-in-minutes.-valid-values-between-1-and-99.999" /></p>
 		</clay:content-col>
 	</clay:content-row>
 
@@ -79,7 +79,7 @@ LockedLayoutsConfigurationDisplayContext lockedLayoutsConfigurationDisplayContex
 				<aui:validator name="max">99999</aui:validator>
 			</aui:input>
 
-			<p class="text-3 text-secondary" id="<portlet:namespace />timeWithoutAutosaveHiddenDescription"><liferay-ui:message key="set-in-minutes.-valid-values-between-1-and-99.999"/></p>
+			<p class="text-3 text-secondary" id="<portlet:namespace />timeWithoutAutosaveHiddenDescription"><liferay-ui:message key="set-in-minutes.-valid-values-between-1-and-99.999" /></p>
 		</clay:content-col>
 	</clay:content-row>
 </clay:sheet-section>
