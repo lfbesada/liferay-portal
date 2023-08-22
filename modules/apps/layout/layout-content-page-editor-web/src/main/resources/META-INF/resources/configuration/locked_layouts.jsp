@@ -5,7 +5,7 @@
  */
 --%>
 
-<%@ include file="/META-INF/resources/init.jsp" %>
+<%@ include file="/init.jsp" %>
 
 <%
 LockedLayoutsConfigurationDisplayContext lockedLayoutsConfigurationDisplayContext = (LockedLayoutsConfigurationDisplayContext)request.getAttribute(LockedLayoutsConfigurationDisplayContext.class.getName());
