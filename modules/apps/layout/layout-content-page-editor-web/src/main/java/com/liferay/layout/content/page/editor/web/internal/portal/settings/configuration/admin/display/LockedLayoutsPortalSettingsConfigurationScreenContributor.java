@@ -7,22 +7,22 @@ package com.liferay.layout.content.page.editor.web.internal.portal.settings.conf
 
 import com.liferay.layout.content.page.editor.web.internal.configuration.LockedLayoutsConfiguration;
 import com.liferay.layout.content.page.editor.web.internal.display.context.LockedLayoutsConfigurationDisplayContext;
-import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.module.configuration.ConfigurationProvider;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.settings.configuration.admin.display.PortalSettingsConfigurationScreenContributor;
 
 import java.util.Locale;
-import java.util.Map;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.osgi.framework.BundleContext;
-import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -79,25 +79,28 @@ public class LockedLayoutsPortalSettingsConfigurationScreenContributor
 		HttpServletRequest httpServletRequest,
 		HttpServletResponse httpServletResponse) {
 
-		httpServletRequest.setAttribute(
-			LockedLayoutsConfigurationDisplayContext.class.getName(),
-			new LockedLayoutsConfigurationDisplayContext(
-				_lockedLayoutsConfiguration));
-	}
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
-	@Activate
-	@Modified
-	protected void activate(
-		BundleContext bundleContext, Map<String, Object> properties) {
-
-		_lockedLayoutsConfiguration = ConfigurableUtil.createConfigurable(
-			LockedLayoutsConfiguration.class, properties);
+		try {
+			httpServletRequest.setAttribute(
+				LockedLayoutsConfigurationDisplayContext.class.getName(),
+				new LockedLayoutsConfigurationDisplayContext(
+					_configurationProvider.getCompanyConfiguration(
+						LockedLayoutsConfiguration.class,
+						themeDisplay.getCompanyId())));
+		}
+		catch (PortalException portalException) {
+			ReflectionUtil.throwException(portalException);
+		}
 	}
 
 	@Reference
-	private Language _language;
+	private ConfigurationProvider _configurationProvider;
 
-	private volatile LockedLayoutsConfiguration _lockedLayoutsConfiguration;
+	@Reference
+	private Language _language;
 
 	@Reference(
 		target = "(osgi.web.symbolicname=com.liferay.layout.content.page.editor.web)"

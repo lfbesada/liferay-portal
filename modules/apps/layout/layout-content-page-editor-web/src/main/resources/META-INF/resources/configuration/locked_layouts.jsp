@@ -47,7 +47,7 @@ LockedLayoutsConfigurationDisplayContext lockedLayoutsConfigurationDisplayContex
 		<clay:content-col
 			expand="<%= true %>"
 		>
-			<aui:input inlineLabel="right" label='<%= LanguageUtil.get(request, "allow-automatic-unlocking-process") %>' labelCssClass="simple-toggle-switch" name='<%= liferayPortletResponse.getNamespace() + "allowAutomaticUnlockingProcess" %>' type="toggle-switch" value="<%= lockedLayoutsConfigurationDisplayContext.isAllowAutomaticUnlockingProcess() %>" />
+			<aui:input inlineLabel="right" label='<%= LanguageUtil.get(request, "allow-automatic-unlocking-process") %>' labelCssClass="simple-toggle-switch" name="allowAutomaticUnlockingProcess" type="toggle-switch" value="<%= lockedLayoutsConfigurationDisplayContext.isAllowAutomaticUnlockingProcess() %>" />
 		</clay:content-col>
 	</clay:content-row>
 
