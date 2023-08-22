@@ -12,7 +12,7 @@ LockedLayoutsConfigurationDisplayContext lockedLayoutsConfigurationDisplayContex
 %>
 
 <clay:content-row
-	cssClass="c-mt-5"
+	cssClass="c-mt-2"
 >
 	<clay:content-col
 		expand="<%= true %>"
