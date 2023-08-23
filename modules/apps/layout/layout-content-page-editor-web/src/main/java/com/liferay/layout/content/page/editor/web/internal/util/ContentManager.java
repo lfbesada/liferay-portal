@@ -42,7 +42,6 @@ import com.liferay.layout.list.retriever.ListObjectReferenceFactory;
 import com.liferay.layout.list.retriever.ListObjectReferenceFactoryRegistry;
 import com.liferay.layout.model.LayoutClassedModelUsage;
 import com.liferay.layout.service.LayoutClassedModelUsageLocalService;
-import com.liferay.layout.util.LayoutLockManager;
 import com.liferay.layout.util.structure.CollectionStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.ContainerStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.FormStyledLayoutStructureItem;
@@ -439,15 +438,9 @@ public class ContentManager {
 					return null;
 				}
 
-				PortletResponse portletResponse =
-					(PortletResponse)httpServletRequest.getAttribute(
-						JavaConstants.JAVAX_PORTLET_RESPONSE);
-
-				return _layoutLockManager.getUnlockDraftLayoutURL(
-					_portal.getLiferayPortletResponse(portletResponse),
-					() -> infoEditURLProvider.getURL(
-						layoutDisplayPageObjectProvider.getDisplayObject(),
-						httpServletRequest));
+				return infoEditURLProvider.getURL(
+					layoutDisplayPageObjectProvider.getDisplayObject(),
+					httpServletRequest);
 			}
 		).put(
 			"permissionsURL",
@@ -1211,9 +1204,6 @@ public class ContentManager {
 
 	@Reference
 	private LayoutListRetrieverRegistry _layoutListRetrieverRegistry;
-
-	@Reference
-	private LayoutLockManager _layoutLockManager;
 
 	@Reference
 	private ListObjectReferenceFactoryRegistry

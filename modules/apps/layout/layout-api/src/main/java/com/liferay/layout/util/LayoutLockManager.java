@@ -8,8 +8,6 @@ package com.liferay.layout.util;
 import com.liferay.layout.model.LockedLayout;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
-import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 
 import java.util.List;
 import java.util.Locale;
@@ -28,12 +26,6 @@ public interface LayoutLockManager {
 	public List<LockedLayout> getLockedLayouts(long groupId);
 
 	public String getLockedLayoutURL(ActionRequest actionRequest);
-
-	public String getUnlockDraftLayoutURL(
-			LiferayPortletResponse liferayPortletResponse,
-			PortletURLBuilder.UnsafeSupplier<Object, Exception>
-				redirectUnsafeSupplier)
-		throws Exception;
 
 	public void unlock(Layout layout, long userId);
 
