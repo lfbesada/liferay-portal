@@ -116,7 +116,6 @@ public class ContentPageLayoutEditorDisplayContext
 		InfoSearchClassMapperRegistry infoSearchClassMapperRegistry,
 		ItemSelector itemSelector, JSONFactory jsonFactory, Language language,
 		LayoutLocalService layoutLocalService,
-		LayoutLockManager layoutLockManager,
 		LayoutSetLocalService layoutSetLocalService,
 		LayoutPageTemplateEntryLocalService layoutPageTemplateEntryLocalService,
 		LayoutPageTemplateEntryService layoutPageTemplateEntryService,
@@ -145,10 +144,9 @@ public class ContentPageLayoutEditorDisplayContext
 			frontendTokenDefinitionRegistry, httpServletRequest,
 			infoItemServiceRegistry, infoSearchClassMapperRegistry,
 			itemSelector, jsonFactory, language, layoutLocalService,
-			layoutLockManager, layoutPageTemplateEntryLocalService,
-			layoutPageTemplateEntryService, layoutPermission,
-			layoutSetLocalService, pageEditorConfiguration, portal,
-			portletRequest, portletURLFactory, renderResponse,
+			layoutPageTemplateEntryLocalService, layoutPageTemplateEntryService,
+			layoutPermission, layoutSetLocalService, pageEditorConfiguration,
+			portal, portletRequest, portletURLFactory, renderResponse,
 			segmentsConfigurationProvider, segmentsExperienceManager,
 			segmentsExperienceLocalService, segmentsExperimentRelLocalService,
 			staging, stagingGroupHelper, styleBookEntryLocalService,
@@ -412,14 +410,9 @@ public class ContentPageLayoutEditorDisplayContext
 			_editSegmentsEntryURL = StringPool.BLANK;
 		}
 		else {
-			_editSegmentsEntryURL = layoutLockManager.getUnlockDraftLayoutURL(
-				portal.getLiferayPortletResponse(renderResponse),
-				() -> {
-					portletURL.setParameter(
-						"redirect", themeDisplay.getURLCurrent());
+			portletURL.setParameter("redirect", themeDisplay.getURLCurrent());
 
-					return portletURL.toString();
-				});
+			_editSegmentsEntryURL = portletURL.toString();
 		}
 
 		return _editSegmentsEntryURL;
