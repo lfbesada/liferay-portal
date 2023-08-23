@@ -1,5 +1,5 @@
 /**
- * SPDX-FileCopyrightText: (c) 2000 Liferay, Inc. https://liferay.com
+ * SPDX-FileCopyrightText: (c) 2023 Liferay, Inc. https://liferay.com
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
@@ -7,10 +7,14 @@ package com.liferay.layout.locked.layouts.web.internal.portlet;
 
 import com.liferay.layout.locked.layouts.web.internal.constants.LockedLayoutsPortletKeys;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
-import org.osgi.service.component.annotations.Component;
 
 import javax.portlet.Portlet;
 
+import org.osgi.service.component.annotations.Component;
+
+/**
+ * @author Lourdes Fernández Besada
+ */
 @Component(
 	property = {
 		"com.liferay.portlet.display-category=category.hidden",
@@ -28,10 +32,5 @@ import javax.portlet.Portlet;
 	},
 	service = Portlet.class
 )
-
-/**
- * @author Lourdes Fernández Besada
- */
 public class LockedLayoutsPortlet extends MVCPortlet {
-
 }
