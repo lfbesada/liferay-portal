@@ -42,8 +42,6 @@ public class UnlockDraftLayoutMVCActionCommand extends BaseMVCActionCommand {
 		_layoutLockManager.unlock(
 			_layoutLocalService.getLayout(themeDisplay.getPlid()),
 			themeDisplay.getUserId());
-
-		sendRedirect(actionRequest, actionResponse);
 	}
 
 	@Reference
