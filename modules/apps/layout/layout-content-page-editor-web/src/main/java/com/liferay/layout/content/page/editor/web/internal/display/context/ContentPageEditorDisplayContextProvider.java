@@ -25,7 +25,6 @@ import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServ
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureRelLocalService;
-import com.liferay.layout.util.LayoutLockManager;
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerList;
 import com.liferay.osgi.service.tracker.collections.list.ServiceTrackerListFactory;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
@@ -90,8 +89,8 @@ public class ContentPageEditorDisplayContextProvider {
 				_frontendTokenDefinitionRegistry, _groupLocalService,
 				httpServletRequest, _infoItemServiceRegistry,
 				_infoSearchClassMapperRegistry, _itemSelector, _jsonFactory,
-				_language, _layoutLocalService, _layoutLockManager,
-				_layoutSetLocalService, _layoutPageTemplateEntryLocalService,
+				_language, _layoutLocalService, _layoutSetLocalService,
+				_layoutPageTemplateEntryLocalService,
 				_layoutPageTemplateEntryService,
 				_layoutPageTemplateStructureLocalService,
 				_layoutPageTemplateStructureRelLocalService, _layoutPermission,
@@ -128,8 +127,7 @@ public class ContentPageEditorDisplayContextProvider {
 			_frontendTokenDefinitionRegistry, httpServletRequest,
 			_infoItemServiceRegistry, _infoSearchClassMapperRegistry,
 			_itemSelector, _jsonFactory, _language, _layoutLocalService,
-			_layoutLockManager, _layoutSetLocalService,
-			_layoutPageTemplateEntryLocalService,
+			_layoutSetLocalService, _layoutPageTemplateEntryLocalService,
 			_layoutPageTemplateEntryService, _layoutPermission,
 			_pageEditorConfiguration, pageIsDisplayPage, _portal,
 			portletRequest, _portletURLFactory, renderResponse,
@@ -203,9 +201,6 @@ public class ContentPageEditorDisplayContextProvider {
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
-
-	@Reference
-	private LayoutLockManager _layoutLockManager;
 
 	@Reference
 	private LayoutPageTemplateEntryLocalService
