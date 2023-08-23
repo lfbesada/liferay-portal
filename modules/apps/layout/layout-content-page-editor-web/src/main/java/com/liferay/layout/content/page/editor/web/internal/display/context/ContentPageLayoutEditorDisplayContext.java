@@ -31,7 +31,6 @@ import com.liferay.layout.content.page.editor.web.internal.segments.SegmentsExpe
 import com.liferay.layout.content.page.editor.web.internal.util.ContentManager;
 import com.liferay.layout.content.page.editor.web.internal.util.FragmentCollectionManager;
 import com.liferay.layout.content.page.editor.web.internal.util.FragmentEntryLinkManager;
-import com.liferay.layout.manager.LayoutLockManager;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
@@ -116,7 +115,6 @@ public class ContentPageLayoutEditorDisplayContext
 		InfoSearchClassMapperRegistry infoSearchClassMapperRegistry,
 		ItemSelector itemSelector, JSONFactory jsonFactory, Language language,
 		LayoutLocalService layoutLocalService,
-		LayoutLockManager layoutLockManager,
 		LayoutSetLocalService layoutSetLocalService,
 		LayoutPageTemplateEntryLocalService layoutPageTemplateEntryLocalService,
 		LayoutPageTemplateEntryService layoutPageTemplateEntryService,
@@ -145,10 +143,9 @@ public class ContentPageLayoutEditorDisplayContext
 			frontendTokenDefinitionRegistry, httpServletRequest,
 			infoItemServiceRegistry, infoSearchClassMapperRegistry,
 			itemSelector, jsonFactory, language, layoutLocalService,
-			layoutLockManager, layoutPageTemplateEntryLocalService,
-			layoutPageTemplateEntryService, layoutPermission,
-			layoutSetLocalService, pageEditorConfiguration, portal,
-			portletRequest, portletURLFactory, renderResponse,
+			layoutPageTemplateEntryLocalService, layoutPageTemplateEntryService,
+			layoutPermission, layoutSetLocalService, pageEditorConfiguration,
+			portal, portletRequest, portletURLFactory, renderResponse,
 			segmentsConfigurationProvider, segmentsExperienceManager,
 			segmentsExperienceLocalService, segmentsExperimentRelLocalService,
 			staging, stagingGroupHelper, styleBookEntryLocalService,
@@ -412,14 +409,9 @@ public class ContentPageLayoutEditorDisplayContext
 			_editSegmentsEntryURL = StringPool.BLANK;
 		}
 		else {
-			_editSegmentsEntryURL = layoutLockManager.getUnlockDraftLayoutURL(
-				portal.getLiferayPortletResponse(renderResponse),
-				() -> {
-					portletURL.setParameter(
-						"redirect", themeDisplay.getURLCurrent());
+			portletURL.setParameter("redirect", themeDisplay.getURLCurrent());
 
-					return portletURL.toString();
-				});
+			_editSegmentsEntryURL = portletURL.toString();
 		}
 
 		return _editSegmentsEntryURL;
