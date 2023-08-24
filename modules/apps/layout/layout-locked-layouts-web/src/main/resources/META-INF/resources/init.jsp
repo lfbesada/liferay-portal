@@ -16,7 +16,10 @@ taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %><%@
 taglib uri="http://liferay.com/tld/ui" prefix="liferay-ui" %>
 
 <%@ page import="com.liferay.layout.locked.layouts.web.internal.display.context.LockedLayoutsConfigurationDisplayContext" %><%@
-page import="com.liferay.portal.kernel.language.LanguageUtil" %>
+page import="com.liferay.layout.locked.layouts.web.internal.display.context.LockedLayoutsDisplayContext" %><%@
+page import="com.liferay.layout.locked.layouts.web.internal.display.context.LockedLayoutsSearchContainerManagementToolbarDisplayContext" %><%@
+page import="com.liferay.portal.kernel.language.LanguageUtil" %><%@
+page import="com.liferay.portal.kernel.util.HtmlUtil" %>
 
 <liferay-frontend:defineObjects />
 
