@@ -11,13 +11,11 @@ import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuil
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
-import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
-import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
-import com.liferay.portal.kernel.util.WebKeys;
+
+import java.util.List;
 
 import javax.servlet.http.HttpServletRequest;
-import java.util.List;
 
 /**
  * @author Lourdes Fernández Besada
@@ -40,23 +38,10 @@ public class LockedLayoutsSearchContainerManagementToolbarDisplayContext
 	public List<DropdownItem> getActionDropdownItems() {
 		return DropdownItemListBuilder.add(
 			dropdownItem -> {
-				dropdownItem.setIcon("unlock");
+				dropdownItem.putData("action", "unlockLockedLayouts");
+				dropdownItem.setIcon("trash");
 				dropdownItem.setLabel(
 					LanguageUtil.get(httpServletRequest, "unlock"));
-				dropdownItem.setHref(
-					PortletURLBuilder.createActionURL(
-						liferayPortletResponse
-					).setActionName("/layout_locked_layouts/unlock_layouts"
-					).setRedirect(
-						() -> {
-							ThemeDisplay themeDisplay = (ThemeDisplay)httpServletRequest.getAttribute(
-								WebKeys.THEME_DISPLAY);
-
-							return themeDisplay.getURLCurrent();
-
-						}
-					).buildString()
-				);
 				dropdownItem.setQuickAction(true);
 			}
 		).build();

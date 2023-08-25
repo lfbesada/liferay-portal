@@ -10,21 +10,15 @@ import com.liferay.portal.kernel.lock.LockManager;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
-import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
-import com.liferay.portal.kernel.security.permission.PermissionChecker;
-import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.permission.GroupPermission;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
-import javax.portlet.PortletException;
 
-import com.liferay.portal.kernel.util.Validator;
-import com.liferay.portal.kernel.util.WebKeys;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -44,6 +38,7 @@ public class UnlockLayoutsMVCActionCommand extends BaseMVCActionCommand {
 	protected void doProcessAction(
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
+
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
@@ -59,8 +54,7 @@ public class UnlockLayoutsMVCActionCommand extends BaseMVCActionCommand {
 			plids = new long[] {plid1};
 		}
 		else {
-			plids = ParamUtil.getLongValues(
-				actionRequest, "rowIds");
+			plids = ParamUtil.getLongValues(actionRequest, "rowIds");
 		}
 
 		for (long plid2 : plids) {
@@ -69,8 +63,9 @@ public class UnlockLayoutsMVCActionCommand extends BaseMVCActionCommand {
 	}
 
 	@Reference
-	private LockManager _lockManager;
-	@Reference
 	private GroupPermission _groupPermission;
+
+	@Reference
+	private LockManager _lockManager;
 
 }
