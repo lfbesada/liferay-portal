@@ -219,6 +219,21 @@ export default {
 	},
 
 	/**
+	 * Unlock the draft of the layout
+	 * @param {function} options.onNetworkStatus
+	 * @return {Promise<object>}
+	 */
+	unlockDraftLayout({onNetworkStatus}) {
+		return layoutServiceFetch(
+			config.unlockDraftLayoutURL,
+			{
+				body: {},
+			},
+			onNetworkStatus
+		);
+	},
+
+	/**
 	 * Unmarks an item for deletion
 	 * @param {object} options
 	 * @param {string[]} options.itemIds id of the item to be updated
