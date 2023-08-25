@@ -10,6 +10,7 @@ import usePortletConfigurationListener from './usePortletConfigurationListener';
 import usePreviewURL from './usePreviewURL';
 import useProductMenuHandler from './useProductMenuHandler';
 import useURLParser from './useURLParser';
+import useUnlockDraftLayout from './useUnlockDraftLayout';
 
 export default function AppHooks() {
 	useBackURL();
@@ -19,6 +20,7 @@ export default function AppHooks() {
 	usePreviewURL();
 	useProductMenuHandler();
 	useURLParser();
+	useUnlockDraftLayout();
 
 	return null;
 }
