@@ -29,7 +29,7 @@ public class ContentLayoutTypeAccessPolicy extends BaseLayoutTypeAccessPolicy {
 			PermissionChecker permissionChecker, Layout layout)
 		throws PortalException {
 
-		return LayoutPermissionUtil.containsLayoutRestrictedUpdatePermission(
+		return LayoutPermissionUtil.containsLayoutUpdatePermission(
 			permissionChecker, layout);
 	}
 
