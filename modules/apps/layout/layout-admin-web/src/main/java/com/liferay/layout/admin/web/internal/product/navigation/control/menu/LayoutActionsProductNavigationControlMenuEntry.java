@@ -112,7 +112,7 @@ public class LayoutActionsProductNavigationControlMenuEntry
 		}
 
 		if (layout.isSystem()) {
-			return _layoutPermission.containsLayoutRestrictedUpdatePermission(
+			return _layoutPermission.containsLayoutUpdatePermission(
 				themeDisplay.getPermissionChecker(),
 				_layoutLocalService.getLayout(layout.getClassPK()));
 		}
