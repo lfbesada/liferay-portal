@@ -41,6 +41,7 @@ import com.liferay.portal.lock.model.LockTable;
 import com.liferay.portal.model.impl.LayoutModelImpl;
 
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Objects;
@@ -135,8 +136,9 @@ public class LayoutLockManagerImpl implements LayoutLockManager {
 	public List<LockedLayout> getLockedLayouts(long companyId, long groupId) {
 		List<Object[]> results = _layoutLocalService.dslQuery(
 			DSLQueryFactoryUtil.select(
-				LayoutTable.INSTANCE.classPK, LayoutTable.INSTANCE.name,
-				LayoutTable.INSTANCE.plid, LayoutTable.INSTANCE.type
+				LayoutTable.INSTANCE.classPK, LockTable.INSTANCE.createDate,
+				LayoutTable.INSTANCE.name, LayoutTable.INSTANCE.plid,
+				LayoutTable.INSTANCE.type, LockTable.INSTANCE.userName
 			).from(
 				LayoutTable.INSTANCE
 			).innerJoinON(
@@ -178,15 +180,13 @@ public class LayoutLockManagerImpl implements LayoutLockManager {
 		List<LockedLayout> lockedLayouts = new ArrayList<>(results.size());
 
 		for (Object[] columns : results) {
-			Lock lock = _lockManager.fetchLock(
-				Layout.class.getName(), GetterUtil.getLong(columns[2]));
-
 			lockedLayouts.add(
 				new LockedLayout(
-					GetterUtil.getLong(columns[0]), lock.getCreateDate(),
-					GetterUtil.getString(columns[1]),
-					GetterUtil.getLong(columns[2]),
-					GetterUtil.getString(columns[3]), lock.getUserName()));
+					GetterUtil.getLong(columns[0]), (Date)columns[1],
+					GetterUtil.getString(columns[2]),
+					GetterUtil.getLong(columns[3]),
+					GetterUtil.getString(columns[4]),
+					GetterUtil.getString(columns[5])));
 		}
 
 		return lockedLayouts;
