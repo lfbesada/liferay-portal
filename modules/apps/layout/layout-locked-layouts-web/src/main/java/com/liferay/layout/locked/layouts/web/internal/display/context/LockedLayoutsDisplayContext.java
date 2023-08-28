@@ -5,15 +5,19 @@
 
 package com.liferay.layout.locked.layouts.web.internal.display.context;
 
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemListBuilder;
 import com.liferay.layout.manager.LayoutLockManager;
 import com.liferay.layout.model.LockedLayout;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
+import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocalizationUtil;
@@ -66,6 +70,34 @@ public class LockedLayoutsDisplayContext {
 		return _layoutLockManager.getLayoutType(
 			lockedLayout.getClassPK(), _themeDisplay.getLocale(),
 			lockedLayout.getType());
+	}
+
+	public List<DropdownItem> getLockedLayoutDropdownItems(
+		LockedLayout lockedLayout) {
+
+		return DropdownItemListBuilder.addGroup(
+			dropdownGroupItem -> dropdownGroupItem.setDropdownItems(
+				DropdownItemListBuilder.add(
+					dropdownItem -> {
+						dropdownItem.putData("action", "unlockLockedLayout");
+						dropdownItem.putData(
+							"unlockLockedLayoutURL",
+							PortletURLBuilder.createActionURL(
+								_liferayPortletResponse
+							).setActionName(
+								"/layout_locked_layouts/unlock_layouts"
+							).setRedirect(
+								_themeDisplay.getURLCurrent()
+							).setParameter(
+								"plid", lockedLayout.getPlid()
+							).buildString());
+						dropdownItem.setIcon("unlock");
+						dropdownItem.setLabel(
+							LanguageUtil.get(
+								_themeDisplay.getLocale(), "unlock"));
+					}
+				).build())
+		).build();
 	}
 
 	public String getName(LockedLayout lockedLayout) {
