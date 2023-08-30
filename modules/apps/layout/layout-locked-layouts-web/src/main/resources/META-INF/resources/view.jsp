@@ -40,7 +40,7 @@ LockedLayoutsDisplayContext lockedLayoutsDisplayContext = (LockedLayoutsDisplayC
 			<clay:content-col
 				expand="<%= true %>"
 			>
-				<c:if test="<%= lockedLayoutsDisplayContext.existLockedLayouts() %>">
+				<c:if test="<%= lockedLayoutsDisplayContext.hasLockedLayouts() %>">
 					<clay:management-toolbar
 						managementToolbarDisplayContext="<%= new LockedLayoutsSearchContainerManagementToolbarDisplayContext(request, liferayPortletRequest, liferayPortletResponse, lockedLayoutsDisplayContext) %>"
 						propsTransformer="js/ManagementToolbarPropsTransformer"

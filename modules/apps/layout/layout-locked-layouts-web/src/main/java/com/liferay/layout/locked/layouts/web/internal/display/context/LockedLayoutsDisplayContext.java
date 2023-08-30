@@ -46,7 +46,7 @@ public class LockedLayoutsDisplayContext {
 			WebKeys.THEME_DISPLAY);
 	}
 
-	public boolean existLockedLayouts() {
+	public boolean hasLockedLayouts() {
 		if (ListUtil.isEmpty(_getLockedLayouts())) {
 			return false;
 		}
