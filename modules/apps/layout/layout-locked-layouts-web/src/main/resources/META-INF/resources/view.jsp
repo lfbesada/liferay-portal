@@ -32,7 +32,7 @@ LockedLayoutsDisplayContext lockedLayoutsDisplayContext = (LockedLayoutsDisplayC
 			<clay:content-col
 				expand="<%= true %>"
 			>
-				<p class="text-secondary"><liferay-ui:message key="admins-can-manually-unlock-pages-that-are-being-used-by-other-users.-please-note-that-the-current-user-may-lose-control-over-the-page-edition-if-you-unlock-it" /></p>
+				<p class="text-secondary"><liferay-ui:message key="administrators-can-manually-unlock-pages-that-are-being-used-by-other-users" /></p>
 			</clay:content-col>
 		</clay:content-row>
 
