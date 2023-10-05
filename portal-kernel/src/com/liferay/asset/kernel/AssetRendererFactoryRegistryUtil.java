@@ -46,24 +46,27 @@ public class AssetRendererFactoryRegistryUtil {
 				clazz.getName());
 	}
 
-	public static AssetRendererFactory<?> getAssetRendererFactoryByClassName(
-		String className) {
+	public static <T> AssetRendererFactory<T>
+		getAssetRendererFactoryByClassName(String className) {
 
-		return _classNameAssetRenderFactoriesServiceTrackerMap.getService(
-			className);
+		return (AssetRendererFactory<T>)
+			_classNameAssetRenderFactoriesServiceTrackerMap.getService(
+				className);
 	}
 
-	public static AssetRendererFactory<?> getAssetRendererFactoryByClassNameId(
-		long classNameId) {
+	public static <T> AssetRendererFactory<T>
+		getAssetRendererFactoryByClassNameId(long classNameId) {
 
-		return _classNameAssetRenderFactoriesServiceTrackerMap.getService(
-			PortalUtil.getClassName(classNameId));
+		return (AssetRendererFactory<T>)
+			_classNameAssetRenderFactoriesServiceTrackerMap.getService(
+				PortalUtil.getClassName(classNameId));
 	}
 
-	public static AssetRendererFactory<?> getAssetRendererFactoryByType(
+	public static <T> AssetRendererFactory<T> getAssetRendererFactoryByType(
 		String type) {
 
-		return _typeAssetRenderFactoriesServiceTrackerMap.getService(type);
+		return (AssetRendererFactory<T>)
+			_typeAssetRenderFactoriesServiceTrackerMap.getService(type);
 	}
 
 	public static long[] getClassNameIds(long companyId) {
