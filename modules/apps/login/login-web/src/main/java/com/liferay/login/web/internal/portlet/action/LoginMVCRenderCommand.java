@@ -7,11 +7,17 @@ package com.liferay.login.web.internal.portlet.action;
 
 import com.liferay.login.web.constants.LoginPortletKeys;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCRenderCommand;
+import com.liferay.portal.kernel.servlet.taglib.aui.ScriptData;
+import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.portlet.RenderRequest;
 import javax.portlet.RenderResponse;
 
+import javax.servlet.http.HttpServletRequest;
+
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Peter Fellwock
@@ -30,7 +36,21 @@ public class LoginMVCRenderCommand implements MVCRenderCommand {
 	public String render(
 		RenderRequest renderRequest, RenderResponse renderResponse) {
 
+		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
+			renderRequest);
+
+		ScriptData scriptData = (ScriptData)httpServletRequest.getAttribute(
+			WebKeys.AUI_SCRIPT_DATA);
+
+		if (scriptData == null) {
+			httpServletRequest.setAttribute(
+				WebKeys.AUI_SCRIPT_DATA, new ScriptData());
+		}
+
 		return "/login.jsp";
 	}
+
+	@Reference
+	private Portal _portal;
 
 }
