@@ -8,11 +8,15 @@ import {ADD_RULE} from './types';
 
 type Props = {
 	layoutData: LayoutData;
+	name: string;
+	ruleId: string;
 };
 
-export default function addRule({layoutData}: Props) {
+export default function addRule({layoutData, name, ruleId}: Props) {
 	return {
 		layoutData,
+		name,
+		ruleId,
 		type: ADD_RULE,
 	} as const;
 }
