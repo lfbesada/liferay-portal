@@ -6,11 +6,17 @@
 import {LayoutData} from '../../types/layout_data/LayoutData';
 declare type Props = {
 	layoutData: LayoutData;
+	name: string;
+	ruleId: string;
 };
 export default function addRule({
 	layoutData,
+	name,
+	ruleId,
 }: Props): {
 	readonly layoutData: LayoutData;
+	readonly name: string;
+	readonly ruleId: string;
 	readonly type: 'ADD_RULE';
 };
 export {};
