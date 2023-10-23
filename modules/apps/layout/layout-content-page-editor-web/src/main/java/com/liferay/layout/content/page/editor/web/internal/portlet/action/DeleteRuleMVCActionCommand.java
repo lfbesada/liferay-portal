@@ -49,6 +49,10 @@ public class DeleteRuleMVCActionCommand
 
 		JSONObject jsonObject = _jsonFactory.createJSONObject();
 
+		// Aquí habría que eliminar la rule en el layoutData y devolver el
+		// layoutData actualizado, yo estoy devolviendo simplemente el
+		// layoutData sin actualizar :P
+
 		LayoutStructure layoutStructure =
 			LayoutStructureUtil.getLayoutStructure(
 				themeDisplay.getScopeGroupId(), themeDisplay.getPlid(),
