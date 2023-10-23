@@ -42,6 +42,9 @@ public class UpdateRuleMVCActionCommand
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
+		// Estas dos cosas, actions y conditions, son arrays, yo los estoy mandando como string
+		// No sé si los estoy capturando bien aquí
+
 		String actions = ParamUtil.getString(actionRequest, "actions");
 		String conditions = ParamUtil.getString(actionRequest, "conditions");
 		String name = ParamUtil.getString(actionRequest, "name");
@@ -51,6 +54,10 @@ public class UpdateRuleMVCActionCommand
 			actionRequest, "segmentsExperienceId");
 
 		JSONObject jsonObject = _jsonFactory.createJSONObject();
+
+		// Aquí habría que actualizar la rule en el layoutData y devolver el
+		// layoutData actualizado, yo estoy devolviendo simplemente el
+		// layoutData sin actualizar :P
 
 		LayoutStructure layoutStructure =
 			LayoutStructureUtil.getLayoutStructure(
