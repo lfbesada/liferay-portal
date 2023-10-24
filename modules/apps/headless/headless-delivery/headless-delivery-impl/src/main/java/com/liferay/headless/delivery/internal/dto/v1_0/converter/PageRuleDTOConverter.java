@@ -17,7 +17,7 @@ import org.osgi.service.component.annotations.Component;
  */
 @Component(
 	property = "dto.class.name=com.liferay.layout.util.structure.LayoutStructureRule",
-	service = {DTOConverter.class, PageRuleDTOConverter.class}
+	service = DTOConverter.class
 )
 public class PageRuleDTOConverter
 	implements DTOConverter<LayoutStructureRule, PageRule> {
