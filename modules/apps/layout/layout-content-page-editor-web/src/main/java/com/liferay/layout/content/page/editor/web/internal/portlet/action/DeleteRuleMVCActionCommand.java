@@ -7,9 +7,8 @@ package com.liferay.layout.content.page.editor.web.internal.portlet.action;
 
 import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortletKeys;
 import com.liferay.layout.content.page.editor.web.internal.util.layout.structure.LayoutStructureUtil;
-import com.liferay.layout.util.structure.LayoutStructure;
-import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -19,7 +18,6 @@ import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Sandro Chinea
@@ -42,28 +40,14 @@ public class DeleteRuleMVCActionCommand
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
-		String ruleId = ParamUtil.getString(actionRequest, "ruleId");
-
-		long segmentsExperienceId = ParamUtil.getLong(
-			actionRequest, "segmentsExperienceId");
-
-		JSONObject jsonObject = _jsonFactory.createJSONObject();
-
-		// Aquí habría que eliminar la rule en el layoutData y devolver el
-		// layoutData actualizado, yo estoy devolviendo simplemente el
-		// layoutData sin actualizar :P
-
-		LayoutStructure layoutStructure =
-			LayoutStructureUtil.getLayoutStructure(
-				themeDisplay.getScopeGroupId(), themeDisplay.getPlid(),
-				segmentsExperienceId);
-
-		JSONObject layoutDataJSONObject = layoutStructure.toJSONObject();
-
-		return jsonObject.put("layoutData", layoutDataJSONObject);
+		return JSONUtil.put(
+			"layoutData",
+			LayoutStructureUtil.updateLayoutPageTemplateData(
+				themeDisplay.getScopeGroupId(),
+				ParamUtil.getLong(actionRequest, "segmentsExperienceId"),
+				themeDisplay.getPlid(),
+				layoutStructure -> layoutStructure.deleteLayoutStructureRule(
+					ParamUtil.getString(actionRequest, "ruleId"))));
 	}
-
-	@Reference
-	private JSONFactory _jsonFactory;
 
 }
