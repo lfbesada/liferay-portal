@@ -111,7 +111,9 @@ public class LayoutStructure {
 				layoutStructureJSONObject.getJSONArray("pageRules");
 
 			if (!JSONUtil.isEmpty(layoutStructureRulesJSONArray)) {
-				for (int i = 0; i < layoutStructureRulesJSONArray.length(); i++) {
+				for (int i = 0; i < layoutStructureRulesJSONArray.length();
+					 i++) {
+
 					layoutStructureRules.add(
 						LayoutStructureRule.of(
 							layoutStructureRulesJSONArray.getJSONObject(i)));
