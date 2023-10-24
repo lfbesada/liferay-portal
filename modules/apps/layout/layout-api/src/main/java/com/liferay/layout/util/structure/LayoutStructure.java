@@ -576,10 +576,20 @@ public class LayoutStructure {
 				deletedLayoutStructureItem.toJSONObject());
 		}
 
+		JSONArray layoutStructureRulesJSONArray =
+			JSONFactoryUtil.createJSONArray();
+
+		for (LayoutStructureRule layoutStructureRule : _layoutStructureRules) {
+			layoutStructureRulesJSONArray.put(
+				layoutStructureRule.toJSONObject());
+		}
+
 		return JSONUtil.put(
 			"deletedItems", deletedLayoutStructureItemsJSONArray
 		).put(
 			"items", layoutStructureItemsJSONObject
+		).put(
+			"pageRules", layoutStructureRulesJSONArray
 		).put(
 			"rootItems",
 			JSONUtil.put(
