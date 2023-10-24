@@ -19,10 +19,8 @@ export default function RulesList() {
 	const [modalVisible, setModalVisible] = useState(false);
 	const [editingRule, setEditingRule] = useState(null);
 
-	const layoutData = useSelector((state) => state.layoutData);
+	const rules = useSelector((state) => state.layoutData.pageRules);
 	const dispatch = useDispatch();
-
-	const {rules = []} = layoutData;
 
 	const onCreateRule = () => setModalVisible(true);
 
@@ -56,7 +54,7 @@ export default function RulesList() {
 			<ClayList className="pt-3">
 				{rules.map((rule) => (
 					<Rule
-						key={rule.id}
+						key={rule.ruleId}
 						onDelete={onDeleteRule}
 						onEdit={onEditRule}
 						rule={rule}
@@ -84,7 +82,7 @@ function Rule({onDelete, onEdit, rule}) {
 	return (
 		<ClayList.Item
 			className={classNames({active: hovered})}
-			key={rule.id}
+			key={rule.ruleId}
 			onMouseLeave={() => setHovered(false)}
 			onMouseOver={() => setHovered(true)}
 		>
