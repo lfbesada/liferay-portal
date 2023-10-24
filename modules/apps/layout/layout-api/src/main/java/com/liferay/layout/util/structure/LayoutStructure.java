@@ -105,14 +105,17 @@ public class LayoutStructure {
 						deletedLayoutStructureItem);
 				});
 
-			JSONArray layoutStructureRulesJSONArray =
-				layoutStructureJSONObject.getJSONArray("pageRules");
 			List<LayoutStructureRule> layoutStructureRules = new ArrayList<>();
 
-			for (int i = 0; i < layoutStructureRulesJSONArray.length(); i++) {
-				layoutStructureRules.add(
-					LayoutStructureRule.of(
-						layoutStructureRulesJSONArray.getJSONObject(i)));
+			JSONArray layoutStructureRulesJSONArray =
+				layoutStructureJSONObject.getJSONArray("pageRules");
+
+			if (!JSONUtil.isEmpty(layoutStructureRulesJSONArray)) {
+				for (int i = 0; i < layoutStructureRulesJSONArray.length(); i++) {
+					layoutStructureRules.add(
+						LayoutStructureRule.of(
+							layoutStructureRulesJSONArray.getJSONObject(i)));
+				}
 			}
 
 			return new LayoutStructure(
@@ -263,6 +266,17 @@ public class LayoutStructure {
 		_updateLayoutStructure(layoutStructureItem, position);
 
 		return layoutStructureItem;
+	}
+
+	public LayoutStructureRule addLayoutStructureRule(
+		String name, String ruleId) {
+
+		LayoutStructureRule layoutStructureRule = new LayoutStructureRule(
+			name, ruleId);
+
+		_layoutStructureRules.add(layoutStructureRule);
+
+		return layoutStructureRule;
 	}
 
 	public LayoutStructureItem addRootLayoutStructureItem() {
