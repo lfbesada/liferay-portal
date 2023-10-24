@@ -105,11 +105,22 @@ public class LayoutStructure {
 						deletedLayoutStructureItem);
 				});
 
+			JSONArray layoutStructureRulesJSONArray =
+				layoutStructureJSONObject.getJSONArray("pageRules");
+			List<LayoutStructureRule> layoutStructureRules = new ArrayList<>();
+
+			for (int i = 0; i < layoutStructureRulesJSONArray.length(); i++) {
+				layoutStructureRules.add(
+					LayoutStructureRule.of(
+						layoutStructureRulesJSONArray.getJSONObject(i)));
+			}
+
 			return new LayoutStructure(
 				collectionStyledLayoutStructureItems, deletedItemIds,
 				deletedLayoutStructureItems, deletedPortletIds,
 				formStyledLayoutStructureItems, fragmentLayoutStructureItems,
-				layoutStructureItems, rootItemsJSONObject.getString("main"));
+				layoutStructureItems, layoutStructureRules,
+				rootItemsJSONObject.getString("main"));
 		}
 		catch (JSONException jsonException) {
 			if (_log.isDebugEnabled()) {
@@ -128,6 +139,7 @@ public class LayoutStructure {
 		_formStyledLayoutStructureItems = new ArrayList<>();
 		_fragmentLayoutStructureItems = new HashMap<>();
 		_layoutStructureItems = new HashMap<>();
+		_layoutStructureRules = new ArrayList<>();
 		_mainItemId = StringPool.BLANK;
 	}
 
@@ -401,6 +413,10 @@ public class LayoutStructure {
 
 	public List<LayoutStructureItem> getLayoutStructureItems() {
 		return ListUtil.fromCollection(_layoutStructureItems.values());
+	}
+
+	public List<LayoutStructureRule> getLayoutStructureRules() {
+		return _layoutStructureRules;
 	}
 
 	public String getMainItemId() {
@@ -747,7 +763,7 @@ public class LayoutStructure {
 		List<FormStyledLayoutStructureItem> formStyledLayoutStructureItems,
 		Map<Long, LayoutStructureItem> fragmentLayoutStructureItems,
 		Map<String, LayoutStructureItem> layoutStructureItems,
-		String mainItemId) {
+		List<LayoutStructureRule> layoutStructureRules, String mainItemId) {
 
 		_collectionStyledLayoutStructureItems =
 			collectionStyledLayoutStructureItems;
@@ -757,6 +773,7 @@ public class LayoutStructure {
 		_formStyledLayoutStructureItems = formStyledLayoutStructureItems;
 		_fragmentLayoutStructureItems = fragmentLayoutStructureItems;
 		_layoutStructureItems = layoutStructureItems;
+		_layoutStructureRules = layoutStructureRules;
 		_mainItemId = mainItemId;
 	}
 
@@ -1020,6 +1037,7 @@ public class LayoutStructure {
 		_formStyledLayoutStructureItems;
 	private final Map<Long, LayoutStructureItem> _fragmentLayoutStructureItems;
 	private final Map<String, LayoutStructureItem> _layoutStructureItems;
+	private final List<LayoutStructureRule> _layoutStructureRules;
 	private String _mainItemId;
 
 }
