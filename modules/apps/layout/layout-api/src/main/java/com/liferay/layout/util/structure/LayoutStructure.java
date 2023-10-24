@@ -576,20 +576,27 @@ public class LayoutStructure {
 				deletedLayoutStructureItem.toJSONObject());
 		}
 
-		JSONArray layoutStructureRulesJSONArray =
-			JSONFactoryUtil.createJSONArray();
-
-		for (LayoutStructureRule layoutStructureRule : _layoutStructureRules) {
-			layoutStructureRulesJSONArray.put(
-				layoutStructureRule.toJSONObject());
-		}
-
 		return JSONUtil.put(
 			"deletedItems", deletedLayoutStructureItemsJSONArray
 		).put(
 			"items", layoutStructureItemsJSONObject
 		).put(
-			"pageRules", layoutStructureRulesJSONArray
+			"pageRules",
+			() -> {
+				if (_layoutStructureRules.isEmpty()) {
+					return null;
+				}
+
+				JSONArray layoutStructureRulesJSONArray =
+					JSONFactoryUtil.createJSONArray();
+
+				for (LayoutStructureRule layoutStructureRule : _layoutStructureRules) {
+					layoutStructureRulesJSONArray.put(
+						layoutStructureRule.toJSONObject());
+				}
+
+				return layoutStructureRulesJSONArray;
+			}
 		).put(
 			"rootItems",
 			JSONUtil.put(
