@@ -41,15 +41,19 @@ public class AddRuleMVCActionCommand
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
+		String ruleId = PortalUUIDUtil.generate();
+
 		return JSONUtil.put(
+			"addedRuleId", ruleId
+		).put(
 			"layoutData",
 			LayoutStructureUtil.updateLayoutPageTemplateData(
 				themeDisplay.getScopeGroupId(),
 				ParamUtil.getLong(actionRequest, "segmentsExperienceId"),
 				themeDisplay.getPlid(),
 				layoutStructure -> layoutStructure.addLayoutStructureRule(
-					ParamUtil.getString(actionRequest, "name"),
-					PortalUUIDUtil.generate())));
+					ParamUtil.getString(actionRequest, "name"), ruleId))
+		);
 	}
 
 }
