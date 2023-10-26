@@ -56,7 +56,7 @@ export default function RulesModal({editingRule, onCloseModal}) {
 					actions: filteredActions,
 					conditions: filteredConditions,
 					name,
-					ruleId: editingRule.ruleId,
+					ruleId: editingRule.id,
 				})
 			);
 		}
