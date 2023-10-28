@@ -6,6 +6,7 @@
 package com.liferay.layout.page.template.admin.web.internal.handler;
 
 import com.liferay.layout.page.template.exception.LayoutPageTemplateEntryNameException;
+import com.liferay.layout.page.template.exception.RequiredLayoutPageTemplateEntryException;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -77,6 +78,15 @@ public class LayoutPageTemplateEntryExceptionRequestHandlerUtil {
 				themeDisplay.getLocale(),
 				"please-enter-a-name-with-fewer-than-x-characters",
 				nameMaxLength);
+		}
+		else if (portalException instanceof
+					RequiredLayoutPageTemplateEntryException) {
+
+			errorMessage = LanguageUtil.get(
+				themeDisplay.getLocale(),
+				"you-cannot-change-the-display-pages'-content-types-that-are-" +
+					"used-by-one-or-more-items.-please-view-the-usages-and-" +
+						"try-to-unassign-them");
 		}
 
 		if (Validator.isNull(errorMessage)) {
