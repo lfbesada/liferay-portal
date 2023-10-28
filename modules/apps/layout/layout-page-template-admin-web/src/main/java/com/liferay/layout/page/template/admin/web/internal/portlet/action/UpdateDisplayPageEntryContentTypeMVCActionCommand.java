@@ -5,15 +5,18 @@
 
 package com.liferay.layout.page.template.admin.web.internal.portlet.action;
 
+import com.liferay.layout.manager.LayoutLockManager;
 import com.liferay.layout.page.template.admin.constants.LayoutPageTemplateAdminPortletKeys;
 import com.liferay.layout.page.template.admin.web.internal.handler.LayoutPageTemplateEntryExceptionRequestHandlerUtil;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
+import com.liferay.portal.kernel.exception.LockedLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
@@ -56,6 +59,19 @@ public class UpdateDisplayPageEntryContentTypeMVCActionCommand
 					ParamUtil.getString(actionRequest, "redirect")));
 		}
 		catch (PortalException portalException) {
+			if (portalException instanceof LockedLayoutException) {
+				JSONPortletResponseUtil.writeJSON(
+					actionRequest, actionResponse,
+					JSONUtil.put(
+						"redirectURL",
+						() -> _layoutLockManager.getLockedLayoutURL(
+							_portal.getOriginalServletRequest(
+								_portal.getHttpServletRequest(
+									actionRequest)))));
+
+				return;
+			}
+
 			LayoutPageTemplateEntryExceptionRequestHandlerUtil.
 				handlePortalException(
 					actionRequest, actionResponse, portalException);
@@ -63,6 +79,12 @@ public class UpdateDisplayPageEntryContentTypeMVCActionCommand
 	}
 
 	@Reference
+	private LayoutLockManager _layoutLockManager;
+
+	@Reference
 	private LayoutPageTemplateEntryService _layoutPageTemplateEntryService;
+
+	@Reference
+	private Portal _portal;
 
 }
