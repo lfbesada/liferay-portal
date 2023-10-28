@@ -108,7 +108,7 @@ public class DisplayPageActionDropdownItemsProvider {
 						() ->
 							FeatureFlagManagerUtil.isEnabled("LPS-195263") &&
 							hasUpdatePermission,
-						_getChangeContentTypeActionUnsafeConsumer()
+						_getChangeContentTypeActionUnsafeConsumer(usagesCount)
 					).add(
 						() -> hasUpdatePermission,
 						_getUpdateLayoutPageTemplateEntryPreviewActionUnsafeConsumer()
@@ -188,12 +188,13 @@ public class DisplayPageActionDropdownItemsProvider {
 	}
 
 	private UnsafeConsumer<DropdownItem, Exception>
-		_getChangeContentTypeActionUnsafeConsumer() {
+		_getChangeContentTypeActionUnsafeConsumer(int usagesCount) {
 
 		return dropdownItem -> {
-			if ((_draftLayout != null) &&
-				!_draftLayout.isUnlocked(
-					Constants.EDIT, _themeDisplay.getUserId())) {
+			if ((usagesCount > 0) ||
+				((_draftLayout != null) &&
+				 !_draftLayout.isUnlocked(
+					 Constants.EDIT, _themeDisplay.getUserId()))) {
 
 				dropdownItem.setDisabled(true);
 			}
