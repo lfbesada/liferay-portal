@@ -58,9 +58,11 @@ import javax.servlet.http.HttpServletRequest;
 public class DisplayPageActionDropdownItemsProvider {
 
 	public DisplayPageActionDropdownItemsProvider(
+		boolean existsMappedContentType,
 		LayoutPageTemplateEntry layoutPageTemplateEntry,
 		RenderRequest renderRequest, RenderResponse renderResponse) {
 
+		_existsMappedContentType = existsMappedContentType;
 		_layoutPageTemplateEntry = layoutPageTemplateEntry;
 		_renderResponse = renderResponse;
 
@@ -409,13 +411,37 @@ public class DisplayPageActionDropdownItemsProvider {
 		PortletDisplay portletDisplay = _themeDisplay.getPortletDisplay();
 
 		return dropdownItem -> {
-			dropdownItem.setHref(
-				HttpComponentsUtil.addParameters(
-					PortalUtil.getLayoutFullURL(_draftLayout, _themeDisplay),
-					"p_l_back_url", _themeDisplay.getURLCurrent(),
-					"p_l_back_url_title",
-					portletDisplay.getPortletDisplayName(), "p_l_mode",
-					Constants.EDIT));
+			String editDisplayPageURL = HttpComponentsUtil.addParameters(
+				PortalUtil.getLayoutFullURL(_draftLayout, _themeDisplay),
+				"p_l_back_url", _themeDisplay.getURLCurrent(),
+				"p_l_back_url_title", portletDisplay.getPortletDisplayName(),
+				"p_l_mode", Constants.EDIT);
+
+			if (!_existsMappedContentType) {
+				dropdownItem.putData("action", "changeContentType");
+				dropdownItem.putData(
+					"changeContentTypeURL",
+					PortletURLBuilder.createActionURL(
+						_renderResponse
+					).setActionName(
+						"/layout_page_template_admin" +
+							"/update_display_page_entry_content_type"
+					).setRedirect(
+						editDisplayPageURL
+					).setParameter(
+						"layoutPageTemplateEntryId",
+						_layoutPageTemplateEntry.getLayoutPageTemplateEntryId()
+					).setParameter(
+						"p_l_back_url", _themeDisplay.getURLCurrent()
+					).setParameter(
+						"p_l_back_url_title",
+						portletDisplay.getPortletDisplayName()
+					).buildString());
+			}
+			else {
+				dropdownItem.setHref(editDisplayPageURL);
+			}
+
 			dropdownItem.setIcon("pencil");
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "edit"));
@@ -653,6 +679,7 @@ public class DisplayPageActionDropdownItemsProvider {
 	}
 
 	private final Layout _draftLayout;
+	private final boolean _existsMappedContentType;
 	private final HttpServletRequest _httpServletRequest;
 	private final ItemSelector _itemSelector;
 	private final LayoutPageTemplateAdminWebConfiguration
