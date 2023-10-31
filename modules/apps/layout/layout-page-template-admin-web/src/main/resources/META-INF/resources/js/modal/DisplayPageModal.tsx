@@ -152,8 +152,6 @@ export default function DisplayPageModal({
 		[formSubmitURL, onClose, type, validateForm]
 	);
 
-	const visible = observer.mutation;
-
 	return (
 		<ClayModal observer={observer}>
 			<ClayModal.Header>{title}</ClayModal.Header>
@@ -180,17 +178,15 @@ export default function DisplayPageModal({
 					</ClayAlert>
 				)}
 
-				{visible && (
-					<DisplayPageModalForm
-						displayPageName={displayPageName}
-						error={error}
-						formRef={formRef}
-						mappingTypes={mappingTypes}
-						namespace={namespace}
-						onSubmit={handleSubmit}
-						type={type}
-					/>
-				)}
+				<DisplayPageModalForm
+					displayPageName={displayPageName}
+					error={error}
+					formRef={formRef}
+					mappingTypes={mappingTypes}
+					namespace={namespace}
+					onSubmit={handleSubmit}
+					type={type}
+				/>
 			</ClayModal.Body>
 
 			<ClayModal.Footer
