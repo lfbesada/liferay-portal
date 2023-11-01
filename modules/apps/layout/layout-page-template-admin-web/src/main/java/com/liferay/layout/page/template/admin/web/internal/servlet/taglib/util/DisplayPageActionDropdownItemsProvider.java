@@ -640,7 +640,11 @@ public class DisplayPageActionDropdownItemsProvider {
 	}
 
 	private String _getViewUsagesURL() {
-		return RenderURLBuilder.createRenderURL(
+		if (_viewUsagesURL != null) {
+			return _viewUsagesURL;
+		}
+
+		_viewUsagesURL = RenderURLBuilder.createRenderURL(
 			_renderResponse
 		).setMVCRenderCommandName(
 			"/layout_page_template_admin/view_asset_display_page_usages"
@@ -660,6 +664,8 @@ public class DisplayPageActionDropdownItemsProvider {
 			"defaultTemplate",
 			String.valueOf(_layoutPageTemplateEntry.isDefaultTemplate())
 		).buildString();
+
+		return _viewUsagesURL;
 	}
 
 	private boolean _isShowDiscardDraftAction() {
@@ -683,5 +689,6 @@ public class DisplayPageActionDropdownItemsProvider {
 	private final LayoutPageTemplateEntry _layoutPageTemplateEntry;
 	private final RenderResponse _renderResponse;
 	private final ThemeDisplay _themeDisplay;
+	private String _viewUsagesURL;
 
 }
