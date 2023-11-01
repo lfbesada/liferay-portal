@@ -9,8 +9,10 @@ import com.liferay.layout.manager.LayoutLockManager;
 import com.liferay.layout.page.template.admin.constants.LayoutPageTemplateAdminPortletKeys;
 import com.liferay.layout.page.template.admin.web.internal.handler.LayoutPageTemplateEntryExceptionRequestHandlerUtil;
 import com.liferay.layout.page.template.exception.NoSuchPageTemplateEntryException;
+import com.liferay.layout.page.template.exception.RequiredLayoutPageTemplateEntryException;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
+import com.liferay.portal.kernel.exception.ModelListenerException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.Layout;
@@ -75,6 +77,19 @@ public class UpdateDisplayPageEntryContentTypeMVCActionCommand
 				JSONUtil.put(
 					"redirectURL",
 					ParamUtil.getString(actionRequest, "redirect")));
+		}
+		catch (ModelListenerException modelListenerException) {
+			if (modelListenerException.getCause() instanceof
+					RequiredLayoutPageTemplateEntryException) {
+
+				JSONPortletResponseUtil.writeJSON(
+					actionRequest, actionResponse,
+					JSONUtil.put("error", JSONUtil.put("hasUsages", true)));
+
+				return;
+			}
+
+			throw modelListenerException;
 		}
 		catch (PortalException portalException) {
 			LayoutPageTemplateEntryExceptionRequestHandlerUtil.
