@@ -109,7 +109,7 @@ public class DisplayPageActionDropdownItemsProvider {
 						() ->
 							FeatureFlagManagerUtil.isEnabled("LPS-195263") &&
 							hasUpdatePermission,
-						_getChangeContentTypeActionUnsafeConsumer()
+						_getChangeContentTypeActionUnsafeConsumer(usagesCount)
 					).add(
 						() -> hasUpdatePermission,
 						_getUpdateLayoutPageTemplateEntryPreviewActionUnsafeConsumer()
@@ -185,13 +185,22 @@ public class DisplayPageActionDropdownItemsProvider {
 	}
 
 	private UnsafeConsumer<DropdownItem, Exception>
-		_getChangeContentTypeActionUnsafeConsumer() {
+		_getChangeContentTypeActionUnsafeConsumer(int usagesCount) {
 
 		return dropdownItem -> {
 			dropdownItem.putData("action", "changeContentType");
-			dropdownItem.putData(
-				"changeContentTypeURL",
-				_getChangeContentTypeURL(_themeDisplay.getURLCurrent()));
+
+			if (usagesCount > 0) {
+				dropdownItem.putData("hasUsages", Boolean.TRUE.toString());
+				dropdownItem.putData("viewUsagesURL", _getViewUsagesURL());
+			}
+			else {
+				dropdownItem.putData(
+					"changeContentTypeURL",
+					_getChangeContentTypeURL(_themeDisplay.getURLCurrent()));
+				dropdownItem.putData("hasUsages", Boolean.FALSE.toString());
+			}
+
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "change-content-type"));
 		};
@@ -622,31 +631,34 @@ public class DisplayPageActionDropdownItemsProvider {
 
 		return dropdownItem -> {
 			dropdownItem.setDisabled(usagesCount == 0);
-			dropdownItem.setHref(
-				RenderURLBuilder.createRenderURL(
-					_renderResponse
-				).setMVCRenderCommandName(
-					"/layout_page_template_admin/view_asset_display_page_usages"
-				).setRedirect(
-					_themeDisplay.getURLCurrent()
-				).setParameter(
-					"classNameId",
-					String.valueOf(_layoutPageTemplateEntry.getClassNameId())
-				).setParameter(
-					"classTypeId",
-					String.valueOf(_layoutPageTemplateEntry.getClassTypeId())
-				).setParameter(
-					"layoutPageTemplateEntryId",
-					String.valueOf(
-						_layoutPageTemplateEntry.getLayoutPageTemplateEntryId())
-				).setParameter(
-					"defaultTemplate",
-					String.valueOf(_layoutPageTemplateEntry.isDefaultTemplate())
-				).buildString());
+			dropdownItem.setHref(_getViewUsagesURL());
 			dropdownItem.setIcon("list-ul");
 			dropdownItem.setLabel(
 				LanguageUtil.get(_httpServletRequest, "view-usages"));
 		};
+	}
+
+	private String _getViewUsagesURL() {
+		return RenderURLBuilder.createRenderURL(
+			_renderResponse
+		).setMVCRenderCommandName(
+			"/layout_page_template_admin/view_asset_display_page_usages"
+		).setRedirect(
+			_themeDisplay.getURLCurrent()
+		).setParameter(
+			"classNameId",
+			String.valueOf(_layoutPageTemplateEntry.getClassNameId())
+		).setParameter(
+			"classTypeId",
+			String.valueOf(_layoutPageTemplateEntry.getClassTypeId())
+		).setParameter(
+			"layoutPageTemplateEntryId",
+			String.valueOf(
+				_layoutPageTemplateEntry.getLayoutPageTemplateEntryId())
+		).setParameter(
+			"defaultTemplate",
+			String.valueOf(_layoutPageTemplateEntry.isDefaultTemplate())
+		).buildString();
 	}
 
 	private boolean _isShowDiscardDraftAction() {
