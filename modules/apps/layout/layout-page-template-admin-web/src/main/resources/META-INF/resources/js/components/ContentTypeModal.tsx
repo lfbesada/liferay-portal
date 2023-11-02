@@ -149,6 +149,7 @@ export default function ContentTypeModal({
 					else if (error) {
 						setLoading(false);
 						setError({other: error});
+						setWarningVisible(false);
 					}
 					else if (redirectURL) {
 						navigate(redirectURL, {
@@ -182,17 +183,18 @@ export default function ContentTypeModal({
 				</ClayAlert>
 			) : null}
 
-			<ClayModal.Body>
-				{error && error.other && (
-					<ClayAlert
-						displayType="danger"
-						onClose={() => {}}
-						title={Liferay.Language.get('error')}
-					>
-						{error.other}
-					</ClayAlert>
-				)}
+			{error && error.other ? (
+				<ClayAlert
+					displayType="danger"
+					onClose={() => setError({})}
+					title={Liferay.Language.get('error')}
+					variant="stripe"
+				>
+					{error.other}
+				</ClayAlert>
+			) : null}
 
+			<ClayModal.Body>
 				<ContentTypeModalForm
 					displayPageName={displayPageName}
 					error={error}
