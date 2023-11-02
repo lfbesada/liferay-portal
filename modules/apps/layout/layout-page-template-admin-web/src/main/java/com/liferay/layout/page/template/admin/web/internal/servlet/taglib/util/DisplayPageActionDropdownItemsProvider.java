@@ -422,6 +422,7 @@ public class DisplayPageActionDropdownItemsProvider {
 				dropdownItem.putData(
 					"changeContentTypeURL",
 					_getChangeContentTypeURL(editDisplayPageURL));
+				dropdownItem.putData("hasMissingType", Boolean.TRUE.toString());
 			}
 			else {
 				dropdownItem.setHref(editDisplayPageURL);
