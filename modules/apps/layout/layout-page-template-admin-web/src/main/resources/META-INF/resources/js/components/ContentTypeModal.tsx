@@ -6,9 +6,10 @@
 import ClayAlert from '@clayui/alert';
 import ClayButton from '@clayui/button';
 import ClayModal, {useModal} from '@clayui/modal';
-import {fetch, navigate, openModal, openToast} from 'frontend-js-web';
+import {fetch, navigate, openModal, openToast, sub} from 'frontend-js-web';
 import React, {useCallback, useRef, useState} from 'react';
 
+import openInUseModal from '../commands/openInUseModal';
 import {ModalType} from '../constants/modalTypes';
 import {MappingType} from '../types/MappingTypes';
 import {ValidationError} from '../types/ValidationError';
@@ -95,7 +96,26 @@ export default function ContentTypeModal({
 			})
 				.then((response) => response.json())
 				.then(({error, redirectURL}) => {
-					if (error?.isLocked) {
+					if (error?.hasUsages) {
+						onClose();
+
+						openInUseModal({
+							assetType: error.assetType,
+							onCancel: () =>
+								openToast({
+									message: sub(
+										Liferay.Language.get(
+											'the-content-type-change-could-not-be-done-because-this-display-page-is-assigned-to-one-or-more-assets-with-the-type-x'
+										),
+										error.assetType
+									),
+									type: 'warning',
+								}),
+							status: 'warning',
+							viewUsagesURL: error.viewUsagesURL,
+						});
+					}
+					else if (error?.isLocked) {
 						onClose();
 
 						openModal({
