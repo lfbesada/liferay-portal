@@ -97,7 +97,26 @@ export default function DisplayPageModal({
 				.then((responseContent) => {
 					if (responseContent.error) {
 						setLoading(false);
-						setError(responseContent.error);
+						console.log(responseContent.error);
+
+						if (typeof responseContent.error === 'string') {
+							console.log('String error');
+							setError(responseContent.error);
+						}
+						else if (typeof responseContent.error === 'object') {
+							console.log('Object error');
+							const error = responseContent.error;
+							if (error.isLocked) {
+								console.log('Is Locked!');
+							}
+							else if (error.hasUsages) {
+								console.log('Has Usages!');
+							}
+							else {
+								console.log('Unknown!');
+							}
+							setError(responseContent.error);
+						}
 					}
 					else if (responseContent.redirectURL) {
 						navigate(responseContent.redirectURL, {
