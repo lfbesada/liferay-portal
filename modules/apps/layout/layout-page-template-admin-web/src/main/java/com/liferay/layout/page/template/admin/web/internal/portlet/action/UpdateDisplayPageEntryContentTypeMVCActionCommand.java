@@ -88,6 +88,8 @@ public class UpdateDisplayPageEntryContentTypeMVCActionCommand
 			if (modelListenerException.getCause() instanceof
 					RequiredLayoutPageTemplateEntryException) {
 
+				hideDefaultSuccessMessage(actionRequest);
+
 				JSONPortletResponseUtil.writeJSON(
 					actionRequest, actionResponse,
 					JSONUtil.put(
@@ -110,6 +112,8 @@ public class UpdateDisplayPageEntryContentTypeMVCActionCommand
 			throw modelListenerException;
 		}
 		catch (PortalException portalException) {
+			hideDefaultSuccessMessage(actionRequest);
+
 			LayoutPageTemplateEntryExceptionRequestHandlerUtil.
 				handlePortalException(
 					actionRequest, actionResponse, portalException);
