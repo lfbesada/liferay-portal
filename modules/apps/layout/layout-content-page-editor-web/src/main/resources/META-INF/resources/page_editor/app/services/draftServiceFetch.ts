@@ -34,7 +34,7 @@ export default function draftServiceFetch<T>(
 			return response;
 		})
 		.catch((error) => {
-			return handleErroredResponse(error, onNetworkStatus);
+			return handleErroredResponse(error.message, onNetworkStatus);
 		});
 }
 
