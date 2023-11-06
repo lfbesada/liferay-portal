@@ -3997,6 +3997,12 @@ components:
             description:
                 Represents a definition of a Page Rule.
             properties:
+                conditionType:
+                    # @review
+                    description:
+                        The custom name of a Page rule.
+                    enum: [All, Any]
+                    type: string
                 id:
                     # @review
                     description:
@@ -4007,6 +4013,74 @@ components:
                     # @review
                     description:
                         The custom name of a Page rule.
+                    type: string
+                pageRuleActions:
+                    # @review
+                    description:
+                        A list of actions of a Page rule.
+                    items:
+                        $ref: "#/components/schemas/PageRuleAction"
+                    type: array
+                pageRuleConditions:
+                    # @review
+                    description:
+                        A list of conditions of a Page rule.
+                    items:
+                        $ref: "#/components/schemas/PageRuleCondition"
+                    type: array
+            type: object
+        PageRuleAction:
+            # @review
+            description:
+                Represents a definition of a Page Rule Action.
+            properties:
+                action:
+                    # @review
+                    description:
+                        The page rule action's action.
+                    type: string
+                id:
+                    # @review
+                    description:
+                        The page rule action's ID.
+                    readOnly: true
+                    type: string
+                itemId:
+                    # @review
+                    description:
+                        The page rule condition's item ID.
+                    type: string
+                type:
+                    # @review
+                    description:
+                        The page rule action's type.
+                    type: string
+            type: object
+        PageRuleCondition:
+            # @review
+            description:
+                Represents a definition of a Page Rule Condition.
+            properties:
+                condition:
+                    # @review
+                    description:
+                        The page rule condition's description.
+                    type: string
+                id:
+                    # @review
+                    description:
+                        The page rule condition's ID.
+                    readOnly: true
+                    type: string
+                type:
+                    # @review
+                    description:
+                        The page rule condition's type.
+                    type: string
+                value:
+                    # @review
+                    description:
+                        The page rule condition's value.
                     type: string
             type: object
         PageSectionDefinition:
@@ -5747,7 +5821,7 @@ components:
 info:
     description:
         "A Java client JAR is available for use with the group ID 'com.liferay', artifact ID
-        'com.liferay.headless.delivery.client', and version '4.0.66'."
+        'com.liferay.headless.delivery.client', and version '4.0.67'."
     license:
         name: "Apache 2.0"
         url: "http://www.apache.org/licenses/LICENSE-2.0.html"
