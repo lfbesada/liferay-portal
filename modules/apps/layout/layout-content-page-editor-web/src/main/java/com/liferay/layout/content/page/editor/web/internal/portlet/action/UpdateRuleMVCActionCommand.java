@@ -9,15 +9,19 @@ import com.liferay.layout.content.page.editor.constants.ContentPageEditorPortlet
 import com.liferay.layout.content.page.editor.web.internal.util.layout.structure.LayoutStructureUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.portlet.ActionRequest;
 import javax.portlet.ActionResponse;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Sandro Chinea
@@ -37,6 +41,17 @@ public class UpdateRuleMVCActionCommand
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
+		String name = ParamUtil.getString(actionRequest, "name");
+		String ruleId = ParamUtil.getString(actionRequest, "ruleId");
+
+		if (Validator.isNull(name) || Validator.isNull(ruleId)) {
+			return JSONUtil.put(
+				"error",
+				_language.get(
+					_portal.getHttpServletRequest(actionRequest),
+					"an-unexpected-error-occurred"));
+		}
+
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
@@ -47,8 +62,13 @@ public class UpdateRuleMVCActionCommand
 				ParamUtil.getLong(actionRequest, "segmentsExperienceId"),
 				themeDisplay.getPlid(),
 				layoutStructure -> layoutStructure.updateLayoutStructureRule(
-					ParamUtil.getString(actionRequest, "name"),
-					ParamUtil.getString(actionRequest, "ruleId"))));
+					name, ruleId)));
 	}
+
+	@Reference
+	private Language _language;
+
+	@Reference
+	private Portal _portal;
 
 }

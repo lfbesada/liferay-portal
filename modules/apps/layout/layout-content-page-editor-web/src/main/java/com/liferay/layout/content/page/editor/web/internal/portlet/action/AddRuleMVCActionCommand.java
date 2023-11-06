@@ -10,9 +10,13 @@ import com.liferay.layout.content.page.editor.web.internal.util.layout.structure
 import com.liferay.layout.util.structure.LayoutStructureRule;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import javax.portlet.ActionRequest;
@@ -39,6 +43,16 @@ public class AddRuleMVCActionCommand
 			ActionRequest actionRequest, ActionResponse actionResponse)
 		throws Exception {
 
+		String name = ParamUtil.getString(actionRequest, "name");
+
+		if (Validator.isNull(name)) {
+			return JSONUtil.put(
+				"error",
+				_language.get(
+					_portal.getHttpServletRequest(actionRequest),
+					"an-unexpected-error-occurred"));
+		}
+
 		JSONObject jsonObject = _jsonFactory.createJSONObject();
 
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
@@ -52,8 +66,7 @@ public class AddRuleMVCActionCommand
 				themeDisplay.getPlid(),
 				layoutStructure -> {
 					LayoutStructureRule layoutStructureRule =
-						layoutStructure.addLayoutStructureRule(
-							ParamUtil.getString(actionRequest, "name"));
+						layoutStructure.addLayoutStructureRule(name);
 
 					jsonObject.put("addedRuleId", layoutStructureRule.getId());
 				}));
@@ -63,5 +76,11 @@ public class AddRuleMVCActionCommand
 
 	@Reference
 	private JSONFactory _jsonFactory;
+
+	@Reference
+	private Language _language;
+
+	@Reference
+	private Portal _portal;
 
 }
