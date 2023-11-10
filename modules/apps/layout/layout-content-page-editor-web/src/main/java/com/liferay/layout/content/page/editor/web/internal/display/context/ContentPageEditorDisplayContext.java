@@ -1212,10 +1212,10 @@ public class ContentPageEditorDisplayContext {
 	}
 
 	private String _getDiscardDraftURL() {
-		Layout publishedLayout = _getPublishedLayout();
+		Layout draftLayout = themeDisplay.getLayout();
 
 		if (!Objects.equals(
-				publishedLayout.getType(), LayoutConstants.TYPE_PORTLET)) {
+				draftLayout.getType(), LayoutConstants.TYPE_PORTLET)) {
 
 			return PortletURLBuilder.create(
 				_portletURLFactory.create(
@@ -1242,7 +1242,7 @@ public class ContentPageEditorDisplayContext {
 					httpServletRequest, LayoutAdminPortletKeys.GROUP_PAGES,
 					PortletRequest.RENDER_PHASE)
 			).setParameter(
-				"selPlid", publishedLayout.getPlid()
+				"selPlid", draftLayout.getClassPK()
 			).buildString()
 		).setParameter(
 			"selPlid", themeDisplay.getPlid()
@@ -1901,11 +1901,10 @@ public class ContentPageEditorDisplayContext {
 	}
 
 	private boolean _isConversionDraft() {
-		Layout publishedLayout = _getPublishedLayout();
+		Layout draftLayout = themeDisplay.getLayout();
 
-		if ((publishedLayout != null) &&
-			Objects.equals(
-				publishedLayout.getType(), LayoutConstants.TYPE_PORTLET)) {
+		if (Objects.equals(
+				draftLayout.getType(), LayoutConstants.TYPE_PORTLET)) {
 
 			return true;
 		}
@@ -1920,10 +1919,10 @@ public class ContentPageEditorDisplayContext {
 			return false;
 		}
 
-		Layout publishedLayout = _getPublishedLayout();
+		Layout draftLayout = themeDisplay.getLayout();
 
 		int masterUsagesCount = _layoutLocalService.getMasterLayoutsCount(
-			themeDisplay.getScopeGroupId(), publishedLayout.getPlid());
+			themeDisplay.getScopeGroupId(), draftLayout.getClassPK());
 
 		if (masterUsagesCount > 0) {
 			return true;
