@@ -874,10 +874,8 @@ public class ContentPageEditorDisplayContext {
 	}
 
 	public boolean isWorkflowEnabled() {
-		Layout publishedLayout = _getPublishedLayout();
-
 		return _workflowDefinitionLinkLocalService.hasWorkflowDefinitionLink(
-			publishedLayout.getCompanyId(), publishedLayout.getGroupId(),
+			themeDisplay.getCompanyId(), themeDisplay.getScopeGroupId(),
 			Layout.class.getName());
 	}
 
