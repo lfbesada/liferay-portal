@@ -67,6 +67,7 @@ import com.liferay.portal.kernel.portlet.PortletURLFactoryUtil;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.ResourceActions;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -212,8 +213,13 @@ public class ContentManager {
 						formStyledLayoutStructureItem.getClassNameId()));
 
 			if ((infoPermissionProvider == null) ||
-				infoPermissionProvider.hasViewPermission(
-					themeDisplay.getPermissionChecker())) {
+				(infoPermissionProvider.hasViewPermission(
+					themeDisplay.getPermissionChecker()) &&
+				 infoPermissionProvider.hasViewPermission(
+					 String.valueOf(
+						 formStyledLayoutStructureItem.getClassTypeId()),
+					 themeDisplay.getScopeGroupId(),
+					 PermissionThreadLocal.getPermissionChecker()))) {
 
 				continue;
 			}
