@@ -82,6 +82,7 @@ public class JournalArticleInfoPermissionProvider
 	private static final Log _log = LogFactoryUtil.getLog(
 		JournalArticleInfoPermissionProvider.class);
 
+	@Reference
 	private DDMStructureLocalService _ddmStructureLocalService;
 
 	@Reference(
