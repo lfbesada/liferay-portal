@@ -240,7 +240,9 @@ public class LayoutActionsHelper {
 			return false;
 		}
 
-		if (draftLayout.isDraft() || !layout.isPublished()) {
+		if (draftLayout.isDraft() || draftLayout.isDenied() ||
+			draftLayout.isPending() || !layout.isPublished()) {
+
 			return true;
 		}
 
