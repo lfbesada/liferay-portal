@@ -85,6 +85,7 @@ import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserGroupLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
+import com.liferay.portal.kernel.service.WorkflowInstanceLinkLocalService;
 import com.liferay.portal.kernel.service.persistence.GroupPersistence;
 import com.liferay.portal.kernel.service.persistence.LayoutFriendlyURLPersistence;
 import com.liferay.portal.kernel.service.persistence.LayoutPrototypePersistence;
@@ -3418,6 +3419,9 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		Layout layout = layoutLocalService.getLayout(plid);
 
 		layout.setModifiedDate(new Date());
+
+		int oldStatus = layout.getStatus();
+
 		layout.setStatus(status);
 
 		User user = _userLocalService.getUser(userId);
@@ -3453,6 +3457,16 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 			_assetEntryLocalService.updateEntry(
 				Layout.class.getName(), layout.getPlid(),
 				layout.getStatusDate(), null, true, false);
+		}
+
+		// Workflow
+
+		if (oldStatus == WorkflowConstants.STATUS_PENDING &&
+			status == WorkflowConstants.STATUS_APPROVED) {
+
+			_workflowInstanceLinkLocalService.deleteWorkflowInstanceLink(
+				layout.getCompanyId(), layout.getGroupId(),
+				Layout.class.getName(), layout.getPlid());
 		}
 
 		return layout;
@@ -4198,5 +4212,8 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 	@BeanReference(type = WorkflowDefinitionLinkLocalService.class)
 	private WorkflowDefinitionLinkLocalService
 		_workflowDefinitionLinkLocalService;
+
+	@BeanReference(type = WorkflowInstanceLinkLocalService.class)
+	private WorkflowInstanceLinkLocalService _workflowInstanceLinkLocalService;
 
 }
