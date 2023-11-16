@@ -315,20 +315,6 @@ public class LayoutPermissionImpl implements LayoutPermission {
 			}
 		}
 
-		if (layout.isTypeContent() && !layout.isDraftLayout()) {
-			Layout draftLayout = layout.fetchDraftLayout();
-
-			if ((draftLayout != null) && draftLayout.isPending()) {
-				Boolean hasPermission = WorkflowPermissionUtil.hasPermission(
-					permissionChecker, draftLayout.getGroupId(),
-					Layout.class.getName(), draftLayout.getPlid(), actionId);
-
-				if (hasPermission != null) {
-					return hasPermission;
-				}
-			}
-		}
-
 		Group group = layout.getGroup();
 
 		if (checkLayoutUpdateable && !group.isLayoutSetPrototype() &&
