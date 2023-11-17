@@ -96,7 +96,15 @@ public class JournalArticleAssetRendererFactory
 
 		try {
 			AssetRenderer<?> assetRenderer = getAssetRenderer(
-				journalArticle.getResourcePrimKey(), TYPE_LATEST);
+				journalArticle.getResourcePrimKey(), TYPE_LATEST_APPROVED);
+
+			if ((assetRenderer == null) ||
+				!Objects.equals(
+					journalArticle, assetRenderer.getAssetObject())) {
+
+				assetRenderer = getAssetRenderer(
+					journalArticle.getResourcePrimKey(), TYPE_LATEST);
+			}
 
 			if ((assetRenderer == null) ||
 				!Objects.equals(
