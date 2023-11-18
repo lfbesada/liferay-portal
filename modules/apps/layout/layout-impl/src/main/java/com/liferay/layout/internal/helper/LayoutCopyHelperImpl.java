@@ -267,14 +267,17 @@ public class LayoutCopyHelperImpl implements LayoutCopyHelper {
 					targetLayout.getGroupId(), targetLayout.getPlid());
 
 		if (targetLayoutPageTemplateStructure == null) {
+			ServiceContext serviceContext =
+				ServiceContextThreadLocal.getServiceContext();
+
 			_layoutPageTemplateStructureLocalService.
 				addLayoutPageTemplateStructure(
-					targetLayout.getUserId(), targetLayout.getGroupId(),
+					serviceContext.getUserId(), targetLayout.getGroupId(),
 					targetLayout.getPlid(),
 					_segmentsExperienceLocalService.
 						fetchDefaultSegmentsExperienceId(
 							targetLayout.getPlid()),
-					null, ServiceContextThreadLocal.getServiceContext());
+					null, serviceContext);
 		}
 
 		Map<Long, Long> segmentsExperienceIdsMap = _getSegmentsExperienceIds(
