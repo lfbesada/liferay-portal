@@ -42,9 +42,11 @@ public class LayoutPageTemplateStructureUpgradeProcess extends UpgradeProcess {
 				"select layoutPageTemplateStructureId, companyId, userId," +
 					"classPK from LayoutPageTemplateStructure");
 			SafeCloseable safeCloseable1 = addTemporaryIndex(
-				"FragmentEntryLink", false, "segmentsExperienceId", "plid");
+				"IX_TEMP1", "FragmentEntryLink", false, "segmentsExperienceId",
+				"plid");
 			SafeCloseable safeCloseable2 = addTemporaryIndex(
-				"SegmentsExperiment", false, "plid", "segmentsExperienceId")) {
+				"IX_TEMP2", "SegmentsExperiment", false, "plid",
+				"segmentsExperienceId")) {
 
 			try (ResultSet resultSet = preparedStatement1.executeQuery()) {
 				while (resultSet.next()) {
