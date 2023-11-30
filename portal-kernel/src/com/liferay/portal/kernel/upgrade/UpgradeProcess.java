@@ -175,8 +175,16 @@ public abstract class UpgradeProcess
 			String tableName, boolean unique, String... columnNames)
 		throws Exception {
 
+		return addTemporaryIndex("IX_TEMP", tableName, unique, columnNames);
+	}
+
+	protected SafeCloseable addTemporaryIndex(
+			String indexName, String tableName, boolean unique,
+			String... columnNames)
+		throws Exception {
+
 		IndexMetadata indexMetadata = new IndexMetadata(
-			"IX_TEMP", tableName, unique, columnNames);
+			indexName, tableName, unique, columnNames);
 
 		try (LoggingTimer loggingTimer = new LoggingTimer(tableName)) {
 			addIndexes(
@@ -185,13 +193,16 @@ public abstract class UpgradeProcess
 
 		return () -> {
 			try {
-				runSQL("drop index IX_TEMP on " + tableName);
+				runSQL(
+					StringBundler.concat(
+						"drop index ", indexName, " on ", tableName));
 			}
 			catch (Exception exception) {
 				if (_log.isWarnEnabled()) {
 					_log.warn(
-						"Unable to drop temporary index IX_TEMP on " +
-							tableName);
+						StringBundler.concat(
+							"Unable to drop temporary index ", indexName,
+							" on ", tableName));
 				}
 			}
 		};
