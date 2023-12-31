@@ -28,12 +28,14 @@ import com.liferay.portal.kernel.model.ResourcePermission;
 import com.liferay.portal.kernel.module.util.SystemBundleUtil;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.PersistedModelLocalService;
 import com.liferay.portal.kernel.service.PortletLocalServiceUtil;
 import com.liferay.portal.kernel.service.ServiceWrapper;
 import com.liferay.portal.kernel.service.persistence.BasePersistence;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.util.ResourcePermissionTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.transaction.Propagation;
 import com.liferay.portal.kernel.transaction.TransactionConfig;
 import com.liferay.portal.kernel.transaction.TransactionInvokerUtil;
@@ -161,7 +163,12 @@ public class DataGuardTestRuleUtil {
 			}
 		}
 
+		String originalName = PrincipalThreadLocal.getName();
+
 		try {
+			PrincipalThreadLocal.setName(
+				String.valueOf(TestPropsValues.getUserId()));
+
 			if (deleteMethod == null) {
 				persistedModelLocalService.deletePersistedModel(persistedModel);
 			}
@@ -229,6 +236,9 @@ public class DataGuardTestRuleUtil {
 
 				ReflectionUtil.throwException(throwable2);
 			}
+		}
+		finally {
+			PrincipalThreadLocal.setName(originalName);
 		}
 	}
 
