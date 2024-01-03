@@ -22,7 +22,6 @@ import com.liferay.commerce.test.util.CommerceTestUtil;
 import com.liferay.headless.commerce.delivery.cart.client.dto.v1_0.PaymentMethod;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
@@ -79,7 +78,6 @@ public class PaymentMethodResourceTest
 			_user.getUserId());
 
 		_setUpPermissionThreadLocal();
-		_setUpPrincipalThreadLocal();
 	}
 
 	@After
@@ -88,8 +86,6 @@ public class PaymentMethodResourceTest
 		super.tearDown();
 
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Ignore
@@ -194,12 +190,6 @@ public class PaymentMethodResourceTest
 			PermissionCheckerFactoryUtil.create(_siteAdminUser));
 	}
 
-	private void _setUpPrincipalThreadLocal() {
-		_originalName = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(_siteAdminUser.getUserId());
-	}
-
 	@DeleteAfterTestRun
 	private CommerceChannel _commerceChannel;
 
@@ -226,7 +216,6 @@ public class PaymentMethodResourceTest
 	private CPInstance _cpInstance;
 
 	private List<String> _engineKeys;
-	private String _originalName;
 	private PermissionChecker _originalPermissionChecker;
 	private ServiceContext _serviceContext;
 

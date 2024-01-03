@@ -159,8 +159,6 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 				"company.administrator.can.publish", true
 			).build());
 
-		_originalName = PrincipalThreadLocal.getName();
-
 		PrincipalThreadLocal.setName(TestPropsValues.getUserId());
 	}
 
@@ -169,8 +167,6 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 		_companyLocalService.deleteCompany(_company);
 
 		ConfigurationTestUtil.deleteConfiguration(_configuration);
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Before
@@ -2075,8 +2071,6 @@ public class WorkflowTaskManagerImplTest extends BaseWorkflowManagerTestCase {
 
 	@Inject
 	private static ConfigurationAdmin _configurationAdmin;
-
-	private static String _originalName;
 
 	@DeleteAfterTestRun
 	private User _adminUser;

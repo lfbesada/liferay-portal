@@ -54,7 +54,6 @@ public class ObjectLayoutServiceTest {
 			TestPropsValues.getCompanyId());
 		_objectDefinition = ObjectDefinitionTestUtil.addCustomObjectDefinition(
 			_objectDefinitionLocalService);
-		_originalName = PrincipalThreadLocal.getName();
 		_originalPermissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 		_user = TestPropsValues.getUser();
@@ -63,8 +62,6 @@ public class ObjectLayoutServiceTest {
 	@After
 	public void tearDown() {
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Test
@@ -206,7 +203,6 @@ public class ObjectLayoutServiceTest {
 	@Inject
 	private ObjectLayoutService _objectLayoutService;
 
-	private String _originalName;
 	private PermissionChecker _originalPermissionChecker;
 	private User _user;
 

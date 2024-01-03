@@ -180,7 +180,6 @@ public class DefaultObjectEntryManagerImplTest
 		_defaultObjectEntryManager =
 			(DefaultObjectEntryManager)_objectEntryManager;
 		_group = GroupTestUtil.addGroup();
-		_originalName = PrincipalThreadLocal.getName();
 		_originalPermissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 		_simpleDateFormat = DateFormatFactoryUtil.getSimpleDateFormat(
@@ -203,8 +202,6 @@ public class DefaultObjectEntryManagerImplTest
 		GroupLocalServiceUtil.deleteGroup(_group);
 
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Before
@@ -3776,7 +3773,6 @@ public class DefaultObjectEntryManagerImplTest
 	)
 	private static ObjectEntryManager _objectEntryManager;
 
-	private static String _originalName;
 	private static PermissionChecker _originalPermissionChecker;
 	private static DateFormat _simpleDateFormat;
 	private static DTOConverterContext _simpleDTOConverterContext;

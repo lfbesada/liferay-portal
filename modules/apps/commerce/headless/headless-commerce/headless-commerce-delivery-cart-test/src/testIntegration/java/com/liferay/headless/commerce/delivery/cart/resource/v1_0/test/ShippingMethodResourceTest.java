@@ -25,7 +25,6 @@ import com.liferay.commerce.test.util.CommerceTestUtil;
 import com.liferay.headless.commerce.delivery.cart.client.dto.v1_0.ShippingMethod;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
@@ -76,7 +75,6 @@ public class ShippingMethodResourceTest
 		_siteAdminUser = UserTestUtil.addGroupAdminUser(testGroup);
 
 		_setUpPermissionThreadLocal();
-		_setUpPrincipalThreadLocal();
 	}
 
 	@After
@@ -90,8 +88,6 @@ public class ShippingMethodResourceTest
 		}
 
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Override
@@ -201,12 +197,6 @@ public class ShippingMethodResourceTest
 			PermissionCheckerFactoryUtil.create(_siteAdminUser));
 	}
 
-	private void _setUpPrincipalThreadLocal() {
-		_originalName = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(_siteAdminUser.getUserId());
-	}
-
 	private final List<CommerceAddress> _commerceAddresses = new ArrayList<>();
 
 	@DeleteAfterTestRun
@@ -236,7 +226,6 @@ public class ShippingMethodResourceTest
 
 	private final List<String> _engineKeys = ListUtil.fromArray(
 		"fixed", "by-weight");
-	private String _originalName;
 	private PermissionChecker _originalPermissionChecker;
 	private ServiceContext _serviceContext;
 

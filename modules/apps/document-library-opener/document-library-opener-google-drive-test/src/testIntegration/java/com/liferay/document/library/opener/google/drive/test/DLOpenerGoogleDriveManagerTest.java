@@ -45,7 +45,6 @@ import java.io.File;
 
 import java.util.Dictionary;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -78,14 +77,7 @@ public class DLOpenerGoogleDriveManagerTest {
 	public void setUp() throws Exception {
 		_user = UserTestUtil.addGroupAdminUser(_company.getGroup());
 
-		_originalName = PrincipalThreadLocal.getName();
-
 		PrincipalThreadLocal.setName(_user.getUserId());
-	}
-
-	@After
-	public void tearDown() throws Exception {
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Test
@@ -361,7 +353,6 @@ public class DLOpenerGoogleDriveManagerTest {
 	@Inject
 	private Http _http;
 
-	private String _originalName;
 	private User _user;
 
 }

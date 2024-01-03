@@ -72,7 +72,6 @@ public class ObjectFieldServiceTest {
 				ObjectDefinitionConstants.SCOPE_COMPANY, null, 1,
 				_objectDefinitionLocalService,
 				Collections.<ObjectField>emptyList());
-		_originalName = PrincipalThreadLocal.getName();
 		_originalPermissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 		_user = TestPropsValues.getUser();
@@ -81,8 +80,6 @@ public class ObjectFieldServiceTest {
 	@After
 	public void tearDown() {
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Test
@@ -298,7 +295,6 @@ public class ObjectFieldServiceTest {
 	@Inject
 	private ObjectFieldService _objectFieldService;
 
-	private String _originalName;
 	private PermissionChecker _originalPermissionChecker;
 
 	@DeleteAfterTestRun

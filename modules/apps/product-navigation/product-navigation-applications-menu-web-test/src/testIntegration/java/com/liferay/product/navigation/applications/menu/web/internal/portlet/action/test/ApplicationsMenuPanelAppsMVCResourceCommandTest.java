@@ -107,7 +107,6 @@ public class ApplicationsMenuPanelAppsMVCResourceCommandTest {
 
 	@After
 	public void tearDown() throws Exception {
-		PrincipalThreadLocal.setName(_originalName);
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
 	}
 
@@ -423,8 +422,6 @@ public class ApplicationsMenuPanelAppsMVCResourceCommandTest {
 
 		_themeDisplay.setUser(_user);
 
-		_originalName = PrincipalThreadLocal.getName();
-
 		PrincipalThreadLocal.setName(_user.getUserId());
 
 		_originalPermissionChecker =
@@ -454,7 +451,6 @@ public class ApplicationsMenuPanelAppsMVCResourceCommandTest {
 	@Inject(filter = "mvc.command.name=/applications_menu/panel_apps")
 	private MVCResourceCommand _mvcResourceCommand;
 
-	private String _originalName;
 	private PermissionChecker _originalPermissionChecker;
 
 	@Inject

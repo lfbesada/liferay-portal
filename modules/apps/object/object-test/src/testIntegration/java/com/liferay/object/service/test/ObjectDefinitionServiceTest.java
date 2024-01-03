@@ -76,7 +76,6 @@ public class ObjectDefinitionServiceTest {
 			LocalizedMapUtil.getLocalizedMap(RandomTestUtil.randomString()),
 			RandomTestUtil.randomString());
 
-		_originalName = PrincipalThreadLocal.getName();
 		_originalPermissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 		_user1 = UserTestUtil.addUser();
@@ -101,8 +100,6 @@ public class ObjectDefinitionServiceTest {
 	@After
 	public void tearDown() {
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Test
@@ -637,7 +634,6 @@ public class ObjectDefinitionServiceTest {
 	@Inject
 	private ObjectFolderLocalService _objectFolderLocalService;
 
-	private String _originalName;
 	private PermissionChecker _originalPermissionChecker;
 	private User _user1;
 	private User _user2;

@@ -88,8 +88,6 @@ public class SynonymSearchTest {
 					_CONFIGURATION_PID_SYNONYMS,
 					setUpSynonymsProperties())) {
 
-			_originalName = PrincipalThreadLocal.getName();
-
 			PrincipalThreadLocal.setName(TestPropsValues.getUserId());
 
 			_company = CompanyTestUtil.addCompany();
@@ -106,8 +104,6 @@ public class SynonymSearchTest {
 	@AfterClass
 	public static void tearDownClass() throws Exception {
 		_companyLocalService.deleteCompany(_company);
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Test
@@ -304,7 +300,6 @@ public class SynonymSearchTest {
 	)
 	private static MVCActionCommand _mvcActionCommand;
 
-	private static String _originalName;
 	private static ServiceContext _serviceContext;
 	private static User _user;
 

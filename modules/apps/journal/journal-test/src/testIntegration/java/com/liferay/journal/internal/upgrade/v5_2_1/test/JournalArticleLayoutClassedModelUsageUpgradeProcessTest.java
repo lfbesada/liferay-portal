@@ -92,7 +92,6 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcessTest {
 
 	@Before
 	public void setUp() throws Exception {
-		_originalName = PrincipalThreadLocal.getName();
 		_originalPermissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 		_originalServiceContext = ServiceContextThreadLocal.getServiceContext();
@@ -145,7 +144,6 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcessTest {
 		catch (Exception exception) {
 		}
 
-		PrincipalThreadLocal.setName(_originalName);
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
 		ServiceContextThreadLocal.pushServiceContext(_originalServiceContext);
 	}
@@ -496,7 +494,6 @@ public class JournalArticleLayoutClassedModelUsageUpgradeProcessTest {
 	@Inject
 	private MultiVMPool _multiVMPool;
 
-	private String _originalName;
 	private PermissionChecker _originalPermissionChecker;
 	private ServiceContext _originalServiceContext;
 	private String _portletId;
