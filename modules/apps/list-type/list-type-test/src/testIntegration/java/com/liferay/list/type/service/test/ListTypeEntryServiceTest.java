@@ -57,7 +57,6 @@ public class ListTypeEntryServiceTest {
 				Collections.singletonMap(
 					LocaleUtil.getDefault(), RandomTestUtil.randomString()),
 				false, Collections.emptyList());
-		_originalName = PrincipalThreadLocal.getName();
 		_originalPermissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 		_user = TestPropsValues.getUser();
@@ -66,8 +65,6 @@ public class ListTypeEntryServiceTest {
 	@After
 	public void tearDown() {
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Test
@@ -295,7 +292,6 @@ public class ListTypeEntryServiceTest {
 	@Inject
 	private ListTypeEntryService _listTypeEntryService;
 
-	private String _originalName;
 	private PermissionChecker _originalPermissionChecker;
 	private User _user;
 

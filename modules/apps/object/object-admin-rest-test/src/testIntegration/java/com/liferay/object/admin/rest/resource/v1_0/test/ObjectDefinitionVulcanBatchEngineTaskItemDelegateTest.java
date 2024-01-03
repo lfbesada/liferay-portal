@@ -88,7 +88,6 @@ public class ObjectDefinitionVulcanBatchEngineTaskItemDelegateTest {
 		_objectDefinitionResource.setContextCompany(_company);
 		_objectDefinitionResource.setContextUser(user);
 
-		_originalName = PrincipalThreadLocal.getName();
 		_originalPermissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
@@ -101,8 +100,6 @@ public class ObjectDefinitionVulcanBatchEngineTaskItemDelegateTest {
 	@After
 	public void tearDown() throws Exception {
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Test
@@ -233,7 +230,6 @@ public class ObjectDefinitionVulcanBatchEngineTaskItemDelegateTest {
 	@Inject
 	private ObjectDefinitionResource _objectDefinitionResource;
 
-	private String _originalName;
 	private PermissionChecker _originalPermissionChecker;
 
 	@Inject

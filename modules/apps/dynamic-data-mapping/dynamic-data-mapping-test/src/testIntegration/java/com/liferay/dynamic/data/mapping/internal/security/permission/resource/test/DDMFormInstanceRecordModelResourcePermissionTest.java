@@ -16,7 +16,6 @@ import com.liferay.dynamic.data.mapping.storage.DDMFormValues;
 import com.liferay.dynamic.data.mapping.test.util.DDMFormInstanceTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMFormValuesTestUtil;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
@@ -65,14 +64,11 @@ public class DDMFormInstanceRecordModelResourcePermissionTest
 		_siteUser = UserTestUtil.addUser(group.getGroupId());
 
 		_setUpPermissionThreadLocal();
-		_setUpPrincipalThreadLocal();
 	}
 
 	@After
 	public void tearDown() throws Exception {
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Test
@@ -153,12 +149,6 @@ public class DDMFormInstanceRecordModelResourcePermissionTest
 			PermissionCheckerFactoryUtil.create(_siteUser));
 	}
 
-	private void _setUpPrincipalThreadLocal() throws Exception {
-		_originalName = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(_siteUser.getUserId());
-	}
-
 	private static long _classNameId;
 
 	@Inject(
@@ -168,7 +158,6 @@ public class DDMFormInstanceRecordModelResourcePermissionTest
 	private ModelResourcePermission<DDMFormInstanceRecord>
 		_ddmFormInstanceRecordModelResourcePermission;
 
-	private String _originalName;
 	private PermissionChecker _originalPermissionChecker;
 
 	@DeleteAfterTestRun

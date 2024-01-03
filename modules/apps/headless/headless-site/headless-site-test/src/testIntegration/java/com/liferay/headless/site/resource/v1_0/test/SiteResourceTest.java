@@ -12,7 +12,6 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.model.LayoutSetPrototype;
-import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutSetPrototypeLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -39,7 +38,6 @@ import java.util.Map;
 
 import org.junit.After;
 import org.junit.Assert;
-import org.junit.Before;
 import org.junit.Test;
 import org.junit.runner.RunWith;
 
@@ -54,16 +52,6 @@ import org.osgi.framework.ServiceRegistration;
 @RunWith(Arquillian.class)
 public class SiteResourceTest extends BaseSiteResourceTestCase {
 
-	@Before
-	@Override
-	public void setUp() throws Exception {
-		super.setUp();
-
-		_originalName = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(TestPropsValues.getUserId());
-	}
-
 	@After
 	@Override
 	public void tearDown() throws Exception {
@@ -74,8 +62,6 @@ public class SiteResourceTest extends BaseSiteResourceTestCase {
 		for (Site site : _sites) {
 			_groupLocalService.deleteGroup(site.getId());
 		}
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Override
@@ -557,7 +543,6 @@ public class SiteResourceTest extends BaseSiteResourceTestCase {
 	@Inject
 	private LayoutSetPrototypeLocalService _layoutSetPrototypeLocalService;
 
-	private String _originalName;
 	private final List<Site> _sites = new ArrayList<>();
 
 	private class TestSiteInitializer implements SiteInitializer {

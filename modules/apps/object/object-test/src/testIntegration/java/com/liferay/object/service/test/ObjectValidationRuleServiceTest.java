@@ -65,7 +65,6 @@ public class ObjectValidationRuleServiceTest {
 					ObjectFieldConstants.BUSINESS_TYPE_TEXT,
 					ObjectFieldConstants.DB_TYPE_STRING,
 					RandomTestUtil.randomString(), "textField")));
-		_originalName = PrincipalThreadLocal.getName();
 		_originalPermissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 		_systemObjectDefinition =
@@ -87,8 +86,6 @@ public class ObjectValidationRuleServiceTest {
 	@After
 	public void tearDown() {
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Test
@@ -298,7 +295,6 @@ public class ObjectValidationRuleServiceTest {
 	@Inject
 	private ObjectValidationRuleService _objectValidationRuleService;
 
-	private String _originalName;
 	private PermissionChecker _originalPermissionChecker;
 
 	@DeleteAfterTestRun

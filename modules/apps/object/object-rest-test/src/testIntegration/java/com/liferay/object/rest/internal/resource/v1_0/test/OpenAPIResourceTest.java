@@ -29,7 +29,6 @@ import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
@@ -75,17 +74,11 @@ public class OpenAPIResourceTest {
 	@BeforeClass
 	public static void setUpClass() throws Exception {
 		_company = CompanyTestUtil.addCompany(true);
-
-		_originalName = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(TestPropsValues.getUserId());
 	}
 
 	@AfterClass
 	public static void tearDownClass() throws PortalException {
 		_companyLocalService.deleteCompany(_company);
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Before
@@ -530,8 +523,6 @@ public class OpenAPIResourceTest {
 
 	@Inject
 	private static CompanyLocalService _companyLocalService;
-
-	private static String _originalName;
 
 	@Inject
 	private ObjectActionLocalService _objectActionLocalService;

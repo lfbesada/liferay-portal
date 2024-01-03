@@ -49,7 +49,6 @@ public class ObjectFolderServiceTest {
 	@Before
 	public void setUp() throws Exception {
 		_adminUser = TestPropsValues.getUser();
-		_originalName = PrincipalThreadLocal.getName();
 		_originalPermissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 		_user = UserTestUtil.addUser();
@@ -58,8 +57,6 @@ public class ObjectFolderServiceTest {
 	@After
 	public void tearDown() {
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Test
@@ -275,7 +272,6 @@ public class ObjectFolderServiceTest {
 	@Inject
 	private ObjectFolderService _objectFolderService;
 
-	private String _originalName;
 	private PermissionChecker _originalPermissionChecker;
 	private User _user;
 

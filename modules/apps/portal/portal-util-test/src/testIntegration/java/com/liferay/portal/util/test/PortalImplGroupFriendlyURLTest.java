@@ -64,8 +64,6 @@ public class PortalImplGroupFriendlyURLTest {
 				PropsValues.class, "VIRTUAL_HOSTS_DEFAULT_SITE_NAME",
 				GroupConstants.GUEST);
 
-		_originalName = PrincipalThreadLocal.getName();
-
 		PrincipalThreadLocal.setName(TestPropsValues.getUserId());
 
 		_company = CompanyTestUtil.addCompany();
@@ -95,8 +93,6 @@ public class PortalImplGroupFriendlyURLTest {
 			_originalVirtualHostDefaultSiteName);
 
 		_companyLocalService.deleteCompany(_company);
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Test
@@ -314,7 +310,6 @@ public class PortalImplGroupFriendlyURLTest {
 	@Inject
 	private static GroupLocalService _groupLocalService;
 
-	private static String _originalName;
 	private static String _originalVirtualHostDefaultSiteName;
 
 	@Inject

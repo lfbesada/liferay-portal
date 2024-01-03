@@ -45,7 +45,6 @@ public class NotificationTemplateServiceTest {
 	@Before
 	public void setUp() throws Exception {
 		_adminUser = TestPropsValues.getUser();
-		_originalName = PrincipalThreadLocal.getName();
 		_originalPermissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 		_user = UserTestUtil.addUser();
@@ -54,8 +53,6 @@ public class NotificationTemplateServiceTest {
 	@After
 	public void tearDown() {
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Test
@@ -251,7 +248,6 @@ public class NotificationTemplateServiceTest {
 	@Inject
 	private NotificationTemplateService _notificationTemplateService;
 
-	private String _originalName;
 	private PermissionChecker _originalPermissionChecker;
 	private User _user;
 

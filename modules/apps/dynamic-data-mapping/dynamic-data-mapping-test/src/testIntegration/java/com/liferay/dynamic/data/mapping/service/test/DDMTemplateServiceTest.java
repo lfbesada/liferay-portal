@@ -14,7 +14,6 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
@@ -65,14 +64,11 @@ public class DDMTemplateServiceTest extends BaseDDMServiceTestCase {
 		_siteAdminUser = UserTestUtil.addGroupAdminUser(group);
 
 		setUpPermissionThreadLocal();
-		setUpPrincipalThreadLocal();
 	}
 
 	@After
 	public void tearDown() throws Exception {
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Test
@@ -604,19 +600,12 @@ public class DDMTemplateServiceTest extends BaseDDMServiceTestCase {
 			PermissionCheckerFactoryUtil.create(_siteAdminUser));
 	}
 
-	protected void setUpPrincipalThreadLocal() throws Exception {
-		_originalName = PrincipalThreadLocal.getName();
-
-		PrincipalThreadLocal.setName(_siteAdminUser.getUserId());
-	}
-
 	private static long _recordSetClassNameId;
 	private static long _structureClassNameId;
 
 	@DeleteAfterTestRun
 	private Group _group;
 
-	private String _originalName;
 	private PermissionChecker _originalPermissionChecker;
 
 	@DeleteAfterTestRun

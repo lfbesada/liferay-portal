@@ -71,7 +71,6 @@ public class DDMFormInstanceRecordServiceTest extends BaseDDMServiceTestCase {
 
 		_guestUser = _userLocalService.getGuestUser(
 			TestPropsValues.getCompanyId());
-		_originalName = PrincipalThreadLocal.getName();
 		_originalPermissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 		_user = TestPropsValues.getUser();
@@ -80,8 +79,6 @@ public class DDMFormInstanceRecordServiceTest extends BaseDDMServiceTestCase {
 	@After
 	public void tearDown() {
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
-
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Test
@@ -179,7 +176,6 @@ public class DDMFormInstanceRecordServiceTest extends BaseDDMServiceTestCase {
 	private DDMFormInstanceRecordService _ddmFormInstanceRecordService;
 
 	private User _guestUser;
-	private String _originalName;
 	private PermissionChecker _originalPermissionChecker;
 	private User _user;
 

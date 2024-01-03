@@ -57,7 +57,6 @@ public class DepotUserServiceTest {
 
 	@Before
 	public void setUp() {
-		_originalName = PrincipalThreadLocal.getName();
 		_originalPermissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 	}
@@ -65,7 +64,6 @@ public class DepotUserServiceTest {
 	@After
 	public void tearDown() {
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
-		PrincipalThreadLocal.setName(_originalName);
 	}
 
 	@Test(expected = PrincipalException.MustHavePermission.class)
@@ -192,7 +190,6 @@ public class DepotUserServiceTest {
 	@Inject
 	private DepotEntryLocalService _depotEntryLocalService;
 
-	private String _originalName;
 	private PermissionChecker _originalPermissionChecker;
 
 	@Inject
