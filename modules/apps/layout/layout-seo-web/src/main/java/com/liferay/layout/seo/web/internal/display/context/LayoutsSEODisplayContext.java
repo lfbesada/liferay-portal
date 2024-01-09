@@ -636,6 +636,10 @@ public class LayoutsSEODisplayContext {
 	}
 
 	public boolean isShowCanonicalURL() throws PortalException {
+		if (_showCanonicalURL != null) {
+			return _showCanonicalURL;
+		}
+
 		Layout layout = getSelLayout();
 
 		LayoutUtilityPageEntry layoutUtilityPageEntry =
@@ -649,10 +653,13 @@ public class LayoutsSEODisplayContext {
 		}
 
 		if (layoutUtilityPageEntry != null) {
-			return false;
+			_showCanonicalURL = false;
+		}
+		else {
+			_showCanonicalURL = true;
 		}
 
-		return true;
+		return _showCanonicalURL;
 	}
 
 	private HashMap<String, Object> _getBaseSEOMappingData()
@@ -837,6 +844,7 @@ public class LayoutsSEODisplayContext {
 	private String _redirect;
 	private Layout _selLayout;
 	private Long _selPlid;
+	private Boolean _showCanonicalURL;
 	private final ThemeDisplay _themeDisplay;
 
 }
