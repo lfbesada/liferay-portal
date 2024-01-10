@@ -83,6 +83,10 @@ public class OpenGraphTopHeadDynamicInclude extends BaseDynamicInclude {
 		throws IOException {
 
 		try {
+			if (httpServletResponse.getStatus() != HttpServletResponse.SC_OK) {
+				return;
+			}
+
 			ThemeDisplay themeDisplay =
 				(ThemeDisplay)httpServletRequest.getAttribute(
 					WebKeys.THEME_DISPLAY);
