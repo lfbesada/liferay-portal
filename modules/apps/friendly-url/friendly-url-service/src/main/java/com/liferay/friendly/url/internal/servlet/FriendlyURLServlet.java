@@ -383,22 +383,12 @@ public class FriendlyURLServlet extends HttpServlet {
 					group, _normalizeFriendlyURL(layoutFriendlyURL));
 			}
 
-			if (Validator.isNotNull(
-					PropsValues.LAYOUT_FRIENDLY_URL_PAGE_NOT_FOUND)) {
 
-				if (exception instanceof NoSuchLayoutException) {
-					throw exception;
-				}
-
-				throw new NoSuchLayoutException(exception);
+			if (exception instanceof NoSuchLayoutException) {
+				throw exception;
 			}
 
-			httpServletResponse.setStatus(HttpServletResponse.SC_NOT_FOUND);
-
-			httpServletRequest.setAttribute(
-				NoSuchLayoutException.class.getName(), Boolean.TRUE);
-
-			layoutFriendlyURL = null;
+			throw new NoSuchLayoutException(exception);
 		}
 		finally {
 			ServiceContextThreadLocal.popServiceContext();
