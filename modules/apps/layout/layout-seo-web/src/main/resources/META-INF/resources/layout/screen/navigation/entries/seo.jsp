@@ -163,7 +163,7 @@ UnicodeProperties layoutTypeSettingsUnicodeProperties = selLayout.getTypeSetting
 						</c:otherwise>
 					</c:choose>
 
-					<c:if test="<%= layoutsSEODisplayContext.isLayoutUtilityPageEntry() %>">
+					<c:if test="<%= !layoutsSEODisplayContext.isLayoutUtilityPageEntry() %>">
 						<aui:input name="robots" placeholder="robots" />
 					</c:if>
 				</div>
