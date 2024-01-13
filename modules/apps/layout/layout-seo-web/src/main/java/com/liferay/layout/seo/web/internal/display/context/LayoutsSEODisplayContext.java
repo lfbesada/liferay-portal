@@ -540,7 +540,7 @@ public class LayoutsSEODisplayContext {
 			).put(
 				"url",
 				() -> {
-					if (!isShowCanonicalURL()) {
+					if (isLayoutUtilityPageEntry()) {
 						return null;
 					}
 
@@ -600,6 +600,27 @@ public class LayoutsSEODisplayContext {
 				!sitemapInclude));
 	}
 
+	public boolean isLayoutUtilityPageEntry() throws PortalException {
+		if (_layoutUtilityPageEntry != null) {
+			return _layoutUtilityPageEntry;
+		}
+
+		Layout layout = getSelLayout();
+
+		LayoutUtilityPageEntry layoutUtilityPageEntry =
+			_layoutUtilityPageEntryLocalService.
+				fetchLayoutUtilityPageEntryByPlid(layout.getPlid());
+
+		if (layoutUtilityPageEntry != null) {
+			_layoutUtilityPageEntry = true;
+		}
+		else {
+			_layoutUtilityPageEntry = false;
+		}
+
+		return _layoutUtilityPageEntry;
+	}
+
 	public boolean isPrivateLayout() {
 		if (_privateLayout != null) {
 			return _privateLayout;
@@ -633,33 +654,6 @@ public class LayoutsSEODisplayContext {
 			_liferayPortletRequest, "privateLayout");
 
 		return _privateLayout;
-	}
-
-	public boolean isShowCanonicalURL() throws PortalException {
-		if (_showCanonicalURL != null) {
-			return _showCanonicalURL;
-		}
-
-		Layout layout = getSelLayout();
-
-		LayoutUtilityPageEntry layoutUtilityPageEntry =
-			_layoutUtilityPageEntryLocalService.
-				fetchLayoutUtilityPageEntryByPlid(layout.getPlid());
-
-		if ((layoutUtilityPageEntry == null) && (layout.getClassPK() > 0)) {
-			layoutUtilityPageEntry =
-				_layoutUtilityPageEntryLocalService.
-					fetchLayoutUtilityPageEntryByPlid(layout.getClassPK());
-		}
-
-		if (layoutUtilityPageEntry != null) {
-			_showCanonicalURL = false;
-		}
-		else {
-			_showCanonicalURL = true;
-		}
-
-		return _showCanonicalURL;
 	}
 
 	private HashMap<String, Object> _getBaseSEOMappingData()
@@ -836,6 +830,7 @@ public class LayoutsSEODisplayContext {
 	private final LayoutSEOCanonicalURLProvider _layoutSEOCanonicalURLProvider;
 	private final LayoutSEOLinkManager _layoutSEOLinkManager;
 	private final LayoutSEOSiteLocalService _layoutSEOSiteLocalService;
+	private Boolean _layoutUtilityPageEntry;
 	private final LayoutUtilityPageEntryLocalService
 		_layoutUtilityPageEntryLocalService;
 	private final LiferayPortletRequest _liferayPortletRequest;
@@ -844,7 +839,6 @@ public class LayoutsSEODisplayContext {
 	private String _redirect;
 	private Layout _selLayout;
 	private Long _selPlid;
-	private Boolean _showCanonicalURL;
 	private final ThemeDisplay _themeDisplay;
 
 }

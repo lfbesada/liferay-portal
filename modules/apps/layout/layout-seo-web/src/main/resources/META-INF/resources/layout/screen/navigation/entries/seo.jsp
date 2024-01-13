@@ -94,7 +94,7 @@ UnicodeProperties layoutTypeSettingsUnicodeProperties = selLayout.getTypeSetting
 							<aui:input helpMessage="html-title-help" id="title" label="html-title" name="title" placeholder="title" />
 							<aui:input helpMessage="description-help" id="descriptionSEO" name="description" placeholder="description" />
 
-							<c:if test="<%= layoutsSEODisplayContext.isShowCanonicalURL() %>">
+							<c:if test="<%= !layoutsSEODisplayContext.isLayoutUtilityPageEntry() %>">
 
 								<%
 								LayoutSEOEntry selLayoutSEOEntry = layoutsSEODisplayContext.getSelLayoutSEOEntry();
@@ -145,9 +145,9 @@ UnicodeProperties layoutTypeSettingsUnicodeProperties = selLayout.getTypeSetting
 									module="js/seo/toggleCanonicalURLFields"
 									servletContext="<%= application %>"
 								/>
-							</c:if>
 
-							<aui:input name="keywords" placeholder="keywords" />
+								<aui:input name="keywords" placeholder="keywords" />
+							</c:if>
 
 							<div class="form-group">
 								<label><liferay-ui:message key="preview" /></label>
@@ -163,7 +163,9 @@ UnicodeProperties layoutTypeSettingsUnicodeProperties = selLayout.getTypeSetting
 						</c:otherwise>
 					</c:choose>
 
-					<aui:input name="robots" placeholder="robots" />
+					<c:if test="<%= layoutsSEODisplayContext.isLayoutUtilityPageEntry() %>">
+						<aui:input name="robots" placeholder="robots" />
+					</c:if>
 				</div>
 			</clay:sheet-section>
 		</clay:sheet>
