@@ -7,6 +7,8 @@ package com.liferay.notification.internal.type;
 
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldValue;
+import com.liferay.info.field.type.InfoFieldType;
+import com.liferay.info.field.type.SelectInfoFieldType;
 import com.liferay.info.item.InfoItemFieldValues;
 import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.item.provider.InfoItemFieldValuesProvider;
@@ -519,6 +521,18 @@ public class EmailNotificationType extends BaseNotificationType {
 				TemplateNode templateNode =
 					_templateNodeFactory.createTemplateNode(
 						infoFieldValue, themeDisplay);
+
+				InfoFieldType infoFieldType = infoField.getInfoFieldType();
+
+				if (infoFieldType instanceof SelectInfoFieldType) {
+					Map<String, String> optionsMap =
+						templateNode.getOptionsMap();
+
+					if (optionsMap.containsKey(templateNode.getData())) {
+						templateNode.put(
+							"data", optionsMap.get(templateNode.getData()));
+					}
+				}
 
 				template.put(infoField.getName(), templateNode);
 				template.put(infoField.getUniqueId(), templateNode);
