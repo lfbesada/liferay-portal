@@ -25,10 +25,8 @@ import updatePageContents from '../actions/updatePageContents';
 import updatePreviewImage from '../actions/updatePreviewImage';
 import updateRowColumns from '../actions/updateRowColumns';
 
-const INITIAL_STATE: PageContent[] = [];
-
 export default function pageContentsReducer(
-	pageContents = INITIAL_STATE,
+	pageContents: null | PageContent[] = null,
 	action: ReturnType<
 		| typeof addItem
 		| typeof deleteItem
@@ -55,7 +53,7 @@ export default function pageContentsReducer(
 			return [...action.pageContents];
 
 		case UPDATE_PREVIEW_IMAGE: {
-			const nextPageContents = pageContents.map((pageContent) => {
+			const nextPageContents = pageContents!.map((pageContent) => {
 				if (pageContent.classPK === action.fileEntryId) {
 					return {
 						...pageContent,
