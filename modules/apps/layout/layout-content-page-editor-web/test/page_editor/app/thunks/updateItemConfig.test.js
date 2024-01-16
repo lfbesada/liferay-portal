@@ -43,7 +43,7 @@ describe('updateItemConfig', () => {
 		expect(LayoutService.updateItemConfig).toHaveBeenCalled();
 	});
 
-	it('dispatches updateItemConfig and updatePageContents actions', async () => {
+	it('dispatches updateItemConfig', async () => {
 		LayoutService.updateItemConfig.mockImplementation(() =>
 			Promise.resolve({
 				layoutData: {
@@ -69,13 +69,6 @@ describe('updateItemConfig', () => {
 				version: 1,
 			},
 			overridePreviousConfig: false,
-			pageContents: [
-				{
-					classPK: 'pk',
-					name: 'contents',
-					title: 'title',
-				},
-			],
 		});
 	});
 });
