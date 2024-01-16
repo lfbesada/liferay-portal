@@ -3,7 +3,8 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import addItem, {PageContent} from '../actions/addItem';
+import {PageContent} from '../../types/PageContent';
+import addItem from '../actions/addItem';
 import deleteItem from '../actions/deleteItem';
 import {
 	ADD_ITEM,
