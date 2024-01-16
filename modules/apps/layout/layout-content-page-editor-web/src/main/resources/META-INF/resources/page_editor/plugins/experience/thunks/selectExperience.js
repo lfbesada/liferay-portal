@@ -5,7 +5,6 @@
 
 import updatePageContents from '../../../app/actions/updatePageContents';
 import ExperienceService from '../../../app/services/ExperienceService';
-import InfoItemService from '../../../app/services/InfoItemService';
 import selectExperienceAction from '../actions/selectExperience';
 
 export default function selectExperience({id}) {
@@ -29,15 +28,11 @@ export default function selectExperience({id}) {
 				);
 			})
 			.then(() => {
-				InfoItemService.getPageContents({
-					segmentsExperienceId: id,
-				}).then((pageContents) => {
-					dispatch(
-						updatePageContents({
-							pageContents,
-						})
-					);
-				});
+				dispatch(
+					updatePageContents({
+						pageContents: null,
+					})
+				);
 			})
 			.catch((error) => {
 				return error;

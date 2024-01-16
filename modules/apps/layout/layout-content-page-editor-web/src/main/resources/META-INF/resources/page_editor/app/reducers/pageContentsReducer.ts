@@ -48,8 +48,10 @@ export default function pageContentsReducer(
 		case UPDATE_EDITABLE_VALUES:
 		case UPDATE_FRAGMENT_ENTRY_LINK_CONFIGURATION:
 		case UPDATE_ITEM_CONFIG:
-		case UPDATE_PAGE_CONTENTS:
 		case UPDATE_ROW_COLUMNS:
+			return null;
+
+		case UPDATE_PAGE_CONTENTS:
 			return [...action.pageContents];
 
 		case UPDATE_PREVIEW_IMAGE: {
