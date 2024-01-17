@@ -88,10 +88,8 @@ public class DDMStructureModelListener extends BaseModelListener<DDMStructure> {
 			performActionMethod = (JournalArticle journalArticle) ->
 				_ddmFieldLocalService.updateDDMFormValues(
 					ddmStructure.getStructureId(), journalArticle.getId(),
-					_fieldsToDDMFormValuesConverter.convert(
-						ddmStructure,
-						_journalConverter.getDDMFields(
-							ddmStructure, journalArticle.getContent())));
+					_ddmFieldLocalService.getDDMFormValues(
+						ddmStructure.getDDMForm(), journalArticle.getId()));
 		}
 
 		actionableDynamicQuery.setParallel(true);
