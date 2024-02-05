@@ -67,6 +67,10 @@ public class SitemapCompanyConfigurationDisplayContext {
 			"eventName", getEventName()
 		).setParameter(
 			"filterManageableGroups", false
+		).setParameter(
+			"groupId", _getGuestGroupId()
+		).setParameter(
+			"includeCurrentGroup", false
 		).setWindowState(
 			LiferayWindowState.POP_UP
 		).buildString();
@@ -126,6 +130,12 @@ public class SitemapCompanyConfigurationDisplayContext {
 			_themeDisplay.getCompanyId(), GroupConstants.GUEST);
 
 		return _guestGroup;
+	}
+
+	private long _getGuestGroupId() throws PortalException {
+		Group guestGroup = _getGuestGroup();
+
+		return guestGroup.getGroupId();
 	}
 
 	private String _eventName;
