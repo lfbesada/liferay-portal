@@ -9,7 +9,10 @@ import com.liferay.configuration.admin.display.ConfigurationScreen;
 import com.liferay.configuration.admin.display.ConfigurationScreenWrapper;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.JavaConstants;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.settings.configuration.admin.display.PortalSettingsConfigurationScreenContributor;
 import com.liferay.portal.settings.configuration.admin.display.PortalSettingsConfigurationScreenFactory;
@@ -17,6 +20,9 @@ import com.liferay.site.configuration.manager.SitemapConfigurationManager;
 import com.liferay.site.sitemap.web.internal.display.context.SitemapCompanyConfigurationDisplayContext;
 
 import java.util.Locale;
+
+import javax.portlet.PortletRequest;
+import javax.portlet.PortletResponse;
 
 import javax.servlet.ServletContext;
 import javax.servlet.http.HttpServletRequest;
@@ -39,7 +45,13 @@ public class SitemapPortalSettingsConfigurationScreenWrapper
 	}
 
 	@Reference
+	private GroupLocalService _groupLocalService;
+
+	@Reference
 	private Language _language;
+
+	@Reference
+	private Portal _portal;
 
 	@Reference
 	private PortalSettingsConfigurationScreenFactory
@@ -104,6 +116,13 @@ public class SitemapPortalSettingsConfigurationScreenWrapper
 			httpServletRequest.setAttribute(
 				SitemapCompanyConfigurationDisplayContext.class.getName(),
 				new SitemapCompanyConfigurationDisplayContext(
+					_groupLocalService,
+					_portal.getLiferayPortletRequest(
+						(PortletRequest)httpServletRequest.getAttribute(
+							JavaConstants.JAVAX_PORTLET_REQUEST)),
+					_portal.getLiferayPortletResponse(
+						(PortletResponse)httpServletRequest.getAttribute(
+							JavaConstants.JAVAX_PORTLET_RESPONSE)),
 					_sitemapConfigurationManager,
 					(ThemeDisplay)httpServletRequest.getAttribute(
 						WebKeys.THEME_DISPLAY)));
