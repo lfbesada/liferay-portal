@@ -5,6 +5,8 @@
 
 package com.liferay.site.sitemap.web.internal.display.context;
 
+import com.liferay.item.selector.ItemSelector;
+import com.liferay.item.selector.criteria.GroupItemSelectorReturnType;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -13,15 +15,13 @@ import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
-import com.liferay.portal.kernel.portlet.LiferayWindowState;
-import com.liferay.portal.kernel.portlet.PortletProvider;
-import com.liferay.portal.kernel.portlet.PortletProviderUtil;
-import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
+import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactoryUtil;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.comparator.GroupNameComparator;
 import com.liferay.site.configuration.manager.SitemapConfigurationManager;
+import com.liferay.site.item.selector.criterion.SiteItemSelectorCriterion;
 
 import java.util.List;
 
@@ -31,13 +31,14 @@ import java.util.List;
 public class SitemapCompanyConfigurationDisplayContext {
 
 	public SitemapCompanyConfigurationDisplayContext(
-		GroupLocalService groupLocalService,
+		GroupLocalService groupLocalService, ItemSelector itemSelector,
 		LiferayPortletRequest liferayPortletRequest,
 		LiferayPortletResponse liferayPortletResponse,
 		SitemapConfigurationManager sitemapConfigurationManager,
 		ThemeDisplay themeDisplay) {
 
 		_groupLocalService = groupLocalService;
+		_itemSelector = itemSelector;
 		_liferayPortletRequest = liferayPortletRequest;
 		_liferayPortletResponse = liferayPortletResponse;
 		_sitemapConfigurationManager = sitemapConfigurationManager;
@@ -49,7 +50,7 @@ public class SitemapCompanyConfigurationDisplayContext {
 			return _eventName;
 		}
 
-		_eventName = _liferayPortletResponse.getNamespace() + "selectSite";
+		_eventName = _liferayPortletResponse.getNamespace() + "selectGroup";
 
 		return _eventName;
 	}
@@ -59,21 +60,24 @@ public class SitemapCompanyConfigurationDisplayContext {
 			return _groupSelectorURL;
 		}
 
-		_groupSelectorURL = PortletURLBuilder.create(
-			PortletProviderUtil.getPortletURL(
-				_liferayPortletRequest, Group.class.getName(),
-				PortletProvider.Action.BROWSE)
-		).setParameter(
-			"eventName", getEventName()
-		).setParameter(
-			"filterManageableGroups", false
-		).setParameter(
-			"groupId", _getGuestGroupId()
-		).setParameter(
-			"includeCurrentGroup", false
-		).setWindowState(
-			LiferayWindowState.POP_UP
-		).buildString();
+		SiteItemSelectorCriterion siteItemSelectorCriterion =
+			new SiteItemSelectorCriterion();
+
+		siteItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
+			new GroupItemSelectorReturnType());
+
+		siteItemSelectorCriterion.setAllowNavigation(false);
+		siteItemSelectorCriterion.setIncludeChildSites(true);
+		siteItemSelectorCriterion.setIncludeCompany(false);
+		siteItemSelectorCriterion.setIncludeMySites(true);
+		siteItemSelectorCriterion.setIncludeParentSites(true);
+		siteItemSelectorCriterion.setIncludeRecentSites(false);
+
+		_groupSelectorURL = String.valueOf(
+			_itemSelector.getItemSelectorURL(
+				RequestBackedPortletURLFactoryUtil.create(
+					_liferayPortletRequest),
+				getEventName(), siteItemSelectorCriterion));
 
 		return _groupSelectorURL;
 	}
@@ -121,7 +125,7 @@ public class SitemapCompanyConfigurationDisplayContext {
 			_themeDisplay.getCompanyId());
 	}
 
-	private Group _getGuestGroup() throws PortalException {
+	private Group _getGuestGroup() throws Exception {
 		if (_guestGroup != null) {
 			return _guestGroup;
 		}
@@ -132,16 +136,11 @@ public class SitemapCompanyConfigurationDisplayContext {
 		return _guestGroup;
 	}
 
-	private long _getGuestGroupId() throws PortalException {
-		Group guestGroup = _getGuestGroup();
-
-		return guestGroup.getGroupId();
-	}
-
 	private String _eventName;
 	private final GroupLocalService _groupLocalService;
 	private String _groupSelectorURL;
 	private Group _guestGroup;
+	private final ItemSelector _itemSelector;
 	private final LiferayPortletRequest _liferayPortletRequest;
 	private final LiferayPortletResponse _liferayPortletResponse;
 	private SearchContainer<Group> _searchContainer;

@@ -7,6 +7,7 @@ package com.liferay.site.sitemap.web.internal.portal.settings.configuration.admi
 
 import com.liferay.configuration.admin.display.ConfigurationScreen;
 import com.liferay.configuration.admin.display.ConfigurationScreenWrapper;
+import com.liferay.item.selector.ItemSelector;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -46,6 +47,9 @@ public class SitemapPortalSettingsConfigurationScreenWrapper
 
 	@Reference
 	private GroupLocalService _groupLocalService;
+
+	@Reference
+	private ItemSelector _itemSelector;
 
 	@Reference
 	private Language _language;
@@ -116,7 +120,7 @@ public class SitemapPortalSettingsConfigurationScreenWrapper
 			httpServletRequest.setAttribute(
 				SitemapCompanyConfigurationDisplayContext.class.getName(),
 				new SitemapCompanyConfigurationDisplayContext(
-					_groupLocalService,
+					_groupLocalService, _itemSelector,
 					_portal.getLiferayPortletRequest(
 						(PortletRequest)httpServletRequest.getAttribute(
 							JavaConstants.JAVAX_PORTLET_REQUEST)),

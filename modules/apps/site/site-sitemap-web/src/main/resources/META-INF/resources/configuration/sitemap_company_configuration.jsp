@@ -256,8 +256,8 @@ SitemapCompanyConfigurationDisplayContext sitemapCompanyConfigurationDisplayCont
 		Liferay.Util.openSelectionModal({
 			onSelect: (selectedItem) => {
 				if (selectedItem) {
-					const entityId = selectedItem.entityid;
-					const entityName = selectedItem.entityname;
+					const entityId = selectedItem.groupid;
+					const entityName = selectedItem.groupdescriptivename;
 					const label = Liferay.Util.sub(
 						'<liferay-ui:message key="remove-x" />',
 						entityName
