@@ -13,9 +13,18 @@ export class ProductMenuPage {
 	readonly openProductMenuButton: Locator;
 	readonly page: Page;
 	readonly documentsAndMediaMenuItem: Locator;
+	readonly siteBuilderMenuItem: Locator;
+	readonly pagesMenuItem: Locator;
 
 	constructor(page: Page) {
 		this.closeProductMenuButton = page.getByLabel('Close Product Menu');
+		this.siteBuilderMenuItem = page.getByRole('menuitem', {
+			exact: true,
+			name: 'Site Builder',
+		});
+		this.pagesMenuItem = page.getByRole('menuitem', {
+			name: 'Pages',
+		});
 		this.contentAndDataMenuItem = page.getByRole('menuitem', {
 			exact: true,
 			name: 'Content & Data',
@@ -79,6 +88,23 @@ export class ProductMenuPage {
 
 		if (isClosed) {
 			await this.contentAndDataMenuItem.click();
+		}
+	}
+
+	async goToPagesMenuItem() {
+		await this.goToContentAndData();
+		await this.pagesMenuItem.click();
+	}
+
+	async goToSiteBuilder() {
+		await this.openProductMenu();
+		const isClosed =
+			(await this.siteBuilderMenuItem.getAttribute(
+				'aria-expanded'
+			)) === 'false';
+
+		if (isClosed) {
+			await this.siteBuilderMenuItem.click();
 		}
 	}
 }
