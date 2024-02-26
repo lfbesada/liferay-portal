@@ -50,20 +50,20 @@ export class ProductMenuPage {
 		});
 	}
 
-	async closeProductMenu() {
-		await this.goto();
+	async closeProductMenu(siteFriendlyUrlPath: string = '/guest') {
+		await this.goto(siteFriendlyUrlPath);
 
 		if (await this.closeProductMenuButton.isVisible()) {
 			await this.closeProductMenuButton.click();
 		}
 	}
 
-	async goto() {
-		await this.page.goto('/');
+	async goto(siteFriendlyUrlPath: string = '/guest') {
+		await this.page.goto(`/group${siteFriendlyUrlPath}`);
 	}
 
-	async goToConfiguration() {
-		await this.openProductMenu();
+	async goToConfiguration(siteFriendlyUrlPath: string = '/guest') {
+		await this.openProductMenu(siteFriendlyUrlPath);
 		const isClosed =
 			(await this.configurationMenuItem.getAttribute('aria-expanded')) ===
 			'false';
@@ -73,8 +73,8 @@ export class ProductMenuPage {
 		}
 	}
 
-	async goToContentAndData() {
-		await this.openProductMenu();
+	async goToContentAndData(siteFriendlyUrlPath: string = '/guest') {
+		await this.openProductMenu(siteFriendlyUrlPath);
 		const isClosed =
 			(await this.contentAndDataMenuItem.getAttribute(
 				'aria-expanded'
@@ -85,28 +85,28 @@ export class ProductMenuPage {
 		}
 	}
 
-	async goToDocumentsAndMediaMenuItem() {
-		await this.goToContentAndData();
+	async goToDocumentsAndMediaMenuItem(siteFriendlyUrlPath: string = '/guest') {
+		await this.goToContentAndData(siteFriendlyUrlPath);
 		await this.documentsAndMediaMenuItem.click();
 	}
 
-	async goToJournalMenuItem() {
-		await this.goToContentAndData();
+	async goToJournalMenuItem(siteFriendlyUrlPath: string = '/guest') {
+		await this.goToContentAndData(siteFriendlyUrlPath);
 		await this.journalMenuItem.click();
 	}
 
-	async goToKnowledgeBaseMenuItem() {
-		await this.goToContentAndData();
+	async goToKnowledgeBaseMenuItem(siteFriendlyUrlPath: string = '/guest') {
+		await this.goToContentAndData(siteFriendlyUrlPath);
 		await this.knowledgeBaseMenuItem.click();
 	}
 
-	async goToPagesMenuItem() {
-		await this.goToContentAndData();
+	async goToPagesMenuItem(siteFriendlyUrlPath: string = '/guest') {
+		await this.goToSiteBuilder(siteFriendlyUrlPath);
 		await this.pagesMenuItem.click();
 	}
 
-	async goToSiteBuilder() {
-		await this.openProductMenu();
+	async goToSiteBuilder(siteFriendlyUrlPath: string = '/guest') {
+		await this.openProductMenu(siteFriendlyUrlPath);
 		const isClosed =
 			(await this.siteBuilderMenuItem.getAttribute(
 				'aria-expanded'
@@ -117,8 +117,8 @@ export class ProductMenuPage {
 		}
 	}
 
-	async openProductMenu() {
-		await this.goto();
+	async openProductMenu(siteFriendlyUrlPath: string = '/guest') {
+		await this.goto(siteFriendlyUrlPath);
 
 		if (await this.openProductMenuButton.isVisible()) {
 			await this.openProductMenuButton.click();
