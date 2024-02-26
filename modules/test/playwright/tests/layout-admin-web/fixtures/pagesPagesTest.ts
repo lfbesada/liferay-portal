@@ -13,13 +13,13 @@ import {UtilityPagesPage} from '../pages/UtilityPagesPage';
 
 const pagesPagesTest = test.extend<{
 	staticPagesPage: StaticPagesPage;
-	utilityPageConfiguratioPage: UtilityPageConfigurationPage;
+	utilityPageConfigurationPage: UtilityPageConfigurationPage;
 	utilityPagesPage: UtilityPagesPage;
 }>({
 	staticPagesPage: async ({page}, use) => {
 		await use(new StaticPagesPage(page));
 	},
-	utilityPageConfiguratioPage: async ({page}, use) => {
+	utilityPageConfigurationPage: async ({page}, use) => {
 		await use(new UtilityPageConfigurationPage(page));
 	},
 	utilityPagesPage: async ({page}, use) => {
