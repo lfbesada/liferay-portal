@@ -14,3 +14,6 @@ type ConfigurationSection =
 	| 'Text';
 
 type ConfigurationTab = 'Advanced' | 'General' | 'Styles';
+
+type Sidebar = 'Fragments and Widgets' | 'Browser' | 'Page Design Options'
+	| 'Page Rules' | 'Page Content' | 'Comments';

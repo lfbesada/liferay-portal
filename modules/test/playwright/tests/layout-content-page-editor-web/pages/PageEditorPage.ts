@@ -64,6 +64,10 @@ export class PageEditorPage {
 		);
 	}
 
+	async goToSidebar(sidebar: Sidebar) {
+		await this.page.getByTitle(sidebar).click();
+	}
+
 	async isActive(fragmentId: string, isDesktop = true) {
 		const topper = isDesktop
 			? this.page.locator(
