@@ -15,7 +15,7 @@ import {pagesPagesTest} from './fixtures/pagesPagesTest';
 export const test = mergeTests(
 	apiHelpersTest,
 	applicationsMenuPageTest,
-	loginTest,
+	loginTest(),
 	pageEditorPagesTest,
 	pagesPagesTest
 );
