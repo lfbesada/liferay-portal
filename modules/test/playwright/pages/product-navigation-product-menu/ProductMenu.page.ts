@@ -59,7 +59,7 @@ export class ProductMenuPage {
 	}
 
 	async goto(siteFriendlyUrlPath: string = '/guest') {
-		await this.page.goto(`/group${siteFriendlyUrlPath}`);
+		await this.page.goto(`/group${siteFriendlyUrlPath}/~/control_panel/manage/-/style_books/style_books`);
 	}
 
 	async goToConfiguration(siteFriendlyUrlPath: string = '/guest') {
