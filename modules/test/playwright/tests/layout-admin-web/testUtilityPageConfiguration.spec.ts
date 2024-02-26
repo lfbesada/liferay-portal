@@ -9,8 +9,8 @@ import {apiHelpersTest} from '../../fixtures/apiHelpersTest';
 import {applicationsMenuPageTest} from '../../fixtures/applicationsMenuPageTest';
 import {loginTest} from '../../fixtures/loginTest';
 import getRandomString from '../../utils/getRandomString';
-import {pagesPagesTest} from './fixtures/pagesPagesTest';
 import {pageEditorPagesTest} from '../layout-content-page-editor-web/fixtures/pageEditorPagesTest';
+import {pagesPagesTest} from './fixtures/pagesPagesTest';
 
 export const test = mergeTests(
 	apiHelpersTest,
@@ -24,8 +24,8 @@ test('LPD-4459: The configuration action of an Utility Page should be accesible 
 	apiHelpers,
 	page,
 	pageEditorPage,
+	utilityPageConfigurationPage,
 	utilityPagesPage,
-	utilityPageConfigurationPage
 }) => {
 	await page.goto('/');
 
@@ -33,13 +33,17 @@ test('LPD-4459: The configuration action of an Utility Page should be accesible 
 
 	const site = await apiHelpers.headlessSite.createSite(getRandomString());
 
-	await utilityPageConfigurationPage.setUtilityPageConfiguration(getRandomString(), getRandomString(), "404 Error");
+	await utilityPageConfigurationPage.setUtilityPageConfiguration(
+		getRandomString(),
+		getRandomString(),
+		'404 Error'
+	);
 
 	await expect(
 		page.getByText('The page was updated successfully.')
 	).toBeVisible();
 
-	await utilityPagesPage.goToEdit("404 Error");
+	await utilityPagesPage.goToEdit('404 Error');
 
 	await pageEditorPage.goToSidebar('Page Design Options');
 
@@ -48,9 +52,13 @@ test('LPD-4459: The configuration action of an Utility Page should be accesible 
 	).toBeVisible();
 
 	expect(
-		await page.locator(
-					'.page-editor__sidebar__panel-header', { has: page.getByTitle('Page Design Options')}
-				).getByRole('link').count()).toEqual(0);
+		await page
+			.locator('.page-editor__sidebar__panel-header', {
+				has: page.getByTitle('Page Design Options'),
+			})
+			.getByRole('link')
+			.count()
+	).toEqual(0);
 
 	await apiHelpers.headlessSite.deleteSite(site.id);
 });

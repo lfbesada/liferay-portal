@@ -8,22 +8,22 @@
 import {test} from '@playwright/test';
 
 import {StaticPagesPage} from '../pages/StaticPagesPage';
-import {UtilityPagesPage} from '../pages/UtilityPagesPage';
 import {UtilityPageConfigurationPage} from '../pages/UtilityPageConfigurationPage';
+import {UtilityPagesPage} from '../pages/UtilityPagesPage';
 
 const pagesPagesTest = test.extend<{
 	staticPagesPage: StaticPagesPage;
-	utilityPagesPage: UtilityPagesPage;
 	utilityPageConfiguratioPage: UtilityPageConfigurationPage;
+	utilityPagesPage: UtilityPagesPage;
 }>({
 	staticPagesPage: async ({page}, use) => {
 		await use(new StaticPagesPage(page));
 	},
-	utilityPagesPage: async ({page}, use) => {
-		await use(new UtilityPagesPage(page));
-	},
 	utilityPageConfiguratioPage: async ({page}, use) => {
 		await use(new UtilityPageConfigurationPage(page));
+	},
+	utilityPagesPage: async ({page}, use) => {
+		await use(new UtilityPagesPage(page));
 	},
 });
 
