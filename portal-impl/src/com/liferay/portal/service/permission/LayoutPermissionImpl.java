@@ -8,6 +8,7 @@ package com.liferay.portal.service.permission;
 import com.liferay.exportimport.kernel.staging.permission.StagingPermissionUtil;
 import com.liferay.petra.lang.HashUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
@@ -209,8 +210,17 @@ public class LayoutPermissionImpl implements LayoutPermission {
 			PermissionChecker permissionChecker, Layout layout)
 		throws PortalException {
 
-		if ((layout.isTypeAssetDisplay() || layout.isTypeContent()) &&
-			containsLayoutUpdatePermission(permissionChecker, layout)) {
+		if (FeatureFlagManagerUtil.isEnabled("LPD-11070")) {
+			if ((layout.isTypeAssetDisplay() || layout.isTypeContent()) &&
+				(contains(
+					permissionChecker, layout, ActionKeys.PREVIEW_DRAFT) ||
+				 containsLayoutUpdatePermission(permissionChecker, layout))) {
+
+				return true;
+			}
+		}
+		else if ((layout.isTypeAssetDisplay() || layout.isTypeContent()) &&
+				 containsLayoutUpdatePermission(permissionChecker, layout)) {
 
 			return true;
 		}
