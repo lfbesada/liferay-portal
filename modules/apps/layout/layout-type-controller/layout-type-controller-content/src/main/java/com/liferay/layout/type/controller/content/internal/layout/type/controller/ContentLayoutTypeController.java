@@ -17,6 +17,7 @@ import com.liferay.petra.io.unsync.UnsyncStringWriter;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
@@ -96,10 +97,24 @@ public class ContentLayoutTypeController extends BaseLayoutTypeControllerImpl {
 			hasUpdatePermissions = _hasUpdatePermissions(
 				themeDisplay.getPermissionChecker(), curLayout);
 
-			if (!hasUpdatePermissions) {
-				throw new PrincipalException.MustHavePermission(
-					themeDisplay.getPermissionChecker(), Layout.class.getName(),
-					layout.getLayoutId(), ActionKeys.UPDATE);
+			if (FeatureFlagManagerUtil.isEnabled("LPD-11070")) {
+				if (!hasUpdatePermissions &&
+					!_layoutPermission.containsLayoutPreviewDraftPermission(
+						themeDisplay.getPermissionChecker(), curLayout)) {
+
+					throw new PrincipalException.MustHavePermission(
+						themeDisplay.getPermissionChecker(),
+						Layout.class.getName(), layout.getLayoutId(),
+						ActionKeys.PREVIEW_DRAFT);
+				}
+			}
+			else {
+				if (!hasUpdatePermissions) {
+					throw new PrincipalException.MustHavePermission(
+						themeDisplay.getPermissionChecker(),
+						Layout.class.getName(), layout.getLayoutId(),
+						ActionKeys.UPDATE);
+				}
 			}
 		}
 
