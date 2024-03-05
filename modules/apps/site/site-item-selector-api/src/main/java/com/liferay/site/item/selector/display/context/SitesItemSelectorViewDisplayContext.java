@@ -39,6 +39,10 @@ public interface SitesItemSelectorViewDisplayContext {
 
 	public PortletURL getPortletURL() throws PortletException;
 
+	public default boolean hasVirtualHost(Group group) {
+		return false;
+	}
+
 	public boolean isShowChildSitesLink();
 
 	public boolean isShowSearch();
