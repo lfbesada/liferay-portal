@@ -8,10 +8,12 @@ package com.liferay.site.item.selector.web.internal.display.context;
 import com.liferay.item.selector.criteria.group.criterion.GroupItemSelectorCriterion;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.portlet.PortletURLUtil;
 import com.liferay.portal.kernel.portlet.SearchDisplayStyleUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.JavaConstants;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
@@ -91,6 +93,19 @@ public abstract class BaseSitesItemSelectorViewDisplayContext
 		return PortletURLUtil.clone(
 			portletURL,
 			PortalUtil.getLiferayPortletResponse(getPortletResponse()));
+	}
+
+	@Override
+	public boolean hasVirtualHost(Group group) {
+		LayoutSet layoutSet = group.getPublicLayoutSet();
+
+		if ((layoutSet != null) &&
+			MapUtil.isNotEmpty(layoutSet.getVirtualHostnames())) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	@Override
