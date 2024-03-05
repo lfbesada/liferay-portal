@@ -60,6 +60,8 @@ String target = ParamUtil.getString(request, "target", groupItemSelectorCriterio
 			).put(
 				"grouptype", LanguageUtil.get(resourceBundle, group.getTypeLabel())
 			).put(
+				"hasvirtualhost", sitesItemSelectorViewDisplayContext.hasVirtualHost(group)
+			).put(
 				"url", groupURLProvider.getGroupURL(group, liferayPortletRequest)
 			).put(
 				"uuid", group.getUuid()
