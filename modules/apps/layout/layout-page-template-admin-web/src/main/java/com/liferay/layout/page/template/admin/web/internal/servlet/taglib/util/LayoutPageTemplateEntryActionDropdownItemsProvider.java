@@ -103,7 +103,7 @@ public class LayoutPageTemplateEntryActionDropdownItemsProvider {
 						() ->
 							LayoutPageTemplateEntryPermission.contains(
 								_themeDisplay.getPermissionChecker(),
-								_layoutPageTemplateEntry, ActionKeys.VIEW) &&
+								_layoutPageTemplateEntry, ActionKeys.UPDATE) &&
 							!Objects.equals(
 								_layoutPageTemplateEntry.getType(),
 								LayoutPageTemplateEntryTypeConstants.

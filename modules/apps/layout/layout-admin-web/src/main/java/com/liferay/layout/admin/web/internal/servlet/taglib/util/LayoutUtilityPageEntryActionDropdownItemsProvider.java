@@ -89,7 +89,7 @@ public class LayoutUtilityPageEntryActionDropdownItemsProvider {
 					).add(
 						() -> LayoutUtilityPageEntryPermission.contains(
 							_themeDisplay.getPermissionChecker(),
-							_layoutUtilityPageEntry, ActionKeys.VIEW),
+							_layoutUtilityPageEntry, ActionKeys.UPDATE),
 						_getViewLayoutUtilityPageEntryActionUnsafeConsumer()
 					).build());
 				dropdownGroupItem.setSeparator(true);
