@@ -7,6 +7,7 @@ package com.liferay.layout.utility.page.service.impl;
 
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
 import com.liferay.layout.utility.page.exception.LayoutUtilityPageEntryNameException;
+import com.liferay.layout.utility.page.kernel.constants.LayoutUtilityPageEntryConstants;
 import com.liferay.layout.utility.page.model.LayoutUtilityPageEntry;
 import com.liferay.layout.utility.page.service.base.LayoutUtilityPageEntryLocalServiceBaseImpl;
 import com.liferay.petra.string.CharPool;
@@ -33,6 +34,7 @@ import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.ThemeLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.File;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
@@ -542,9 +544,7 @@ public class LayoutUtilityPageEntryLocalServiceImpl
 	}
 
 	private boolean _isPublicLayoutNeeded(String type) {
-		if (type.equals("LOGIN") || type.equals("FORGOT_PASSWORD") ||
-			type.equals("CREATE_ACCOUNT")) {
-
+		if (ArrayUtil.contains(_PUBLIC_LAYOUT_TYPES, type)) {
 			return true;
 		}
 
@@ -591,6 +591,12 @@ public class LayoutUtilityPageEntryLocalServiceImpl
 	private static final char[] _BLACKLIST_CHAR = {
 		';', '/', '?', ':', '@', '=', '&', '\"', '<', '>', '#', '%', '{', '}',
 		'|', '\\', '^', '~', '[', ']', '`'
+	};
+
+	private static final String[] _PUBLIC_LAYOUT_TYPES = {
+		LayoutUtilityPageEntryConstants.TYPE_CREATE_ACCOUNT,
+		LayoutUtilityPageEntryConstants.TYPE_FORGOT_PASSWORD,
+		LayoutUtilityPageEntryConstants.TYPE_LOGIN
 	};
 
 	@Reference
