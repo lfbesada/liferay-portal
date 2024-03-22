@@ -408,6 +408,12 @@ public class LayoutUtilityPageEntryLocalServiceImpl
 			String type, ServiceContext serviceContext)
 		throws PortalException {
 
+		boolean privateLayout = true;
+
+		if (ArrayUtil.contains(_PUBLIC_LAYOUT_TYPES, type)) {
+			privateLayout = false;
+		}
+
 		Map<Locale, String> titleMap = Collections.singletonMap(
 			LocaleUtil.getSiteDefault(), name);
 
@@ -433,10 +439,9 @@ public class LayoutUtilityPageEntryLocalServiceImpl
 			"layout.instanceable.allowed", Boolean.TRUE);
 
 		Layout layout = _layoutLocalService.addLayout(
-			userId, groupId, !_isPublicLayoutNeeded(type), 0, 0, 0, titleMap,
-			titleMap, null, null, null, LayoutConstants.TYPE_CONTENT,
-			typeSettings, true, true, new HashMap<>(), masterLayoutPlid,
-			serviceContext);
+			userId, groupId, privateLayout, 0, 0, 0, titleMap, titleMap, null,
+			null, null, LayoutConstants.TYPE_CONTENT, typeSettings, true, true,
+			new HashMap<>(), masterLayoutPlid, serviceContext);
 
 		Layout draftLayout = layout.fetchDraftLayout();
 
@@ -541,14 +546,6 @@ public class LayoutUtilityPageEntryLocalServiceImpl
 		}
 
 		return name;
-	}
-
-	private boolean _isPublicLayoutNeeded(String type) {
-		if (ArrayUtil.contains(_PUBLIC_LAYOUT_TYPES, type)) {
-			return true;
-		}
-
-		return false;
 	}
 
 	private void _validateName(
