@@ -1,26 +1,37 @@
 @import 'atlas-variables';
+@import 'cadmin-variables';
 
-.lfr-objects__code-editor {
-	display: flex;
-	flex-direction: column;
-	margin-bottom: 0;
-	width: 100%;
-
-	&-source {
-		border: 1px solid $gray-300;
-		border-radius: 0.25rem;
+@mixin code-editor() {
+	.lfr-objects__code-editor {
 		display: flex;
-		overflow: hidden;
+		flex-direction: column;
+		margin-bottom: 0;
+		width: 100%;
 
-		&.form-control {
-			height: 603px;
+		&-source {
+			border: 1px solid $gray-300;
+			border-radius: 0.25rem;
+			display: flex;
 			overflow: hidden;
-			padding: 0;
+
+			&.form-control {
+				height: 603px;
+				overflow: hidden;
+				padding: 0;
+			}
 		}
+	}
+
+	.lfr-objects__expression-builder-modal
+		.modal-dialog.modal-lg
+		.modal-content {
+		height: 790px;
+		width: 898px;
 	}
 }
 
-.lfr-objects__expression-builder-modal .modal-dialog.modal-lg .modal-content {
-	height: 790px;
-	width: 898px;
+@include code-editor();
+
+html#{$cadmin-selector} .cadmin {
+	@include code-editor();
 }
