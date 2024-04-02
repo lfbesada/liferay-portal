@@ -1,5 +1,5 @@
 {
-	"@generated": "49b903db97b74188928d59fd7888d742f8d3e2db",
+	"@generated": "52a68a652fa573c141eab3e9b73b10aa5c67d970",
 	"@overrides": {
 		"compilerOptions": {
 			"lib": [
@@ -40,6 +40,9 @@
 			],
 			"@liferay/layout-js-components-web": [
 				"../layout-js-components-web/src/main/resources/META-INF/resources/js/index.ts"
+			],
+			"@liferay/object-js-components-web": [
+				"../../object/object-js-components-web/src/main/resources/META-INF/resources/index.ts"
 			],
 			"frontend-js-components-web": [
 				"../../frontend-js/frontend-js-components-web/src/main/resources/META-INF/resources/index.ts"
@@ -95,6 +98,9 @@
 		},
 		{
 			"path": "../../item-selector/item-selector-taglib"
+		},
+		{
+			"path": "../../object/object-js-components-web"
 		}
 	]
 }
