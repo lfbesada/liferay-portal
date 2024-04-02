@@ -9,6 +9,7 @@ import ClayForm, {ClayInput} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayModal, {useModal} from '@clayui/modal';
 import {ScreenReaderAnnouncerContextProvider} from '@liferay/layout-js-components-web';
+import {CodeEditor} from '@liferay/object-js-components-web';
 import classNames from 'classnames';
 import {useId} from 'frontend-js-components-web';
 import {openToast} from 'frontend-js-web';
@@ -24,6 +25,61 @@ import {
 	RuleBuilderActionSection,
 	RuleBuilderConditionSection,
 } from './RuleBuilderSection';
+
+const MENU_ITEMS = [
+	{
+		items: [
+			{
+				content: 'createDate',
+				helpText: '',
+				label: 'Create Date',
+			},
+			{
+				content: 'creator',
+				helpText: '',
+				label: 'Author',
+			},
+			{
+				content: 'externalReferenceCode',
+				helpText: '',
+				label: 'External Reference Code',
+			},
+		],
+		label: 'Fields',
+	},
+	{
+		items: [
+			{
+				content: 'currentDate',
+				helpText: '',
+				label: 'Current Date',
+			},
+			{
+				content: 'currentUserId',
+				helpText: '',
+				label: 'Current User',
+			},
+		],
+		label: 'General Variables',
+	},
+	{
+		items: [
+			{
+				content: 'AND',
+				helpText:
+					'This is a type of coordinating conjunction that is commonly used to indicate a dependent relationship.',
+				label: 'And',
+			},
+			{
+				content: 'field_name1 / field_name2',
+				helpText:
+					'Divide one numeric field by another to create an expression.',
+				label: 'Divided By',
+			},
+		],
+		label: 'Operators',
+	},
+];
 
 export default function RulesModal({editingRule, onCloseModal}) {
 	const {observer, onClose} = useModal({
@@ -183,6 +239,13 @@ export default function RulesModal({editingRule, onCloseModal}) {
 						</ClayForm.FeedbackGroup>
 					)}
 				</ClayForm.Group>
+
+				<CodeEditor
+					error=""
+					placeholder="Esto es un test"
+					sidebarElements={MENU_ITEMS}
+					value=""
+				/>
 
 				<p className="py-3">
 					{Liferay.Language.get(
