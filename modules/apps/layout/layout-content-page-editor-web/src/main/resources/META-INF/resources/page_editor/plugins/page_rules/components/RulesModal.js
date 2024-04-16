@@ -16,6 +16,7 @@ import {openToast} from 'frontend-js-web';
 import React, {useEffect, useMemo, useRef, useState} from 'react';
 import {v4 as uuidv4} from 'uuid';
 
+import {config} from '../../../app/config/index';
 import {LAYOUT_DATA_ITEM_TYPES} from '../../../app/config/constants/layoutDataItemTypes';
 import {useDispatch, useSelector} from '../../../app/contexts/StoreContext';
 import selectLayoutDataItemLabel from '../../../app/selectors/selectLayoutDataItemLabel';
@@ -25,61 +26,7 @@ import {
 	RuleBuilderActionSection,
 	RuleBuilderConditionSection,
 } from './RuleBuilderSection';
-
-const MENU_ITEMS = [
-	{
-		items: [
-			{
-				content: 'createDate',
-				helpText: '',
-				label: 'Create Date',
-			},
-			{
-				content: 'creator',
-				helpText: '',
-				label: 'Author',
-			},
-			{
-				content: 'externalReferenceCode',
-				helpText: '',
-				label: 'External Reference Code',
-			},
-		],
-		label: 'Fields',
-	},
-	{
-		items: [
-			{
-				content: 'currentDate',
-				helpText: '',
-				label: 'Current Date',
-			},
-			{
-				content: 'currentUserId',
-				helpText: '',
-				label: 'Current User',
-			},
-		],
-		label: 'General Variables',
-	},
-	{
-		items: [
-			{
-				content: 'AND',
-				helpText:
-					'This is a type of coordinating conjunction that is commonly used to indicate a dependent relationship.',
-				label: 'And',
-			},
-			{
-				content: 'field_name1 / field_name2',
-				helpText:
-					'Divide one numeric field by another to create an expression.',
-				label: 'Divided By',
-			},
-		],
-		label: 'Operators',
-	},
-];
+import {CONDITION_TYPE_ITEMS} from "./Condition";
 
 export default function RulesModal({editingRule, onCloseModal}) {
 	const {observer, onClose} = useModal({
@@ -243,7 +190,7 @@ export default function RulesModal({editingRule, onCloseModal}) {
 				<CodeEditor
 					error=""
 					placeholder="Esto es un test"
-					sidebarElements={MENU_ITEMS}
+					sidebarElements={config.codeEditorSidebarElements}
 					value=""
 				/>
 
