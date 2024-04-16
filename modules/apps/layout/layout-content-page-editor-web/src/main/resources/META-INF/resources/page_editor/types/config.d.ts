@@ -47,6 +47,16 @@ export interface Config {
 
 	changeMasterLayoutURL: string;
 	changeStyleBookEntryURL: string;
+
+	codeEditorSidebarElements: Array<{
+		items: Array<{
+			content: string;
+			helpText: string;
+			label: string;
+		}>;
+		label: string;
+	}>;
+
 	collectionSelectorURL: string;
 
 	commonStyles: Array<{
