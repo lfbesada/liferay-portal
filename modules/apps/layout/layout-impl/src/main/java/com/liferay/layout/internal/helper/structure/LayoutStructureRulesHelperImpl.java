@@ -5,19 +5,37 @@
 
 package com.liferay.layout.internal.helper.structure;
 
+import com.liferay.dynamic.data.mapping.expression.CreateExpressionRequest;
+import com.liferay.dynamic.data.mapping.expression.DDMExpression;
+import com.liferay.dynamic.data.mapping.expression.DDMExpressionException;
+import com.liferay.dynamic.data.mapping.expression.DDMExpressionFactory;
+import com.liferay.dynamic.data.mapping.expression.DDMExpressionFieldAccessor;
+import com.liferay.dynamic.data.mapping.expression.DDMExpressionParameterAccessor;
+import com.liferay.dynamic.data.mapping.expression.GetFieldPropertyRequest;
+import com.liferay.dynamic.data.mapping.expression.GetFieldPropertyResponse;
 import com.liferay.layout.helper.structure.LayoutStructureRulesHelper;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureRule;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.util.ArrayUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 
 import java.util.HashSet;
+import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Víctor Galán
@@ -54,6 +72,145 @@ public class LayoutStructureRulesHelperImpl
 		return new LayoutStructureRulesResult(displayedItemIds, hiddenItemIds);
 	}
 
+	public class LayoutStructureRuleDDMExpressionFieldAccessor
+		implements DDMExpressionFieldAccessor {
+
+		public LayoutStructureRuleDDMExpressionFieldAccessor(
+			long[] roleIds, long[] segmentsEntryIds, User user) {
+
+			_values = HashMapBuilder.<String, Object>put(
+				"createDate", user.getCreateDate()
+			).put(
+				"emailAddresses", user.getEmailAddresses()
+			).put(
+				"lastLoginDate", user.getLastLoginDate()
+			).put(
+				"modifiedDate", user.getModifiedDate()
+			).put(
+				"roleIds", roleIds
+			).put(
+				"screenName", user.getScreenName()
+			).put(
+				"segmentsEntryIds", segmentsEntryIds
+			).put(
+				"userId", user.getUserId()
+			).build();
+		}
+
+		@Override
+		public GetFieldPropertyResponse getFieldProperty(
+			GetFieldPropertyRequest getFieldPropertyRequest) {
+
+			Object value = _values.get(getFieldPropertyRequest.getField());
+
+			if ((value == null) &&
+				isField(getFieldPropertyRequest.getField())) {
+
+				value = StringPool.BLANK;
+			}
+
+			GetFieldPropertyResponse.Builder builder =
+				GetFieldPropertyResponse.Builder.newBuilder(value);
+
+			return builder.build();
+		}
+
+		@Override
+		public boolean isField(String parameter) {
+			return _values.containsKey(parameter);
+		}
+
+		private final Map<String, Object> _values;
+
+	}
+
+	public class LayoutStructureRuleDDMExpressionParameterAccessor
+		implements DDMExpressionParameterAccessor {
+
+		public LayoutStructureRuleDDMExpressionParameterAccessor(
+			long groupId, User user) {
+
+			_groupId = groupId;
+
+			_companyId = user.getCompanyId();
+
+			_locale = user.getLocale();
+			_timeZoneId = user.getTimeZoneId();
+			_userId = user.getUserId();
+		}
+
+		@Override
+		public long getCompanyId() {
+			return _companyId;
+		}
+
+		@Override
+		public String getGooglePlacesAPIKey() {
+			return StringPool.BLANK;
+		}
+
+		@Override
+		public long getGroupId() {
+			return _groupId;
+		}
+
+		@Override
+		public Locale getLocale() {
+			return _locale;
+		}
+
+		@Override
+		public JSONArray getObjectFieldsJSONArray() {
+			return JSONFactoryUtil.createJSONArray();
+		}
+
+		@Override
+		public String getTimeZoneId() {
+			return _timeZoneId;
+		}
+
+		@Override
+		public long getUserId() {
+			return _userId;
+		}
+
+		private final long _companyId;
+		private final long _groupId;
+		private final Locale _locale;
+		private final String _timeZoneId;
+		private final long _userId;
+
+	}
+
+	private boolean _evaluateDDMExpression(
+		String script,
+		LayoutStructureRulesContext layoutStructureRulesContext) {
+
+		try {
+			DDMExpression<Boolean> ddmExpression =
+				_ddmExpressionFactory.createExpression(
+					CreateExpressionRequest.Builder.newBuilder(
+						script
+					).withDDMExpressionFieldAccessor(
+						layoutStructureRulesContext.
+							getDDMExpressionFieldAccessor()
+					).withDDMExpressionParameterAccessor(
+						layoutStructureRulesContext.
+							getDDMExpressionParameterAccessor()
+					).build());
+
+			return ddmExpression.evaluate();
+		}
+		catch (DDMExpressionException ddmExpressionException) {
+			_log.error(ddmExpressionException);
+		}
+		catch (Exception exception) {
+			_log.error(exception);
+		}
+
+		return false;
+	}
+
 	private boolean _isConditionActive(
 		JSONObject conditionJSONObject,
 		LayoutStructureRulesContext layoutStructureRulesContext) {
@@ -87,6 +244,11 @@ public class LayoutStructureRulesHelperImpl
 	private boolean _isLayoutStructureRuleActive(
 		LayoutStructureRule layoutStructureRule,
 		LayoutStructureRulesContext layoutStructureRulesContext) {
+
+		if (layoutStructureRule.isAdvancedRule()) {
+			return _evaluateDDMExpression(
+				layoutStructureRule.getScript(), layoutStructureRulesContext);
+		}
 
 		JSONArray conditionsJSONArray =
 			layoutStructureRule.getConditionsJSONArray();
@@ -131,10 +293,47 @@ public class LayoutStructureRulesHelperImpl
 		}
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		LayoutStructureRulesHelperImpl.class);
+
+	@Reference
+	private DDMExpressionFactory _ddmExpressionFactory;
+
 	private class LayoutStructureRulesContext {
+
+		public DDMExpressionFieldAccessor getDDMExpressionFieldAccessor() {
+			if (_ddmExpressionFieldAccessor != null) {
+				return _ddmExpressionFieldAccessor;
+			}
+
+			_ddmExpressionFieldAccessor =
+				new LayoutStructureRuleDDMExpressionFieldAccessor(
+					getRoleIds(), getSegmentsEntryIds(),
+					_permissionChecker.getUser());
+
+			return _ddmExpressionFieldAccessor;
+		}
+
+		public DDMExpressionParameterAccessor
+			getDDMExpressionParameterAccessor() {
+
+			if (_ddmExpressionParameterAccessor != null) {
+				return _ddmExpressionParameterAccessor;
+			}
+
+			_ddmExpressionParameterAccessor =
+				new LayoutStructureRuleDDMExpressionParameterAccessor(
+					_groupId, _permissionChecker.getUser());
+
+			return _ddmExpressionParameterAccessor;
+		}
 
 		public long getGroupId() {
 			return _groupId;
+		}
+
+		public PermissionChecker getPermissionChecker() {
+			return _permissionChecker;
 		}
 
 		public long[] getRoleIds() {
@@ -165,6 +364,8 @@ public class LayoutStructureRulesHelperImpl
 			_segmentsEntryIds = segmentsEntryIds;
 		}
 
+		private DDMExpressionFieldAccessor _ddmExpressionFieldAccessor;
+		private DDMExpressionParameterAccessor _ddmExpressionParameterAccessor;
 		private final long _groupId;
 		private final PermissionChecker _permissionChecker;
 		private long[] _roleIds;
