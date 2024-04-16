@@ -63,6 +63,8 @@ public class AddRuleMVCActionCommand
 							ParamUtil.getString(actionRequest, "conditions")));
 					layoutStructureRule.setConditionType(
 						ParamUtil.getString(actionRequest, "conditionType"));
+					layoutStructureRule.setScript(
+						"NOT(contains(screenName, 'test'))");
 
 					jsonObject.put("addedRuleId", layoutStructureRule.getId());
 				}));
