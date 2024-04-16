@@ -67,6 +67,7 @@ import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.editor.configuration.EditorConfiguration;
 import com.liferay.portal.kernel.editor.configuration.EditorConfigurationFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -289,6 +290,9 @@ public class ContentPageEditorDisplayContext {
 				"changeStyleBookEntryURL",
 				getFragmentEntryActionURL(
 					"/layout_content_page_editor/change_style_book_entry")
+			).put(
+				"codeEditorSidebarElements",
+				_getCodeEditorSidebarElementsJSONArray()
 			).put(
 				"collectionSelectorURL", _getCollectionSelectorURL()
 			).put(
@@ -1195,6 +1199,53 @@ public class ContentPageEditorDisplayContext {
 		}
 
 		return availableViewportSizesMap;
+	}
+
+	private JSONObject _getCodeEditorSidebarElementJSONObject(
+		String content, String helpText, String key) {
+
+		return JSONUtil.put(
+			"content", content
+		).put(
+			"helpText", helpText
+		).put(
+			"label", language.get(httpServletRequest, key)
+		);
+	}
+
+	private JSONArray _getCodeEditorSidebarElementsJSONArray() {
+		return JSONUtil.putAll(
+			JSONUtil.put(
+				"items",
+				JSONUtil.putAll(
+					_getCodeEditorSidebarElementJSONObject(
+						"createDate", StringPool.BLANK, "create-date"),
+					_getCodeEditorSidebarElementJSONObject(
+						"emailAddresses", StringPool.BLANK, "email-addresses"),
+					_getCodeEditorSidebarElementJSONObject(
+						"lastLoginDate", StringPool.BLANK, "last-login-date"),
+					_getCodeEditorSidebarElementJSONObject(
+						"modifiedDate", StringPool.BLANK, "modified-date"),
+					_getCodeEditorSidebarElementJSONObject(
+						"screenName", StringPool.BLANK, "screen-name"),
+					_getCodeEditorSidebarElementJSONObject(
+						"userId", StringPool.BLANK, "user-id"))
+			).put(
+				"label", language.get(httpServletRequest, "fields")
+			),
+			JSONUtil.put(
+				"items",
+				JSONUtil.putAll(
+					_getCodeEditorSidebarElementJSONObject(
+						"currentdate", StringPool.BLANK, "current-date"),
+					_getCodeEditorSidebarElementJSONObject(
+						"roleIds", StringPool.BLANK, "role-ids"),
+					_getCodeEditorSidebarElementJSONObject(
+						"segmentsEntryIds", StringPool.BLANK,
+						"segments-entry-ids"))
+			).put(
+				"label", language.get(httpServletRequest, "general-variables")
+			));
 	}
 
 	private String _getCollectionSelectorURL() {
