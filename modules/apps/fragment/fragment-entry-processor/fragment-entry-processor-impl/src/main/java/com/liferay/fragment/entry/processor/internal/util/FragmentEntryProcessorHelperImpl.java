@@ -13,7 +13,10 @@ import com.liferay.info.exception.NoSuchInfoItemException;
 import com.liferay.info.field.InfoField;
 import com.liferay.info.field.InfoFieldValue;
 import com.liferay.info.field.type.DateInfoFieldType;
+import com.liferay.info.field.type.FileInfoFieldType;
+import com.liferay.info.field.type.ImageInfoFieldType;
 import com.liferay.info.field.type.TextInfoFieldType;
+import com.liferay.info.field.type.URLInfoFieldType;
 import com.liferay.info.formatter.InfoCollectionTextFormatter;
 import com.liferay.info.formatter.InfoTextFormatter;
 import com.liferay.info.item.ClassPKInfoItemIdentifier;
@@ -250,7 +253,10 @@ public class FragmentEntryProcessorHelperImpl
 
 			if (!Objects.equals(
 					fragmentEntryProcessorContext.getMode(),
-					FragmentEntryLinkConstants.EDIT)) {
+					FragmentEntryLinkConstants.EDIT) ||
+				(infoField.getInfoFieldType() instanceof FileInfoFieldType) ||
+				(infoField.getInfoFieldType() instanceof ImageInfoFieldType) ||
+				(infoField.getInfoFieldType() instanceof URLInfoFieldType)) {
 
 				return StringPool.BLANK;
 			}
