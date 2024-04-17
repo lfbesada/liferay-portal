@@ -108,35 +108,53 @@ public class EditableDocumentFragmentEntryProcessor
 				_fragmentEntryProcessorHelper.isMappedDisplayPage(
 					editableValueJSONObject)) {
 
-				Object fieldValue = _fragmentEntryProcessorHelper.getFieldValue(
-					editableValueJSONObject, infoDisplaysFieldValues,
-					fragmentEntryProcessorContext);
+				Object fieldValue;
 
-				if (fieldValue != null) {
-					String fieldId = editableValueJSONObject.getString(
-						"collectionFieldId");
+				if (_fragmentEntryProcessorHelper.hasViewPermission(
+						editableValueJSONObject,
+						fragmentEntryProcessorContext)) {
 
-					if (_fragmentEntryProcessorHelper.isMappedDisplayPage(
-							editableValueJSONObject)) {
+					fieldValue = _fragmentEntryProcessorHelper.getFieldValue(
+						editableValueJSONObject, infoDisplaysFieldValues,
+						fragmentEntryProcessorContext);
 
-						fieldId = editableValueJSONObject.getString(
-							"mappedField");
-					}
-					else if (_fragmentEntryProcessorHelper.isMapped(
+					if (fieldValue != null) {
+						String fieldId = editableValueJSONObject.getString(
+							"collectionFieldId");
+
+						if (_fragmentEntryProcessorHelper.isMappedDisplayPage(
 								editableValueJSONObject)) {
 
-						fieldId = editableValueJSONObject.getString("fieldId");
-					}
+							fieldId = editableValueJSONObject.getString(
+								"mappedField");
+						}
+						else if (_fragmentEntryProcessorHelper.isMapped(
+									editableValueJSONObject)) {
 
-					mappedValueConfigJSONObject =
-						editableElementParser.getFieldTemplateConfigJSONObject(
-							fieldId, fragmentEntryProcessorContext.getLocale(),
+							fieldId = editableValueJSONObject.getString(
+								"fieldId");
+						}
+
+						mappedValueConfigJSONObject =
+							editableElementParser.
+								getFieldTemplateConfigJSONObject(
+									fieldId,
+									fragmentEntryProcessorContext.getLocale(),
+									fieldValue);
+
+						value = editableElementParser.parseFieldValue(
 							fieldValue);
-
-					value = editableElementParser.parseFieldValue(fieldValue);
+					}
+					else {
+						value = editableValueJSONObject.getString(
+							"defaultValue");
+					}
 				}
 				else {
-					value = editableValueJSONObject.getString("defaultValue");
+					value =
+						editableElementParser.getRestrictedContentFieldValue(
+							fragmentEntryProcessorContext.getLocale(),
+							fragmentEntryProcessorContext.getMode());
 				}
 			}
 			else {
