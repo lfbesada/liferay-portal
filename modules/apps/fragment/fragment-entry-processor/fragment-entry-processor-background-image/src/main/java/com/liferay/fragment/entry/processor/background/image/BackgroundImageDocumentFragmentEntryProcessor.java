@@ -73,6 +73,12 @@ public class BackgroundImageDocumentFragmentEntryProcessor
 			JSONObject editableValueJSONObject =
 				editableValuesJSONObject.getJSONObject(id);
 
+			if (!_fragmentEntryProcessorHelper.hasViewPermission(
+					editableValueJSONObject, fragmentEntryProcessorContext)) {
+
+				continue;
+			}
+
 			String value = StringPool.BLANK;
 
 			Object fieldValue = _fragmentEntryProcessorHelper.getFieldValue(
