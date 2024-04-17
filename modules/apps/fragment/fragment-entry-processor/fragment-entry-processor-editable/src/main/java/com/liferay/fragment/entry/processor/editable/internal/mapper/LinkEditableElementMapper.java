@@ -59,7 +59,7 @@ public class LinkEditableElementMapper implements EditableElementMapper {
 				configJSONObject)) {
 
 			if (_fragmentEntryProcessorHelper.hasViewPermission(
-				configJSONObject, fragmentEntryProcessorContext)) {
+					configJSONObject, fragmentEntryProcessorContext)) {
 
 				Object fieldValue = _fragmentEntryProcessorHelper.getFieldValue(
 					configJSONObject, new HashMap<>(),
