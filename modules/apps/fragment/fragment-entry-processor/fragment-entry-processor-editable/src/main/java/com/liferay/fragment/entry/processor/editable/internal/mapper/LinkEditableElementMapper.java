@@ -10,6 +10,7 @@ import com.liferay.fragment.entry.processor.helper.FragmentEntryProcessorHelper;
 import com.liferay.fragment.processor.FragmentEntryProcessorContext;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -209,7 +210,8 @@ public class LinkEditableElementMapper implements EditableElementMapper {
 			return StringPool.POUND;
 		}
 
-		if (!LayoutPermissionUtil.contains(
+		if (FeatureFlagManagerUtil.isEnabled("LPD-19955") &&
+			!LayoutPermissionUtil.contains(
 				themeDisplay.getPermissionChecker(), layout, ActionKeys.VIEW)) {
 
 			return StringPool.BLANK;
