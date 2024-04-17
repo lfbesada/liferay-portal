@@ -108,9 +108,22 @@ public class EditableDocumentFragmentEntryProcessor
 				_fragmentEntryProcessorHelper.isMappedDisplayPage(
 					editableValueJSONObject)) {
 
-				Object fieldValue = _fragmentEntryProcessorHelper.getFieldValue(
-					editableValueJSONObject, infoDisplaysFieldValues,
-					fragmentEntryProcessorContext);
+				Object fieldValue;
+
+				if (_fragmentEntryProcessorHelper.hasViewPermission(
+						editableValueJSONObject,
+						fragmentEntryProcessorContext)) {
+
+					fieldValue = _fragmentEntryProcessorHelper.getFieldValue(
+						editableValueJSONObject, infoDisplaysFieldValues,
+						fragmentEntryProcessorContext);
+				}
+				else {
+					fieldValue =
+						editableElementParser.getRestrictedContentFieldValue(
+							fragmentEntryProcessorContext.getLocale(),
+							fragmentEntryProcessorContext.getMode());
+				}
 
 				if (fieldValue != null) {
 					String fieldId = editableValueJSONObject.getString(
