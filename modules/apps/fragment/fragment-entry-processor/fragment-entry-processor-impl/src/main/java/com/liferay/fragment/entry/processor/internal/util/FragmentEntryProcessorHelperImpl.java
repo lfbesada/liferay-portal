@@ -176,7 +176,7 @@ public class FragmentEntryProcessorHelperImpl
 
 		return getMappedInfoItemFieldValue(
 			editableValueJSONObject, infoItemMappedField.getFieldName(),
-			infoItemFieldValues, fragmentEntryProcessorContext.getLocale());
+			fragmentEntryProcessorContext, infoItemFieldValues);
 	}
 
 	@Override
