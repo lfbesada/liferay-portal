@@ -108,29 +108,6 @@ public class FragmentEntryProcessorHelperImpl
 			return null;
 		}
 
-		if (!_hasViewPermission(
-				fragmentEntryProcessorContext.getHttpServletRequest(),
-				infoItemMappedField)) {
-
-			if (Objects.equals(
-					fragmentEntryProcessorContext.getMode(),
-					FragmentEntryLinkConstants.EDIT)) {
-
-				return StringBundler.concat(
-					"<span class=\"clearfix page-editor__editable\" ",
-					"data-lfr-editable-id=\"02-title\">",
-					_language.get(
-						fragmentEntryProcessorContext.getLocale(),
-						"restricted-content"),
-					"&nbsp;<svg class=\"lexicon-icon lexicon-icon-password-policies",
-					"\" role=\"presentation\" viewBox=\"0 0 512 512\">",
-					"<use xlink:href=\"/o/classic-theme/images/clay",
-					"/icons.svg#password-policies\"></use></svg></span>");
-			}
-
-			return StringPool.BLANK;
-		}
-
 		TrashHandler trashHandler = TrashHandlerRegistryUtil.getTrashHandler(
 			infoItemMappedField.getClassName());
 
@@ -263,6 +240,30 @@ public class FragmentEntryProcessorHelperImpl
 
 		if (infoFieldValue == null) {
 			return null;
+		}
+
+		if (!_hasViewPermission(
+				fragmentEntryProcessorContext.getHttpServletRequest(),
+				infoItemFieldValues.getInfoItemReference())) {
+
+			if (!Objects.equals(
+					fragmentEntryProcessorContext.getMode(),
+					FragmentEntryLinkConstants.EDIT)) {
+
+				return StringPool.BLANK;
+			}
+
+			return StringBundler.concat(
+				"<span class=\"clearfix page-editor__editable\" ",
+				"data-lfr-editable-id=\"02-title\">",
+				_language.get(
+					fragmentEntryProcessorContext.getLocale(),
+					"restricted-content"),
+				"&nbsp;<svg class=\"lexicon-icon ",
+				"lexicon-icon-password-policies",
+				"\" role=\"presentation\" viewBox=\"0 0 512 512\">",
+				"<use xlink:href=\"/o/classic-theme/images/clay",
+				"/icons.svg#password-policies\"></use></svg></span>");
 		}
 
 		Object value = infoFieldValue.getValue(
@@ -428,7 +429,7 @@ public class FragmentEntryProcessorHelperImpl
 
 		return _hasViewPermission(
 			fragmentEntryProcessorContext.getHttpServletRequest(),
-			infoItemMappedField);
+			infoItemMappedField.getInfoItemReference());
 	}
 
 	@Override
@@ -769,7 +770,7 @@ public class FragmentEntryProcessorHelperImpl
 
 	private boolean _hasViewPermission(
 		HttpServletRequest httpServletRequest,
-		InfoItemMappedField infoItemMappedField) {
+		InfoItemReference infoItemReference) {
 
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)httpServletRequest.getAttribute(
@@ -779,12 +780,12 @@ public class FragmentEntryProcessorHelperImpl
 			InfoItemPermissionProvider infoItemPermissionProvider =
 				_infoItemServiceRegistry.getFirstInfoItemService(
 					InfoItemPermissionProvider.class,
-					infoItemMappedField.getClassName());
+					infoItemReference.getClassName());
 
 			if ((infoItemPermissionProvider != null) &&
 				!infoItemPermissionProvider.hasPermission(
-					themeDisplay.getPermissionChecker(),
-					infoItemMappedField.getObject(), ActionKeys.VIEW)) {
+					themeDisplay.getPermissionChecker(), infoItemReference,
+					ActionKeys.VIEW)) {
 
 				return false;
 			}
