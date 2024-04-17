@@ -55,7 +55,16 @@ public class ImageEditableElementParser extends BaseEditableElementParser {
 
 	@Override
 	public JSONObject getFieldTemplateConfigJSONObject(
-		String fieldName, Locale locale, Object fieldValue) {
+		String fieldName, Locale locale, Object fieldValue,
+		boolean viewPermission) {
+
+		if (!viewPermission) {
+			return JSONUtil.put(
+				"alt", StringPool.BLANK
+			).put(
+				"fileEntryId", 0
+			);
+		}
 
 		String alt = StringPool.BLANK;
 		Object fileEntryId = 0;

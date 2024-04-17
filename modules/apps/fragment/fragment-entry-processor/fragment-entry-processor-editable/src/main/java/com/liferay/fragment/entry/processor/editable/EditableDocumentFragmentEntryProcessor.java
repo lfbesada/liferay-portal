@@ -110,10 +110,11 @@ public class EditableDocumentFragmentEntryProcessor
 
 				Object fieldValue;
 
-				if (_fragmentEntryProcessorHelper.hasViewPermission(
-						editableValueJSONObject,
-						fragmentEntryProcessorContext)) {
+				boolean viewPermission =
+					_fragmentEntryProcessorHelper.hasViewPermission(
+						editableValueJSONObject, fragmentEntryProcessorContext);
 
+				if (viewPermission) {
 					fieldValue = _fragmentEntryProcessorHelper.getFieldValue(
 						editableValueJSONObject, infoDisplaysFieldValues,
 						fragmentEntryProcessorContext);
@@ -144,7 +145,7 @@ public class EditableDocumentFragmentEntryProcessor
 					mappedValueConfigJSONObject =
 						editableElementParser.getFieldTemplateConfigJSONObject(
 							fieldId, fragmentEntryProcessorContext.getLocale(),
-							fieldValue);
+							fieldValue, viewPermission);
 
 					value = editableElementParser.parseFieldValue(fieldValue);
 				}
