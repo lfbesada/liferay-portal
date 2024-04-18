@@ -108,6 +108,11 @@ public class GetInfoItemFieldValueMVCResourceCommand
 			return;
 		}
 
+		jsonObject.put(
+			"isRestricted",
+			() -> !_fragmentEntryProcessorHelper.hasViewPermission(
+				jsonObject, fragmentEntryProcessorContext));
+
 		JSONPortletResponseUtil.writeJSON(
 			resourceRequest, resourceResponse, jsonObject);
 	}

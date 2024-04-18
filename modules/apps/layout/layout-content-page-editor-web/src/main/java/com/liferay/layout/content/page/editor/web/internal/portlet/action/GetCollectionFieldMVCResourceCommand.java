@@ -501,6 +501,16 @@ public class GetCollectionFieldMVCResourceCommand
 				httpServletRequest, httpServletResponse,
 				FragmentEntryLinkConstants.EDIT, locale);
 
+		if (!_fragmentEntryProcessorHelper.hasViewPermission(
+				displayObjectJSONObject, fragmentEntryProcessorContext)) {
+
+			displayObjectJSONObject.put("isRestricted", true);
+
+			return displayObjectJSONObject;
+		}
+
+		displayObjectJSONObject.put("isRestricted", false);
+
 		for (InfoFieldValue<Object> infoFieldValue :
 				infoItemFieldValues.getInfoFieldValues()) {
 
