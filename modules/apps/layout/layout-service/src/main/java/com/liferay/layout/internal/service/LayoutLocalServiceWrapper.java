@@ -29,8 +29,6 @@ import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.petra.function.transform.TransformUtil;
-import com.liferay.petra.lang.SafeCloseable;
-import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.comment.CommentManager;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -272,16 +270,7 @@ public class LayoutLocalServiceWrapper
 		ServiceContext currentServiceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
-		long ctCollectionId = sourceLayout.getCtCollectionId();
-
-		if (ctCollectionId == 0) {
-			ctCollectionId = targetLayout.getCtCollectionId();
-		}
-
-		try (SafeCloseable safeCloseable =
-				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
-					ctCollectionId)) {
-
+		try {
 			CopyLayoutThreadLocal.setCopyLayout(true);
 
 			User user = _getUser(
