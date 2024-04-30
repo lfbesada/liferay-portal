@@ -33,6 +33,8 @@ import com.liferay.portal.kernel.comment.CommentManager;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Image;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
@@ -295,6 +297,10 @@ public class LayoutLocalServiceWrapper
 					targetSegmentsExperiencesIds, user));
 		}
 		catch (Throwable throwable) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(throwable);
+			}
+
 			throw new Exception(throwable);
 		}
 		finally {
@@ -988,6 +994,9 @@ public class LayoutLocalServiceWrapper
 
 		return layoutStructure.toJSONObject();
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		LayoutLocalServiceWrapper.class);
 
 	private static final TransactionConfig _transactionConfig =
 		TransactionConfig.Factory.create(
