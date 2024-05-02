@@ -1,14 +1,13 @@
 /**
- * SPDX-FileCopyrightText: (c) 2023 Liferay, Inc. https://liferay.com
+ * SPDX-FileCopyrightText: (c) 2024 Liferay, Inc. https://liferay.com
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
-
 
 package com.liferay.layout.taglib.internal.struts.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.layout.test.util.ContentLayoutTestUtil;
-import com.liferay.layout.test.util.LayoutTestUtil;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
@@ -17,6 +16,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.ResourceConstants;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.CompanyLocalService;
@@ -30,27 +30,32 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.RoleTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portal.util.PropsValues;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
 import org.springframework.mock.web.MockHttpServletRequest;
 import org.springframework.mock.web.MockHttpServletResponse;
-
-import javax.servlet.http.HttpServletRequest;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 
 /**
  * @author Lourdes Fernández Besada
@@ -68,52 +73,133 @@ public class GetLayoutsStrutsActionTest {
 	@Before
 	public void setUp() throws Exception {
 		_group = GroupTestUtil.addGroup();
+
+		_themeDisplay = ContentLayoutTestUtil.getThemeDisplay(
+			_companyLocalService.getCompany(_group.getCompanyId()), _group,
+			_layoutLocalService.getLayout(
+				_portal.getControlPanelPlid(_group.getCompanyId())));
+
+		_user = UserTestUtil.addGroupUser(_group, RoleConstants.SITE_MEMBER);
 	}
 
+	@Test
+	public void test() throws Exception {
+		Map<Long, List<Long>> layoutIdsMap = _getLayouts(
+			_COUNT_ROOT_LAYOUTS, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
 
-	@Inject
-	private CompanyLocalService _companyLocalService;
+		int pageSize = GetterUtil.getInteger(
+			PropsValues.LAYOUT_MANAGE_PAGES_INITIAL_CHILDREN);
 
-	@Inject
-	private Portal _portal;
+		int count = layoutIdsMap.size();
 
-	private static final int _COUNT_ROOT_LAYOUTS = 5;
+		int completePagesCount = count / pageSize;
 
-	private static final int _COUNT_CHILDREN_LAYOUTS = 5;
+		int lastPageIndex = completePagesCount - 1;
 
-	private static final int _CHILDREN_PROBABILITY = 50;
-
-	private static final int _DRAFT_LAYOUT_PROBABILITY = 10;
-
-	private static final int _RESTRICTED_LAYOUT_PROBABILITY = 5;
-
-	private boolean _getBooleanWithProbability(int probability) {
-		if (RandomTestUtil.randomInt(1, 101) <= probability) {
-			return true;
+		if ((count % pageSize) > 0) {
+			lastPageIndex++;
 		}
 
-		return false;
+		for (int i = 0, offset = 0; i < completePagesCount;
+			 i++, offset = offset + pageSize) {
+
+			System.out.println(
+				" i = " + i + " offset = " + offset + " lastPageIndex = " +
+					lastPageIndex);
+
+			_assertGetLayoutsStrutsAction(
+				pageSize, i < lastPageIndex, layoutIdsMap, offset,
+				offset + pageSize);
+		}
+
+		int remainingItemsCount = count % pageSize;
+
+		if (remainingItemsCount > 0) {
+			System.out.println(" lastPageItemCount = " + remainingItemsCount);
+
+			_assertGetLayoutsStrutsAction(
+				remainingItemsCount, false, layoutIdsMap,
+				completePagesCount * pageSize, count);
+		}
 	}
+
+	private void _assertGetLayoutsStrutsAction(
+			int count, boolean hasMoreElements,
+			Map<Long, List<Long>> layoutIdsMap, int start, int end)
+		throws Exception {
+
+		JSONObject jsonObject = _getLayoutsStrutsActionResponseJSONObject(
+			start, end);
+
+		Assert.assertEquals(
+			hasMoreElements, jsonObject.getBoolean("hasMoreElements"));
+
+		JSONArray jsonArray = jsonObject.getJSONArray("items");
+
+		Assert.assertEquals(count, jsonArray.length());
+
+		for (int j = 0; j < jsonArray.length(); j++) {
+			JSONObject layoutJSONObject = jsonArray.getJSONObject(j);
+
+			try {
+				Assert.assertTrue(layoutJSONObject.has("hasChildren"));
+				Assert.assertTrue(layoutJSONObject.has("paginated"));
+
+				long layoutId = layoutJSONObject.getLong("layoutId");
+
+				List<Long> childrenLayoutIds = layoutIdsMap.remove(layoutId);
+
+				Assert.assertNotNull(childrenLayoutIds);
+
+				Assert.assertEquals(
+					ListUtil.isNotEmpty(childrenLayoutIds),
+					layoutJSONObject.getBoolean("hasChildren"));
+				Assert.assertEquals(
+					childrenLayoutIds.size() > GetterUtil.getInteger(
+						PropsValues.LAYOUT_MANAGE_PAGES_INITIAL_CHILDREN),
+					layoutJSONObject.getBoolean("paginated"));
+			}
+			catch (Throwable exception) {
+				System.out.println(
+					"******************** layoutId: " +
+						layoutJSONObject.getLong("layoutId"));
+				System.out.println(
+					"******************** layoutJSONObject: " +
+						layoutJSONObject.toString());
+				exception.printStackTrace();
+
+				throw exception;
+			}
+		}
+	}
+
 	private Map<Long, List<Long>> _getLayouts(int count, long parentLayoutId)
 		throws Exception {
+
+		List<Long> unpublishedLayoutIds = new ArrayList<>();
+		List<Long> restrictedLayoutIds = new ArrayList<>();
+
 		Map<Long, List<Long>> layoutIdsMap = new HashMap<>();
 
 		for (int i = 0; i < count; i++) {
 			Layout layout = LayoutLocalServiceUtil.addLayout(
 				TestPropsValues.getUserId(), _group.getGroupId(), false,
-				parentLayoutId,
-				RandomTestUtil.randomString(), StringPool.BLANK, StringPool.BLANK,
-				LayoutConstants.TYPE_CONTENT, false, StringPool.BLANK,
+				parentLayoutId, RandomTestUtil.randomString(), StringPool.BLANK,
+				StringPool.BLANK, LayoutConstants.TYPE_CONTENT, false,
+				StringPool.BLANK,
 				ServiceContextTestUtil.getServiceContext(
 					TestPropsValues.getGroupId(), TestPropsValues.getUserId()));
 
-			if (_getBooleanWithProbability(_DRAFT_LAYOUT_PROBABILITY)) {
+			if (_randomBooleanWithProbability(_DRAFT_LAYOUT_PROBABILITY)) {
+				unpublishedLayoutIds.add(layout.getLayoutId());
+
 				continue;
 			}
 
-			ContentLayoutTestUtil.publishLayout(layout.fetchDraftLayout(), layout);
+			ContentLayoutTestUtil.publishLayout(
+				layout.fetchDraftLayout(), layout);
 
-			if (_getBooleanWithProbability(_RESTRICTED_LAYOUT_PROBABILITY)) {
+			if (_randomBooleanWithProbability(_RESTRICTED_LAYOUT_PROBABILITY)) {
 				RoleTestUtil.removeResourcePermission(
 					RoleConstants.GUEST, Layout.class.getName(),
 					ResourceConstants.SCOPE_INDIVIDUAL,
@@ -123,16 +209,18 @@ public class GetLayoutsStrutsActionTest {
 					ResourceConstants.SCOPE_INDIVIDUAL,
 					String.valueOf(layout.getPlid()), ActionKeys.VIEW);
 
+				restrictedLayoutIds.add(layout.getLayoutId());
+
 				continue;
 			}
 
 			List<Long> childrenLayoutIds = new ArrayList<>();
 
-			if (parentLayoutId == LayoutConstants.DEFAULT_PARENT_LAYOUT_ID &&
-				_getBooleanWithProbability(_CHILDREN_PROBABILITY)) {
+			if ((parentLayoutId == LayoutConstants.DEFAULT_PARENT_LAYOUT_ID) &&
+				_randomBooleanWithProbability(_CHILDREN_PROBABILITY)) {
 
-				Map<Long, List<Long>> childrenLayoutIdsMap =
-					_getLayouts(_COUNT_CHILDREN_LAYOUTS, layout.getLayoutId());
+				Map<Long, List<Long>> childrenLayoutIdsMap = _getLayouts(
+					_COUNT_CHILDREN_LAYOUTS, layout.getLayoutId());
 
 				childrenLayoutIds.addAll(childrenLayoutIdsMap.keySet());
 			}
@@ -140,105 +228,103 @@ public class GetLayoutsStrutsActionTest {
 			layoutIdsMap.put(layout.getLayoutId(), childrenLayoutIds);
 		}
 
+		System.out.println("layoutIdsMap:");
+		System.out.println(MapUtil.toString(layoutIdsMap));
+		System.out.println("unpublishedLayoutIds:");
+		System.out.println(
+			TransformUtil.transformToArray(
+				unpublishedLayoutIds, l -> String.valueOf(l), String.class));
+		System.out.println("restrictedLayoutIds:");
+		System.out.println(
+			TransformUtil.transformToArray(
+				restrictedLayoutIds, l -> String.valueOf(l), String.class));
+
 		return layoutIdsMap;
 	}
 
-	@Inject
-	private JSONFactory _jsonFactory;
-
-	@Test
-	public void test () throws Exception {
-
-		Map<Long, List<Long>> layoutIdsMap = _getLayouts(
-			_COUNT_ROOT_LAYOUTS, LayoutConstants.DEFAULT_PARENT_LAYOUT_ID);
-
-		int pageSize = GetterUtil.getInteger(
-			PropsValues.LAYOUT_MANAGE_PAGES_INITIAL_CHILDREN);
-
-		int count = layoutIdsMap.size();
-		int completePagesCount = count/pageSize;
-		int offset = 0;
-
-		int lastPageIndex = completePagesCount - 1;
-
-		if (count % pageSize > 0) {
-			lastPageIndex++;
-		}
+	private JSONObject _getLayoutsStrutsActionResponseJSONObject(
+			int start, int end)
+		throws Exception {
 
 		MockHttpServletRequest mockHttpServletRequest =
-			ContentLayoutTestUtil.getMockHttpServletRequest(
-				_companyLocalService.getCompany(_group.getCompanyId()), _group,
-				_layoutLocalService.getLayout(_portal.getControlPanelPlid(_group.getCompanyId())));
+			_getMockHttpServletRequest(start, end);
 
-		mockHttpServletRequest.addParameter("groupId", String.valueOf(_group.getGroupId()));
-
-
-		for (int i = 0; i < completePagesCount; i++, offset = offset + pageSize) {
-			mockHttpServletRequest.addParameter("start", String.valueOf(offset));
-			mockHttpServletRequest.addParameter("end", String.valueOf(offset + pageSize));
-
-			boolean hasMoreElements = true;
-
-			if (i == lastPageIndex) {
-				hasMoreElements = false;
-			}
-
-			_assertGetLayoutsStrutsAction(hasMoreElements , layoutIdsMap, mockHttpServletRequest, pageSize);
-		}
-
-		int lastPageItemCount = count % pageSize;
-
-		if (lastPageItemCount > 0) {
-			mockHttpServletRequest.setAttribute("start", offset);
-			mockHttpServletRequest.setAttribute("end", offset + lastPageItemCount);
-
-			_assertGetLayoutsStrutsAction(false, layoutIdsMap, mockHttpServletRequest, lastPageItemCount);
-
-		}
-	}
-
-	private void _assertGetLayoutsStrutsAction(
-		boolean hasMoreElements, Map<Long, List<Long>> layoutIdsMap,
-		MockHttpServletRequest mockHttpServletRequest, int pageSize) throws Exception {
-		MockHttpServletResponse httpServletResponse =
+		MockHttpServletResponse mockHttpServletResponse =
 			new MockHttpServletResponse();
 
-		_getLayoutsStrutsAction.execute(
-			mockHttpServletRequest, httpServletResponse);
+		try {
+			UserTestUtil.setUser(_user);
 
-		JSONObject jsonObject = _jsonFactory.createJSONObject(
-			httpServletResponse.getContentAsString());
-
-		Assert.assertEquals(hasMoreElements, jsonObject.getBoolean("hasMoreElements"));
-
-		JSONArray jsonArray = jsonObject.getJSONArray("items");
-
-		Assert.assertEquals(pageSize, jsonArray.length());
-
-		for (int j = 0; j < jsonArray.length(); j++) {
-			JSONObject layoutJSONObject = jsonArray.getJSONObject(j);
-
-			Assert.assertTrue(layoutJSONObject.has("hasChildren"));
-			Assert.assertTrue(layoutJSONObject.has("paginated"));
-
-			long layoutId = layoutJSONObject.getLong("layoutId");
-
-			List<Long> childrenLayoutIds = layoutIdsMap.remove(layoutId);
-
-			Assert.assertNotNull(childrenLayoutIds);
-
-			Assert.assertEquals(ListUtil.isNotEmpty(childrenLayoutIds), layoutJSONObject.getBoolean("hasChildren"));
-			Assert.assertEquals(childrenLayoutIds.size() > pageSize, layoutJSONObject.getBoolean("paginated"));
-
+			_getLayoutsStrutsAction.execute(
+				mockHttpServletRequest, mockHttpServletResponse);
 		}
+		finally {
+			UserTestUtil.setUser(TestPropsValues.getUser());
+		}
+
+		return _jsonFactory.createJSONObject(
+			mockHttpServletResponse.getContentAsString());
 	}
 
+	private MockHttpServletRequest _getMockHttpServletRequest(
+		int start, int end) {
+
+		MockHttpServletRequest mockHttpServletRequest =
+			new MockHttpServletRequest();
+
+		mockHttpServletRequest.addParameter(
+			"groupId", String.valueOf(_group.getGroupId()));
+
+		mockHttpServletRequest.addParameter("start", String.valueOf(start));
+		mockHttpServletRequest.addParameter("end", String.valueOf(end));
+
+		mockHttpServletRequest.setAttribute(
+			WebKeys.LAYOUT, _themeDisplay.getLayout());
+		mockHttpServletRequest.setAttribute(
+			WebKeys.THEME_DISPLAY, _themeDisplay);
+
+		return mockHttpServletRequest;
+	}
+
+	private boolean _randomBooleanWithProbability(int probability) {
+		if (RandomTestUtil.randomInt(1, 101) <= probability) {
+			return true;
+		}
+
+		return false;
+	}
+
+	private static final int _CHILDREN_PROBABILITY = 50;
+
+	private static final int _COUNT_CHILDREN_LAYOUTS = GetterUtil.getInteger(
+		PropsValues.LAYOUT_MANAGE_PAGES_INITIAL_CHILDREN) * 2;
+
+	private static final int _COUNT_ROOT_LAYOUTS = GetterUtil.getInteger(
+		PropsValues.LAYOUT_MANAGE_PAGES_INITIAL_CHILDREN) * 5;
+
+	private static final int _DRAFT_LAYOUT_PROBABILITY = 10;
+
+	private static final int _RESTRICTED_LAYOUT_PROBABILITY = 10;
+
 	@Inject
-	private LayoutLocalService _layoutLocalService;
+	private CompanyLocalService _companyLocalService;
 
 	@Inject(filter = "path=/portal/get_layouts")
 	private StrutsAction _getLayoutsStrutsAction;
 
 	@DeleteAfterTestRun
 	private Group _group;
+
+	@Inject
+	private JSONFactory _jsonFactory;
+
+	@Inject
+	private LayoutLocalService _layoutLocalService;
+
+	@Inject
+	private Portal _portal;
+
+	private ThemeDisplay _themeDisplay;
+	private User _user;
+
 }
