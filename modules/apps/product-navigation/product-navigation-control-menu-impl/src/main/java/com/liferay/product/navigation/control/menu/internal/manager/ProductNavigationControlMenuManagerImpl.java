@@ -6,7 +6,9 @@
 package com.liferay.product.navigation.control.menu.internal.manager;
 
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
+import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
@@ -14,16 +16,19 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Constants;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.product.navigation.control.menu.manager.ProductNavigationControlMenuManager;
 import com.liferay.site.configuration.MenuAccessConfiguration;
 
+import java.util.List;
 import java.util.Objects;
 
 import javax.servlet.http.HttpServletRequest;
@@ -74,10 +79,7 @@ public class ProductNavigationControlMenuManagerImpl
 				String[] accessToControlMenuRoleIds =
 					menuAccessConfiguration.accessToControlMenuRoleIds();
 
-				for (Role role :
-						_roleLocalService.getUserRoles(
-							themeDisplay.getUserId())) {
-
+				for (Role role : _getUserRoles(themeDisplay.getUser())) {
 					if (Objects.equals(
 							role.getName(), RoleConstants.ADMINISTRATOR) ||
 						Objects.equals(
@@ -99,6 +101,18 @@ public class ProductNavigationControlMenuManagerImpl
 		}
 
 		return true;
+	}
+
+	private List<Role> _getUserRoles(User user) throws PortalException {
+		return ListUtil.concat(
+			ArrayUtil.append(
+				TransformUtil.transformToArray(
+					_groupLocalService.getUserGroupsGroups(
+						user.getUserGroups()),
+					group -> _roleLocalService.getGroupRoles(
+						group.getGroupId()),
+					List.class),
+				_roleLocalService.getUserRoles(user.getUserId())));
 	}
 
 	private boolean _isGuestUser(HttpServletRequest httpServletRequest) {
@@ -147,6 +161,9 @@ public class ProductNavigationControlMenuManagerImpl
 
 	@Reference
 	private ConfigurationProvider _configurationProvider;
+
+	@Reference
+	private GroupLocalService _groupLocalService;
 
 	@Reference
 	private Portal _portal;
