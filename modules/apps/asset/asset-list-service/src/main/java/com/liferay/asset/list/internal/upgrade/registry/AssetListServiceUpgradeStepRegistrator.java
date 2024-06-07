@@ -13,6 +13,7 @@ import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocal
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.upgrade.BaseExternalReferenceCodeUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.CTModelUpgradeProcess;
+import com.liferay.portal.kernel.upgrade.DummyUpgradeStep;
 import com.liferay.portal.kernel.upgrade.MVCCVersionUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.UpgradeProcessFactory;
 import com.liferay.portal.kernel.util.Portal;
@@ -89,7 +90,12 @@ public class AssetListServiceUpgradeStepRegistrator
 				"portletId"));
 
 		registry.register(
-			"2.0.0", "2.1.0",
+			"2.0.0", "2.0.1",
+			new com.liferay.asset.list.internal.upgrade.v2_0_1.
+				AssetListEntryAssetEntryRelUpgradeProcess());
+
+		registry.register(
+			"2.0.1", "2.1.0",
 			new BaseExternalReferenceCodeUpgradeProcess() {
 
 				@Override
@@ -101,10 +107,7 @@ public class AssetListServiceUpgradeStepRegistrator
 
 			});
 
-		registry.register(
-			"2.1.0", "2.1.1",
-			new com.liferay.asset.list.internal.upgrade.v2_1_1.
-				AssetListEntryAssetEntryRelUpgradeProcess());
+		registry.register("2.1.0", "2.1.1", new DummyUpgradeStep());
 	}
 
 	@Reference
