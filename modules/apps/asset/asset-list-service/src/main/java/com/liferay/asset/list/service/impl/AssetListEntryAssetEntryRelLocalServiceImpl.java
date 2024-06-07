@@ -124,6 +124,14 @@ public class AssetListEntryAssetEntryRelLocalServiceImpl
 	}
 
 	@Override
+	public void deleteAssetListEntryAssetEntryRelByAssetEntryId(
+		long assetEntryId) {
+
+		assetListEntryAssetEntryRelPersistence.removeByAssetEntryId(
+			assetEntryId);
+	}
+
+	@Override
 	public void deleteAssetListEntryAssetEntryRelByAssetListEntryId(
 		long assetListEntryId) {
 
