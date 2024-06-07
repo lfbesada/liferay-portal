@@ -141,6 +141,13 @@ public class AssetListEntryAssetEntryRelLocalServiceUtil {
 			assetListEntryId, segmentsEntryId, position);
 	}
 
+	public static void deleteAssetListEntryAssetEntryRelByAssetEntryId(
+		long assetEntryId) {
+
+		getService().deleteAssetListEntryAssetEntryRelByAssetEntryId(
+			assetEntryId);
+	}
+
 	public static void deleteAssetListEntryAssetEntryRelByAssetListEntryId(
 		long assetListEntryId) {
 
