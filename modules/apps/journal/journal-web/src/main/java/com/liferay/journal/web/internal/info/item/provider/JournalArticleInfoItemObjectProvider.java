@@ -134,7 +134,8 @@ public class JournalArticleInfoItemObjectProvider
 			Objects.equals(
 				version, InfoItemIdentifier.VERSION_LATEST_APPROVED)) {
 
-			return _journalArticleLocalService.fetchLatestArticle(classPK);
+			return _journalArticleLocalService.fetchLatestArticle(
+				classPK, WorkflowConstants.STATUS_APPROVED);
 		}
 		else if (Objects.equals(version, InfoItemIdentifier.VERSION_LATEST)) {
 			JournalArticleResource articleResource =

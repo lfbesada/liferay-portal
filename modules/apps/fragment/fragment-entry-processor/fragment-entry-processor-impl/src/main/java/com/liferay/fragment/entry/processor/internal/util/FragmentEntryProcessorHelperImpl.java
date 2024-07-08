@@ -161,6 +161,10 @@ public class FragmentEntryProcessorHelperImpl
 				infoItemFieldValues);
 		}
 
+		if (infoItemFieldValues == null) {
+			return null;
+		}
+
 		return getMappedInfoItemFieldValue(
 			editableValueJSONObject, infoItemMappedField.getFieldName(),
 			fragmentEntryProcessorContext, infoItemFieldValues);
