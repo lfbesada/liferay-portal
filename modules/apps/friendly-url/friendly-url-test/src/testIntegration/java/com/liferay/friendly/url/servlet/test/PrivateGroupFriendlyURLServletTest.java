@@ -35,6 +35,8 @@ import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.release.feature.flag.ReleaseFeatureFlag;
+import com.liferay.release.feature.flag.ReleaseFeatureFlagManager;
 
 import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
@@ -45,8 +47,10 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.junit.After;
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -65,6 +69,21 @@ public class PrivateGroupFriendlyURLServletTest {
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new LiferayIntegrationTestRule();
+
+	@BeforeClass
+	public static void setUpClass() throws Exception {
+		_enabled = _releaseFeatureFlagManager.isEnabled(
+			ReleaseFeatureFlag.DISABLE_PRIVATE_LAYOUTS);
+
+		_releaseFeatureFlagManager.setEnabled(
+			ReleaseFeatureFlag.DISABLE_PRIVATE_LAYOUTS, false);
+	}
+
+	@AfterClass
+	public static void tearDownClass() throws Exception {
+		_releaseFeatureFlagManager.setEnabled(
+			ReleaseFeatureFlag.DISABLE_PRIVATE_LAYOUTS, _enabled);
+	}
 
 	@Before
 	public void setUp() throws Exception {
@@ -282,6 +301,11 @@ public class PrivateGroupFriendlyURLServletTest {
 		return "/c/portal/layout?p_l_id=" + layout.getPlid() +
 			"&p_v_l_s_g_id=0";
 	}
+
+	private static boolean _enabled;
+
+	@Inject
+	private static ReleaseFeatureFlagManager _releaseFeatureFlagManager;
 
 	@Inject
 	private CompanyLocalService _companyLocalService;
