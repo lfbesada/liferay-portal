@@ -340,7 +340,7 @@ public class PrivateGroupFriendlyURLServletTest {
 	private Layout _layout;
 
 	@Inject(
-		filter = "component.name=com.liferay.friendly.url.internal.servlet.PrivateGroupFriendlyURLServlet"
+		filter = "(&(servlet.init.private=true)(servlet.init.user=false)(servlet.type=friendly-url))"
 	)
 	private Servlet _privateGroupFriendlyURLServlet;
 
