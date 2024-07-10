@@ -71,6 +71,12 @@ public class PrivateGroupFriendlyURLServletTest {
 
 		_layout = LayoutTestUtil.addTypePortletLayout(_group, true);
 
+		Assert.assertTrue(
+			_privateGroupFriendlyURLServlet.getClass(
+			).getName(),
+			ReflectionTestUtil.getFieldValue(
+				_privateGroupFriendlyURLServlet, "_private"));
+
 		Class<?> clazz = _privateGroupFriendlyURLServlet.getClass();
 
 		ClassLoader classLoader = clazz.getClassLoader();
@@ -85,6 +91,12 @@ public class PrivateGroupFriendlyURLServletTest {
 	@After
 	public void tearDown() throws Exception {
 		ServiceContextThreadLocal.popServiceContext();
+
+		Assert.assertTrue(
+			_privateGroupFriendlyURLServlet.getClass(
+			).getName(),
+			ReflectionTestUtil.getFieldValue(
+				_privateGroupFriendlyURLServlet, "_private"));
 	}
 
 	@Test
@@ -98,6 +110,12 @@ public class PrivateGroupFriendlyURLServletTest {
 			PermissionCheckerFactoryUtil.create(TestPropsValues.getUser()));
 
 		try {
+			Assert.assertTrue(
+				_privateGroupFriendlyURLServlet.getClass(
+				).getName(),
+				ReflectionTestUtil.getFieldValue(
+					_privateGroupFriendlyURLServlet, "_private"));
+
 			Assert.assertEquals(
 				_redirectConstructor.newInstance(_getURL(_layout)),
 				ReflectionTestUtil.invoke(
@@ -108,6 +126,12 @@ public class PrivateGroupFriendlyURLServletTest {
 					},
 					new MockHttpServletRequest(), new MockHttpServletResponse(),
 					_getPath(_group, _layout)));
+
+			Assert.assertTrue(
+				_privateGroupFriendlyURLServlet.getClass(
+				).getName(),
+				ReflectionTestUtil.getFieldValue(
+					_privateGroupFriendlyURLServlet, "_private"));
 		}
 		finally {
 			PermissionThreadLocal.setPermissionChecker(permissionChecker);
@@ -128,6 +152,12 @@ public class PrivateGroupFriendlyURLServletTest {
 			PermissionCheckerFactoryUtil.create(company.getGuestUser()));
 
 		try {
+			Assert.assertTrue(
+				_privateGroupFriendlyURLServlet.getClass(
+				).getName(),
+				ReflectionTestUtil.getFieldValue(
+					_privateGroupFriendlyURLServlet, "_private"));
+
 			ReflectionTestUtil.invoke(
 				_privateGroupFriendlyURLServlet, "getRedirect",
 				new Class<?>[] {
@@ -136,6 +166,12 @@ public class PrivateGroupFriendlyURLServletTest {
 				},
 				new MockHttpServletRequest(), new MockHttpServletResponse(),
 				_getPath(_group, _layout));
+
+			Assert.assertTrue(
+				_privateGroupFriendlyURLServlet.getClass(
+				).getName(),
+				ReflectionTestUtil.getFieldValue(
+					_privateGroupFriendlyURLServlet, "_private"));
 		}
 		finally {
 			PermissionThreadLocal.setPermissionChecker(permissionChecker);
@@ -159,6 +195,12 @@ public class PrivateGroupFriendlyURLServletTest {
 			PermissionCheckerFactoryUtil.create(user));
 
 		try {
+			Assert.assertTrue(
+				_privateGroupFriendlyURLServlet.getClass(
+				).getName(),
+				ReflectionTestUtil.getFieldValue(
+					_privateGroupFriendlyURLServlet, "_private"));
+
 			RoleTestUtil.addResourcePermission(
 				role.getName(), Layout.class.getName(),
 				ResourceConstants.SCOPE_COMPANY,
@@ -188,6 +230,12 @@ public class PrivateGroupFriendlyURLServletTest {
 				},
 				new MockHttpServletRequest(), new MockHttpServletResponse(),
 				_getPath(_group, _layout));
+
+			Assert.assertTrue(
+				_privateGroupFriendlyURLServlet.getClass(
+				).getName(),
+				ReflectionTestUtil.getFieldValue(
+					_privateGroupFriendlyURLServlet, "_private"));
 		}
 		catch (InvocationTargetException invocationTargetException) {
 			throw invocationTargetException.getTargetException();
@@ -209,6 +257,12 @@ public class PrivateGroupFriendlyURLServletTest {
 				UserTestUtil.addGroupUser(_group, RoleConstants.SITE_MEMBER)));
 
 		try {
+			Assert.assertTrue(
+				_privateGroupFriendlyURLServlet.getClass(
+				).getName(),
+				ReflectionTestUtil.getFieldValue(
+					_privateGroupFriendlyURLServlet, "_private"));
+
 			Assert.assertEquals(
 				_redirectConstructor.newInstance(_getURL(_layout)),
 				ReflectionTestUtil.invoke(
@@ -219,6 +273,12 @@ public class PrivateGroupFriendlyURLServletTest {
 					},
 					new MockHttpServletRequest(), new MockHttpServletResponse(),
 					_getPath(_group, _layout)));
+
+			Assert.assertTrue(
+				_privateGroupFriendlyURLServlet.getClass(
+				).getName(),
+				ReflectionTestUtil.getFieldValue(
+					_privateGroupFriendlyURLServlet, "_private"));
 		}
 		finally {
 			PermissionThreadLocal.setPermissionChecker(permissionChecker);
@@ -236,6 +296,12 @@ public class PrivateGroupFriendlyURLServletTest {
 			PermissionCheckerFactoryUtil.create(UserTestUtil.addUser()));
 
 		try {
+			Assert.assertTrue(
+				_privateGroupFriendlyURLServlet.getClass(
+				).getName(),
+				ReflectionTestUtil.getFieldValue(
+					_privateGroupFriendlyURLServlet, "_private"));
+
 			ReflectionTestUtil.invoke(
 				_privateGroupFriendlyURLServlet, "getRedirect",
 				new Class<?>[] {
@@ -244,6 +310,12 @@ public class PrivateGroupFriendlyURLServletTest {
 				},
 				new MockHttpServletRequest(), new MockHttpServletResponse(),
 				_getPath(_group, _layout));
+
+			Assert.assertTrue(
+				_privateGroupFriendlyURLServlet.getClass(
+				).getName(),
+				ReflectionTestUtil.getFieldValue(
+					_privateGroupFriendlyURLServlet, "_private"));
 		}
 		finally {
 			PermissionThreadLocal.setPermissionChecker(permissionChecker);
