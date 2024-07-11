@@ -213,17 +213,16 @@ public class FrontendJsWebLanguageServlet extends HttpServlet {
 			return null;
 		}
 
-		JSONObject jsonObject;
-
 		try {
-			jsonObject = _jsonFactory.createJSONObject(URLUtil.toString(url));
+			JSONObject jsonObject = _jsonFactory.createJSONObject(
+				URLUtil.toString(url));
+
+			return jsonObject.getJSONArray("keys");
 		}
 		catch (JSONException jsonException) {
 			throw new IOException(
 				"Invalid language JSON file " + url, jsonException);
 		}
-
-		return jsonObject.getJSONArray("keys");
 	}
 
 	private static final String _TPL_JAVA_SCRIPT;
