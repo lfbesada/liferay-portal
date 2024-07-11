@@ -21,9 +21,9 @@ public class PLOEntryLanguageIdException extends PortalException {
 		public MustBeAvailable(String languageId) {
 			super(
 				StringBundler.concat(
-					"Unable to find language with id \"", languageId,
-					"\". The available options are: ",
-					Arrays.toString(PropsValues.LOCALES), "."));
+					"Language ID \"", languageId,
+					"\" is not one of the available language IDs: ",
+					Arrays.toString(PropsValues.LOCALES)));
 
 			this.languageId = languageId;
 		}
