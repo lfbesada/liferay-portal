@@ -124,17 +124,11 @@ public class ProductMenuDisplayContextTest {
 		Consumer<ProductMenuDisplayContext> consumer,
 		boolean enableApplicationsMenu) {
 
-		try (MockedStatic<PortalUtil> portalUtilMockedStatic =
-				Mockito.mockStatic(PortalUtil.class);
-			MockedStatic<ConfigurationProviderUtil>
+		try (MockedStatic<ConfigurationProviderUtil>
 				configurationProviderUtilMockedStatic = Mockito.mockStatic(
-					ConfigurationProviderUtil.class)) {
-
-			portalUtilMockedStatic.when(
-				() -> PortalUtil.getHttpServletRequest(ArgumentMatchers.any())
-			).thenReturn(
-				_mockHttpServletRequest
-			);
+					ConfigurationProviderUtil.class);
+			MockedStatic<PortalUtil> portalUtilMockedStatic =
+				Mockito.mockStatic(PortalUtil.class)) {
 
 			configurationProviderUtilMockedStatic.when(
 				() -> ConfigurationProviderUtil.getCompanyConfiguration(
@@ -143,24 +137,16 @@ public class ProductMenuDisplayContextTest {
 				_applicationsMenuInstanceConfiguration
 			);
 
+			portalUtilMockedStatic.when(
+				() -> PortalUtil.getHttpServletRequest(ArgumentMatchers.any())
+			).thenReturn(
+				_mockHttpServletRequest
+			);
+
 			Mockito.when(
 				_applicationsMenuInstanceConfiguration.enableApplicationsMenu()
 			).thenReturn(
 				enableApplicationsMenu
-			);
-
-			Mockito.when(
-				_panelCategoryHelper.getChildPanelCategories(
-					PanelCategoryKeys.ROOT, _themeDisplay)
-			).thenReturn(
-				_rootPanelCategories
-			);
-
-			Mockito.when(
-				_panelCategoryHelper.getChildPanelCategories(
-					PanelCategoryKeys.APPLICATIONS_MENU, _themeDisplay)
-			).thenReturn(
-				_applicationsMenuPanelCategories
 			);
 
 			Mockito.when(
@@ -175,6 +161,20 @@ public class ProductMenuDisplayContextTest {
 					ArgumentMatchers.matches("panel2"))
 			).thenReturn(
 				Collections.emptyList()
+			);
+
+			Mockito.when(
+				_panelCategoryHelper.getChildPanelCategories(
+					PanelCategoryKeys.ROOT, _themeDisplay)
+			).thenReturn(
+				_rootPanelCategories
+			);
+
+			Mockito.when(
+				_panelCategoryHelper.getChildPanelCategories(
+					PanelCategoryKeys.APPLICATIONS_MENU, _themeDisplay)
+			).thenReturn(
+				_applicationsMenuPanelCategories
 			);
 
 			consumer.accept(new ProductMenuDisplayContext(_mockPortletRequest));
