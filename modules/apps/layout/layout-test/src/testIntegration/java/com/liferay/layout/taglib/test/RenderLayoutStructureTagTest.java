@@ -1088,7 +1088,6 @@ public class RenderLayoutStructureTagTest {
 
 			MockHttpServletRequest mockHttpServletRequest =
 				_getMockHttpServletRequest(layout);
-
 			MockHttpServletResponse mockHttpServletResponse =
 				new MockHttpServletResponse();
 
