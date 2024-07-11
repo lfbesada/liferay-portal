@@ -30,9 +30,6 @@ import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.repository.model.FileEntry;
-import com.liferay.portal.kernel.security.permission.PermissionChecker;
-import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
-import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.security.permission.ResourceActionsUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -57,7 +54,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Objects;
 
-import org.junit.After;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.Test;
@@ -89,12 +85,6 @@ public class NavigationMenuResourceTest
 		_depotEntryGroupRelLocalService.addDepotEntryGroupRel(
 			_depotEntry.getDepotEntryId(), testGroup.getGroupId());
 
-		_originalPermissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		PermissionThreadLocal.setPermissionChecker(
-			PermissionCheckerFactoryUtil.create(TestPropsValues.getUser()));
-
 		_expandoBridge = ExpandoBridgeFactoryUtil.getExpandoBridge(
 			testGroup.getCompanyId(), SiteNavigationMenuItem.class.getName());
 
@@ -105,14 +95,8 @@ public class NavigationMenuResourceTest
 		if (!_expandoBridge.hasAttribute(_expandoBridgeAttributeName)) {
 			_expandoBridge.addAttribute(
 				_expandoBridgeAttributeName, ExpandoColumnConstants.STRING,
-				StringPool.BLANK);
+				StringPool.BLANK, false);
 		}
-	}
-
-	@After
-	@Override
-	public void tearDown() throws Exception {
-		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
 	}
 
 	@Override
@@ -442,7 +426,7 @@ public class NavigationMenuResourceTest
 			siteNavigationMenuItem.getSiteNavigationMenuItemId());
 
 		Serializable attributeValue = _expandoBridge.getAttribute(
-			_expandoBridgeAttributeName);
+			_expandoBridgeAttributeName, false);
 
 		Assert.assertEquals(StringPool.BLANK, attributeValue);
 
@@ -514,7 +498,6 @@ public class NavigationMenuResourceTest
 
 	private ExpandoBridge _expandoBridge;
 	private String _expandoBridgeAttributeName;
-	private PermissionChecker _originalPermissionChecker;
 
 	@Inject
 	private SiteNavigationMenuItemLocalService
