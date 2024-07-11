@@ -47,7 +47,7 @@ public class PLOEntryLocalServiceImpl extends PLOEntryLocalServiceBaseImpl {
 			String value)
 		throws PortalException {
 
-		languageId = _getStandardizedLanguageId(languageId);
+		languageId = _normalizeLanguageId(languageId);
 
 		_validate(key, languageId, value);
 
@@ -137,7 +137,7 @@ public class PLOEntryLocalServiceImpl extends PLOEntryLocalServiceBaseImpl {
 		}
 	}
 
-	private String _getStandardizedLanguageId(String languageId) {
+	private String _normalizeLanguageId(String languageId) {
 		languageId = StringUtil.replace(
 			languageId, CharPool.DASH, CharPool.UNDERLINE);
 
