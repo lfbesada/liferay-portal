@@ -192,10 +192,10 @@ public class CommerceReturnObjectEntryValuesContributor
 						returnItemStatusMap.getOrDefault(
 							"authorizedReturnItems", Collections.emptyList())) {
 
-					Map<String, Serializable> authorizedReturnItemValues =
+					Map<String, Serializable> objectEntryValues =
 						objectEntry.getValues();
 
-					authorizedReturnItemValues.put(
+					objectEntryValues.put(
 						"returnItemStatus",
 						CommerceReturnConstants.
 							RETURN_ITEM_STATUS_AWAITING_RECEIPT);
@@ -205,7 +205,7 @@ public class CommerceReturnObjectEntryValuesContributor
 
 					_objectEntryLocalService.updateObjectEntry(
 						objectEntry.getUserId(), objectEntry.getObjectEntryId(),
-						authorizedReturnItemValues, new ServiceContext());
+						objectEntryValues, new ServiceContext());
 				}
 			}
 
