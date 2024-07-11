@@ -380,7 +380,7 @@ public class CommerceReturnObjectEntryValuesContributor
 			List<ObjectEntry> returnItemStatusObjectEntries =
 				returnItemStatusObjectEntriesMap.get(key);
 
-			if (ListUtil.isEmpty(returnItemStatusObjectEntries)) {
+			if (returnItemStatusObjectEntries == null) {
 				returnItemStatusObjectEntries = new ArrayList<>();
 			}
 
