@@ -7673,26 +7673,27 @@ public class JournalArticleLocalServiceImpl
 
 	private Predicate<String> _getEmptyValuePredicate(String fieldType) {
 		if (fieldType.equals("checkbox_multiple")) {
-			return s -> s.equals("[]") || s.isEmpty();
+			return string -> string.equals("[]") || string.isEmpty();
 		}
 
 		if (fieldType.equals("document_library") ||
 			fieldType.equals("journal_article") ||
 			fieldType.equals("link_to_layout")) {
 
-			return s -> s.equals("{}") || s.isEmpty();
+			return string -> string.equals("{}") || string.isEmpty();
 		}
 
 		if (fieldType.equals("image")) {
-			return s -> s.equals("{}") || s.equals("{\"alt\":\"\"}");
+			return string ->
+				string.equals("{}") || string.equals("{\"alt\":\"\"}");
 		}
 
 		if (fieldType.equals("radio")) {
-			return s -> s.equals("[]");
+			return string -> string.equals("[]");
 		}
 
 		if (fieldType.equals("select")) {
-			return s -> s.equals("[]") || s.equals("[\"\"]");
+			return string -> string.equals("[]") || string.equals("[\"\"]");
 		}
 
 		return String::isEmpty;
