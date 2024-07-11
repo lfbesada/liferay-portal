@@ -73,7 +73,7 @@ public class ProductMenuDisplayContext {
 
 		_childPanelCategories.addAll(
 			0,
-			_filterApplicationsMenuChildPanelCategories(
+			_filterPanelCategories(
 				applicationsMenuChildPanelCategories));
 
 		return _childPanelCategories;
@@ -197,7 +197,7 @@ public class ProductMenuDisplayContext {
 		return true;
 	}
 
-	private List<PanelCategory> _filterApplicationsMenuChildPanelCategories(
+	private List<PanelCategory> _filterPanelCategories(
 		List<PanelCategory> panelCategories) {
 
 		List<PanelCategory> filteredPanelCategories = new ArrayList<>();
