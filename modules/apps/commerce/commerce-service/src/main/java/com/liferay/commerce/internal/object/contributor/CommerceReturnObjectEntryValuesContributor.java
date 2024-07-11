@@ -48,8 +48,7 @@ public class CommerceReturnObjectEntryValuesContributor
 
 	@Override
 	public void contribute(ObjectEntryContext objectEntryContext) {
-		Map<String, Serializable> commerceReturnValues =
-			objectEntryContext.getValues();
+		Map<String, Serializable> values = objectEntryContext.getValues();
 
 		try {
 			ObjectDefinition objectDefinition =
@@ -64,36 +63,32 @@ public class CommerceReturnObjectEntryValuesContributor
 
 			CommerceOrder commerceOrder =
 				_commerceOrderLocalService.getCommerceOrder(
-					GetterUtil.getLong(
-						commerceReturnValues.get("commerceOrderId")));
+					GetterUtil.getLong(values.get("commerceOrderId")));
 
 			long groupId = commerceOrder.getGroupId();
 
-			commerceReturnValues.put("channelGroupId", groupId);
+			values.put("channelGroupId", groupId);
 
 			CommerceChannel commerceChannel =
 				_commerceChannelLocalService.getCommerceChannelByOrderGroupId(
 					groupId);
 
-			commerceReturnValues.put(
-				"channelId", commerceChannel.getCommerceChannelId());
-			commerceReturnValues.put("channelName", commerceChannel.getName());
+			values.put("channelId", commerceChannel.getCommerceChannelId());
+			values.put("channelName", commerceChannel.getName());
 
-			if (!commerceReturnValues.containsKey("c_commerceReturnId") &&
-				!commerceReturnValues.containsKey("externalReferenceCode")) {
+			if (!values.containsKey("c_commerceReturnId") &&
+				!values.containsKey("externalReferenceCode")) {
 
 				return;
 			}
 
 			ObjectEntry originalObjectEntry =
 				_objectEntryLocalService.fetchObjectEntry(
-					GetterUtil.getLong(
-						commerceReturnValues.get("c_commerceReturnId")));
+					GetterUtil.getLong(values.get("c_commerceReturnId")));
 
 			if (originalObjectEntry == null) {
 				originalObjectEntry = _objectEntryLocalService.fetchObjectEntry(
-					GetterUtil.getString(
-						commerceReturnValues.get("externalReferenceCode")),
+					GetterUtil.getString(values.get("externalReferenceCode")),
 					objectDefinition.getObjectDefinitionId());
 			}
 
@@ -104,7 +99,7 @@ public class CommerceReturnObjectEntryValuesContributor
 				originalObjectEntryValues.get("returnStatus"));
 
 			String newReturnStatus = GetterUtil.getString(
-				commerceReturnValues.get("returnStatus"));
+				values.get("returnStatus"));
 
 			if (StringUtil.equalsIgnoreCase(
 					currentReturnStatus,
@@ -151,7 +146,7 @@ public class CommerceReturnObjectEntryValuesContributor
 						objectEntryValues, new ServiceContext());
 				}
 
-				commerceReturnValues.put(
+				values.put(
 					"returnStatus",
 					CommerceReturnConstants.RETURN_STATUS_COMPLETED);
 
@@ -216,7 +211,7 @@ public class CommerceReturnObjectEntryValuesContributor
 				}
 			}
 
-			commerceReturnValues.put("returnStatus", nextReturnStatus);
+			values.put("returnStatus", nextReturnStatus);
 		}
 		catch (Exception exception) {
 			_log.error(exception);
