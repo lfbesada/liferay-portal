@@ -37,7 +37,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
 import java.util.ResourceBundle;
-import java.util.Set;
 
 import javax.ws.rs.BadRequestException;
 
@@ -144,20 +143,16 @@ public class MessageResourceImpl extends BaseMessageResourceImpl {
 		Filter filter, Pagination pagination, Sort[] sorts,
 		Map<String, Serializable> parameters, String search) {
 
+		List<String> keys = transform(
+			_ploEntryLocalService.getPLOEntries(contextCompany.getCompanyId()),
+			ploEntry -> ploEntry.getKey());
+
 		String languageId = GetterUtil.getString(parameters.get("languageId"));
 
 		ResourceBundle resourceBundle = LanguageResources.getResourceBundle(
 			LocaleUtil.fromLanguageId(languageId, true, true));
 
-		Set<String> keySet = resourceBundle.keySet();
-
-		keySet.addAll(
-			transform(
-				_ploEntryLocalService.getPLOEntries(
-					contextCompany.getCompanyId()),
-				ploEntry -> ploEntry.getKey()));
-
-		List<String> keys = new ArrayList<>(keySet);
+		keys.addAll(resourceBundle.keySet());
 
 		Collections.sort(keys);
 
