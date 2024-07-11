@@ -50,48 +50,16 @@ public class ProductMenuDisplayContextTest {
 
 	@Before
 	public void setUp() {
-		_applicationsMenuInstanceConfiguration = Mockito.mock(
-			ApplicationsMenuInstanceConfiguration.class);
-
-		PanelCategory applicationMenuPanel1 = _createPanelCategory(
-			"application-panel1");
-		PanelCategory applicationMenuPanel2 = _createPanelCategory(
-			"application-panel2");
-		PanelCategory applicationMenuPanel3 = _createPanelCategory(
-			"application-panel3");
-
-		_applicationsMenuPanelCategories = Arrays.asList(
-			applicationMenuPanel1, applicationMenuPanel2,
-			applicationMenuPanel3);
-
-		_mockHttpServletRequest = new MockHttpServletRequest();
-
-		_mockPortletRequest = new MockLiferayResourceRequest();
-
 		_mockHttpServletRequest.setAttribute(
 			JavaConstants.JAVAX_PORTLET_REQUEST, _mockPortletRequest);
-
-		_themeDisplay = Mockito.mock(ThemeDisplay.class);
-
 		_mockHttpServletRequest.setAttribute(
 			WebKeys.THEME_DISPLAY, _themeDisplay);
 
 		_mockPortletRequest.setAttribute(
-			PortletServlet.PORTLET_SERVLET_REQUEST, _mockHttpServletRequest);
-
-		_mockPortletRequest.setAttribute(WebKeys.THEME_DISPLAY, _themeDisplay);
-
-		_panelCategoryHelper = Mockito.mock(PanelCategoryHelper.class);
-
-		_mockPortletRequest.setAttribute(
 			ApplicationListWebKeys.PANEL_CATEGORY_HELPER, _panelCategoryHelper);
-
-		PanelCategory rootPanel1 = _createPanelCategory("root-panel1");
-		PanelCategory rootPanel2 = _createPanelCategory("root-panel2");
-		PanelCategory rootPanel3 = _createPanelCategory("root-panel3");
-
-		_rootPanelCategories = new ArrayList<>(
-			Arrays.asList(rootPanel1, rootPanel2, rootPanel3));
+		_mockPortletRequest.setAttribute(
+			PortletServlet.PORTLET_SERVLET_REQUEST, _mockHttpServletRequest);
+		_mockPortletRequest.setAttribute(WebKeys.THEME_DISPLAY, _themeDisplay);
 	}
 
 	@Test
@@ -213,7 +181,7 @@ public class ProductMenuDisplayContextTest {
 		}
 	}
 
-	private PanelCategory _createPanelCategory(String key) {
+	private PanelCategory _mockPanelCategory(String key) {
 		PanelCategory panelCategory = Mockito.mock(PanelCategory.class);
 
 		Mockito.when(
@@ -225,13 +193,25 @@ public class ProductMenuDisplayContextTest {
 		return panelCategory;
 	}
 
-	private ApplicationsMenuInstanceConfiguration
-		_applicationsMenuInstanceConfiguration;
-	private List<PanelCategory> _applicationsMenuPanelCategories;
-	private MockHttpServletRequest _mockHttpServletRequest;
-	private MockLiferayResourceRequest _mockPortletRequest;
-	private PanelCategoryHelper _panelCategoryHelper;
-	private List<PanelCategory> _rootPanelCategories;
-	private ThemeDisplay _themeDisplay;
+	private final ApplicationsMenuInstanceConfiguration
+		_applicationsMenuInstanceConfiguration = Mockito.mock(
+			ApplicationsMenuInstanceConfiguration.class);
+	private final List<PanelCategory> _applicationsMenuPanelCategories =
+		Arrays.asList(
+			_mockPanelCategory("application-panel1"),
+			_mockPanelCategory("application-panel2"),
+			_mockPanelCategory("application-panel3"));
+	private final MockHttpServletRequest _mockHttpServletRequest =
+		new MockHttpServletRequest();
+	private final MockLiferayResourceRequest _mockPortletRequest =
+		new MockLiferayResourceRequest();
+	private final PanelCategoryHelper _panelCategoryHelper = Mockito.mock(
+		PanelCategoryHelper.class);
+	private final List<PanelCategory> _rootPanelCategories = new ArrayList<>(
+		Arrays.asList(
+			_mockPanelCategory("root-panel1"),
+			_mockPanelCategory("root-panel2"),
+			_mockPanelCategory("root-panel3")));
+	private final ThemeDisplay _themeDisplay = Mockito.mock(ThemeDisplay.class);
 
 }
