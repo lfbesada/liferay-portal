@@ -245,17 +245,17 @@ public class CommerceReturnObjectEntryValuesContributor
 				return CommerceReturnConstants.RETURN_STATUS_REJECTED;
 			}
 
-			int returnResolutionMethodCount = ListUtil.count(
+			int count = ListUtil.count(
 				receivedReturnItemObjectEntries,
-				receivedReturnItem -> {
+				receivedReturnItemObjectEntry -> {
 					Map<String, Serializable> values =
-						receivedReturnItem.getValues();
+						receivedReturnItemObjectEntry.getValues();
 
 					return Validator.isNotNull(
 						values.get("returnResolutionMethod"));
 				});
 
-			if ((commerceReturnItemsSize == returnResolutionMethodCount) ||
+			if ((commerceReturnItemsSize == count) ||
 				ListUtil.isNotEmpty(toBeProcessedReturnItemObjectEntries)) {
 
 				return CommerceReturnConstants.RETURN_STATUS_PROCESSING;
