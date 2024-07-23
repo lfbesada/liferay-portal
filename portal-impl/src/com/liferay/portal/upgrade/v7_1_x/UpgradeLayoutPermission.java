@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-package com.liferay.layout.internal.upgrade.v1_0_0;
+package com.liferay.portal.upgrade.v7_1_x;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.dao.orm.common.SQLTransformer;
@@ -21,7 +21,7 @@ import java.sql.ResultSet;
 /**
  * @author Michael Bowerman
  */
-public class LayoutPermissionsUpgradeProcess extends UpgradeProcess {
+public class UpgradeLayoutPermission extends UpgradeProcess {
 
 	@Override
 	protected void doUpgrade() throws Exception {

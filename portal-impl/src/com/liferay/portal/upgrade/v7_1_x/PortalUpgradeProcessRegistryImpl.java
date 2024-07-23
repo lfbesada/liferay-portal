@@ -50,6 +50,9 @@ public class PortalUpgradeProcessRegistryImpl
 		upgradeVersionTreeMap.put(new Version(1, 1, 2), new UpgradeDB2());
 
 		upgradeVersionTreeMap.put(
+			new Version(1, 1, 3), new UpgradeLayoutPermission());
+
+		upgradeVersionTreeMap.put(
 			new Version(2, 0, 0), new UpgradeAssetTagsPermission());
 
 		upgradeVersionTreeMap.put(
