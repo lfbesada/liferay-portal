@@ -7,13 +7,14 @@ package com.liferay.portal.upgrade.v7_1_x;
 
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.dao.orm.common.SQLTransformer;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.ResourceConstants;
-import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
+import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.service.ResourceLocalServiceUtil;
 import com.liferay.portal.kernel.upgrade.UpgradeProcess;
 import com.liferay.portal.kernel.util.LoggingTimer;
+import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -28,13 +29,18 @@ public class UpgradeLayoutPermission extends UpgradeProcess {
 		String sql = SQLTransformer.transform(
 			StringBundler.concat(
 				"select Layout.companyId, Layout.plid, Layout.privateLayout",
-				", Layout.groupId, Layout.userId from Layout left join ",
-				"ResourcePermission on (ResourcePermission.companyId = ",
-				"Layout.companyId and ResourcePermission.name = '",
-				Layout.class.getName(), "' and ResourcePermission.scope = ",
+				", Layout.groupId, Layout.userId, Group_.classNameId from ",
+				"Layout left join ResourcePermission on ",
+				"(ResourcePermission.companyId = Layout.companyId and ",
+				"ResourcePermission.name = '", Layout.class.getName(),
+				"' and ResourcePermission.scope = ",
 				ResourceConstants.SCOPE_INDIVIDUAL,
-				" and ResourcePermission.primKeyId = Layout.plid) where ",
+				" and ResourcePermission.primKeyId = Layout.plid) inner join ",
+				"Group_ on Group_.groupId = Layout.groupId where ",
 				"ResourcePermission.resourcePermissionId is null"));
+
+		long userGroupClassNameId = PortalUtil.getClassNameId(UserGroup.class);
+		long userClassNameId = PortalUtil.getClassNameId(User.class);
 
 		try (LoggingTimer loggingTimer = new LoggingTimer();
 			PreparedStatement preparedStatement = connection.prepareStatement(
@@ -54,9 +60,11 @@ public class UpgradeLayoutPermission extends UpgradeProcess {
 				if (privateLayout) {
 					addGuestPermission = false;
 
-					Group group = GroupLocalServiceUtil.getGroup(groupId);
+					long classNameId = resultSet.getLong("classNameId");
 
-					if (group.isUser() || group.isUserGroup()) {
+					if ((classNameId == userGroupClassNameId) ||
+						(classNameId == userClassNameId)) {
+
 						addGroupPermission = false;
 					}
 				}
