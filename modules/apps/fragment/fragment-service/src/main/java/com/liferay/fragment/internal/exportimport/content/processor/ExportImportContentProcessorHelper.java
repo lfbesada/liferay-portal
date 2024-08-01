@@ -15,7 +15,6 @@ import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.StagedModelDataHandlerUtil;
 import com.liferay.info.exception.NoSuchInfoItemException;
 import com.liferay.info.item.ClassPKInfoItemIdentifier;
-import com.liferay.info.item.InfoItemIdentifier;
 import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.item.provider.InfoItemObjectProvider;
 import com.liferay.info.search.InfoSearchClassMapperRegistry;
@@ -120,9 +119,8 @@ public class ExportImportContentProcessorHelper {
 		Map<Long, Long> primaryKeys =
 			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(className);
 
-		classPK = MapUtil.getLong(primaryKeys, classPK, classPK);
-
-		jsonObject.put("classPK", classPK);
+		jsonObject.put(
+			"classPK", MapUtil.getLong(primaryKeys, classPK, classPK));
 	}
 
 	private Object _getInfoItem(String className, long classPK) {
