@@ -27,6 +27,8 @@ components:
                     type: object
         FileEntry:
             properties:
+                externalReferenceCode:
+                    type: string
                 fileBase64:
                     # @review
                     description:
