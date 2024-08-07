@@ -47,6 +47,7 @@ import com.liferay.object.model.ObjectField;
 import com.liferay.object.model.ObjectRelationship;
 import com.liferay.object.rest.dto.v1_0.Folder;
 import com.liferay.object.rest.dto.v1_0.Link;
+import com.liferay.object.rest.dto.v1_0.Scope;
 import com.liferay.object.rest.resource.v1_0.ObjectEntryResource;
 import com.liferay.object.rest.test.util.ObjectEntryTestUtil;
 import com.liferay.object.rest.test.util.ObjectFieldTestUtil;
@@ -5756,10 +5757,17 @@ public class ObjectEntryResourceTest {
 			).toString(),
 			_objectDefinition1.getRESTContextPath(), Http.Method.POST);
 
+		JSONObject dlFileEntryScopeJSONObject = JSONUtil.put(
+			"externalReferenceCode", _group.getExternalReferenceCode()
+		).put(
+			"type", Scope.Type.SITE.getValue()
+		);
+
 		_assertAttachmentJSONObject(
 			dlFileEntry, null,
 			jsonObject.getJSONObject(
-				_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE));
+				_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE),
+			dlFileEntryScopeJSONObject);
 
 		content = RandomTestUtil.randomString();
 
@@ -5781,7 +5789,8 @@ public class ObjectEntryResourceTest {
 		_assertAttachmentJSONObject(
 			dlFileEntry, Base64.encode(content.getBytes()),
 			jsonObject.getJSONObject(
-				_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE));
+				_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE),
+			dlFileEntryScopeJSONObject);
 
 		jsonObject = HTTPTestUtil.invokeToJSONObject(
 			null,
@@ -5793,7 +5802,8 @@ public class ObjectEntryResourceTest {
 		_assertAttachmentJSONObject(
 			dlFileEntry, null,
 			jsonObject.getJSONObject(
-				_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE));
+				_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE),
+			dlFileEntryScopeJSONObject);
 
 		jsonObject = HTTPTestUtil.invokeToJSONObject(
 			null,
@@ -5808,7 +5818,8 @@ public class ObjectEntryResourceTest {
 		_assertAttachmentJSONObject(
 			dlFileEntry, Base64.encode(content.getBytes()),
 			jsonObject.getJSONObject(
-				_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE));
+				_OBJECT_FIELD_NAME_ATTACHMENT_DOCS_AND_MEDIA_SOURCE),
+			dlFileEntryScopeJSONObject);
 	}
 
 	@Test
@@ -11246,7 +11257,9 @@ public class ObjectEntryResourceTest {
 	}
 
 	private void _assertAttachmentJSONObject(
-		DLFileEntry dlFileEntry, String fileBase64, JSONObject jsonObject) {
+			DLFileEntry dlFileEntry, String fileBase64, JSONObject jsonObject,
+			JSONObject scopeJSONObject)
+		throws Exception {
 
 		Assert.assertEquals(
 			dlFileEntry.getExternalReferenceCode(),
@@ -11257,6 +11270,12 @@ public class ObjectEntryResourceTest {
 			dlFileEntry.getFileName(), jsonObject.getString("name"));
 
 		Assert.assertEquals(fileBase64, jsonObject.get("fileBase64"));
+
+		JSONObject curScopeJSONObject = jsonObject.getJSONObject("scope");
+
+		JSONAssert.assertEquals(
+			scopeJSONObject.toString(), curScopeJSONObject.toString(),
+			JSONCompareMode.LENIENT);
 	}
 
 	private void _assertEquals(JSONArray nestedObjectEntriesJSONArray)
