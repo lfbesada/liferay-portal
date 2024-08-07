@@ -45,6 +45,9 @@ components:
                     readOnly: true
                 name:
                     type: string
+                scope:
+                    $ref: "#/components/schemas/Scope"
+                    readOnly: true
             type: object
         Folder:
             properties:
@@ -134,6 +137,14 @@ components:
                         type: integer
                     type: array
                     writeOnly: true
+            type: object
+        Scope:
+            properties:
+                externalReferenceCode:
+                    type: string
+                type:
+                    enum: [AssetLibrary, Site]
+                    type: string
             type: object
         Status:
             properties:
