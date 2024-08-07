@@ -5740,7 +5740,7 @@ public class ObjectEntryResourceTest {
 		}
 	}
 
-	@FeatureFlags("LPD-24674,LPS-174455")
+	@FeatureFlags({"LPD-24674", "LPS-174455"})
 	@Test
 	public void testGetObjectEntryWithAttachmentObjectField() throws Exception {
 		String content = RandomTestUtil.randomString();
