@@ -6,13 +6,14 @@
 package com.liferay.asset.publisher.web.internal.util;
 
 import com.liferay.asset.list.model.AssetListEntry;
+import com.liferay.asset.list.service.AssetListEntryLocalServiceUtil;
 import com.liferay.asset.list.service.AssetListEntryServiceUtil;
 import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSelectionStyleConfigurationUtil;
 import com.liferay.asset.publisher.web.internal.constants.AssetPublisherSelectionStyleConstants;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.service.GroupServiceUtil;
+import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 
@@ -24,7 +25,8 @@ import javax.portlet.PortletPreferences;
 public class AssetPublisherUtil {
 
 	public static AssetListEntry getAssetListEntry(
-			long companyId, long groupId, PortletPreferences portletPreferences)
+			boolean checkPermissions, long companyId, long groupId,
+			PortletPreferences portletPreferences)
 		throws PortalException {
 
 		String selectionStyle = GetterUtil.getString(
@@ -39,7 +41,8 @@ public class AssetPublisherUtil {
 		}
 
 		if (!FeatureFlagManagerUtil.isEnabled("LPD-22837")) {
-			return AssetListEntryServiceUtil.fetchAssetListEntry(
+			return _fetchAssetListEntry(
+				checkPermissions,
 				GetterUtil.getLong(
 					portletPreferences.getValue("assetListEntryId", null)));
 		}
@@ -57,21 +60,49 @@ public class AssetPublisherUtil {
 				"assetListEntryScopeExternalReferenceCode", null));
 
 		if (Validator.isNull(assetListEntryScopeExternalReferenceCode)) {
-			return AssetListEntryServiceUtil.
-				fetchAssetListEntryByExternalReferenceCode(
-					assetListEntryScopeExternalReferenceCode, groupId);
+			return _fetchAssetListEntryByExternalReferenceCode(
+				checkPermissions, assetListEntryExternalReferenceCode, groupId);
 		}
 
-		Group group = GroupServiceUtil.fetchGroupByExternalReferenceCode(
+		Group group = GroupLocalServiceUtil.fetchGroupByExternalReferenceCode(
 			assetListEntryScopeExternalReferenceCode, companyId);
 
 		if (group == null) {
 			return null;
 		}
 
-		return AssetListEntryServiceUtil.
+		return _fetchAssetListEntryByExternalReferenceCode(
+			checkPermissions, assetListEntryExternalReferenceCode,
+			group.getGroupId());
+	}
+
+	private static AssetListEntry _fetchAssetListEntry(
+			boolean checkPermissions, long assetEntryListId)
+		throws PortalException {
+
+		if (checkPermissions) {
+			return AssetListEntryServiceUtil.fetchAssetListEntry(
+				assetEntryListId);
+		}
+
+		return AssetListEntryLocalServiceUtil.fetchAssetListEntry(
+			assetEntryListId);
+	}
+
+	private static AssetListEntry _fetchAssetListEntryByExternalReferenceCode(
+			boolean checkPermissions, String externalReferenceCode,
+			long groupId)
+		throws PortalException {
+
+		if (checkPermissions) {
+			return AssetListEntryServiceUtil.
+				fetchAssetListEntryByExternalReferenceCode(
+					externalReferenceCode, groupId);
+		}
+
+		return AssetListEntryLocalServiceUtil.
 			fetchAssetListEntryByExternalReferenceCode(
-				assetListEntryScopeExternalReferenceCode, group.getGroupId());
+				externalReferenceCode, groupId);
 	}
 
 }
