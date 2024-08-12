@@ -9,6 +9,7 @@ import com.liferay.asset.list.model.AssetListEntry;
 import com.liferay.asset.list.service.AssetListEntryLocalService;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -97,7 +98,8 @@ public class AssetPublisherConfigurationActionTest {
 			_getMockActionRequest(
 				assetListEntry.getExternalReferenceCode(),
 				assetListEntry.getAssetListEntryId(),
-				group.getExternalReferenceCode(), portletPreferencesMap, null),
+				group.getExternalReferenceCode(), StringPool.BLANK,
+				portletPreferencesMap, null),
 			portletPreferences);
 
 		Mockito.verifyNoInteractions(
@@ -127,7 +129,8 @@ public class AssetPublisherConfigurationActionTest {
 			_getMockActionRequest(
 				assetListEntry.getExternalReferenceCode(),
 				assetListEntry.getAssetListEntryId(),
-				group.getExternalReferenceCode(), portletPreferencesMap,
+				group.getExternalReferenceCode(), StringPool.BLANK,
+				portletPreferencesMap,
 				_getThemeDisplay(RandomTestUtil.randomLong())),
 			portletPreferences);
 
@@ -172,7 +175,8 @@ public class AssetPublisherConfigurationActionTest {
 			_getMockActionRequest(
 				assetListEntry.getExternalReferenceCode(),
 				assetListEntry.getAssetListEntryId(),
-				group.getExternalReferenceCode(), portletPreferencesMap,
+				group.getExternalReferenceCode(), StringPool.BLANK,
+				portletPreferencesMap,
 				_getThemeDisplay(assetListEntry.getGroupId())),
 			portletPreferences);
 
@@ -195,7 +199,9 @@ public class AssetPublisherConfigurationActionTest {
 	}
 
 	@Test
-	public void testUpdateAssetListEntryPreferencesWithNoSelection() throws Exception {
+	public void testUpdateAssetListEntryPreferencesWithNoSelection()
+		throws Exception {
+
 		AssetPublisherConfigurationAction assetPublisherConfigurationAction =
 			_getAssetPublisherConfigurationAction(null, null);
 
@@ -205,7 +211,8 @@ public class AssetPublisherConfigurationActionTest {
 
 		assetPublisherConfigurationAction.updateAssetListEntryPreferences(
 			_getMockActionRequest(
-				StringPool.BLANK, 0, StringPool.BLANK, portletPreferencesMap,
+				StringPool.BLANK, 0, StringPool.BLANK, StringPool.BLANK,
+				portletPreferencesMap,
 				_getThemeDisplay(RandomTestUtil.randomLong())),
 			portletPreferences);
 
@@ -225,6 +232,135 @@ public class AssetPublisherConfigurationActionTest {
 			portletPreferences
 		).reset(
 			"assetListEntryScopeExternalReferenceCode"
+		);
+
+		Assert.assertTrue(
+			MapUtil.toString(portletPreferencesMap),
+			MapUtil.isEmpty(portletPreferencesMap));
+	}
+
+	@Test
+	public void testUpdateDisplayStyleScopePreferencesWithDifferentScope()
+		throws Exception {
+
+		Group group = _getGroup(RandomTestUtil.randomLong());
+
+		AssetPublisherConfigurationAction assetPublisherConfigurationAction =
+			_getAssetPublisherConfigurationAction(null, group);
+
+		Map<String, String[]> portletPreferencesMap = new HashMap<>();
+		PortletPreferences portletPreferences = Mockito.mock(
+			PortletPreferences.class);
+
+		assetPublisherConfigurationAction.updateDisplayStyleScopePreferences(
+			_getMockActionRequest(
+				StringPool.BLANK, 0, StringPool.BLANK, group.getGroupKey(),
+				portletPreferencesMap,
+				_getThemeDisplay(RandomTestUtil.randomLong())),
+			portletPreferences);
+
+		Mockito.verify(
+			assetPublisherConfigurationAction.groupLocalService
+		).fetchGroup(
+			0, group.getGroupKey()
+		);
+
+		Assert.assertArrayEquals(
+			MapUtil.toString(portletPreferencesMap),
+			new String[] {group.getExternalReferenceCode()},
+			portletPreferencesMap.get(
+				"displayStyleScopeExternalReferenceCode"));
+	}
+
+	@Test
+	public void testUpdateDisplayStyleScopePreferencesWithFeatureFlagDisabled()
+		throws Exception {
+
+		_featureFlagManagerUtilMockedStatic.when(
+			() -> FeatureFlagManagerUtil.isEnabled("LPD-22837")
+		).thenReturn(
+			Boolean.FALSE
+		);
+
+		AssetPublisherConfigurationAction assetPublisherConfigurationAction =
+			_getAssetPublisherConfigurationAction(null, null);
+
+		Map<String, String[]> portletPreferencesMap = new HashMap<>();
+		PortletPreferences portletPreferences = Mockito.mock(
+			PortletPreferences.class);
+
+		assetPublisherConfigurationAction.updateDisplayStyleScopePreferences(
+			_getMockActionRequest(
+				StringPool.BLANK, 0, StringPool.BLANK,
+				RandomTestUtil.randomString(), portletPreferencesMap,
+				_getThemeDisplay(RandomTestUtil.randomLong())),
+			portletPreferences);
+
+		Mockito.verifyNoInteractions(
+			assetPublisherConfigurationAction.groupLocalService,
+			portletPreferences);
+
+		Assert.assertTrue(MapUtil.isEmpty(portletPreferencesMap));
+	}
+
+	@Test
+	public void testUpdateDisplayStyleScopePreferencesWithNoSelection()
+		throws Exception {
+
+		AssetPublisherConfigurationAction assetPublisherConfigurationAction =
+			_getAssetPublisherConfigurationAction(null, null);
+
+		Map<String, String[]> portletPreferencesMap = new HashMap<>();
+		PortletPreferences portletPreferences = Mockito.mock(
+			PortletPreferences.class);
+
+		assetPublisherConfigurationAction.updateDisplayStyleScopePreferences(
+			_getMockActionRequest(
+				StringPool.BLANK, 0, StringPool.BLANK, StringPool.BLANK,
+				portletPreferencesMap,
+				_getThemeDisplay(RandomTestUtil.randomLong())),
+			portletPreferences);
+
+		Mockito.verify(
+			assetPublisherConfigurationAction.groupLocalService
+		).fetchGroup(
+			0, StringPool.BLANK
+		);
+		Mockito.verify(
+			portletPreferences
+		).reset(
+			"displayStyleScopeExternalReferenceCode"
+		);
+	}
+
+	@Test
+	public void testUpdateDisplayStyleScopePreferencesWithSameScope()
+		throws Exception {
+
+		Group group = _getGroup(RandomTestUtil.randomLong());
+
+		AssetPublisherConfigurationAction assetPublisherConfigurationAction =
+			_getAssetPublisherConfigurationAction(null, group);
+
+		Map<String, String[]> portletPreferencesMap = new HashMap<>();
+		PortletPreferences portletPreferences = Mockito.mock(
+			PortletPreferences.class);
+
+		assetPublisherConfigurationAction.updateDisplayStyleScopePreferences(
+			_getMockActionRequest(
+				StringPool.BLANK, 0, StringPool.BLANK, group.getGroupKey(),
+				portletPreferencesMap, _getThemeDisplay(group.getGroupId())),
+			portletPreferences);
+
+		Mockito.verify(
+			assetPublisherConfigurationAction.groupLocalService
+		).fetchGroup(
+			0, group.getGroupKey()
+		);
+		Mockito.verify(
+			portletPreferences
+		).reset(
+			"displayStyleScopeExternalReferenceCode"
 		);
 
 		Assert.assertTrue(
@@ -309,6 +445,11 @@ public class AssetPublisherConfigurationActionTest {
 		).thenReturn(
 			groupId
 		);
+		Mockito.when(
+			group.getGroupKey()
+		).thenReturn(
+			RandomTestUtil.randomString()
+		);
 
 		return group;
 	}
@@ -321,12 +462,23 @@ public class AssetPublisherConfigurationActionTest {
 
 		if (group == null) {
 			Mockito.when(
+				groupLocalService.fetchGroup(
+					Mockito.anyLong(), Mockito.anyString())
+			).thenReturn(
+				null
+			);
+			Mockito.when(
 				groupLocalService.getGroup(Mockito.anyLong())
 			).thenReturn(
 				null
 			);
 		}
 		else {
+			Mockito.when(
+				groupLocalService.fetchGroup(0, group.getGroupKey())
+			).thenReturn(
+				group
+			);
 			Mockito.when(
 				groupLocalService.getGroup(group.getGroupId())
 			).thenReturn(
@@ -340,6 +492,7 @@ public class AssetPublisherConfigurationActionTest {
 	private MockActionRequest _getMockActionRequest(
 		String assetListEntryExternalReferenceCode, long assetListEntryId,
 		String assetListEntryScopeExternalReferenceCode,
+		String displayStyleGroupKey,
 		Map<String, String[]> portletPreferencesMap,
 		ThemeDisplay themeDisplay) {
 
@@ -358,13 +511,16 @@ public class AssetPublisherConfigurationActionTest {
 		mockActionRequest.setParameter(
 			"preferences--assetListEntryScopeExternalReferenceCode--",
 			assetListEntryScopeExternalReferenceCode);
+		mockActionRequest.setParameter(
+			"preferences--displayStyleGroupKey--", displayStyleGroupKey);
 
 		return mockActionRequest;
 	}
 
-	private ThemeDisplay _getThemeDisplay(long groupId) {
+	private ThemeDisplay _getThemeDisplay(long groupId) throws Exception {
 		ThemeDisplay themeDisplay = new ThemeDisplay();
 
+		themeDisplay.setCompany(Mockito.mock(Company.class));
 		themeDisplay.setScopeGroupId(groupId);
 
 		return themeDisplay;
