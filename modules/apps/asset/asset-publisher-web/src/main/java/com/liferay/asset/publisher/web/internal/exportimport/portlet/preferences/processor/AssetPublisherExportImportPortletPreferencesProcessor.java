@@ -807,31 +807,6 @@ public class AssetPublisherExportImportPortletPreferencesProcessor
 		}
 	}
 
-	private boolean _resetAssetListEntryScopeExternalReferenceCode(
-		String assetListEntryScopeExternalReferenceCode,
-		PortletDataContext portletDataContext) {
-
-		if (!FeatureFlagManagerUtil.isEnabled("LPD-22837") ||
-			Validator.isNull(assetListEntryScopeExternalReferenceCode)) {
-
-			return false;
-		}
-
-		Group group = groupLocalService.fetchGroupByExternalReferenceCode(
-			assetListEntryScopeExternalReferenceCode,
-			portletDataContext.getCompanyId());
-
-		if ((group == null) ||
-			!Objects.equals(
-				group.getExternalReferenceCode(),
-				assetListEntryScopeExternalReferenceCode)) {
-
-			return false;
-		}
-
-		return true;
-	}
-
 	private void _restorePortletPreference(
 			PortletDataContext portletDataContext, String name,
 			PortletPreferences portletPreferences)
@@ -1340,13 +1315,6 @@ public class AssetPublisherExportImportPortletPreferencesProcessor
 				updateImportPortletPreferencesClassPKs(
 					portletDataContext, portletPreferences, name,
 					AssetListEntry.class, companyGroup.getGroupId());
-			}
-			else if (name.equals("assetListEntryScopeExternalReferenceCode") &&
-					 _resetAssetListEntryScopeExternalReferenceCode(
-						 portletPreferences.getValue(name, null),
-						 portletDataContext)) {
-
-				portletPreferences.reset(name);
 			}
 			else if (name.equals("assetVocabularyId")) {
 				updateImportPortletPreferencesClassPKs(
