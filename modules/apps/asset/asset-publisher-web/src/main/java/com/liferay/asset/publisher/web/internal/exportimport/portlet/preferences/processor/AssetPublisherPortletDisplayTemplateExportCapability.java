@@ -45,7 +45,9 @@ public class AssetPublisherPortletDisplayTemplateExportCapability
 		PortletPreferences portletPreferences) {
 
 		return AssetPublisherExportImportPortletPreferencesProcessorUtil.
-			getDisplayStyleGroupId(portletPreferences);
+			getDisplayStyleGroupId(
+				portletDataContext.getCompanyId(),
+				portletDataContext.getScopeGroupId(), portletPreferences);
 	}
 
 }
