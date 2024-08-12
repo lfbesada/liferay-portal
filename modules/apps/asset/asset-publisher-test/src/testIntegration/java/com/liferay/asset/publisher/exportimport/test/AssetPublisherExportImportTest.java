@@ -81,6 +81,7 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.search.test.rule.SearchTestRule;
+import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portlet.PortletPreferencesImpl;
@@ -601,6 +602,50 @@ public class AssetPublisherExportImportTest
 	public void testExportImportAssetLinks() throws Exception {
 	}
 
+	@FeatureFlags("LPD-22837")
+	@Test
+	public void testExportImportAssetListEntryWithDifferentScope()
+		throws Exception {
+
+		StagingLocalServiceUtil.enableLocalStaging(
+			TestPropsValues.getUserId(), group, false, false,
+			new ServiceContext());
+
+		Group stagingGroup = group.getStagingGroup();
+
+		Layout stagingLayout = _layoutLocalService.fetchLayoutByUuidAndGroupId(
+			layout.getUuid(), stagingGroup.getGroupId(),
+			layout.isPrivateLayout());
+
+		AssetListEntry assetListEntry = _addAssetListEntry(importedGroup);
+
+		String portletId = LayoutTestUtil.addPortletToLayout(
+			stagingLayout, AssetPublisherPortletKeys.ASSET_PUBLISHER,
+			_getPreferencesMap(
+				assetListEntry.getExternalReferenceCode(),
+				RandomTestUtil.randomLong(),
+				importedGroup.getExternalReferenceCode()));
+
+		_publishLayouts(stagingGroup);
+
+		PortletPreferences portletPreferences =
+			_portletPreferencesLocalService.fetchPreferences(
+				_portletPreferencesFactory.getPortletPreferencesIds(
+					layout.getCompanyId(), layout.getGroupId(), 0,
+					layout.getPlid(), portletId));
+
+		Assert.assertEquals(
+			assetListEntry.getExternalReferenceCode(),
+			portletPreferences.getValue(
+				"assetListEntryExternalReferenceCode", null));
+		Assert.assertNull(
+			portletPreferences.getValue("assetListEntryId", null));
+		Assert.assertEquals(
+			importedGroup.getExternalReferenceCode(),
+			portletPreferences.getValue(
+				"assetListEntryScopeExternalReferenceCode", null));
+	}
+
 	@Test
 	public void testExportImportAssetListEntryWithFeatureFlagDisabled()
 		throws Exception {
@@ -615,7 +660,7 @@ public class AssetPublisherExportImportTest
 			layout.getUuid(), stagingGroup.getGroupId(),
 			layout.isPrivateLayout());
 
-		AssetListEntry stagingAssetListEntry = _addAssetListEntry();
+		AssetListEntry stagingAssetListEntry = _addAssetListEntry(group);
 
 		String portletId = LayoutTestUtil.addPortletToLayout(
 			stagingLayout, AssetPublisherPortletKeys.ASSET_PUBLISHER,
@@ -640,6 +685,87 @@ public class AssetPublisherExportImportTest
 			assetListEntry.getAssetListEntryId(),
 			GetterUtil.getLong(
 				portletPreferences.getValue("assetListEntryId", null)));
+	}
+
+	@FeatureFlags("LPD-22837")
+	@Test
+	public void testExportImportAssetListEntryWithNoSelection()
+		throws Exception {
+
+		StagingLocalServiceUtil.enableLocalStaging(
+			TestPropsValues.getUserId(), group, false, false,
+			new ServiceContext());
+
+		Group stagingGroup = group.getStagingGroup();
+
+		Layout stagingLayout = _layoutLocalService.fetchLayoutByUuidAndGroupId(
+			layout.getUuid(), stagingGroup.getGroupId(),
+			layout.isPrivateLayout());
+
+		String portletId = LayoutTestUtil.addPortletToLayout(
+			stagingLayout, AssetPublisherPortletKeys.ASSET_PUBLISHER,
+			_getPreferencesMap(null, 0, null));
+
+		_publishLayouts(stagingGroup);
+
+		PortletPreferences portletPreferences =
+			_portletPreferencesLocalService.fetchPreferences(
+				_portletPreferencesFactory.getPortletPreferencesIds(
+					layout.getCompanyId(), layout.getGroupId(), 0,
+					layout.getPlid(), portletId));
+
+		Assert.assertNull(
+			portletPreferences.getValue(
+				"assetListEntryExternalReferenceCode", null));
+		Assert.assertNull(
+			portletPreferences.getValue("assetListEntryId", null));
+		Assert.assertNull(
+			portletPreferences.getValue(
+				"assetListEntryScopeExternalReferenceCode", null));
+	}
+
+	@FeatureFlags("LPD-22837")
+	@Test
+	public void testExportImportAssetListEntryWithSameScope() throws Exception {
+		StagingLocalServiceUtil.enableLocalStaging(
+			TestPropsValues.getUserId(), group, false, false,
+			new ServiceContext());
+
+		Group stagingGroup = group.getStagingGroup();
+
+		Layout stagingLayout = _layoutLocalService.fetchLayoutByUuidAndGroupId(
+			layout.getUuid(), stagingGroup.getGroupId(),
+			layout.isPrivateLayout());
+
+		AssetListEntry stagingAssetListEntry = _addAssetListEntry(group);
+
+		String portletId = LayoutTestUtil.addPortletToLayout(
+			stagingLayout, AssetPublisherPortletKeys.ASSET_PUBLISHER,
+			_getPreferencesMap(
+				stagingAssetListEntry.getExternalReferenceCode(),
+				RandomTestUtil.randomLong(), null));
+
+		_publishLayouts(stagingGroup);
+
+		AssetListEntry assetListEntry =
+			_assetListEntryService.getAssetListEntryByUuidAndGroupId(
+				stagingAssetListEntry.getUuid(), group.getGroupId());
+
+		PortletPreferences portletPreferences =
+			_portletPreferencesLocalService.fetchPreferences(
+				_portletPreferencesFactory.getPortletPreferencesIds(
+					layout.getCompanyId(), layout.getGroupId(), 0,
+					layout.getPlid(), portletId));
+
+		Assert.assertEquals(
+			assetListEntry.getExternalReferenceCode(),
+			portletPreferences.getValue(
+				"assetListEntryExternalReferenceCode", null));
+		Assert.assertNull(
+			portletPreferences.getValue("assetListEntryId", null));
+		Assert.assertNull(
+			portletPreferences.getValue(
+				"assetListEntryScopeExternalReferenceCode", null));
 	}
 
 	@Test
@@ -1387,7 +1513,7 @@ public class AssetPublisherExportImportTest
 		_assetVocabularyLocalService.deleteVocabulary(assetVocabulary);
 	}
 
-	private AssetListEntry _addAssetListEntry() throws Exception {
+	private AssetListEntry _addAssetListEntry(Group group) throws Exception {
 		return _assetListEntryService.addAssetListEntry(
 			RandomTestUtil.randomString(), group.getGroupId(),
 			RandomTestUtil.randomString(), 0,
@@ -1400,12 +1526,33 @@ public class AssetPublisherExportImportTest
 
 		return HashMapBuilder.put(
 			"assetListEntryExternalReferenceCode",
-			new String[] {assetListEntryExternalReferenceCode}
+			() -> {
+				if (Validator.isNull(assetListEntryExternalReferenceCode)) {
+					return null;
+				}
+
+				return new String[] {assetListEntryExternalReferenceCode};
+			}
 		).put(
-			"assetListEntryId", new String[] {String.valueOf(assetListEntryId)}
+			"assetListEntryId",
+			() -> {
+				if (assetListEntryId == 0) {
+					return null;
+				}
+
+				return new String[] {String.valueOf(assetListEntryId)};
+			}
 		).put(
 			"assetListEntryScopeExternalReferenceCode",
-			new String[] {assetListEntryScopeExternalReferenceCode}
+			() -> {
+				if (Validator.isNull(
+						assetListEntryScopeExternalReferenceCode)) {
+
+					return null;
+				}
+
+				return new String[] {assetListEntryScopeExternalReferenceCode};
+			}
 		).put(
 			"selectionStyle", new String[] {"asset-list"}
 		).build();
