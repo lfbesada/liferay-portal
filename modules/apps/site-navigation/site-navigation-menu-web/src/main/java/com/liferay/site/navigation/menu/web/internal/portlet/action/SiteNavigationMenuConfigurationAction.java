@@ -20,6 +20,7 @@ import com.liferay.site.navigation.constants.SiteNavigationMenuPortletKeys;
 import com.liferay.site.navigation.menu.web.internal.constants.SiteNavigationMenuWebKeys;
 import com.liferay.site.navigation.model.SiteNavigationMenu;
 import com.liferay.site.navigation.model.SiteNavigationMenuItem;
+import com.liferay.site.navigation.service.SiteNavigationMenuItemLocalService;
 import com.liferay.site.navigation.service.SiteNavigationMenuItemService;
 import com.liferay.site.navigation.service.SiteNavigationMenuService;
 import com.liferay.site.navigation.type.SiteNavigationMenuItemTypeRegistry;
@@ -138,7 +139,7 @@ public class SiteNavigationMenuConfigurationAction
 		}
 
 		SiteNavigationMenuItem siteNavigationMenuItem =
-			_siteNavigationMenuItemService.fetchSiteNavigationMenuItem(
+			_siteNavigationMenuItemLocalService.fetchSiteNavigationMenuItem(
 				rootMenuItemId);
 
 		if (siteNavigationMenuItem != null) {
@@ -185,7 +186,8 @@ public class SiteNavigationMenuConfigurationAction
 	private PortletDisplayTemplate _portletDisplayTemplate;
 
 	@Reference
-	private SiteNavigationMenuItemService _siteNavigationMenuItemService;
+	private SiteNavigationMenuItemLocalService
+		_siteNavigationMenuItemLocalService;
 
 	@Reference
 	private SiteNavigationMenuItemTypeRegistry
