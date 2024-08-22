@@ -485,7 +485,7 @@ public class LayoutStructure {
 					List<String> childrenItemIds =
 						parentLayoutStructureItem.getChildrenItemIds();
 
-					position = childrenItemIds.indexOf(itemId) + 1;
+					position = childrenItemIds.indexOf(parentItemId) + 1;
 
 					finalParentItemId = layoutStructureItem.getParentItemId();
 				}
