@@ -6,6 +6,7 @@
 package com.liferay.layout.internal.visibility;
 
 import com.liferay.layout.admin.kernel.visibility.LayoutVisibilityManager;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.release.feature.flag.ReleaseFeatureFlag;
 import com.liferay.release.feature.flag.ReleaseFeatureFlagManagerUtil;
 
@@ -19,13 +20,11 @@ public class LayoutVisibilityManagerImpl implements LayoutVisibilityManager {
 
 	@Override
 	public boolean isPrivateLayoutsEnabled(long companyId) {
-		if (ReleaseFeatureFlagManagerUtil.isEnabled(
-				ReleaseFeatureFlag.DISABLE_PRIVATE_LAYOUTS)) {
-
-			return false;
+		if (FeatureFlagManagerUtil.isEnabled(companyId, "LPD-38869")) {
+			return true;
 		}
 
-		return true;
+		return false;
 	}
 
 }
