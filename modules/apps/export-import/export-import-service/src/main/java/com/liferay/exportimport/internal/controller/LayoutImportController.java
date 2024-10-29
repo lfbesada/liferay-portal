@@ -80,8 +80,6 @@ import com.liferay.portal.kernel.xml.SAXReaderUtil;
 import com.liferay.portal.kernel.xml.XPath;
 import com.liferay.portal.kernel.zip.ZipReader;
 import com.liferay.portal.kernel.zip.ZipReaderFactory;
-import com.liferay.release.feature.flag.ReleaseFeatureFlag;
-import com.liferay.release.feature.flag.ReleaseFeatureFlagManagerUtil;
 import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.site.model.adapter.StagedGroup;
 import com.liferay.sites.kernel.util.Sites;
@@ -887,7 +885,8 @@ public class LayoutImportController implements ImportController {
 			layoutSetPrototypeUuid = GetterUtil.getString(
 				headerElement.attributeValue("type-uuid"));
 
-			if (_layoutVisibilityManager.isPrivateLayoutsEnabled(group.getCompanyId())) {
+			if (_layoutVisibilityManager.isPrivateLayoutsEnabled(
+					group.getCompanyId())) {
 
 				LayoutSet publicLayoutSet =
 					_layoutSetLocalService.fetchLayoutSet(
@@ -1394,6 +1393,9 @@ public class LayoutImportController implements ImportController {
 	private LayoutSetPrototypeLocalService _layoutSetPrototypeLocalService;
 
 	@Reference
+	private LayoutVisibilityManager _layoutVisibilityManager;
+
+	@Reference
 	private PermissionImporter _permissionImporter;
 
 	@Reference
@@ -1416,8 +1418,5 @@ public class LayoutImportController implements ImportController {
 
 	@Reference
 	private ZipReaderFactory _zipReaderFactory;
-
-	@Reference
-	private LayoutVisibilityManager _layoutVisibilityManager;
 
 }
