@@ -80,8 +80,6 @@ import com.liferay.portal.model.impl.ThemeSettingImpl;
 import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
-import com.liferay.release.feature.flag.ReleaseFeatureFlag;
-import com.liferay.release.feature.flag.ReleaseFeatureFlagManagerUtil;
 import com.liferay.sites.kernel.util.Sites;
 
 import java.util.Date;
@@ -101,7 +99,6 @@ import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Julio Camarero
@@ -867,8 +864,8 @@ public class LayoutSetPrototypePropagationTest
 			propagatedLayoutSet.getThemeId());
 	}
 
-	@Test
 	@FeatureFlags("LPD-38869")
+	@Test
 	public void testThemeSettingsAfterLayoutPropagationWithPrivateLinkEnabled()
 		throws Exception {
 
@@ -937,8 +934,8 @@ public class LayoutSetPrototypePropagationTest
 		}
 	}
 
-	@Test
 	@FeatureFlags("LPD-38869")
+	@Test
 	public void testThemeSettingsAfterLayoutPropagationWithPublicLinkEnabled()
 		throws Exception {
 

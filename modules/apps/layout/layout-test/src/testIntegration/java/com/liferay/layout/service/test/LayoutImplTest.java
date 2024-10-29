@@ -369,8 +369,8 @@ public class LayoutImplTest {
 		}
 	}
 
-	@Test
 	@FeatureFlags("LPD-38869")
+	@Test
 	public void testPrivateLayoutGetTheme() throws Exception {
 		_assertGetTheme(LayoutTestUtil.addTypePortletLayout(_group, true));
 	}
