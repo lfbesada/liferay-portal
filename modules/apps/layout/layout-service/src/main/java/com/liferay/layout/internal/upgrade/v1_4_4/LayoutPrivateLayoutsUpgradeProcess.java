@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-
 package com.liferay.layout.internal.upgrade.v1_4_4;
 
 import com.liferay.portal.kernel.feature.flag.constants.FeatureFlagConstants;
@@ -23,32 +22,28 @@ import com.liferay.release.feature.flag.ReleaseFeatureFlagManagerUtil;
 /**
  * @author Lourdes Fernández Besada
  */
-public class LayoutPrivateLayoutsUpgradeProcess  extends UpgradeProcess {
+public class LayoutPrivateLayoutsUpgradeProcess extends UpgradeProcess {
+
 	public LayoutPrivateLayoutsUpgradeProcess(
 		CompanyLocalService companyLocalService,
 		PortalPreferencesLocalService portalPreferencesLocalService,
 		ReleaseFeatureFlagManager releaseFeatureFlagManager) {
+
 		_companyLocalService = companyLocalService;
 		_portalPreferencesLocalService = portalPreferencesLocalService;
 		_releaseFeatureFlagManager = releaseFeatureFlagManager;
 	}
 
-	private final ReleaseFeatureFlagManager _releaseFeatureFlagManager;
-
-	private final PortalPreferencesLocalService _portalPreferencesLocalService;
-
-	private final CompanyLocalService _companyLocalService;
-
 	@Override
 	protected void doUpgrade() throws Exception {
-
 		String enabled;
 
 		if (ReleaseFeatureFlagManagerUtil.isEnabled(
-			ReleaseFeatureFlag.DISABLE_PRIVATE_LAYOUTS)) {
+				ReleaseFeatureFlag.DISABLE_PRIVATE_LAYOUTS)) {
 
 			enabled = Boolean.FALSE.toString();
-		} else {
+		}
+		else {
 			enabled = Boolean.TRUE.toString();
 		}
 
@@ -59,14 +54,19 @@ public class LayoutPrivateLayoutsUpgradeProcess  extends UpgradeProcess {
 						PortalPreferencesWrapper portalPreferencesWrapper =
 							(PortalPreferencesWrapper)
 								_portalPreferencesLocalService.getPreferences(
-									companyId, PortletKeys.PREFS_OWNER_TYPE_COMPANY);
+									companyId,
+									PortletKeys.PREFS_OWNER_TYPE_COMPANY);
 
-						PortalPreferences portalPreferences = portalPreferencesWrapper.getPortalPreferencesImpl();
+						PortalPreferences portalPreferences =
+							portalPreferencesWrapper.getPortalPreferencesImpl();
 
-						portalPreferences.setValue(FeatureFlagConstants.FEATURE_FLAG, "LPD-38869", enabled);
+						portalPreferences.setValue(
+							FeatureFlagConstants.FEATURE_FLAG, "LPD-38869",
+							enabled);
 
 						_portalPreferencesLocalService.updatePreferences(
-							companyId, PortletKeys.PREFS_OWNER_TYPE_COMPANY, portalPreferences);
+							companyId, PortletKeys.PREFS_OWNER_TYPE_COMPANY,
+							portalPreferences);
 					}
 					catch (Exception exception) {
 						_log.error(exception);
@@ -75,10 +75,11 @@ public class LayoutPrivateLayoutsUpgradeProcess  extends UpgradeProcess {
 		}
 	}
 
-
-
 	private static final Log _log = LogFactoryUtil.getLog(
 		LayoutPrivateLayoutsUpgradeProcess.class);
 
+	private final CompanyLocalService _companyLocalService;
+	private final PortalPreferencesLocalService _portalPreferencesLocalService;
+	private final ReleaseFeatureFlagManager _releaseFeatureFlagManager;
 
 }

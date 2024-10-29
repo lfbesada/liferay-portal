@@ -33,8 +33,8 @@ import com.liferay.portal.kernel.upgrade.CTModelUpgradeProcess;
 import com.liferay.portal.kernel.upgrade.UpgradeProcessFactory;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.upgrade.registry.UpgradeStepRegistrator;
-
 import com.liferay.release.feature.flag.ReleaseFeatureFlagManager;
+
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
 
@@ -109,12 +109,9 @@ public class LayoutServiceUpgradeStepRegistrator
 			"1.4.3", "1.4.4",
 			new com.liferay.layout.internal.upgrade.v1_4_4.
 				LayoutPrivateLayoutsUpgradeProcess(
-				_companyLocalService,
-				_portalPreferencesLocalService, _releaseFeatureFlagManager));
+					_companyLocalService, _portalPreferencesLocalService,
+					_releaseFeatureFlagManager));
 	}
-
-	@Reference
-	private ReleaseFeatureFlagManager _releaseFeatureFlagManager;
 
 	@Reference
 	private AssetCategoryLocalService _assetCategoryLocalService;
@@ -166,9 +163,12 @@ public class LayoutServiceUpgradeStepRegistrator
 	private LayoutSetBranchLocalService _layoutSetBranchLocalService;
 
 	@Reference
+	private Portal _portal;
+
+	@Reference
 	private PortalPreferencesLocalService _portalPreferencesLocalService;
 
 	@Reference
-	private Portal _portal;
+	private ReleaseFeatureFlagManager _releaseFeatureFlagManager;
 
 }
