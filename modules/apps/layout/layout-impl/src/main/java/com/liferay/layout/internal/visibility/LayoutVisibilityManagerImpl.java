@@ -7,8 +7,6 @@ package com.liferay.layout.internal.visibility;
 
 import com.liferay.layout.admin.kernel.visibility.LayoutVisibilityManager;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
-import com.liferay.release.feature.flag.ReleaseFeatureFlag;
-import com.liferay.release.feature.flag.ReleaseFeatureFlagManagerUtil;
 
 import org.osgi.service.component.annotations.Component;
 
