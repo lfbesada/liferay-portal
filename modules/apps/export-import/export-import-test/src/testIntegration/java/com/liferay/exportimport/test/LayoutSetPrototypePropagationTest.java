@@ -15,6 +15,7 @@ import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalServiceUtil;
 import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.journal.util.JournalContent;
+import com.liferay.layout.admin.kernel.visibility.LayoutVisibilityManager;
 import com.liferay.layout.set.prototype.helper.LayoutSetPrototypeHelper;
 import com.liferay.layout.test.util.ContentLayoutTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
@@ -77,6 +78,7 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.model.impl.ThemeSettingImpl;
+import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.release.feature.flag.ReleaseFeatureFlag;
@@ -100,6 +102,7 @@ import org.junit.runner.RunWith;
 import org.osgi.framework.Bundle;
 import org.osgi.framework.BundleContext;
 import org.osgi.framework.FrameworkUtil;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Julio Camarero
@@ -866,11 +869,9 @@ public class LayoutSetPrototypePropagationTest
 	}
 
 	@Test
+	@FeatureFlags("LPD-38869")
 	public void testThemeSettingsAfterLayoutPropagationWithPrivateLinkEnabled()
 		throws Exception {
-
-		ReleaseFeatureFlagManagerUtil.setEnabled(
-			ReleaseFeatureFlag.DISABLE_PRIVATE_LAYOUTS, false);
 
 		LayoutSetPrototype layoutSetPrototype =
 			LayoutTestUtil.addLayoutSetPrototype(RandomTestUtil.randomString());
@@ -934,18 +935,13 @@ public class LayoutSetPrototypePropagationTest
 			GroupTestUtil.deleteGroup(testGroup);
 
 			GroupTestUtil.deleteGroup(layoutSetPrototypeGroup);
-
-			ReleaseFeatureFlagManagerUtil.setEnabled(
-				ReleaseFeatureFlag.DISABLE_PRIVATE_LAYOUTS, true);
 		}
 	}
 
 	@Test
+	@FeatureFlags("LPD-38869")
 	public void testThemeSettingsAfterLayoutPropagationWithPublicLinkEnabled()
 		throws Exception {
-
-		ReleaseFeatureFlagManagerUtil.setEnabled(
-			ReleaseFeatureFlag.DISABLE_PRIVATE_LAYOUTS, false);
 
 		LayoutSetPrototype layoutSetPrototype =
 			LayoutTestUtil.addLayoutSetPrototype(RandomTestUtil.randomString());
@@ -1009,9 +1005,6 @@ public class LayoutSetPrototypePropagationTest
 			GroupTestUtil.deleteGroup(testGroup);
 
 			GroupTestUtil.deleteGroup(layoutSetPrototypeGroup);
-
-			ReleaseFeatureFlagManagerUtil.setEnabled(
-				ReleaseFeatureFlag.DISABLE_PRIVATE_LAYOUTS, true);
 		}
 	}
 
