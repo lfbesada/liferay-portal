@@ -92,7 +92,7 @@ definition {
 
 	@priority = 3
 	test ActivateStagingPageVersioningWithCustomDefaultLanguage {
-		property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
+		property custom.properties = "feature.flag.LPD-38869=true";
 		property test.liferay.virtual.instance = "false";
 		property test.run.type = "single";
 
@@ -2078,7 +2078,7 @@ definition {
 
 	@priority = 3
 	test PublishTemplateWithPages {
-		property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
+		property custom.properties = "feature.flag.LPD-38869=true";
 		property test.liferay.virtual.instance = "false";
 		property test.run.type = "single";
 
@@ -3907,7 +3907,7 @@ definition {
 	@description = "This is a use case for LPS-143852."
 	@priority = 3
 	test ViewVirtualHostStagingPublicPageAsGuest {
-		property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
+		property custom.properties = "feature.flag.LPD-38869=true";
 
 		task ("Delete Staging Test Page") {
 			JSONLayout.deletePublicLayout(
