@@ -222,8 +222,8 @@ definition {
 	@description = "This is a test for LPS-125755. The Site Pages Variation is enabled on content page in view mode when enable page versioning."
 	@priority = 5
 	test PublishContentPageWithPageVariationToLive {
+		property custom.properties = "feature.flag.LPD-38869=true";
 		property portal.acceptance = "true";
-		property release.feature.flags.disable.DISABLE_PRIVATE_LAYOUTS = "true";
 
 		task ("Add a public content page") {
 			PagesAdmin.openPagesAdmin(siteURLKey = "${randomSiteURLKey}-staging");
