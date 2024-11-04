@@ -39,8 +39,11 @@ components:
             properties:
                 className:
                     type: string
-                subTypeExternalReference:
-                    $ref: "#/components/schemas/ItemExternalReference"
+                subTypeExternalReferenceCode:
+                    # @review
+                    description:
+                        The subtype's external reference code.
+                    type: string
             required:
                 - className
             type: object
