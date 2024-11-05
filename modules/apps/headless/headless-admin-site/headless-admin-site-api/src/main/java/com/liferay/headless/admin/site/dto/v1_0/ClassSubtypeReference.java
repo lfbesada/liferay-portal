@@ -28,7 +28,6 @@ import java.util.function.Supplier;
 
 import javax.annotation.Generated;
 
-import javax.validation.Valid;
 import javax.validation.constraints.NotEmpty;
 
 import javax.xml.bind.annotation.XmlRootElement;
@@ -101,34 +100,34 @@ public class ClassSubtypeReference implements Serializable {
 	@JsonIgnore
 	private Supplier<String> _classNameSupplier;
 
-	@Schema
-	@Valid
-	public ItemExternalReference getSubTypeExternalReference() {
-		if (_subTypeExternalReferenceSupplier != null) {
-			subTypeExternalReference = _subTypeExternalReferenceSupplier.get();
+	@Schema(description = "The subtype's external reference code.")
+	public String getSubTypeExternalReferenceCode() {
+		if (_subTypeExternalReferenceCodeSupplier != null) {
+			subTypeExternalReferenceCode =
+				_subTypeExternalReferenceCodeSupplier.get();
 
-			_subTypeExternalReferenceSupplier = null;
+			_subTypeExternalReferenceCodeSupplier = null;
 		}
 
-		return subTypeExternalReference;
+		return subTypeExternalReferenceCode;
 	}
 
-	public void setSubTypeExternalReference(
-		ItemExternalReference subTypeExternalReference) {
+	public void setSubTypeExternalReferenceCode(
+		String subTypeExternalReferenceCode) {
 
-		this.subTypeExternalReference = subTypeExternalReference;
+		this.subTypeExternalReferenceCode = subTypeExternalReferenceCode;
 
-		_subTypeExternalReferenceSupplier = null;
+		_subTypeExternalReferenceCodeSupplier = null;
 	}
 
 	@JsonIgnore
-	public void setSubTypeExternalReference(
-		UnsafeSupplier<ItemExternalReference, Exception>
-			subTypeExternalReferenceUnsafeSupplier) {
+	public void setSubTypeExternalReferenceCode(
+		UnsafeSupplier<String, Exception>
+			subTypeExternalReferenceCodeUnsafeSupplier) {
 
-		_subTypeExternalReferenceSupplier = () -> {
+		_subTypeExternalReferenceCodeSupplier = () -> {
 			try {
-				return subTypeExternalReferenceUnsafeSupplier.get();
+				return subTypeExternalReferenceCodeUnsafeSupplier.get();
 			}
 			catch (RuntimeException runtimeException) {
 				throw runtimeException;
@@ -139,12 +138,12 @@ public class ClassSubtypeReference implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(description = "The subtype's external reference code.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected ItemExternalReference subTypeExternalReference;
+	protected String subTypeExternalReferenceCode;
 
 	@JsonIgnore
-	private Supplier<ItemExternalReference> _subTypeExternalReferenceSupplier;
+	private Supplier<String> _subTypeExternalReferenceCodeSupplier;
 
 	@Override
 	public boolean equals(Object object) {
@@ -190,17 +189,20 @@ public class ClassSubtypeReference implements Serializable {
 			sb.append("\"");
 		}
 
-		ItemExternalReference subTypeExternalReference =
-			getSubTypeExternalReference();
+		String subTypeExternalReferenceCode = getSubTypeExternalReferenceCode();
 
-		if (subTypeExternalReference != null) {
+		if (subTypeExternalReferenceCode != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"subTypeExternalReference\": ");
+			sb.append("\"subTypeExternalReferenceCode\": ");
 
-			sb.append(String.valueOf(subTypeExternalReference));
+			sb.append("\"");
+
+			sb.append(_escape(subTypeExternalReferenceCode));
+
+			sb.append("\"");
 		}
 
 		sb.append("}");

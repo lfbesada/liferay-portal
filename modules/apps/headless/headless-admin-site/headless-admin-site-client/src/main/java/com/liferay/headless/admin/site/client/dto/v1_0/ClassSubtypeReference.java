@@ -46,30 +46,30 @@ public class ClassSubtypeReference implements Cloneable, Serializable {
 
 	protected String className;
 
-	public ItemExternalReference getSubTypeExternalReference() {
-		return subTypeExternalReference;
+	public String getSubTypeExternalReferenceCode() {
+		return subTypeExternalReferenceCode;
 	}
 
-	public void setSubTypeExternalReference(
-		ItemExternalReference subTypeExternalReference) {
+	public void setSubTypeExternalReferenceCode(
+		String subTypeExternalReferenceCode) {
 
-		this.subTypeExternalReference = subTypeExternalReference;
+		this.subTypeExternalReferenceCode = subTypeExternalReferenceCode;
 	}
 
-	public void setSubTypeExternalReference(
-		UnsafeSupplier<ItemExternalReference, Exception>
-			subTypeExternalReferenceUnsafeSupplier) {
+	public void setSubTypeExternalReferenceCode(
+		UnsafeSupplier<String, Exception>
+			subTypeExternalReferenceCodeUnsafeSupplier) {
 
 		try {
-			subTypeExternalReference =
-				subTypeExternalReferenceUnsafeSupplier.get();
+			subTypeExternalReferenceCode =
+				subTypeExternalReferenceCodeUnsafeSupplier.get();
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	protected ItemExternalReference subTypeExternalReference;
+	protected String subTypeExternalReferenceCode;
 
 	@Override
 	public ClassSubtypeReference clone() throws CloneNotSupportedException {

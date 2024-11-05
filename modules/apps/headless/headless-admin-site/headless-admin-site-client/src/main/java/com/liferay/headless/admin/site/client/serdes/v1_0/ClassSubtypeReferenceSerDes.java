@@ -60,16 +60,20 @@ public class ClassSubtypeReferenceSerDes {
 			sb.append("\"");
 		}
 
-		if (classSubtypeReference.getSubTypeExternalReference() != null) {
+		if (classSubtypeReference.getSubTypeExternalReferenceCode() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"subTypeExternalReference\": ");
+			sb.append("\"subTypeExternalReferenceCode\": ");
+
+			sb.append("\"");
 
 			sb.append(
-				String.valueOf(
-					classSubtypeReference.getSubTypeExternalReference()));
+				_escape(
+					classSubtypeReference.getSubTypeExternalReferenceCode()));
+
+			sb.append("\"");
 		}
 
 		sb.append("}");
@@ -102,14 +106,14 @@ public class ClassSubtypeReferenceSerDes {
 				String.valueOf(classSubtypeReference.getClassName()));
 		}
 
-		if (classSubtypeReference.getSubTypeExternalReference() == null) {
-			map.put("subTypeExternalReference", null);
+		if (classSubtypeReference.getSubTypeExternalReferenceCode() == null) {
+			map.put("subTypeExternalReferenceCode", null);
 		}
 		else {
 			map.put(
-				"subTypeExternalReference",
+				"subTypeExternalReferenceCode",
 				String.valueOf(
-					classSubtypeReference.getSubTypeExternalReference()));
+					classSubtypeReference.getSubTypeExternalReferenceCode()));
 		}
 
 		return map;
@@ -134,7 +138,7 @@ public class ClassSubtypeReferenceSerDes {
 				return false;
 			}
 			else if (Objects.equals(
-						jsonParserFieldName, "subTypeExternalReference")) {
+						jsonParserFieldName, "subTypeExternalReferenceCode")) {
 
 				return false;
 			}
@@ -154,12 +158,11 @@ public class ClassSubtypeReferenceSerDes {
 				}
 			}
 			else if (Objects.equals(
-						jsonParserFieldName, "subTypeExternalReference")) {
+						jsonParserFieldName, "subTypeExternalReferenceCode")) {
 
 				if (jsonParserFieldValue != null) {
-					classSubtypeReference.setSubTypeExternalReference(
-						ItemExternalReferenceSerDes.toDTO(
-							(String)jsonParserFieldValue));
+					classSubtypeReference.setSubTypeExternalReferenceCode(
+						(String)jsonParserFieldValue);
 				}
 			}
 		}
