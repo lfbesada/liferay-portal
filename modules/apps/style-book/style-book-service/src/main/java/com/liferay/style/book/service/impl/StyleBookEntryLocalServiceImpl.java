@@ -266,6 +266,15 @@ public class StyleBookEntryLocalServiceImpl
 	}
 
 	@Override
+	public StyleBookEntry getStyleBookEntryByExternalReferenceCode(
+			String externalReferenceCode, long groupId)
+		throws PortalException {
+
+		return styleBookEntryPersistence.findByERC_G_Head(
+			externalReferenceCode, groupId, true);
+	}
+
+	@Override
 	public StyleBookEntry updateDefaultStyleBookEntry(
 			long styleBookEntryId, boolean defaultStyleBookEntry)
 		throws PortalException {
