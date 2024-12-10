@@ -521,7 +521,6 @@ public class PageSpecificationResourceTest
 		}
 
 		Assert.assertTrue(ArrayUtil.isNotEmpty(actualPageElements));
-
 		Assert.assertEquals(
 			Arrays.toString(actualPageElements), expectedPageElements.length,
 			actualPageElements.length);
