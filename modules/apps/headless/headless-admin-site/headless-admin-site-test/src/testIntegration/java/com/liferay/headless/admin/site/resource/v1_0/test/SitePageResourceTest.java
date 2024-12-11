@@ -9,7 +9,6 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.headless.admin.site.client.dto.v1_0.ContentPageSpecification;
 import com.liferay.headless.admin.site.client.dto.v1_0.FriendlyUrlHistory;
 import com.liferay.headless.admin.site.client.dto.v1_0.PageSpecification;
-import com.liferay.headless.admin.site.client.dto.v1_0.Settings;
 import com.liferay.headless.admin.site.client.dto.v1_0.SitePage;
 import com.liferay.headless.admin.site.client.dto.v1_0.WidgetPageSettings;
 import com.liferay.headless.admin.site.client.problem.Problem;
@@ -438,7 +437,6 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 							{
 								setExternalReferenceCode(
 									layout::getExternalReferenceCode);
-								setSettings(() -> new Settings());
 								setStatus(() -> Status.DRAFT);
 								setType(() -> Type.CONTENT_PAGE_SPECIFICATION);
 							}
