@@ -207,7 +207,9 @@ public class SitePageResourceImpl extends BaseSitePageResourceImpl {
 				true, contextCompany.getCompanyId(),
 				siteExternalReferenceCode));
 
-		if (!layout.isTypeContent()) {
+		if (layout.isDraftLayout() || !layout.isPublished() ||
+			!layout.isTypeContent()) {
+
 			throw new UnsupportedOperationException();
 		}
 
