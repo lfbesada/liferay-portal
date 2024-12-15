@@ -40,12 +40,14 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portal.util.PropsValues;
 
+import java.util.Collections;
 import java.util.Locale;
 import java.util.Map;
 
@@ -109,6 +111,30 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		_testGetSiteSiteByExternalReferenceCodeSitePageWithNestedFields(
 			testGetSiteSiteByExternalReferenceCodeSitePagesPage_addSitePage(
 				testGroup.getExternalReferenceCode(), randomSitePage()));
+
+		Layout layout = _addCollectionLayout();
+
+		_assertSitePage(
+			layout,
+			sitePageResource.getSiteSiteByExternalReferenceCodeSitePage(
+				testGroup.getExternalReferenceCode(),
+				layout.getExternalReferenceCode()));
+
+		layout = LayoutTestUtil.addTypeContentLayout(testGroup);
+
+		_assertSitePage(
+			layout,
+			sitePageResource.getSiteSiteByExternalReferenceCodeSitePage(
+				testGroup.getExternalReferenceCode(),
+				layout.getExternalReferenceCode()));
+
+		layout = LayoutTestUtil.addTypePortletLayout(testGroup);
+
+		_assertSitePage(
+			layout,
+			sitePageResource.getSiteSiteByExternalReferenceCodeSitePage(
+				testGroup.getExternalReferenceCode(),
+				layout.getExternalReferenceCode()));
 	}
 
 	@Ignore
@@ -264,6 +290,31 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 			testGroup.getExternalReferenceCode(), sitePage);
 	}
 
+	private Layout _addCollectionLayout()
+		throws Exception {
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(
+				testGroup.getGroupId(), TestPropsValues.getUserId());
+
+		return _layoutLocalService.addLayout(
+			null, TestPropsValues.getUserId(), testGroup.getGroupId(), false,
+			LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, 0, 0,
+			RandomTestUtil.randomLocaleStringMap(), Collections.emptyMap(),
+			Collections.emptyMap(), Collections.emptyMap(),
+			Collections.emptyMap(), LayoutConstants.TYPE_COLLECTION,
+			UnicodePropertiesBuilder.put(
+				"collectionPK",
+				"com.liferay.asset.internal.info.collection.provider." +
+					"RecentContentInfoCollectionProvider"
+			).put(
+				"collectionType",
+				"com.liferay.info.list.provider.item.selector.criterion." +
+					"InfoListProviderItemSelectorReturnType"
+			).buildString(),
+			false, false, Collections.emptyMap(), 0L, serviceContext);
+	}
+
 	private void _assertNestedFields(SitePage sitePage) throws Exception {
 		FriendlyUrlHistory friendlyUrlHistory =
 			sitePage.getFriendlyUrlHistory();
@@ -328,6 +379,10 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 			Assert.assertEquals("BAD_REQUEST", problem.getStatus());
 			Assert.assertNull(problem.getTitle());
 		}
+	}
+
+	private void _assertSitePage(Layout layout, SitePage sitePage) {
+		//todo
 	}
 
 	private CollectionPageSettings _getCollectionPageSettings() {
