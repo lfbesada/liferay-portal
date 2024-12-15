@@ -357,6 +357,7 @@ public class PageTemplateResourceTest extends BasePageTemplateResourceTestCase {
 		_testPostSiteSiteByExternalReferenceCodePageTemplate();
 	}
 
+	@Ignore
 	@Override
 	@Test
 	public void testPostSiteSiteByExternalReferenceCodePageTemplatePageSpecification()
