@@ -360,7 +360,6 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 			Assert.assertEquals(
 				PageSpecification.Status.APPROVED,
 				pageSpecification1.getStatus());
-
 			Assert.assertEquals(
 				draftLayout.getExternalReferenceCode(),
 				pageSpecification2.getExternalReferenceCode());
@@ -375,7 +374,6 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 			pageSpecification1.getExternalReferenceCode());
 		Assert.assertEquals(
 			PageSpecification.Status.DRAFT, pageSpecification1.getStatus());
-
 		Assert.assertEquals(
 			layout.getExternalReferenceCode(),
 			pageSpecification2.getExternalReferenceCode());
