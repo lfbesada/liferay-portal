@@ -6,7 +6,10 @@
 package com.liferay.headless.admin.site.resource.v1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.headless.admin.site.client.dto.v1_0.ContentPageSettings;
+import com.liferay.headless.admin.site.client.dto.v1_0.ContentPageSpecification;
 import com.liferay.headless.admin.site.client.dto.v1_0.FriendlyUrlHistory;
+import com.liferay.headless.admin.site.client.dto.v1_0.PageSpecification;
 import com.liferay.headless.admin.site.client.dto.v1_0.SitePage;
 import com.liferay.headless.admin.site.client.dto.v1_0.WidgetPageSettings;
 import com.liferay.headless.admin.site.client.resource.v1_0.SitePageResource;
@@ -98,7 +101,13 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 	public void testGetSiteSiteByExternalReferenceCodeSitePagesPage()
 		throws Exception {
 
+		//		super.testGetSiteSiteByExternalReferenceCodeSitePagesPage();
+
+		_sitePageType = SitePage.Type.CONTENT_PAGE;
+
 		super.testGetSiteSiteByExternalReferenceCodeSitePagesPage();
+
+		_sitePageType = SitePage.Type.WIDGET_PAGE;
 	}
 
 	@Override
@@ -165,6 +174,10 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 
 	@Override
 	protected SitePage randomSitePage() throws Exception {
+		if (_sitePageType == SitePage.Type.CONTENT_PAGE) {
+			return _randomSitePageTypeContent();
+		}
+
 		SitePage sitePage = super.randomSitePage();
 
 		sitePage.setFriendlyUrlPath_i18n(
@@ -268,6 +281,66 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		).build();
 	}
 
+	private ContentPageSpecification _randomContentPageSpecification(
+			PageSpecification.Status status)
+		throws Exception {
+
+		ContentPageSpecification pageSpecification =
+			new ContentPageSpecification();
+
+		pageSpecification.setExternalReferenceCode(
+			StringUtil.toLowerCase(RandomTestUtil.randomString()));
+		pageSpecification.setStatus(status);
+		pageSpecification.setType(
+			PageSpecification.Type.create("ContentPageSpecification"));
+
+		return pageSpecification;
+	}
+
+	private PageSpecification[] _randomPageSpecifications() throws Exception {
+		return new PageSpecification[] {
+			_randomContentPageSpecification(PageSpecification.Status.DRAFT),
+			_randomContentPageSpecification(PageSpecification.Status.APPROVED)
+		};
+	}
+
+	private SitePage _randomSitePageTypeContent() throws Exception {
+		SitePage sitePage = super.randomSitePage();
+
+		sitePage.setFriendlyUrlPath_i18n(
+			HashMapBuilder.put(
+				LocaleUtil.toBCP47LanguageId(LocaleUtil.SPAIN),
+				StringPool.FORWARD_SLASH +
+					StringUtil.toLowerCase(RandomTestUtil.randomString())
+			).put(
+				LocaleUtil.toBCP47LanguageId(LocaleUtil.US),
+				StringPool.FORWARD_SLASH +
+					StringUtil.toLowerCase(RandomTestUtil.randomString())
+			).build());
+		sitePage.setName_i18n(
+			HashMapBuilder.put(
+				LocaleUtil.toBCP47LanguageId(LocaleUtil.US),
+				RandomTestUtil.randomString()
+			).put(
+				LocaleUtil.toBCP47LanguageId(LocaleUtil.SPAIN),
+				RandomTestUtil.randomString()
+			).build());
+		sitePage.setPageSpecifications(_randomPageSpecifications());
+		sitePage.setPageSettings(
+			new ContentPageSettings() {
+				{
+					setHiddenFromNavigation(false);
+					setType(Type.CONTENT_PAGE_SETTINGS);
+				}
+			});
+		sitePage.setPageSpecifications(_randomPageSpecifications());
+		sitePage.setSiteExternalReferenceCode(
+			testGroup.getExternalReferenceCode());
+		sitePage.setType(SitePage.Type.CONTENT_PAGE);
+
+		return sitePage;
+	}
+
 	private void
 			_testGetSiteSiteByExternalReferenceCodeSitePageWithNestedFields(
 				SitePage sitePage)
@@ -280,6 +353,8 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 				testGroup.getExternalReferenceCode(),
 				sitePage.getExternalReferenceCode()));
 	}
+
+	private static SitePage.Type _sitePageType = SitePage.Type.WIDGET_PAGE;
 
 	@Inject
 	private JSONFactory _jsonFactory;

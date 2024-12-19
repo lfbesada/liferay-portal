@@ -5,6 +5,7 @@
 
 package com.liferay.headless.admin.site.internal.dto.v1_0.converter;
 
+import com.liferay.headless.admin.site.dto.v1_0.ContentPageSettings;
 import com.liferay.headless.admin.site.dto.v1_0.PageSettings;
 import com.liferay.headless.admin.site.dto.v1_0.SitePage;
 import com.liferay.headless.admin.site.dto.v1_0.WidgetPageSettings;
@@ -70,6 +71,10 @@ public class SitePageDTOConverter implements DTOConverter<Layout, SitePage> {
 		PageSettings pageSettings = null;
 
 		SitePage.Type type = _toType(layout);
+
+		if (type == SitePage.Type.CONTENT_PAGE) {
+			pageSettings = new ContentPageSettings();
+		}
 
 		if (type == SitePage.Type.WIDGET_PAGE) {
 			pageSettings = _toWidgetPageSettings(layout);

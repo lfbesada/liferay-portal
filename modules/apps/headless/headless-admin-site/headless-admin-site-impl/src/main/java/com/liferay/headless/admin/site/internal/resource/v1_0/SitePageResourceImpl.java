@@ -5,6 +5,11 @@
 
 package com.liferay.headless.admin.site.internal.resource.v1_0;
 
+import com.liferay.headless.admin.site.dto.v1_0.ClassNameReference;
+import com.liferay.headless.admin.site.dto.v1_0.CollectionPageSettings;
+import com.liferay.headless.admin.site.dto.v1_0.CollectionReference;
+import com.liferay.headless.admin.site.dto.v1_0.ContentPageSettings;
+import com.liferay.headless.admin.site.dto.v1_0.PageSettings;
 import com.liferay.headless.admin.site.dto.v1_0.SitePage;
 import com.liferay.headless.admin.site.dto.v1_0.WidgetPageSettings;
 import com.liferay.headless.admin.site.internal.resource.util.GroupUtil;
@@ -124,9 +129,11 @@ public class SitePageResourceImpl extends BaseSitePageResourceImpl {
 				searchContext.addVulcanAggregation(aggregation);
 				searchContext.setAttribute(Field.TITLE, search);
 				searchContext.setAttribute(
-					Field.TYPE, new String[] {
+					Field.TYPE,
+					new String[] {
 						LayoutConstants.TYPE_CONTENT,
-						LayoutConstants.TYPE_PORTLET});
+						LayoutConstants.TYPE_PORTLET
+					});
 				searchContext.setAttribute(
 					"privateLayout", Boolean.FALSE.toString());
 				searchContext.setCompanyId(contextCompany.getCompanyId());
@@ -151,11 +158,82 @@ public class SitePageResourceImpl extends BaseSitePageResourceImpl {
 			throw new UnsupportedOperationException();
 		}
 
+		PageSettings pageSettings = sitePage.getPageSettings();
+
+		String typeSettings = null;
+
+		if (sitePage.getType() == SitePage.Type.COLLECTION_PAGE) {
+			if (!(pageSettings instanceof CollectionPageSettings)) {
+				throw new NotSupportedException();
+			}
+
+			CollectionPageSettings collectionPageSettings =
+				(CollectionPageSettings)pageSettings;
+
+			CollectionReference collectionReference =
+				collectionPageSettings.getCollectionReference();
+
+			if ((collectionReference == null) ||
+				(collectionReference.getCollectionType() == null)) {
+
+				throw new NotSupportedException();
+			}
+
+			CollectionReference.CollectionType collectionType =
+				collectionReference.getCollectionType();
+
+			if (collectionType ==
+					CollectionReference.CollectionType.COLLECTION) {
+
+				// TODO
+
+			}
+			else if (collectionType ==
+						CollectionReference.CollectionType.
+							COLLECTION_PROVIDER) {
+
+				if (!(collectionReference instanceof ClassNameReference)) {
+					throw new NotSupportedException();
+				}
+
+				ClassNameReference classNameReference =
+					(ClassNameReference)collectionReference;
+
+				if (classNameReference.getClassName() == null) {
+					throw new NotSupportedException();
+				}
+
+				typeSettings = UnicodePropertiesBuilder.create(
+					true
+				).setProperty(
+					"collectionPK", classNameReference.getClassName()
+				).setProperty(
+					"collectionType", "TODO"
+				).buildString();
+			}
+			else {
+				throw new NotSupportedException();
+			}
+		}
+		else if (sitePage.getType() == SitePage.Type.CONTENT_PAGE) {
+			if (!(pageSettings instanceof ContentPageSettings)) {
+				throw new NotSupportedException();
+			}
+		}
+		else if (sitePage.getType() == SitePage.Type.WIDGET_PAGE) {
+			WidgetPageSettings widgetPageSettings =
+				(WidgetPageSettings)pageSettings;
+
+			typeSettings = UnicodePropertiesBuilder.create(
+				true
+			).setProperty(
+				LayoutTypePortletConstants.LAYOUT_TEMPLATE_ID,
+				widgetPageSettings.getLayoutTemplateId()
+			).buildString();
+		}
+
 		long groupId = GroupUtil.getGroupId(
 			false, contextCompany.getCompanyId(), siteExternalReferenceCode);
-
-		WidgetPageSettings widgetPageSettings =
-			(WidgetPageSettings)sitePage.getPageSettings();
 
 		ServiceContext serviceContext = ServiceContextBuilder.create(
 			groupId, contextHttpServletRequest, sitePage.getViewableByAsString()
@@ -169,15 +247,8 @@ public class SitePageResourceImpl extends BaseSitePageResourceImpl {
 				LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, 0, 0,
 				LocalizedMapUtil.getLocalizedMap(sitePage.getName_i18n()),
 				LocalizedMapUtil.getLocalizedMap(sitePage.getName_i18n()), null,
-				null, null, _toType(sitePage.getType()),
-				UnicodePropertiesBuilder.create(
-					true
-				).setProperty(
-					LayoutTypePortletConstants.LAYOUT_TEMPLATE_ID,
-					widgetPageSettings.getLayoutTemplateId()
-				).buildString(),
-				GetterUtil.getBoolean(
-					widgetPageSettings.getHiddenFromNavigation()),
+				null, null, _toType(sitePage.getType()), typeSettings,
+				GetterUtil.getBoolean(pageSettings.getHiddenFromNavigation()),
 				false,
 				LocalizedMapUtil.getLocalizedMap(
 					sitePage.getFriendlyUrlPath_i18n()),
