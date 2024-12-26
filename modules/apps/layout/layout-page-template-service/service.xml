@@ -329,9 +329,12 @@
 		<exception>DuplicateLayoutPageTemplateCollection</exception>
 		<exception>DuplicateLayoutPageTemplateCollectionType</exception>
 		<exception>DuplicateLayoutPageTemplateEntry</exception>
+		<exception>InvalidLayoutPageTemplateCollection</exception>
 		<exception>LayoutPageTemplateCollectionName</exception>
+		<exception>LayoutPageTemplateCollectionRequired</exception>
 		<exception>LayoutPageTemplateEntryDefaultTemplate</exception>
 		<exception>LayoutPageTemplateEntryName</exception>
 		<exception>RequiredLayoutPageTemplateEntry</exception>
+		<exception>UnsupportedGroup</exception>
 	</exceptions>
 </service-builder>
