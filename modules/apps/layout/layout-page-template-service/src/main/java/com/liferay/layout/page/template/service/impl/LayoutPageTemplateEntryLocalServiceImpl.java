@@ -13,10 +13,13 @@ import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.info.item.provider.InfoItemFormVariationsProvider;
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
 import com.liferay.layout.constants.LayoutTypeSettingsConstants;
+import com.liferay.layout.page.template.constants.LayoutPageTemplateConstants;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
+import com.liferay.layout.page.template.exception.InvalidLayoutPageTemplateCollectionException;
 import com.liferay.layout.page.template.exception.LayoutPageTemplateEntryDefaultTemplateException;
 import com.liferay.layout.page.template.exception.LayoutPageTemplateEntryNameException;
 import com.liferay.layout.page.template.exception.NoSuchPageTemplateEntryException;
+import com.liferay.layout.page.template.exception.UnsupportedGroupException;
 import com.liferay.layout.page.template.internal.validator.LayoutPageTemplateEntryValidator;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.base.LayoutPageTemplateEntryLocalServiceBaseImpl;
@@ -31,6 +34,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ColorScheme;
 import com.liferay.portal.kernel.model.Company;
+import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutPrototype;
@@ -47,6 +51,7 @@ import com.liferay.portal.kernel.repository.model.Folder;
 import com.liferay.portal.kernel.security.auth.GuestOrUserUtil;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.CompanyLocalService;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.LayoutPrototypeLocalService;
 import com.liferay.portal.kernel.service.LayoutSetLocalService;
@@ -129,6 +134,7 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 		_validate(
 			groupId, layoutPageTemplateCollectionId, name, type,
 			defaultTemplate, status);
+		_validateGroup(groupId, layoutPageTemplateCollectionId, type);
 
 		long layoutPageTemplateEntryId = counterLocalService.increment();
 
@@ -1166,6 +1172,60 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 		_validate(groupId, layoutPageTemplateCollectionId, name, type);
 	}
 
+	private void _validateGroup(
+			long groupId, long layoutPageTemplateCollectionId, int type)
+		throws PortalException {
+
+		Group group = _groupLocalService.getGroup(groupId);
+
+		if (group.isDepot()) {
+			throw new UnsupportedGroupException();
+		}
+
+		if (group.isCompany()) {
+			if (!Objects.equals(
+					LayoutPageTemplateEntryTypeConstants.WIDGET_PAGE, type)) {
+
+				throw new UnsupportedGroupException();
+			}
+
+			if (layoutPageTemplateCollectionId !=
+					LayoutPageTemplateConstants.
+						PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT) {
+
+				throw new InvalidLayoutPageTemplateCollectionException();
+			}
+
+			return;
+		}
+
+		if (Objects.equals(
+				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE, type)) {
+
+			return;
+		}
+
+		if (Objects.equals(
+				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT, type)) {
+
+			if (layoutPageTemplateCollectionId !=
+					LayoutPageTemplateConstants.
+						PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT) {
+
+				throw new InvalidLayoutPageTemplateCollectionException();
+			}
+
+			return;
+		}
+
+		if (layoutPageTemplateCollectionId ==
+				LayoutPageTemplateConstants.
+					PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT) {
+
+			throw new InvalidLayoutPageTemplateCollectionException();
+		}
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		LayoutPageTemplateEntryLocalServiceImpl.class);
 
@@ -1180,6 +1240,9 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 
 	@Reference
 	private File _file;
+
+	@Reference
+	private GroupLocalService _groupLocalService;
 
 	@Reference
 	private InfoItemServiceRegistry _infoItemServiceRegistry;
