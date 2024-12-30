@@ -7,19 +7,16 @@ package com.liferay.layout.utility.page.status.internal.struts;
 
 import com.liferay.petra.io.unsync.UnsyncStringWriter;
 import com.liferay.portal.kernel.model.LayoutSet;
-import com.liferay.portal.kernel.model.Theme;
 import com.liferay.portal.kernel.service.LayoutSetLocalService;
-import com.liferay.portal.kernel.service.ThemeLocalService;
 import com.liferay.portal.kernel.servlet.PipingServletResponse;
 import com.liferay.portal.kernel.servlet.PortalMessages;
 import com.liferay.portal.kernel.servlet.ServletResponseUtil;
+import com.liferay.portal.kernel.servlet.SessionErrors;
 import com.liferay.portal.kernel.servlet.SessionMessages;
 import com.liferay.portal.kernel.struts.StrutsAction;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.theme.ThemeUtil;
-import com.liferay.portal.kernel.util.ColorSchemeFactoryUtil;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.util.ThemeFactoryUtil;
 
 import javax.servlet.RequestDispatcher;
 import javax.servlet.ServletContext;
@@ -53,41 +50,10 @@ public class StatusStrutsAction implements StrutsAction {
 			themeDisplay.getScopeGroupId(), false);
 
 		themeDisplay.setLayoutSet(layoutSet);
-
-		Theme theme = layoutSet.getTheme();
-
-		themeDisplay.setLookAndFeel(theme, layoutSet.getColorScheme());
+		themeDisplay.setLookAndFeel(
+			layoutSet.getTheme(), layoutSet.getColorScheme());
 
 		httpServletRequest.setAttribute(WebKeys.THEME_DISPLAY, themeDisplay);
-
-		String html = _getHTML(httpServletRequest, httpServletResponse, theme);
-
-		if (html == null) {
-			theme = _themeLocalService.getTheme(
-				themeDisplay.getCompanyId(),
-				ThemeFactoryUtil.getDefaultRegularThemeId(
-					themeDisplay.getCompanyId()));
-
-			themeDisplay.setLookAndFeel(
-				theme,
-				_themeLocalService.getColorScheme(
-					themeDisplay.getCompanyId(), theme.getThemeId(),
-					ColorSchemeFactoryUtil.getDefaultRegularColorSchemeId()));
-
-			html = _getHTML(httpServletRequest, httpServletResponse, theme);
-		}
-
-		if (html != null) {
-			ServletResponseUtil.write(httpServletResponse, html);
-		}
-
-		return null;
-	}
-
-	private String _getHTML(
-			HttpServletRequest httpServletRequest,
-			HttpServletResponse httpServletResponse, Theme theme)
-		throws Exception {
 
 		RequestDispatcher requestDispatcher =
 			_servletContext.getRequestDispatcher("/status.jsp");
@@ -99,23 +65,24 @@ public class StatusStrutsAction implements StrutsAction {
 
 		requestDispatcher.include(httpServletRequest, pipingServletResponse);
 
+		SessionErrors.clear(httpServletRequest);
+
 		Document document = Jsoup.parse(
 			ThemeUtil.include(
 				httpServletRequest.getServletContext(), httpServletRequest,
-				httpServletResponse, "portal_normal.ftl", theme, false));
+				httpServletResponse, "portal_normal.ftl", layoutSet.getTheme(),
+				false));
 
 		PortalMessages.clear(httpServletRequest);
 		SessionMessages.clear(httpServletRequest);
 
 		Element contentElement = document.getElementById("content");
 
-		if (contentElement == null) {
-			return null;
-		}
-
 		contentElement.html(unsyncStringWriter.toString());
 
-		return document.html();
+		ServletResponseUtil.write(httpServletResponse, document.html());
+
+		return null;
 	}
 
 	@Reference
@@ -125,8 +92,5 @@ public class StatusStrutsAction implements StrutsAction {
 		target = "(osgi.web.symbolicname=com.liferay.layout.utility.page.status)"
 	)
 	private ServletContext _servletContext;
-
-	@Reference
-	private ThemeLocalService _themeLocalService;
 
 }
