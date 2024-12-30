@@ -10,7 +10,7 @@
 		<@liferay_util["include"] page=top_head_include />
 	</head>
 
-	<body class="speedwell ${css_class}" id="content">
+	<body class="speedwell ${css_class}">
 		<@liferay.control_menu />
 
 		<div class="liferay-top">
@@ -27,11 +27,11 @@
 				<#if speedwell_content_css_class?contains("wide")>
 				<div class="speedwell-frame speedwell-frame__content--wide">
 				<#else>
-				<div class="speedwell-frame speedwell-frame__content">
+				<div class="speedwell-frame speedwell-frame__content" >
 				</#if>
 					<a name="speedwell-top"></a>
 
-					<div class="container-fluid ${speedwell_content_css_class}">
+					<div class="container-fluid ${speedwell_content_css_class}"  id="content">
 						<#if selectable>
 							<@liferay_util["include"] page=content_include />
 						<#else>
