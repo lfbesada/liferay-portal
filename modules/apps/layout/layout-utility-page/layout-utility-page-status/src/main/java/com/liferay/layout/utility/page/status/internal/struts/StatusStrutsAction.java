@@ -6,6 +6,8 @@
 package com.liferay.layout.utility.page.status.internal.struts;
 
 import com.liferay.petra.io.unsync.UnsyncStringWriter;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.LayoutSet;
 import com.liferay.portal.kernel.service.LayoutSetLocalService;
 import com.liferay.portal.kernel.servlet.PipingServletResponse;
@@ -79,6 +81,12 @@ public class StatusStrutsAction implements StrutsAction {
 		Element element = document.getElementById("content");
 
 		if (element == null) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(
+					"Theme " + layoutSet.getThemeId() +
+						" lacks a 'content' ID, replacing all body content");
+			}
+
 			element = document.body();
 		}
 
@@ -88,6 +96,9 @@ public class StatusStrutsAction implements StrutsAction {
 
 		return null;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		StatusStrutsAction.class);
 
 	@Reference
 	private LayoutSetLocalService _layoutSetLocalService;
