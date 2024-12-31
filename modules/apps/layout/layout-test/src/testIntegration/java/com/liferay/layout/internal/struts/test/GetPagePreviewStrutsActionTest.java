@@ -101,6 +101,7 @@ public class GetPagePreviewStrutsActionTest {
 	}
 
 	@Test
+	@TestInfo({"LPD-25388", "LPD-25388"})
 	public void testGetPagePreviewContentPageLayoutSetNoDefaultTheme()
 		throws Exception {
 
