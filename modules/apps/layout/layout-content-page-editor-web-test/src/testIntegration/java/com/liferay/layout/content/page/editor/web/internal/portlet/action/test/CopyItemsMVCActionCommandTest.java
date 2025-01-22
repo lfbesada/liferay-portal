@@ -399,13 +399,13 @@ public class CopyItemsMVCActionCommandTest {
 			LayoutContentPageEditorWebPortletKeys.
 				LAYOUT_CONTENT_PAGE_EDITOR_WEB_NONINSTANCEABLE_TEST_PORTLET);
 
-		_testCopyFragmentStyledLayoutStructureItem(
+		_testCopyFragmentEntryLink(
 			2, fragmentStyledLayoutStructureItem);
 	}
 
 	@Test
 	public void testCopyPortletFragmentEntryLink() throws Exception {
-		_testCopyFragmentStyledLayoutStructureItem(
+		_testCopyFragmentEntryLink(
 			3,
 			_addFragmentStyledLayoutStructureItem(
 				LayoutContentPageEditorWebPortletKeys.
@@ -646,7 +646,7 @@ public class CopyItemsMVCActionCommandTest {
 		return mockLiferayPortletActionRequest;
 	}
 
-	private void _testCopyFragmentStyledLayoutStructureItem(
+	private void _testCopyFragmentEntryLink(
 			int count,
 			FragmentStyledLayoutStructureItem fragmentStyledLayoutStructureItem)
 		throws Exception {
