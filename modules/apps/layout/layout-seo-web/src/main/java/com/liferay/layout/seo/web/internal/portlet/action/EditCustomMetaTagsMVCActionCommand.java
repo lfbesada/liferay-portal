@@ -6,9 +6,6 @@
 package com.liferay.layout.seo.web.internal.portlet.action;
 
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
-import com.liferay.layout.seo.model.LayoutSEOEntry;
-import com.liferay.layout.seo.service.LayoutSEOEntryCustomMetaTagLocalService;
-import com.liferay.layout.seo.service.LayoutSEOEntryLocalService;
 import com.liferay.layout.seo.service.LayoutSEOEntryService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
@@ -28,6 +25,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Set;
@@ -60,21 +58,8 @@ public class EditCustomMetaTagsMVCActionCommand extends BaseMVCActionCommand {
 			actionRequest, "privateLayout");
 		long layoutId = ParamUtil.getLong(actionRequest, "layoutId");
 
-		LayoutSEOEntry layoutSEOEntry =
-			_layoutSEOEntryLocalService.fetchLayoutSEOEntry(
-				groupId, privateLayout, layoutId);
-
-		if (layoutSEOEntry == null) {
-			layoutSEOEntry = _layoutSEOEntryService.updateLayoutSEOEntry(
-				groupId, privateLayout, layoutId, false, new HashMap<>(),
-				ServiceContextFactory.getInstance(
-					Layout.class.getName(), actionRequest));
-		}
-		else {
-			_layoutSEOEntryCustomMetaTagLocalService.
-				deleteLayoutSEOEntryCustomMetaTags(
-					groupId, layoutSEOEntry.getLayoutSEOEntryId());
-		}
+		Map<String, Map<Locale, String>> customMetaTagsMap =
+			new LinkedHashMap<>();
 
 		Set<Locale> locales = _language.getAvailableLocales(groupId);
 
@@ -104,12 +89,14 @@ public class EditCustomMetaTagsMVCActionCommand extends BaseMVCActionCommand {
 			}
 
 			if (MapUtil.isNotEmpty(contentMap)) {
-				_layoutSEOEntryCustomMetaTagLocalService.
-					addLayoutSEOEntryCustomMetaTag(
-						groupId, layoutSEOEntry.getLayoutSEOEntryId(), property,
-						contentMap);
+				customMetaTagsMap.put(property, contentMap);
 			}
 		}
+
+		_layoutSEOEntryService.updateLayoutSEOEntry(
+			groupId, privateLayout, layoutId, customMetaTagsMap,
+			ServiceContextFactory.getInstance(
+				Layout.class.getName(), actionRequest));
 
 		String redirect = ParamUtil.getString(actionRequest, "redirect");
 
@@ -137,13 +124,6 @@ public class EditCustomMetaTagsMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
-
-	@Reference
-	private LayoutSEOEntryCustomMetaTagLocalService
-		_layoutSEOEntryCustomMetaTagLocalService;
-
-	@Reference
-	private LayoutSEOEntryLocalService _layoutSEOEntryLocalService;
 
 	@Reference
 	private LayoutSEOEntryService _layoutSEOEntryService;

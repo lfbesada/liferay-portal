@@ -34,8 +34,6 @@ import com.liferay.layout.constants.LayoutTypeSettingsConstants;
 import com.liferay.layout.importer.LayoutsImporter;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
-import com.liferay.layout.seo.model.LayoutSEOEntry;
-import com.liferay.layout.seo.service.LayoutSEOEntryCustomMetaTagLocalService;
 import com.liferay.layout.seo.service.LayoutSEOEntryService;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.petra.string.StringBundler;
@@ -107,6 +105,7 @@ import com.liferay.segments.service.SegmentsExperienceService;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -973,12 +972,11 @@ public class SitePageResourceImpl extends BaseSitePageResourceImpl {
 			groupId, contextHttpServletRequest, null
 		).build();
 
-		LayoutSEOEntry layoutSEOEntry =
-			_layoutSEOEntryService.updateLayoutSEOEntry(
-				groupId, false, layoutId, canonicalURLEnabled, canonicalURLMap,
-				openGraphDescriptionEnabled, openGraphDescriptionMap,
-				openGraphImageAltMap, openGraphImageFileEntryId,
-				openGraphTitleEnabled, openGraphTitleMap, serviceContext);
+		_layoutSEOEntryService.updateLayoutSEOEntry(
+			groupId, false, layoutId, canonicalURLEnabled, canonicalURLMap,
+			openGraphDescriptionEnabled, openGraphDescriptionMap,
+			openGraphImageAltMap, openGraphImageFileEntryId,
+			openGraphTitleEnabled, openGraphTitleMap, serviceContext);
 
 		CustomMetaTag[] customMetaTags = pageSettings.getCustomMetaTags();
 
@@ -986,16 +984,19 @@ public class SitePageResourceImpl extends BaseSitePageResourceImpl {
 			return;
 		}
 
+		Map<String, Map<Locale, String>> customMetaTagsMap =
+			new LinkedHashMap<>();
+
 		for (CustomMetaTag customMetaTag : customMetaTags) {
-			_layoutSEOEntryCustomMetaTagLocalService.
-				addLayoutSEOEntryCustomMetaTag(
-					groupId, layoutSEOEntry.getLayoutSEOEntryId(),
-					customMetaTag.getKey(),
-					LocalizedMapUtil.getLocalizedMap(
-						contextAcceptLanguage.getPreferredLocale(),
-						customMetaTag.getValue(),
-						customMetaTag.getValue_i18n()));
+			customMetaTagsMap.put(
+				customMetaTag.getKey(),
+				LocalizedMapUtil.getLocalizedMap(
+					contextAcceptLanguage.getPreferredLocale(),
+					customMetaTag.getValue(), customMetaTag.getValue_i18n()));
 		}
+
+		_layoutSEOEntryService.updateLayoutSEOEntry(
+			groupId, false, layoutId, customMetaTagsMap, serviceContext);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
@@ -1024,10 +1025,6 @@ public class SitePageResourceImpl extends BaseSitePageResourceImpl {
 	@Reference
 	private LayoutPageTemplateStructureLocalService
 		_layoutPageTemplateStructureLocalService;
-
-	@Reference
-	private LayoutSEOEntryCustomMetaTagLocalService
-		_layoutSEOEntryCustomMetaTagLocalService;
 
 	@Reference
 	private LayoutSEOEntryService _layoutSEOEntryService;
