@@ -60,7 +60,8 @@ public class LayoutSEOEntryCustomMetaTagUpgradeProcess extends UpgradeProcess {
 	protected void doUpgrade() throws Exception {
 		try (PreparedStatement preparedStatement1 = connection.prepareStatement(
 				"select ctCollectionId, layoutSEOEntryId, groupId, " +
-					"companyId, ddmStorageId from LayoutSEOEntry");
+					"companyId, ddmStorageId from LayoutSEOEntry where " +
+						"ddmStorageId > 0");
 			PreparedStatement preparedStatement2 =
 				AutoBatchPreparedStatementUtil.concurrentAutoBatch(
 					connection,
