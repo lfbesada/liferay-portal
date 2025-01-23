@@ -125,56 +125,51 @@ public class LayoutSEOEntryCustomMetaTagUpgradeProcess extends UpgradeProcess {
 		DDMFormValues ddmFormValues = _ddmStorageEngineManager.getDDMFormValues(
 			ddmStorageId);
 
-		Map<String, List<DDMFormFieldValue>> ddmFormFieldValuesMap =
-			ddmFormValues.getDDMFormFieldValuesMap();
+		for (DDMFormFieldValue nameDDMFormFieldValue :
+				ddmFormValues.getDDMFormFieldValues()) {
 
-		for (List<DDMFormFieldValue> ddmFormFieldValues :
-				ddmFormFieldValuesMap.values()) {
-
-			for (DDMFormFieldValue nameDDMFormFieldValue : ddmFormFieldValues) {
-				if (_isLegacyDDMFormFieldValue(nameDDMFormFieldValue)) {
-					List<DDMFormFieldValue> nestedDDMFormFieldValues =
-						nameDDMFormFieldValue.getNestedDDMFormFieldValues();
-
-					nameDDMFormFieldValue = nestedDDMFormFieldValues.get(0);
-				}
-
-				Value nameValue = nameDDMFormFieldValue.getValue();
-
+			if (_isLegacyDDMFormFieldValue(nameDDMFormFieldValue)) {
 				List<DDMFormFieldValue> nestedDDMFormFieldValues =
 					nameDDMFormFieldValue.getNestedDDMFormFieldValues();
 
-				DDMFormFieldValue valueDDMFormFieldValue =
-					nestedDDMFormFieldValues.get(0);
-
-				Value valueValue = valueDDMFormFieldValue.getValue();
-
-				preparedStatement.setLong(1, 0);
-				preparedStatement.setLong(2, ctCollection);
-				preparedStatement.setLong(3, groupId);
-				preparedStatement.setLong(4, companyId);
-				preparedStatement.setLong(5, increment());
-				preparedStatement.setLong(6, layoutSEOEntryId);
-				preparedStatement.setString(
-					7, nameValue.getString(nameValue.getDefaultLocale()));
-
-				Map<String, String> localizedMap = new HashMap<>();
-
-				Map<Locale, String> contentMap = valueValue.getValues();
-
-				contentMap.forEach(
-					(locale, value) -> localizedMap.put(
-						LocaleUtil.toLanguageId(locale), value));
-
-				preparedStatement.setString(
-					8,
-					LocalizationUtil.getXml(
-						localizedMap,
-						LocaleUtil.toLanguageId(valueValue.getDefaultLocale()),
-						"Label"));
-
-				preparedStatement.addBatch();
+				nameDDMFormFieldValue = nestedDDMFormFieldValues.get(0);
 			}
+
+			Value nameValue = nameDDMFormFieldValue.getValue();
+
+			List<DDMFormFieldValue> nestedDDMFormFieldValues =
+				nameDDMFormFieldValue.getNestedDDMFormFieldValues();
+
+			DDMFormFieldValue valueDDMFormFieldValue =
+				nestedDDMFormFieldValues.get(0);
+
+			Value valueValue = valueDDMFormFieldValue.getValue();
+
+			preparedStatement.setLong(1, 0);
+			preparedStatement.setLong(2, ctCollection);
+			preparedStatement.setLong(3, groupId);
+			preparedStatement.setLong(4, companyId);
+			preparedStatement.setLong(5, increment());
+			preparedStatement.setLong(6, layoutSEOEntryId);
+			preparedStatement.setString(
+				7, nameValue.getString(nameValue.getDefaultLocale()));
+
+			Map<String, String> localizedMap = new HashMap<>();
+
+			Map<Locale, String> contentMap = valueValue.getValues();
+
+			contentMap.forEach(
+				(locale, value) -> localizedMap.put(
+					LocaleUtil.toLanguageId(locale), value));
+
+			preparedStatement.setString(
+				8,
+				LocalizationUtil.getXml(
+					localizedMap,
+					LocaleUtil.toLanguageId(valueValue.getDefaultLocale()),
+					"Label"));
+
+			preparedStatement.addBatch();
 		}
 
 		_ddmStorageEngineManager.deleteByClass(ddmStorageId);
