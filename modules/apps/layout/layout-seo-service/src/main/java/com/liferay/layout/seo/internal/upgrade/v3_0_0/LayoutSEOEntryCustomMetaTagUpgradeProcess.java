@@ -99,6 +99,10 @@ public class LayoutSEOEntryCustomMetaTagUpgradeProcess extends UpgradeProcess {
 							LayoutSEOEntry.class.getName()),
 						"custom-meta-tags");
 
+				if (ddmStructure == null) {
+					return;
+				}
+
 				_ddmStorageLinkLocalService.deleteStructureStorageLinks(
 					ddmStructure.getStructureId());
 
