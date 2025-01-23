@@ -93,6 +93,22 @@ public class LayoutSEOEntryServiceImpl extends LayoutSEOEntryServiceBaseImpl {
 			enabledCanonicalURLMap, canonicalURLMap, serviceContext);
 	}
 
+	@Override
+	public LayoutSEOEntry updateLayoutSEOEntry(
+			long groupId, boolean privateLayout, long layoutId,
+			Map<String, Map<Locale, String>> customMetaTagsMap,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		LayoutPermissionUtil.checkLayoutUpdatePermission(
+			getPermissionChecker(),
+			_layoutLocalService.getLayout(groupId, privateLayout, layoutId));
+
+		return layoutSEOEntryLocalService.updateLayoutSEOEntry(
+			getUserId(), groupId, privateLayout, layoutId, customMetaTagsMap,
+			serviceContext);
+	}
+
 	@Reference
 	private LayoutLocalService _layoutLocalService;
 

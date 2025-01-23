@@ -252,6 +252,43 @@ public class LayoutSEOEntryLocalServiceImpl
 		return layoutSEOEntryPersistence.update(layoutSEOEntry);
 	}
 
+	@Override
+	public LayoutSEOEntry updateLayoutSEOEntry(
+			long userId, long groupId, boolean privateLayout, long layoutId,
+			Map<String, Map<Locale, String>> customMetaTagsMap,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		LayoutSEOEntry layoutSEOEntry = fetchLayoutSEOEntry(
+			groupId, privateLayout, layoutId);
+
+		if (layoutSEOEntry == null) {
+			layoutSEOEntry = _addLayoutSEOEntry(
+				userId, groupId, privateLayout, layoutId, false,
+				Collections.emptyMap(), false, Collections.emptyMap(),
+				Collections.emptyMap(), 0, false, Collections.emptyMap(),
+				serviceContext);
+		}
+		else {
+			_layoutSEOEntryCustomMetaTagLocalService.
+				deleteLayoutSEOEntryCustomMetaTags(
+					groupId, layoutSEOEntry.getLayoutSEOEntryId());
+		}
+
+		for (Map.Entry<String, Map<Locale, String>> entry :
+				customMetaTagsMap.entrySet()) {
+
+			_layoutSEOEntryCustomMetaTagLocalService.
+				addLayoutSEOEntryCustomMetaTag(
+					groupId, layoutSEOEntry.getLayoutSEOEntryId(),
+					entry.getKey(), entry.getValue());
+		}
+
+		layoutSEOEntry.setModifiedDate(DateUtil.newDate());
+
+		return layoutSEOEntryPersistence.update(layoutSEOEntry);
+	}
+
 	private LayoutSEOEntry _addLayoutSEOEntry(
 			long userId, long groupId, boolean privateLayout, long layoutId,
 			boolean canonicalURLEnabled, Map<Locale, String> canonicalURLMap,
