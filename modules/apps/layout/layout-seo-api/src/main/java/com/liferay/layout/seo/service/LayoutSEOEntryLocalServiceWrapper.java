@@ -483,6 +483,19 @@ public class LayoutSEOEntryLocalServiceWrapper
 	}
 
 	@Override
+	public LayoutSEOEntry updateLayoutSEOEntry(
+			long userId, long groupId, boolean privateLayout, long layoutId,
+			java.util.Map<String, java.util.Map<java.util.Locale, String>>
+				customMetaTagsMap,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _layoutSEOEntryLocalService.updateLayoutSEOEntry(
+			userId, groupId, privateLayout, layoutId, customMetaTagsMap,
+			serviceContext);
+	}
+
+	@Override
 	public BasePersistence<?> getBasePersistence() {
 		return _layoutSEOEntryLocalService.getBasePersistence();
 	}

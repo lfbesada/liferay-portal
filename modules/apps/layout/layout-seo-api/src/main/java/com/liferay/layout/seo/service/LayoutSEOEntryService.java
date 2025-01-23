@@ -80,4 +80,10 @@ public interface LayoutSEOEntryService extends BaseService {
 			ServiceContext serviceContext)
 		throws PortalException;
 
+	public LayoutSEOEntry updateLayoutSEOEntry(
+			long groupId, boolean privateLayout, long layoutId,
+			Map<String, Map<Locale, String>> customMetaTagsMap,
+			ServiceContext serviceContext)
+		throws PortalException;
+
 }

@@ -89,6 +89,17 @@ public class LayoutSEOEntryServiceUtil {
 			canonicalURLMap, serviceContext);
 	}
 
+	public static LayoutSEOEntry updateLayoutSEOEntry(
+			long groupId, boolean privateLayout, long layoutId,
+			Map<String, Map<java.util.Locale, String>> customMetaTagsMap,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws PortalException {
+
+		return getService().updateLayoutSEOEntry(
+			groupId, privateLayout, layoutId, customMetaTagsMap,
+			serviceContext);
+	}
+
 	public static LayoutSEOEntryService getService() {
 		return _serviceSnapshot.get();
 	}

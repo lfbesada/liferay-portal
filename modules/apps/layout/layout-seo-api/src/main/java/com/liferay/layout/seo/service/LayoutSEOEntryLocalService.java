@@ -368,6 +368,12 @@ public interface LayoutSEOEntryLocalService
 			ServiceContext serviceContext)
 		throws PortalException;
 
+	public LayoutSEOEntry updateLayoutSEOEntry(
+			long userId, long groupId, boolean privateLayout, long layoutId,
+			Map<String, Map<Locale, String>> customMetaTagsMap,
+			ServiceContext serviceContext)
+		throws PortalException;
+
 	@Override
 	@Transactional(enabled = false)
 	public CTPersistence<LayoutSEOEntry> getCTPersistence();

@@ -91,6 +91,19 @@ public class LayoutSEOEntryServiceWrapper
 	}
 
 	@Override
+	public LayoutSEOEntry updateLayoutSEOEntry(
+			long groupId, boolean privateLayout, long layoutId,
+			java.util.Map<String, java.util.Map<java.util.Locale, String>>
+				customMetaTagsMap,
+			com.liferay.portal.kernel.service.ServiceContext serviceContext)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _layoutSEOEntryService.updateLayoutSEOEntry(
+			groupId, privateLayout, layoutId, customMetaTagsMap,
+			serviceContext);
+	}
+
+	@Override
 	public LayoutSEOEntryService getWrappedService() {
 		return _layoutSEOEntryService;
 	}
