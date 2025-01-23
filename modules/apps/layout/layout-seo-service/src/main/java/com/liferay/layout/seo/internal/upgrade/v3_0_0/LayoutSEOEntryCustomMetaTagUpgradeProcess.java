@@ -71,7 +71,7 @@ public class LayoutSEOEntryCustomMetaTagUpgradeProcess extends UpgradeProcess {
 						"property, content) values (?, ?, ?, ?, ?, ?, ?, ?)"));
 			ResultSet resultSet = preparedStatement1.executeQuery()) {
 
-			if (resultSet.next()) {
+			while (resultSet.next()) {
 				long ctCollection = resultSet.getLong(1);
 				long layoutSEOEntryId = resultSet.getLong(2);
 				long groupId = resultSet.getLong(3);
