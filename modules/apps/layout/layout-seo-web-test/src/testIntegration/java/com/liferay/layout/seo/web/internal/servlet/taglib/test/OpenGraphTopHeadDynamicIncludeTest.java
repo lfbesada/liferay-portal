@@ -34,7 +34,6 @@ import com.liferay.layout.display.page.constants.LayoutDisplayPageWebKeys;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
-import com.liferay.layout.seo.model.LayoutSEOEntry;
 import com.liferay.layout.seo.service.LayoutSEOEntryCustomMetaTagLocalService;
 import com.liferay.layout.seo.service.LayoutSEOEntryLocalService;
 import com.liferay.layout.seo.service.LayoutSEOSiteLocalService;
@@ -70,6 +69,7 @@ import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -204,22 +204,20 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 
 	@Test
 	public void testIncludeCustomMetaTags() throws Exception {
-		LayoutSEOEntry layoutSEOEntry =
-			_layoutSEOEntryLocalService.updateLayoutSEOEntry(
-				_layout.getUserId(), _layout.getGroupId(),
-				_layout.isPrivateLayout(), _layout.getLayoutId(), false,
-				Collections.emptyMap(), false, Collections.emptyMap(),
-				Collections.emptyMap(), 0, false, Collections.emptyMap(),
-				ServiceContextTestUtil.getServiceContext());
-
-		_layoutSEOEntryCustomMetaTagLocalService.addLayoutSEOEntryCustomMetaTag(
-			_layout.getGroupId(), layoutSEOEntry.getLayoutSEOEntryId(),
-			"property1",
-			Collections.singletonMap(LocaleUtil.getSiteDefault(), "content1"));
-		_layoutSEOEntryCustomMetaTagLocalService.addLayoutSEOEntryCustomMetaTag(
-			_layout.getGroupId(), layoutSEOEntry.getLayoutSEOEntryId(),
-			"property2",
-			Collections.singletonMap(LocaleUtil.getSiteDefault(), "content2"));
+		_layoutSEOEntryLocalService.updateLayoutSEOEntry(
+			TestPropsValues.getUserId(), _layout.getGroupId(), false,
+			_layout.getLayoutId(),
+			LinkedHashMapBuilder.put(
+				"property1",
+				Collections.singletonMap(
+					LocaleUtil.getSiteDefault(), "content1")
+			).put(
+				"property2",
+				Collections.singletonMap(
+					LocaleUtil.getSiteDefault(), "content2")
+			).build(),
+			ServiceContextTestUtil.getServiceContext(
+				_group.getGroupId(), TestPropsValues.getUserId()));
 
 		MockHttpServletResponse mockHttpServletResponse =
 			new MockHttpServletResponse();
@@ -239,22 +237,20 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 	public void testIncludeCustomMetaTagsWithDefaultValueForOtherLocale()
 		throws Exception {
 
-		LayoutSEOEntry layoutSEOEntry =
-			_layoutSEOEntryLocalService.updateLayoutSEOEntry(
-				_layout.getUserId(), _layout.getGroupId(),
-				_layout.isPrivateLayout(), _layout.getLayoutId(), false,
-				Collections.emptyMap(), false, Collections.emptyMap(),
-				Collections.emptyMap(), 0, false, Collections.emptyMap(),
-				ServiceContextTestUtil.getServiceContext());
-
-		_layoutSEOEntryCustomMetaTagLocalService.addLayoutSEOEntryCustomMetaTag(
-			_layout.getGroupId(), layoutSEOEntry.getLayoutSEOEntryId(),
-			"property1",
-			Collections.singletonMap(LocaleUtil.getSiteDefault(), "content1"));
-		_layoutSEOEntryCustomMetaTagLocalService.addLayoutSEOEntryCustomMetaTag(
-			_layout.getGroupId(), layoutSEOEntry.getLayoutSEOEntryId(),
-			"property2",
-			Collections.singletonMap(LocaleUtil.getSiteDefault(), "content2"));
+		_layoutSEOEntryLocalService.updateLayoutSEOEntry(
+			TestPropsValues.getUserId(), _layout.getGroupId(), false,
+			_layout.getLayoutId(),
+			LinkedHashMapBuilder.put(
+				"property1",
+				Collections.singletonMap(
+					LocaleUtil.getSiteDefault(), "content1")
+			).put(
+				"property2",
+				Collections.singletonMap(
+					LocaleUtil.getSiteDefault(), "content2")
+			).build(),
+			ServiceContextTestUtil.getServiceContext(
+				_group.getGroupId(), TestPropsValues.getUserId()));
 
 		MockHttpServletResponse mockHttpServletResponse =
 			new MockHttpServletResponse();
@@ -272,19 +268,16 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 
 	@Test
 	public void testIncludeCustomMetaTagsWithEmptyValues() throws Exception {
-		LayoutSEOEntry layoutSEOEntry =
-			_layoutSEOEntryLocalService.updateLayoutSEOEntry(
-				_layout.getUserId(), _layout.getGroupId(),
-				_layout.isPrivateLayout(), _layout.getLayoutId(), false,
-				Collections.emptyMap(), false, Collections.emptyMap(),
-				Collections.emptyMap(), 0, false, Collections.emptyMap(),
-				ServiceContextTestUtil.getServiceContext());
-
-		_layoutSEOEntryCustomMetaTagLocalService.addLayoutSEOEntryCustomMetaTag(
-			_layout.getGroupId(), layoutSEOEntry.getLayoutSEOEntryId(),
-			"custom property",
-			Collections.singletonMap(
-				LocaleUtil.getSiteDefault(), StringPool.BLANK));
+		_layoutSEOEntryLocalService.updateLayoutSEOEntry(
+			TestPropsValues.getUserId(), _layout.getGroupId(), false,
+			_layout.getLayoutId(),
+			LinkedHashMapBuilder.put(
+				"custom property",
+				Collections.singletonMap(
+					LocaleUtil.getSiteDefault(), StringPool.BLANK)
+			).build(),
+			ServiceContextTestUtil.getServiceContext(
+				_group.getGroupId(), TestPropsValues.getUserId()));
 
 		MockHttpServletResponse mockHttpServletResponse =
 			new MockHttpServletResponse();
@@ -303,18 +296,16 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 	public void testIncludeCustomMetaTagsWithSpecialCharacters()
 		throws Exception {
 
-		LayoutSEOEntry layoutSEOEntry =
-			_layoutSEOEntryLocalService.updateLayoutSEOEntry(
-				_layout.getUserId(), _layout.getGroupId(),
-				_layout.isPrivateLayout(), _layout.getLayoutId(), false,
-				Collections.emptyMap(), false, Collections.emptyMap(),
-				Collections.emptyMap(), 0, false, Collections.emptyMap(),
-				ServiceContextTestUtil.getServiceContext());
-
-		_layoutSEOEntryCustomMetaTagLocalService.addLayoutSEOEntryCustomMetaTag(
-			_layout.getGroupId(), layoutSEOEntry.getLayoutSEOEntryId(),
-			"& property",
-			Collections.singletonMap(LocaleUtil.getSiteDefault(), "& content"));
+		_layoutSEOEntryLocalService.updateLayoutSEOEntry(
+			TestPropsValues.getUserId(), _layout.getGroupId(), false,
+			_layout.getLayoutId(),
+			LinkedHashMapBuilder.put(
+				"& property",
+				Collections.singletonMap(
+					LocaleUtil.getSiteDefault(), "& content")
+			).build(),
+			ServiceContextTestUtil.getServiceContext(
+				_group.getGroupId(), TestPropsValues.getUserId()));
 
 		MockHttpServletResponse mockHttpServletResponse =
 			new MockHttpServletResponse();
@@ -463,23 +454,20 @@ public class OpenGraphTopHeadDynamicIncludeTest {
 
 	@Test
 	public void testIncludeIncompleteCustomMetaTags() throws Exception {
-		LayoutSEOEntry layoutSEOEntry =
-			_layoutSEOEntryLocalService.updateLayoutSEOEntry(
-				_layout.getUserId(), _layout.getGroupId(),
-				_layout.isPrivateLayout(), _layout.getLayoutId(), false,
-				Collections.emptyMap(), false, Collections.emptyMap(),
-				Collections.emptyMap(), 0, false, Collections.emptyMap(),
-				ServiceContextTestUtil.getServiceContext());
-
-		_layoutSEOEntryCustomMetaTagLocalService.addLayoutSEOEntryCustomMetaTag(
-			_layout.getGroupId(), layoutSEOEntry.getLayoutSEOEntryId(),
-			"property1",
-			Collections.singletonMap(LocaleUtil.getSiteDefault(), "content1"));
-		_layoutSEOEntryCustomMetaTagLocalService.addLayoutSEOEntryCustomMetaTag(
-			_layout.getGroupId(), layoutSEOEntry.getLayoutSEOEntryId(),
-			"property2",
-			Collections.singletonMap(
-				LocaleUtil.getSiteDefault(), StringPool.BLANK));
+		_layoutSEOEntryLocalService.updateLayoutSEOEntry(
+			TestPropsValues.getUserId(), _layout.getGroupId(), false,
+			_layout.getLayoutId(),
+			LinkedHashMapBuilder.put(
+				"property1",
+				Collections.singletonMap(
+					LocaleUtil.getSiteDefault(), "content1")
+			).put(
+				"property2",
+				Collections.singletonMap(
+					LocaleUtil.getSiteDefault(), StringPool.BLANK)
+			).build(),
+			ServiceContextTestUtil.getServiceContext(
+				_group.getGroupId(), TestPropsValues.getUserId()));
 
 		MockHttpServletResponse mockHttpServletResponse =
 			new MockHttpServletResponse();

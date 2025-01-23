@@ -93,6 +93,7 @@ import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.LoggingTimer;
@@ -778,22 +779,20 @@ public class LayoutLocalServiceCopyLayoutContentTest {
 		Layout sourceLayout = LayoutTestUtil.addTypePortletLayout(
 			_group.getGroupId(), StringPool.BLANK);
 
-		LayoutSEOEntry sourceLayoutSEOEntry =
-			_layoutSEOEntryLocalService.updateLayoutSEOEntry(
-				sourceLayout.getUserId(), sourceLayout.getGroupId(),
-				sourceLayout.isPrivateLayout(), sourceLayout.getLayoutId(),
-				false, Collections.emptyMap(),
-				ServiceContextTestUtil.getServiceContext(
-					_group.getGroupId(), TestPropsValues.getUserId()));
-
-		_layoutSEOEntryCustomMetaTagLocalService.addLayoutSEOEntryCustomMetaTag(
-			sourceLayout.getGroupId(),
-			sourceLayoutSEOEntry.getLayoutSEOEntryId(), "property1",
-			Collections.singletonMap(LocaleUtil.getSiteDefault(), "content1"));
-		_layoutSEOEntryCustomMetaTagLocalService.addLayoutSEOEntryCustomMetaTag(
-			sourceLayout.getGroupId(),
-			sourceLayoutSEOEntry.getLayoutSEOEntryId(), "property2",
-			Collections.singletonMap(LocaleUtil.getSiteDefault(), "content2"));
+		_layoutSEOEntryLocalService.updateLayoutSEOEntry(
+			TestPropsValues.getUserId(), sourceLayout.getGroupId(), false,
+			sourceLayout.getLayoutId(),
+			LinkedHashMapBuilder.put(
+				"property1",
+				Collections.singletonMap(
+					LocaleUtil.getSiteDefault(), "content1")
+			).put(
+				"property2",
+				Collections.singletonMap(
+					LocaleUtil.getSiteDefault(), "content2")
+			).build(),
+			ServiceContextTestUtil.getServiceContext(
+				_group.getGroupId(), TestPropsValues.getUserId()));
 
 		Layout targetLayout = LayoutTestUtil.addTypePortletLayout(
 			_group.getGroupId(), StringPool.BLANK);

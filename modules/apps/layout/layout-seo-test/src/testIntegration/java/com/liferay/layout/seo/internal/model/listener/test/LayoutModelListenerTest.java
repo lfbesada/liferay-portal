@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.test.rule.Inject;
@@ -58,20 +59,19 @@ public class LayoutModelListenerTest {
 
 		LayoutSEOEntry layoutSEOEntry =
 			_layoutSEOEntryLocalService.updateLayoutSEOEntry(
-				layout.getUserId(), layout.getGroupId(),
-				layout.isPrivateLayout(), layout.getLayoutId(), false,
-				Collections.emptyMap(),
+				TestPropsValues.getUserId(), layout.getGroupId(), false,
+				layout.getLayoutId(),
+				LinkedHashMapBuilder.put(
+					"property1",
+					Collections.singletonMap(
+						LocaleUtil.getSiteDefault(), "content1")
+				).put(
+					"property2",
+					Collections.singletonMap(
+						LocaleUtil.getSiteDefault(), "content2")
+				).build(),
 				ServiceContextTestUtil.getServiceContext(
 					_group.getGroupId(), TestPropsValues.getUserId()));
-
-		_layoutSEOEntryCustomMetaTagLocalService.addLayoutSEOEntryCustomMetaTag(
-			layout.getGroupId(), layoutSEOEntry.getLayoutSEOEntryId(),
-			"property1",
-			Collections.singletonMap(LocaleUtil.getSiteDefault(), "content1"));
-		_layoutSEOEntryCustomMetaTagLocalService.addLayoutSEOEntryCustomMetaTag(
-			layout.getGroupId(), layoutSEOEntry.getLayoutSEOEntryId(),
-			"property2",
-			Collections.singletonMap(LocaleUtil.getSiteDefault(), "content2"));
 
 		_layoutLocalService.deleteLayout(layout);
 

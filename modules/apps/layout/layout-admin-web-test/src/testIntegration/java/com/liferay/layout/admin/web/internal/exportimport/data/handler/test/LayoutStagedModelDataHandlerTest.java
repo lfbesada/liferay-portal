@@ -110,6 +110,7 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.Portal;
@@ -2076,33 +2077,34 @@ public class LayoutStagedModelDataHandlerTest
 		Map<Locale, String> canonicalURLMap =
 			RandomTestUtil.randomLocaleStringMap();
 
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(
+				layout.getGroupId(), TestPropsValues.getUserId());
+
+		_layoutSEOEntryLocalService.updateLayoutSEOEntry(
+			TestPropsValues.getUserId(), layout.getGroupId(), false,
+			layout.getLayoutId(), true, canonicalURLMap, serviceContext);
+
 		LayoutSEOEntry layoutSEOEntry =
 			_layoutSEOEntryLocalService.updateLayoutSEOEntry(
 				TestPropsValues.getUserId(), layout.getGroupId(), false,
-				layout.getLayoutId(), true, canonicalURLMap,
-				ServiceContextTestUtil.getServiceContext(
-					layout.getGroupId(), TestPropsValues.getUserId()));
-
-		_layoutSEOEntryCustomMetaTagLocalService.
-			deleteLayoutSEOEntryCustomMetaTags(
-				layout.getGroupId(), layoutSEOEntry.getLayoutSEOEntryId());
-
-		_layoutSEOEntryCustomMetaTagLocalService.addLayoutSEOEntryCustomMetaTag(
-			layout.getGroupId(), layoutSEOEntry.getLayoutSEOEntryId(),
-			"property1",
-			HashMapBuilder.put(
-				LocaleUtil.getSiteDefault(), "content1"
-			).put(
-				LocaleUtil.SPAIN, "contenido1"
-			).build());
-		_layoutSEOEntryCustomMetaTagLocalService.addLayoutSEOEntryCustomMetaTag(
-			layout.getGroupId(), layoutSEOEntry.getLayoutSEOEntryId(),
-			"property2",
-			HashMapBuilder.put(
-				LocaleUtil.getSiteDefault(), "content2"
-			).put(
-				LocaleUtil.SPAIN, "contenido2"
-			).build());
+				layout.getLayoutId(),
+				LinkedHashMapBuilder.<String, Map<Locale, String>>put(
+					"property1",
+					HashMapBuilder.put(
+						LocaleUtil.getSiteDefault(), "content1"
+					).put(
+						LocaleUtil.SPAIN, "contenido1"
+					).build()
+				).put(
+					"property2",
+					HashMapBuilder.put(
+						LocaleUtil.getSiteDefault(), "content2"
+					).put(
+						LocaleUtil.SPAIN, "contenido2"
+					).build()
+				).build(),
+				serviceContext);
 
 		_assertMapEquals(canonicalURLMap, layoutSEOEntry.getCanonicalURLMap());
 		_assertCustomMetaTags(layoutSEOEntry);
