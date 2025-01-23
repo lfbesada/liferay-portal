@@ -21,13 +21,18 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.LinkedHashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
+import java.util.Map;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -199,6 +204,52 @@ public class LayoutSEOEntryLocalServiceTest {
 	}
 
 	@Test
+	public void testUpdateLayoutSEOEntryCustomMetaTags() throws Exception {
+		String property1 = RandomTestUtil.randomString();
+		String property2 = RandomTestUtil.randomString();
+
+		Map<String, Map<Locale, String>> customMetaTagsMap =
+			LinkedHashMapBuilder.<String, Map<Locale, String>>put(
+				property1,
+				HashMapBuilder.put(
+					LocaleUtil.getSiteDefault(), RandomTestUtil.randomString()
+				).put(
+					LocaleUtil.SPAIN, RandomTestUtil.randomString()
+				).build()
+			).put(
+				property2,
+				HashMapBuilder.put(
+					LocaleUtil.getSiteDefault(), RandomTestUtil.randomString()
+				).put(
+					LocaleUtil.SPAIN, RandomTestUtil.randomString()
+				).build()
+			).build();
+
+		_testUpdateLayoutSEOEntryCustomMetaTags(customMetaTagsMap);
+
+		customMetaTagsMap.put(
+			RandomTestUtil.randomString(),
+			HashMapBuilder.put(
+				LocaleUtil.getSiteDefault(), RandomTestUtil.randomString()
+			).put(
+				LocaleUtil.SPAIN, RandomTestUtil.randomString()
+			).build());
+
+		_testUpdateLayoutSEOEntryCustomMetaTags(customMetaTagsMap);
+
+		customMetaTagsMap.remove(property2);
+
+		_testUpdateLayoutSEOEntryCustomMetaTags(customMetaTagsMap);
+
+		customMetaTagsMap.replace(
+			property1, RandomTestUtil.randomLocaleStringMap());
+
+		_testUpdateLayoutSEOEntryCustomMetaTags(customMetaTagsMap);
+
+		_testUpdateLayoutSEOEntryCustomMetaTags(Collections.emptyMap());
+	}
+
+	@Test
 	public void testUpdateLayoutSEOEntryWithAllFields() throws PortalException {
 		_layoutSEOEntryLocalService.updateLayoutSEOEntry(
 			TestPropsValues.getUserId(), _group.getGroupId(), false,
@@ -241,6 +292,57 @@ public class LayoutSEOEntryLocalServiceTest {
 					layoutSEOEntry.getLayoutSEOEntryId());
 
 		Assert.assertTrue(layoutSEOEntryCustomMetaTags.isEmpty());
+	}
+
+	private void _testUpdateLayoutSEOEntryCustomMetaTags(
+			Map<String, Map<Locale, String>> customMetaTagsMap)
+		throws Exception {
+
+		LayoutSEOEntry layoutSEOEntry =
+			_layoutSEOEntryLocalService.updateLayoutSEOEntry(
+				TestPropsValues.getUserId(), _group.getGroupId(), false,
+				_layout.getLayoutId(), customMetaTagsMap,
+				ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
+
+		List<LayoutSEOEntryCustomMetaTag> layoutSEOEntryCustomMetaTags =
+			_layoutSEOEntryCustomMetaTagLocalService.
+				getLayoutSEOEntryCustomMetaTags(
+					_group.getGroupId(), layoutSEOEntry.getLayoutSEOEntryId());
+
+		Assert.assertEquals(
+			layoutSEOEntryCustomMetaTags.toString(), customMetaTagsMap.size(),
+			layoutSEOEntryCustomMetaTags.size());
+
+		int index = 0;
+
+		for (Map.Entry<String, Map<Locale, String>> entry :
+				customMetaTagsMap.entrySet()) {
+
+			LayoutSEOEntryCustomMetaTag layoutSEOEntryCustomMetaTag =
+				layoutSEOEntryCustomMetaTags.get(index);
+
+			Assert.assertEquals(
+				entry.getKey(), layoutSEOEntryCustomMetaTag.getProperty());
+
+			Map<Locale, String> contentMap =
+				layoutSEOEntryCustomMetaTag.getContentMap();
+
+			Map<Locale, String> expectedContentMap = entry.getValue();
+
+			Assert.assertEquals(
+				MapUtil.toString(contentMap), expectedContentMap.size(),
+				contentMap.size());
+
+			for (Map.Entry<Locale, String> contentEntry :
+					expectedContentMap.entrySet()) {
+
+				Assert.assertEquals(
+					contentEntry.getValue(),
+					contentMap.get(contentEntry.getKey()));
+			}
+
+			index++;
+		}
 	}
 
 	@DeleteAfterTestRun
