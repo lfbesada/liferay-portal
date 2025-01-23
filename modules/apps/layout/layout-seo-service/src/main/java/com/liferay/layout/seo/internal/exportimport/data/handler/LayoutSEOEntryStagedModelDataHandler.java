@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.xml.Element;
 
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -183,17 +184,17 @@ public class LayoutSEOEntryStagedModelDataHandler
 
 		_addLayoutSEOEntryCustomMetaTags(
 			existingLayoutSEOEntry,
-			portletDataContext.getImportDataElement(layoutSEOEntry));
+			portletDataContext.getImportDataElement(layoutSEOEntry),
+			serviceContext);
 	}
 
 	private void _addLayoutSEOEntryCustomMetaTags(
-			LayoutSEOEntry layoutSEOEntry, Element layoutSEOEntryElement)
+			LayoutSEOEntry layoutSEOEntry, Element layoutSEOEntryElement,
+			ServiceContext serviceContext)
 		throws Exception {
 
-		_layoutSEOEntryCustomMetaTagLocalService.
-			deleteLayoutSEOEntryCustomMetaTags(
-				layoutSEOEntry.getGroupId(),
-				layoutSEOEntry.getLayoutSEOEntryId());
+		Map<String, Map<Locale, String>> customMetaTagsMap =
+			new LinkedHashMap<>();
 
 		for (Element customMetaTagElement :
 				layoutSEOEntryElement.elements("custom-meta-tag")) {
@@ -214,13 +215,14 @@ public class LayoutSEOEntryStagedModelDataHandler
 			}
 
 			if (MapUtil.isNotEmpty(contentMap)) {
-				_layoutSEOEntryCustomMetaTagLocalService.
-					addLayoutSEOEntryCustomMetaTag(
-						layoutSEOEntry.getGroupId(),
-						layoutSEOEntry.getLayoutSEOEntryId(), property,
-						contentMap);
+				customMetaTagsMap.put(property, contentMap);
 			}
 		}
+
+		_layoutSEOEntryLocalService.updateLayoutSEOEntry(
+			layoutSEOEntry.getUserId(), layoutSEOEntry.getGroupId(),
+			layoutSEOEntry.isPrivateLayout(), layoutSEOEntry.getLayoutId(),
+			customMetaTagsMap, serviceContext);
 	}
 
 	private FileEntry _fetchFileEntry(long fileEntryId) {
