@@ -8,6 +8,9 @@ package com.liferay.layout.helper.structure.test;
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.layout.helper.structure.LayoutStructureRulesHelper;
 import com.liferay.layout.util.structure.LayoutStructure;
+import com.liferay.layout.util.structure.LayoutStructureRule;
+import com.liferay.portal.kernel.json.JSONArray;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
@@ -28,6 +31,7 @@ import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.segments.constants.SegmentsEntryConstants;
 
+import java.util.List;
 import java.util.Set;
 
 import org.junit.Assert;
@@ -137,6 +141,46 @@ public class LayoutStructureRulesHelperTest {
 
 		Assert.assertTrue(displayedItemIds.contains("container2"));
 		Assert.assertTrue(hiddenItemIds.contains("fragment1"));
+
+		List<LayoutStructureRule> layoutStructureRules =
+			layoutStructure.getLayoutStructureRules();
+
+		Assert.assertEquals(
+			layoutStructureRules.toString(), 1, layoutStructureRules.size());
+
+		LayoutStructureRule layoutStructureRule = layoutStructureRules.get(0);
+
+		JSONArray conditionsJSONArray =
+			layoutStructureRule.getConditionsJSONArray();
+
+		conditionsJSONArray.put(
+			JSONUtil.put(
+				"condition", "itemId"
+			).put(
+				"id", "condition7"
+			).put(
+				"options",
+				JSONUtil.put(
+					"type", "equal"
+				).put(
+					"value", RandomTestUtil.randomString()
+				)
+			).put(
+				"type", "form"
+			));
+
+		layoutStructureRulesResult =
+			_layoutStructureRulesHelper.processLayoutStructureRules(
+				_group.getGroupId(), layoutStructure,
+				PermissionCheckerFactoryUtil.create(_user),
+				new long[] {SegmentsEntryConstants.ID_DEFAULT});
+
+		displayedItemIds = layoutStructureRulesResult.getDisplayedItemIds();
+		hiddenItemIds = layoutStructureRulesResult.getHiddenItemIds();
+
+		Assert.assertEquals(
+			displayedItemIds.toString(), 0, displayedItemIds.size());
+		Assert.assertEquals(hiddenItemIds.toString(), 0, hiddenItemIds.size());
 	}
 
 	@Test
