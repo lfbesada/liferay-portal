@@ -155,7 +155,7 @@ public class LayoutStructureRulesHelperTest {
 
 		conditionsJSONArray.put(
 			JSONUtil.put(
-				"condition", "itemId"
+				"field", RandomTestUtil.randomString()
 			).put(
 				"id", "condition7"
 			).put(

@@ -50,13 +50,13 @@
 			],
 			"pageRuleConditions": [
 				{
-					"condition": "role",
+					"field": "role",
 					"id": "condition1",
 					"type": "user",
 					"value": "roleId"
 				},
 				{
-					"condition": "user",
+					"field": "user",
 					"id": "condition2",
 					"type": "user",
 					"value": "userId"

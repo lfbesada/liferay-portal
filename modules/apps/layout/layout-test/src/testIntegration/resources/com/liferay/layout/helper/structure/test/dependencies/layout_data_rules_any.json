@@ -59,7 +59,7 @@
 			"conditionType": "any",
 			"conditions": [
 				{
-					"condition": "role",
+					"field": "role",
 					"id": "condition1",
 					"options": {
 						"type": "equal",
@@ -68,7 +68,7 @@
 					"type": "user"
 				},
 				{
-					"condition": "segment",
+					"field": "segment",
 					"id": "condition2",
 					"options": {
 						"type": "equal",

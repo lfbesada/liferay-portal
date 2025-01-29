@@ -53,7 +53,7 @@
 			],
 			"pageRuleConditions": [
 				{
-					"condition": "role",
+					"field": "role",
 					"id": "condition1",
 					"options": {
 						"type": "equal",
@@ -62,7 +62,7 @@
 					"type": "user"
 				},
 				{
-					"condition": "user",
+					"field": "user",
 					"id": "condition2",
 					"options": {
 						"type": "equal",
