@@ -12,7 +12,6 @@ import RuleBuilderItem from './RuleBuilderItem';
 import RuleSelect from './RuleSelect';
 
 export interface Action {
-	action?: 'fragment';
 	id: string;
 	itemId?: string;
 	type: 'show' | 'hide' | 'enable' | 'disable' | undefined;
@@ -46,13 +45,6 @@ export const ACTION_TYPE_ITEMS = [
 	{
 		label: Liferay.Language.get('disable'),
 		value: 'disable',
-	},
-] as const;
-
-export const ACTION_ITEMS = [
-	{
-		label: Liferay.Language.get('fragment'),
-		value: 'fragment',
 	},
 ] as const;
 
@@ -103,23 +95,6 @@ export default function Action({
 			/>
 
 			{action.type ? (
-				<RuleSelect
-					aria-label={Liferay.Language.get(
-						'select-item-for-the-action'
-					)}
-					items={ACTION_ITEMS}
-					onSelectionChange={(selectedAction) =>
-						onActionChange({
-							...action,
-							action: selectedAction,
-							itemId: undefined,
-						})
-					}
-					selectedKey={action.action}
-				/>
-			) : null}
-
-			{action.action ? (
 				<FragmentSelector
 					itemId={action.itemId}
 					layoutDataItems={layoutDataItems}
