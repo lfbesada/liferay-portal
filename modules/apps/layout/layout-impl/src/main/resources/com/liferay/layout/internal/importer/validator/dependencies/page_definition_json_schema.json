@@ -2085,8 +2085,8 @@
 		"PageRuleCondition": {
 			"additionalProperties": false,
 			"properties": {
-				"condition": {
-					"title": "The condition Schema",
+				"field": {
+					"title": "The field Schema",
 					"type": "string"
 				},
 				"id": {
