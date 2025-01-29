@@ -40,7 +40,7 @@ public class PageRulesUtil {
 	public static PageRuleCondition toPageRuleCondition(JSONObject jsonObject) {
 		return new PageRuleCondition() {
 			{
-				setCondition(() -> jsonObject.getString("condition"));
+				setField(() -> jsonObject.getString("field"));
 				setId(() -> jsonObject.getString("id"));
 				setOptions(
 					() -> {
