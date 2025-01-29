@@ -143,9 +143,7 @@ public class LayoutStructureRulesHelperImpl
 			value = optionsJSONObject.getLong("value");
 		}
 
-		if (Objects.equals(
-				conditionJSONObject.getString("condition"), "role")) {
-
+		if (Objects.equals(conditionJSONObject.getString("field"), "role")) {
 			if (negated) {
 				return !ArrayUtil.contains(
 					layoutStructureRulesContext.getRoleIds(), value);
@@ -155,9 +153,7 @@ public class LayoutStructureRulesHelperImpl
 				layoutStructureRulesContext.getRoleIds(), value);
 		}
 
-		if (Objects.equals(
-				conditionJSONObject.getString("condition"), "segment")) {
-
+		if (Objects.equals(conditionJSONObject.getString("field"), "segment")) {
 			if (negated) {
 				return !ArrayUtil.contains(
 					layoutStructureRulesContext.getSegmentsEntryIds(), value);
@@ -167,9 +163,7 @@ public class LayoutStructureRulesHelperImpl
 				layoutStructureRulesContext.getSegmentsEntryIds(), value);
 		}
 
-		if (Objects.equals(
-				conditionJSONObject.getString("condition"), "user")) {
-
+		if (Objects.equals(conditionJSONObject.getString("field"), "user")) {
 			if (negated) {
 				return !Objects.equals(
 					layoutStructureRulesContext.getUserId(), value);
