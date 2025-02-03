@@ -15,7 +15,7 @@ export interface Action {
 	action?: 'fragment';
 	id: string;
 	itemId?: string;
-	type: 'show' | 'hide' | undefined;
+	type: 'show' | 'hide' | 'enable' | 'disable' | undefined;
 }
 
 interface ActionProps {
@@ -36,6 +36,16 @@ export const ACTION_TYPE_ITEMS = [
 	{
 		label: Liferay.Language.get('hide'),
 		value: 'hide',
+	},
+
+	{
+		label: Liferay.Language.get('enable'),
+		value: 'enable',
+	},
+
+	{
+		label: Liferay.Language.get('disable'),
+		value: 'disable',
 	},
 ] as const;
 
