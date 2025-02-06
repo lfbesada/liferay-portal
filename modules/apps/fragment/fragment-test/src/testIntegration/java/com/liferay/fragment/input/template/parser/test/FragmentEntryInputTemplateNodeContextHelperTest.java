@@ -231,7 +231,7 @@ public class FragmentEntryInputTemplateNodeContextHelperTest {
 			InputTemplateNode inputTemplateNode =
 				_fragmentEntryInputTemplateNodeContextHelper.
 					toInputTemplateNode(
-						"Default",
+						Collections.emptyMap(), "Default",
 						_addInputFragmentEntryLink(
 							"ObjectField_" + relationshipObjectFieldName),
 						httpServletRequest,
@@ -287,7 +287,8 @@ public class FragmentEntryInputTemplateNodeContextHelperTest {
 			InputTemplateNode inputTemplateNode =
 				_fragmentEntryInputTemplateNodeContextHelper.
 					toInputTemplateNode(
-						"Default", _addInputFragmentEntryLink("myRichText"),
+						Collections.emptyMap(), "Default",
+						_addInputFragmentEntryLink("myRichText"),
 						httpServletRequest,
 						infoItemFormProvider.getInfoForm(
 							StringPool.BLANK, _group.getGroupId()),
@@ -333,7 +334,8 @@ public class FragmentEntryInputTemplateNodeContextHelperTest {
 			InputTemplateNode inputTemplateNode =
 				_fragmentEntryInputTemplateNodeContextHelper.
 					toInputTemplateNode(
-						"Default", _addInputFragmentEntryLink("myText"),
+						Collections.emptyMap(), "Default",
+						_addInputFragmentEntryLink("myText"),
 						httpServletRequest,
 						infoItemFormProvider.getInfoForm(
 							StringPool.BLANK, _group.getGroupId()),
@@ -684,7 +686,8 @@ public class FragmentEntryInputTemplateNodeContextHelperTest {
 			InputTemplateNode inputTemplateNode =
 				_fragmentEntryInputTemplateNodeContextHelper.
 					toInputTemplateNode(
-						"Default", _addInputFragmentEntryLink(inputFieldId),
+						Collections.emptyMap(), "Default",
+						_addInputFragmentEntryLink(inputFieldId),
 						httpServletRequest,
 						infoItemFormProvider.getInfoForm(
 							StringPool.BLANK, _group.getGroupId()),
@@ -787,7 +790,8 @@ public class FragmentEntryInputTemplateNodeContextHelperTest {
 				InputTemplateNode inputTemplateNode =
 					_fragmentEntryInputTemplateNodeContextHelper.
 						toInputTemplateNode(
-							"Default", _addInputFragmentEntryLink(inputFieldId),
+							Collections.emptyMap(), "Default",
+							_addInputFragmentEntryLink(inputFieldId),
 							httpServletRequest,
 							infoItemFormProvider.getInfoForm(
 								StringPool.BLANK, _group.getGroupId()),
