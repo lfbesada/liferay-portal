@@ -95,6 +95,7 @@ public class LayoutStructureRulesHelperTest {
 				).put(
 					"USER_ID_2", String.valueOf(RandomTestUtil.randomLong())
 				).build()));
+
 		PermissionChecker permissionChecker =
 			PermissionCheckerFactoryUtil.create(_user);
 
