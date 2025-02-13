@@ -31,8 +31,8 @@ public class
 				StringBundler.concat(
 					"Duplicate layout page template collection for group ",
 					groupId, " with layout page template collection key ",
-					layoutPageTemplateCollectionKey,
-					layoutPageTemplateCollectionType));
+					layoutPageTemplateCollectionKey),
+				layoutPageTemplateCollectionType);
 		}
 
 	}
