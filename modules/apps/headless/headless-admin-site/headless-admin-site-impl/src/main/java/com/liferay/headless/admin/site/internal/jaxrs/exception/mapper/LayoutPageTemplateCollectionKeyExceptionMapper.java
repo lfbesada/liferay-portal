@@ -11,6 +11,8 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.vulcan.jaxrs.exception.mapper.BaseExceptionMapper;
 import com.liferay.portal.vulcan.jaxrs.exception.mapper.Problem;
 
+import java.util.Objects;
+
 import javax.ws.rs.core.Response;
 import javax.ws.rs.ext.ExceptionMapper;
 import javax.ws.rs.ext.Provider;
@@ -38,30 +40,27 @@ public class LayoutPageTemplateCollectionKeyExceptionMapper
 		LayoutPageTemplateCollectionLayoutPageTemplateCollectionKeyException
 			layoutPageTemplateCollectionLayoutPageTemplateCollectionKeyException) {
 
-		if (layoutPageTemplateCollectionLayoutPageTemplateCollectionKeyException.
-				getLayoutPageTemplateCollectionType() ==
-					LayoutPageTemplateCollectionTypeConstants.DISPLAY_PAGE) {
+		String name = "page template set";
 
-			return new Problem(
-				Response.Status.CONFLICT,
-				StringUtil.replace(
-					StringUtil.replace(
-						layoutPageTemplateCollectionLayoutPageTemplateCollectionKeyException.
-							getMessage(),
-						"layout page template collection",
-						"display page template folder"),
-					"Layout page template collection",
-					"Display page template folder"));
+		if (Objects.equals(
+				layoutPageTemplateCollectionLayoutPageTemplateCollectionKeyException.
+					getLayoutPageTemplateCollectionType(),
+				LayoutPageTemplateCollectionTypeConstants.DISPLAY_PAGE)) {
+
+			name = "display page template folder";
 		}
 
 		return new Problem(
 			Response.Status.CONFLICT,
 			StringUtil.replace(
-				StringUtil.replace(
-					layoutPageTemplateCollectionLayoutPageTemplateCollectionKeyException.
-						getMessage(),
-					"layout page template collection", "page template set"),
-				"Layout page template collection", "Page template set"));
+				layoutPageTemplateCollectionLayoutPageTemplateCollectionKeyException.
+					getMessage(),
+				new String[] {
+					"Layout page template collection key",
+					"layout page template collection key",
+					"layout page template collection"
+				},
+				new String[] {"Key", "key", name}));
 	}
 
 }
