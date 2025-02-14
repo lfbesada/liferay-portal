@@ -232,20 +232,17 @@ public class ObjectEntryInfoItemValuesProviderUtil {
 		if (objectField.isLocalized() && (value instanceof Map)) {
 			Map<String, Object> map = (Map<String, Object>)value;
 
-			Object defaultValue = map.get(objectField.getDefaultLanguageId());
-
 			infoFieldValue = InfoLocalizedValue.function(
 				currentLocale -> _parseValue(
-					defaultValue, listTypeEntryLocalService, currentLocale,
+					listTypeEntryLocalService, currentLocale,
 					objectEntryLocalService, objectField,
 					objectRelationshipLocalService,
 					map.get(LanguageUtil.getLanguageId(currentLocale))));
 		}
 		else {
 			infoFieldValue = _parseValue(
-				null, listTypeEntryLocalService, locale,
-				objectEntryLocalService, objectField,
-				objectRelationshipLocalService, value);
+				listTypeEntryLocalService, locale, objectEntryLocalService,
+				objectField, objectRelationshipLocalService, value);
 		}
 
 		if (infoFieldValue == null) {
@@ -392,7 +389,6 @@ public class ObjectEntryInfoItemValuesProviderUtil {
 	}
 
 	private static Object _parseValue(
-		Object defaultValue,
 		ListTypeEntryLocalService listTypeEntryLocalService, Locale locale,
 		ObjectEntryLocalService objectEntryLocalService,
 		ObjectField objectField,
@@ -400,7 +396,7 @@ public class ObjectEntryInfoItemValuesProviderUtil {
 		Object value) {
 
 		if (value == null) {
-			return defaultValue;
+			return null;
 		}
 
 		if (Objects.equals(
@@ -421,7 +417,7 @@ public class ObjectEntryInfoItemValuesProviderUtil {
 				if (_log.isDebugEnabled()) {
 					_log.debug(exception);
 
-					return defaultValue;
+					return null;
 				}
 			}
 		}
@@ -448,7 +444,7 @@ public class ObjectEntryInfoItemValuesProviderUtil {
 				if (_log.isDebugEnabled()) {
 					_log.debug(exception);
 
-					return defaultValue;
+					return null;
 				}
 			}
 		}
@@ -521,7 +517,7 @@ public class ObjectEntryInfoItemValuesProviderUtil {
 				if (_log.isDebugEnabled()) {
 					_log.debug(exception);
 
-					return defaultValue;
+					return null;
 				}
 			}
 		}
