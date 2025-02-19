@@ -50,18 +50,22 @@ public class EvaluateLayoutStructureRulesStrutsAction implements StrutsAction {
 			HttpServletResponse httpServletResponse)
 		throws Exception {
 
+		long plid = ParamUtil.getLong(
+			httpServletRequest, "plid");
+
 		ThemeDisplay themeDisplay =
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
 		LayoutStructure layoutStructure =
 			_layoutStructureProvider.getLayoutStructure(
-				themeDisplay.getPlid(),
+				plid,
 				ParamUtil.getLong(
 					httpServletRequest, "segmentsExperienceId",
 					_segmentsExperienceLocalService.
 						fetchDefaultSegmentsExperienceId(
-							themeDisplay.getPlid())));
+							plid)));
+
 
 		String[] layoutStructureRuleIds = ParamUtil.getStringValues(
 			httpServletRequest, "layoutStructureRuleIds");
