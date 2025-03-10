@@ -387,6 +387,8 @@ public class MasterPageResourceImpl extends BaseMasterPageResourceImpl {
 		serviceContext.setAttribute(
 			"layout.page.template.entry.type",
 			LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT);
+		serviceContext.setAttribute(
+			"published", GetterUtil.getBoolean(published));
 
 		Layout layout = _layoutLocalService.addLayout(
 			publishedContentPageSpecification.getExternalReferenceCode(),
