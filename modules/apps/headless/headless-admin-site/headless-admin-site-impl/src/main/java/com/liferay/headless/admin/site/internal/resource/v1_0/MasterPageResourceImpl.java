@@ -317,7 +317,7 @@ public class MasterPageResourceImpl extends BaseMasterPageResourceImpl {
 					PageSpecification.Status.APPROVED));
 
 			LayoutUtil.updateLayout(
-				draftContentPageSpecification, draftLayout,	status,
+				draftContentPageSpecification, draftLayout, status,
 				serviceContext);
 
 			LayoutUtil.updateLayout(
