@@ -83,8 +83,8 @@ public class SegmentsExperienceUtil {
 	}
 
 	public static SegmentsExperience updateSegmentsExperience(
-			SegmentsExperience segmentsExperience,
-			PageExperience pageExperience)
+			PageExperience pageExperience,
+			SegmentsExperience segmentsExperience)
 		throws Exception {
 
 		if ((pageExperience.getPriority() != null) &&

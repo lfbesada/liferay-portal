@@ -195,7 +195,7 @@ public class PageExperienceResourceImpl extends BasePageExperienceResourceImpl {
 
 		return _toPageExperience(
 			SegmentsExperienceUtil.updateSegmentsExperience(
-				segmentsExperience, pageExperience));
+				pageExperience, segmentsExperience));
 	}
 
 	@Override
