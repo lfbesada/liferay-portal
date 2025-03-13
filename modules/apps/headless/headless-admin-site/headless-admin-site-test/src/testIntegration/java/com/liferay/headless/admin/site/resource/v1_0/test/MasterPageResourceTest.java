@@ -352,13 +352,10 @@ public class MasterPageResourceTest extends BaseMasterPageResourceTestCase {
 		_testPostSiteSiteByExternalReferenceCodeMasterPageWithPageSpecifications(
 			PageSpecification.Status.APPROVED,
 			PageSpecification.Status.APPROVED);
-
 		_testPostSiteSiteByExternalReferenceCodeMasterPageWithPageSpecifications(
 			PageSpecification.Status.APPROVED, PageSpecification.Status.DRAFT);
-
 		_testPostSiteSiteByExternalReferenceCodeMasterPageWithPageSpecifications(
 			PageSpecification.Status.DRAFT, PageSpecification.Status.APPROVED);
-
 		_testPostSiteSiteByExternalReferenceCodeMasterPageWithPageSpecifications(
 			PageSpecification.Status.DRAFT, PageSpecification.Status.DRAFT);
 	}
