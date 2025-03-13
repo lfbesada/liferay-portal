@@ -70,14 +70,8 @@ public class SegmentsExperienceUtil {
 		LayoutPageTemplateStructureLocalServiceUtil.
 			updateLayoutPageTemplateStructureData(
 				layout.getGroupId(), layout.getPlid(),
+				segmentsExperience.getSegmentsExperienceId(),
 				layoutStructure.toString());
-
-		String data = layoutStructure.toString();
-
-		LayoutPageTemplateStructureLocalServiceUtil.
-			updateLayoutPageTemplateStructureData(
-				layout.getGroupId(), layout.getPlid(),
-				segmentsExperience.getSegmentsExperienceId(), data);
 
 		return segmentsExperience;
 	}
