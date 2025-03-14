@@ -1334,6 +1334,8 @@ components:
                     type: object
             type: object
         PageCollectionDefinition:
+            allOf:
+                - $ref: "#/components/schemas/PageElementDefinition"
             # @review
             description:
                 The definition of a Page Collection.
@@ -1453,6 +1455,8 @@ components:
                     type: string
             type: object
         PageCollectionItemDefinition:
+            allOf:
+                - $ref: "#/components/schemas/PageElementDefinition"
             # @review
             description:
                 The definition of a Page Collection Item.
@@ -1464,6 +1468,8 @@ components:
                     type: object
             type: object
         PageColumnDefinition:
+            allOf:
+                - $ref: "#/components/schemas/PageElementDefinition"
             # @review
             description:
                 The definition of a Page Column.
@@ -1484,6 +1490,8 @@ components:
                     type: integer
             type: object
         PageContainerDefinition:
+            allOf:
+                - $ref: "#/components/schemas/PageElementDefinition"
             # @review
             description:
                 The definition of a Page section.
@@ -1605,6 +1613,8 @@ components:
                     type: number
             type: object
         PageDropZoneDefinition:
+            allOf:
+                - $ref: "#/components/schemas/PageElementDefinition"
             # @review
             description:
                 Represent a definition of a Page drop zone.
@@ -1622,24 +1632,11 @@ components:
             description:
                 A page element.
             properties:
-                definition:
+                pageElementDefinition:
+                    $ref: "#/components/schemas/PageElementDefinition"
                     # @review
                     description:
                         The page element's definition.
-                    oneOf:
-                        - $ref: "#/components/schemas/PageCollectionDefinition"
-                        - $ref: "#/components/schemas/PageCollectionItemDefinition"
-                        - $ref: "#/components/schemas/PageColumnDefinition"
-                        - $ref: "#/components/schemas/PageContainerDefinition"
-                        - $ref: "#/components/schemas/PageDropZoneDefinition"
-                        - $ref: "#/components/schemas/PageFormDefinition"
-                        - $ref: "#/components/schemas/PageFormStepContainerDefinition"
-                        - $ref: "#/components/schemas/PageFormStepDefinition"
-                        - $ref: "#/components/schemas/PageFragmentCompositionInstanceDefinition"
-                        - $ref: "#/components/schemas/PageFragmentDropZoneDefinition"
-                        - $ref: "#/components/schemas/PageFragmentInstanceDefinition"
-                        - $ref: "#/components/schemas/PageRowDefinition"
-                        - $ref: "#/components/schemas/PageWidgetInstanceDefinition"
                 externalReferenceCode:
                     description:
                         The page element's external reference code. Unique within the site.
@@ -1670,6 +1667,48 @@ components:
                         widget section).
                     enum: [Collection, CollectionItem, Column, Container, DropZone, Form, FormStep, FormStepContainer, Fragment, FragmentComposition, FragmentDropZone, Row, Widget]
                     type: string
+        PageElementDefinition:
+            description:
+                The page element's definition.
+            discriminator:
+                mapping:
+                    CollectionDefinition: "#/components/schemas/PageCollectionDefinition"
+                    CollectionItemDefinition: "#/components/schemas/PageCollectionItemDefinition"
+                    ColumnDefinition: "#/components/schemas/PageColumnDefinition"
+                    ContainerDefinition: "#/components/schemas/PageContainerDefinition"
+                    DropZoneDefinition: "#/components/schemas/PageDropZoneDefinition"
+                    FormDefinition: "#/components/schemas/PageFormDefinition"
+                    FormStepContainerDefinition: "#/components/schemas/PageFormStepContainerDefinition"
+                    FormStepDefinition: "#/components/schemas/PageFormStepDefinition"
+                    FragmentCompositionDefinition: "#/components/schemas/PageFragmentCompositionInstanceDefinition"
+                    FragmentDefinition: "#/components/schemas/PageFragmentInstanceDefinition"
+                    FragmentDropZoneDefinition: "#/components/schemas/PageFragmentDropZoneDefinition"
+                    RowDefinition: "#/components/schemas/PageRowDefinition"
+                    WidgetDefinition: "#/components/schemas/PageWidgetInstanceDefinition"
+                propertyName: type
+            properties:
+                type:
+                    # @review
+                    description:
+                        The page element definition's type (collection, collection item, column, container, drop zone,
+                        form, form step, form step container, fragment, fragment composition, fragment drop zone, row,
+                        widget or widget section).
+                    enum:
+                        - CollectionDefinition
+                        - CollectionItemDefinition
+                        - ColumnDefinition
+                        - ContainerDefinition
+                        - DropZoneDefinition
+                        - FormDefinition
+                        - FormStepDefinition
+                        - FormStepContainerDefinition
+                        - FragmentDefinition
+                        - FragmentCompositionDefinition
+                        - FragmentDropZoneDefinition
+                        - RowDefinition
+                        - WidgetDefinition
+                    type: string
+            type: object
         PageExperience:
             description:
                 # @review
@@ -1724,6 +1763,8 @@ components:
                     type: string
             type: object
         PageFormDefinition:
+            allOf:
+                - $ref: "#/components/schemas/PageElementDefinition"
             # @review
             description:
                 The definition of a page form.
@@ -1825,6 +1866,8 @@ components:
                     type: string
             type: object
         PageFormStepContainerDefinition:
+            allOf:
+                - $ref: "#/components/schemas/PageElementDefinition"
             # @review
             description:
                 The definition of a page form step container.
@@ -1891,6 +1934,8 @@ components:
                     type: string
             type: object
         PageFormStepDefinition:
+            allOf:
+                - $ref: "#/components/schemas/PageElementDefinition"
             # @review
             description:
                 The definition of a page form step.
@@ -1902,6 +1947,8 @@ components:
                     type: object
             type: object
         PageFragmentCompositionInstanceDefinition:
+            allOf:
+                - $ref: "#/components/schemas/PageElementDefinition"
             # @review
             description:
                 The definition of a page fragment composition instance.
@@ -1914,6 +1961,8 @@ components:
                         section that will be added.
             type: object
         PageFragmentDropZoneDefinition:
+            allOf:
+                - $ref: "#/components/schemas/PageElementDefinition"
             # @review
             description:
                 The definition of a page fragment drop zone.
@@ -1925,6 +1974,8 @@ components:
                     type: string
             type: object
         PageFragmentInstanceDefinition:
+            allOf:
+                - $ref: "#/components/schemas/PageElementDefinition"
             # @review
             description:
                 A definition of a page fragment instance.
@@ -2026,6 +2077,8 @@ components:
                     type: array
             type: object
         PageRowDefinition:
+            allOf:
+                - $ref: "#/components/schemas/PageElementDefinition"
             # @review
             description:
                 The definition of a page row.
@@ -2453,6 +2506,8 @@ components:
                     type: string
             type: object
         PageWidgetInstanceDefinition:
+            allOf:
+                - $ref: "#/components/schemas/PageElementDefinition"
             # @review
             description:
                 The definition of a page widget instance.
