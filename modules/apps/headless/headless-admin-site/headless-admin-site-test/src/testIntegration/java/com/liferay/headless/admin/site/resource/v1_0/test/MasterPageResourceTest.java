@@ -951,6 +951,8 @@ public class MasterPageResourceTest extends BaseMasterPageResourceTestCase {
 				PageSpecification.Status oldPublishedLayoutStatus)
 		throws Exception {
 
+		MasterPage masterPage = randomMasterPage();
+
 		ContentPageSpecification draftContentPageSpecification =
 			_getContentPageSpecification(null, oldDraftLayoutStatus);
 
@@ -958,8 +960,6 @@ public class MasterPageResourceTest extends BaseMasterPageResourceTestCase {
 			_getContentPageSpecification(
 				draftContentPageSpecification.getExternalReferenceCode(),
 				oldPublishedLayoutStatus);
-
-		MasterPage masterPage = randomMasterPage();
 
 		masterPage.setPageSpecifications(
 			() -> new PageSpecification[] {
