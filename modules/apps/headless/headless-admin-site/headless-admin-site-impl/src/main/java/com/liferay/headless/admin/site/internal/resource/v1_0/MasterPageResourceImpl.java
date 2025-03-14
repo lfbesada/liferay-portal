@@ -251,9 +251,9 @@ public class MasterPageResourceImpl extends BaseMasterPageResourceImpl {
 			Layout layout = _layoutLocalService.getLayout(
 				layoutPageTemplateEntry.getPlid());
 
+			ContentPageSpecification draftContentPageSpecification = null;
 			ContentPageSpecification publishedContentPageSpecification =
 				(ContentPageSpecification)pageSpecifications[0];
-			ContentPageSpecification draftContentPageSpecification = null;
 
 			if (!Objects.equals(
 					layout.getExternalReferenceCode(),
