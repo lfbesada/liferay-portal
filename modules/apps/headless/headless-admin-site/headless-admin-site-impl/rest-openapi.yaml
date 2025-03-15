@@ -1451,6 +1451,12 @@ components:
                     description:
                         The page collection's template key.
                     type: string
+                type:
+                    # @review
+                    description:
+                        The page element definition's type.
+                    enum: [CollectionDefinition]
+                    type: string
             type: object
         PageCollectionItemDefinition:
             # @review
@@ -1462,6 +1468,12 @@ components:
                     description:
                         The page collection item's configuration.
                     type: object
+                type:
+                    # @review
+                    description:
+                        The page element definition's type.
+                    enum: [CollectionItemDefinition]
+                    type: string
             type: object
         PageColumnDefinition:
             # @review
@@ -1482,6 +1494,12 @@ components:
                     maximum: 12
                     minimum: 1
                     type: integer
+                type:
+                    # @review
+                    description:
+                        The page element definition's type.
+                    enum: [ColumnDefinition]
+                    type: string
             type: object
         PageContainerDefinition:
             # @review
@@ -1574,6 +1592,12 @@ components:
                     description:
                         The custom name of a Page section.
                     type: string
+                type:
+                    # @review
+                    description:
+                        The page element definition's type.
+                    enum: [ContainerDefinition]
+                    type: string
             type: object
         PageDefinition:
             # @review
@@ -1616,6 +1640,12 @@ components:
                     oneOf:
                         - $ref: "#/components/schemas/FragmentSettingsAllowed"
                         - $ref: "#/components/schemas/FragmentSettingsUnallowed"
+                type:
+                    # @review
+                    description:
+                        The page element definition's type.
+                    enum: [DropZoneDefinition]
+                    type: string
             type: object
         PageElement:
             # @review
@@ -1626,6 +1656,22 @@ components:
                     # @review
                     description:
                         The page element's definition.
+                    discriminator:
+                        mapping:
+                            CollectionDefinition: "#/components/schemas/PageCollectionDefinition"
+                            CollectionItemDefinition: "#/components/schemas/PageCollectionItemDefinition"
+                            ColumnDefinition: "#/components/schemas/PageColumnDefinition"
+                            ContainerDefinition: "#/components/schemas/PageContainerDefinition"
+                            DropZoneDefinition: "#/components/schemas/PageDropZoneDefinition"
+                            FormDefinition: "#/components/schemas/PageFormDefinition"
+                            FormStepContainerDefinition: "#/components/schemas/PageFormStepContainerDefinition"
+                            FormStepDefinition: "#/components/schemas/PageFormStepDefinition"
+                            FragmentCompositionInstanceDefinition: "#/components/schemas/PageFragmentCompositionInstanceDefinition"
+                            FragmentInstanceDefinition: "#/components/schemas/PageFragmentInstanceDefinition"
+                            FragmentDropZoneDefinition: "#/components/schemas/PageFragmentDropZoneDefinition"
+                            RowDefinition: "#/components/schemas/PageRowDefinition"
+                            WidgetInstanceDefinition: "#/components/schemas/PageWidgetInstanceDefinition"
+                        propertyName: type
                     oneOf:
                         - $ref: "#/components/schemas/PageCollectionDefinition"
                         - $ref: "#/components/schemas/PageCollectionItemDefinition"
@@ -1823,6 +1869,12 @@ components:
                     description:
                         The custom name of of a page form.
                     type: string
+                type:
+                    # @review
+                    description:
+                        The page element definition's type.
+                    enum: [FormDefinition]
+                    type: string
             type: object
         PageFormStepContainerDefinition:
             # @review
@@ -1889,6 +1941,12 @@ components:
                     description:
                         The custom name of of a page form.
                     type: string
+                type:
+                    # @review
+                    description:
+                        The page element definition's type.
+                    enum: [FormStepContainerDefinition]
+                    type: string
             type: object
         PageFormStepDefinition:
             # @review
@@ -1900,6 +1958,12 @@ components:
                     description:
                         The page form step's configuration.
                     type: object
+                type:
+                    # @review
+                    description:
+                        The page element definition's type.
+                    enum: [FormStepDefinition]
+                    type: string
             type: object
         PageFragmentCompositionInstanceDefinition:
             # @review
@@ -1912,6 +1976,12 @@ components:
                     description:
                         The reference to the fragment composition that will be used to generate the page elment of type
                         section that will be added.
+                type:
+                    # @review
+                    description:
+                        The page element definition's type.
+                    enum: [FragmentCompositionInstanceDefinition]
+                    type: string
             type: object
         PageFragmentDropZoneDefinition:
             # @review
@@ -1922,6 +1992,12 @@ components:
                     # @review
                     description:
                         The id of the fragment drop zone
+                    type: string
+                type:
+                    # @review
+                    description:
+                        The page element definition's type.
+                    enum: [FragmentDropZoneDefinition]
                     type: string
             type: object
         PageFragmentInstanceDefinition:
@@ -2012,6 +2088,12 @@ components:
                     description:
                         The fragment instance's namespace.
                     type: string
+                type:
+                    # @review
+                    description:
+                        The page element definition's type.
+                    enum: [FragmentInstanceDefinition]
+                    type: string
                 uuid:
                     # @review
                     description:
@@ -2098,6 +2180,12 @@ components:
                     items:
                         $ref: "#/components/schemas/RowViewport"
                     type: array
+                type:
+                    # @review
+                    description:
+                        The page element definition's type.
+                    enum: [RowDefinition]
+                    type: string
                 verticalAlignment:
                     # @review
                     description:
@@ -2492,6 +2580,12 @@ components:
                     # @review
                     description:
                         The custom name of a page widget instance.
+                    type: string
+                type:
+                    # @review
+                    description:
+                        The page element definition's type.
+                    enum: [WidgetInstanceDefinition]
                     type: string
                 widgetInstance:
                     $ref: "#/components/schemas/WidgetInstance"
