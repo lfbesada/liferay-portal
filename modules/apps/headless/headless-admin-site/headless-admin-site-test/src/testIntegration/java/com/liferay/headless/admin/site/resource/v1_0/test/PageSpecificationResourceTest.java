@@ -15,7 +15,7 @@ import com.liferay.headless.admin.site.client.dto.v1_0.Settings;
 import com.liferay.headless.admin.site.client.dto.v1_0.WidgetPageSpecification;
 import com.liferay.headless.admin.site.client.pagination.Page;
 import com.liferay.headless.admin.site.client.problem.Problem;
-import com.liferay.headless.admin.site.dto.v1_0.PageContainerDefinition;
+import com.liferay.headless.admin.site.client.dto.v1_0.PageContainerDefinition;
 import com.liferay.headless.admin.site.resource.v1_0.test.util.LayoutPageTemplateEntryTestUtil;
 import com.liferay.headless.admin.site.resource.v1_0.test.util.LayoutUtilityPageEntryTestUtil;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
@@ -963,8 +963,10 @@ public class PageSpecificationResourceTest
 
 			pageElements[i] = new PageElement() {
 				{
-					setDefinition(() -> new PageContainerDefinition());
 					setExternalReferenceCode(curExternalReferenceCode);
+					setPageElementDefinition(() -> new PageContainerDefinition() {{
+						setType(Type.COLLECTION_DEFINITION);
+					}});
 					setPageElements(
 						() -> {
 							if (!RandomTestUtil.randomBoolean()) {
