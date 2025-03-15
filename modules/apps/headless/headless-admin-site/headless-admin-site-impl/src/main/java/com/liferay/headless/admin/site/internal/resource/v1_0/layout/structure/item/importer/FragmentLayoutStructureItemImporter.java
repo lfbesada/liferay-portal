@@ -39,7 +39,8 @@ public class FragmentLayoutStructureItemImporter
 		throws Exception {
 
 		PageFragmentInstanceDefinition pageFragmentInstanceDefinition =
-			(PageFragmentInstanceDefinition)pageElement.getDefinition();
+			(PageFragmentInstanceDefinition)
+				pageElement.getPageElementDefinition();
 
 		if (pageFragmentInstanceDefinition == null) {
 			return null;

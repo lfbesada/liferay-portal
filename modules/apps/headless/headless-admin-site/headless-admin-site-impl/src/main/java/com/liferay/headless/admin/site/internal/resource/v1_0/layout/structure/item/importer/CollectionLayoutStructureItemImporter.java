@@ -42,7 +42,7 @@ public class CollectionLayoutStructureItemImporter
 						pageElement.getPosition());
 
 		PageCollectionDefinition pageCollectionDefinition =
-			(PageCollectionDefinition)pageElement.getDefinition();
+			(PageCollectionDefinition)pageElement.getPageElementDefinition();
 
 		if (pageCollectionDefinition == null) {
 			return collectionStyledLayoutStructureItem;

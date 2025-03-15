@@ -36,7 +36,7 @@ public class ContainerLayoutStructureItemImporter
 					pageElement.getPosition());
 
 		PageContainerDefinition pageContainerDefinition =
-			(PageContainerDefinition)pageElement.getDefinition();
+			(PageContainerDefinition)pageElement.getPageElementDefinition();
 
 		if (pageContainerDefinition == null) {
 			return containerStyledLayoutStructureItem;
