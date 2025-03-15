@@ -1649,6 +1649,11 @@ components:
                     description:
                         The page element's external reference code. Unique within the site.
                     type: string
+                pageElementDefinition:
+                    $ref: "#/components/schemas/PageElementDefinition"
+                    # @review
+                    description:
+                        The page element's definition.
                 pageElements:
                     # @review
                     description:
@@ -1660,11 +1665,6 @@ components:
                     description:
                         The parent's page element's external reference code. Unique within the site.
                     type: string
-                pageElementDefinition:
-                    $ref: "#/components/schemas/PageElementDefinition"
-                    # @review
-                    description:
-                        The page element's definition.
                 position:
                     description:
                         The 0-based position this page element occupies with respect to its siblings (0 for first child,
