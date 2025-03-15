@@ -35,7 +35,10 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @generated
  */
 @Generated("")
-@GraphQLName("EmptyCollectionConfig")
+@GraphQLName(
+	description = "The empty collection config of a page collection definition.",
+	value = "EmptyCollectionConfig"
+)
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "EmptyCollectionConfig")
 public class EmptyCollectionConfig implements Serializable {

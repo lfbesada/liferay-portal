@@ -19,7 +19,8 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class PageFragmentDropZoneDefinition implements Cloneable, Serializable {
+public class PageFragmentDropZoneDefinition
+	extends PageElementDefinition implements Cloneable, Serializable {
 
 	public static PageFragmentDropZoneDefinition toDTO(String json) {
 		return PageFragmentDropZoneDefinitionSerDes.toDTO(json);

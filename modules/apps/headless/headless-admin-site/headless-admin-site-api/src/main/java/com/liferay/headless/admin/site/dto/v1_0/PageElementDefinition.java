@@ -1,5 +1,5 @@
 /**
- * SPDX-FileCopyrightText: (c) 2024 Liferay, Inc. https://liferay.com
+ * SPDX-FileCopyrightText: (c) 2025 Liferay, Inc. https://liferay.com
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
@@ -10,6 +10,8 @@ import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import com.liferay.petra.function.UnsafeSupplier;
@@ -38,59 +40,109 @@ import javax.xml.bind.annotation.XmlRootElement;
  * @generated
  */
 @Generated("")
-@GraphQLName(
-	description = "The HTML properties of a page section.",
-	value = "HtmlProperties"
-)
+@GraphQLName("PageElementDefinition")
 @JsonFilter("Liferay.Vulcan")
-@XmlRootElement(name = "HtmlProperties")
-public class HtmlProperties implements Serializable {
+@JsonSubTypes(
+	{
+		@JsonSubTypes.Type(
+			name = "CollectionDefinition",
+			value = PageCollectionDefinition.class
+		),
+		@JsonSubTypes.Type(
+			name = "CollectionItemDefinition",
+			value = PageCollectionItemDefinition.class
+		),
+		@JsonSubTypes.Type(
+			name = "ColumnDefinition", value = PageColumnDefinition.class
+		),
+		@JsonSubTypes.Type(
+			name = "ContainerDefinition", value = PageContainerDefinition.class
+		),
+		@JsonSubTypes.Type(
+			name = "DropZoneDefinition", value = PageDropZoneDefinition.class
+		),
+		@JsonSubTypes.Type(
+			name = "FormDefinition", value = PageFormDefinition.class
+		),
+		@JsonSubTypes.Type(
+			name = "FormStepContainerDefinition",
+			value = PageFormStepContainerDefinition.class
+		),
+		@JsonSubTypes.Type(
+			name = "FormStepDefinition", value = PageFormStepDefinition.class
+		),
+		@JsonSubTypes.Type(
+			name = "FragmentCompositionDefinition",
+			value = PageFragmentCompositionInstanceDefinition.class
+		),
+		@JsonSubTypes.Type(
+			name = "FragmentDefinition",
+			value = PageFragmentInstanceDefinition.class
+		),
+		@JsonSubTypes.Type(
+			name = "FragmentDropZoneDefinition",
+			value = PageFragmentDropZoneDefinition.class
+		),
+		@JsonSubTypes.Type(
+			name = "RowDefinition", value = PageRowDefinition.class
+		),
+		@JsonSubTypes.Type(
+			name = "WidgetDefinition",
+			value = PageWidgetInstanceDefinition.class
+		)
+	}
+)
+@JsonTypeInfo(
+	include = JsonTypeInfo.As.PROPERTY, property = "type",
+	use = JsonTypeInfo.Id.NAME, visible = true
+)
+@XmlRootElement(name = "PageElementDefinition")
+public abstract class PageElementDefinition implements Serializable {
 
-	public static HtmlProperties toDTO(String json) {
-		return ObjectMapperUtil.readValue(HtmlProperties.class, json);
+	public static PageElementDefinition toDTO(String json) {
+		return ObjectMapperUtil.readValue(PageElementDefinition.class, json);
 	}
 
-	public static HtmlProperties unsafeToDTO(String json) {
-		return ObjectMapperUtil.unsafeReadValue(HtmlProperties.class, json);
+	public static PageElementDefinition unsafeToDTO(String json) {
+		return ObjectMapperUtil.unsafeReadValue(
+			PageElementDefinition.class, json);
 	}
 
 	@io.swagger.v3.oas.annotations.media.Schema
-	@JsonGetter("htmlTag")
+	@JsonGetter("type")
 	@Valid
-	public HtmlTag getHtmlTag() {
-		if (_htmlTagSupplier != null) {
-			htmlTag = _htmlTagSupplier.get();
+	public Type getType() {
+		if (_typeSupplier != null) {
+			type = _typeSupplier.get();
 
-			_htmlTagSupplier = null;
+			_typeSupplier = null;
 		}
 
-		return htmlTag;
+		return type;
 	}
 
 	@JsonIgnore
-	public String getHtmlTagAsString() {
-		HtmlTag htmlTag = getHtmlTag();
+	public String getTypeAsString() {
+		Type type = getType();
 
-		if (htmlTag == null) {
+		if (type == null) {
 			return null;
 		}
 
-		return htmlTag.toString();
+		return type.toString();
 	}
 
-	public void setHtmlTag(HtmlTag htmlTag) {
-		this.htmlTag = htmlTag;
+	public void setType(Type type) {
+		this.type = type;
 
-		_htmlTagSupplier = null;
+		_typeSupplier = null;
 	}
 
 	@JsonIgnore
-	public void setHtmlTag(
-		UnsafeSupplier<HtmlTag, Exception> htmlTagUnsafeSupplier) {
-
-		_htmlTagSupplier = () -> {
+	public void setType(UnsafeSupplier<Type, Exception> typeUnsafeSupplier) {
+		_typeSupplier = () -> {
 			try {
-				return htmlTagUnsafeSupplier.get();
+				return typeUnsafeSupplier.get();
 			}
 			catch (RuntimeException runtimeException) {
 				throw runtimeException;
@@ -103,10 +155,10 @@ public class HtmlProperties implements Serializable {
 
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected HtmlTag htmlTag;
+	protected Type type;
 
 	@JsonIgnore
-	private Supplier<HtmlTag> _htmlTagSupplier;
+	private Supplier<Type> _typeSupplier;
 
 	@Override
 	public boolean equals(Object object) {
@@ -114,13 +166,14 @@ public class HtmlProperties implements Serializable {
 			return true;
 		}
 
-		if (!(object instanceof HtmlProperties)) {
+		if (!(object instanceof PageElementDefinition)) {
 			return false;
 		}
 
-		HtmlProperties htmlProperties = (HtmlProperties)object;
+		PageElementDefinition pageElementDefinition =
+			(PageElementDefinition)object;
 
-		return Objects.equals(toString(), htmlProperties.toString());
+		return Objects.equals(toString(), pageElementDefinition.toString());
 	}
 
 	@Override
@@ -135,18 +188,18 @@ public class HtmlProperties implements Serializable {
 
 		sb.append("{");
 
-		HtmlTag htmlTag = getHtmlTag();
+		Type type = getType();
 
-		if (htmlTag != null) {
+		if (type != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"htmlTag\": ");
+			sb.append("\"type\": ");
 
 			sb.append("\"");
 
-			sb.append(htmlTag);
+			sb.append(type);
 
 			sb.append("\"");
 		}
@@ -158,26 +211,36 @@ public class HtmlProperties implements Serializable {
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY,
-		defaultValue = "com.liferay.headless.admin.site.dto.v1_0.HtmlProperties",
+		defaultValue = "com.liferay.headless.admin.site.dto.v1_0.PageElementDefinition",
 		name = "x-class-name"
 	)
 	public String xClassName;
 
-	@GraphQLName("HtmlTag")
-	public static enum HtmlTag {
+	@GraphQLName("Type")
+	public static enum Type {
 
-		ARTICLE("Article"), ASIDE("Aside"), DIV("Div"), FOOTER("Footer"),
-		HEADER("Header"), NAV("Nav"), SECTION("Section");
+		COLLECTION_DEFINITION("CollectionDefinition"),
+		COLLECTION_ITEM_DEFINITION("CollectionItemDefinition"),
+		COLUMN_DEFINITION("ColumnDefinition"),
+		CONTAINER_DEFINITION("ContainerDefinition"),
+		DROP_ZONE_DEFINITION("DropZoneDefinition"),
+		FORM_DEFINITION("FormDefinition"),
+		FORM_STEP_DEFINITION("FormStepDefinition"),
+		FORM_STEP_CONTAINER_DEFINITION("FormStepContainerDefinition"),
+		FRAGMENT_DEFINITION("FragmentDefinition"),
+		FRAGMENT_COMPOSITION_DEFINITION("FragmentCompositionDefinition"),
+		FRAGMENT_DROP_ZONE_DEFINITION("FragmentDropZoneDefinition"),
+		ROW_DEFINITION("RowDefinition"), WIDGET_DEFINITION("WidgetDefinition");
 
 		@JsonCreator
-		public static HtmlTag create(String value) {
+		public static Type create(String value) {
 			if ((value == null) || value.equals("")) {
 				return null;
 			}
 
-			for (HtmlTag htmlTag : values()) {
-				if (Objects.equals(htmlTag.getValue(), value)) {
-					return htmlTag;
+			for (Type type : values()) {
+				if (Objects.equals(type.getValue(), value)) {
+					return type;
 				}
 			}
 
@@ -194,7 +257,7 @@ public class HtmlProperties implements Serializable {
 			return _value;
 		}
 
-		private HtmlTag(String value) {
+		private Type(String value) {
 			_value = value;
 		}
 

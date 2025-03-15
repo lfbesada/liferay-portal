@@ -44,7 +44,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 )
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "PageCollectionDefinition")
-public class PageCollectionDefinition implements Serializable {
+public class PageCollectionDefinition
+	extends PageElementDefinition implements Serializable {
 
 	public static PageCollectionDefinition toDTO(String json) {
 		return ObjectMapperUtil.readValue(PageCollectionDefinition.class, json);
@@ -237,7 +238,9 @@ public class PageCollectionDefinition implements Serializable {
 	@JsonIgnore
 	private Supplier<Boolean> _displayAllPagesSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The empty collection config of a page collection."
+	)
 	@Valid
 	public EmptyCollectionConfig getEmptyCollectionConfig() {
 		if (_emptyCollectionConfigSupplier != null) {
@@ -275,7 +278,9 @@ public class PageCollectionDefinition implements Serializable {
 		};
 	}
 
-	@GraphQLField
+	@GraphQLField(
+		description = "The empty collection config of a page collection."
+	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected EmptyCollectionConfig emptyCollectionConfig;
 
@@ -1093,6 +1098,22 @@ public class PageCollectionDefinition implements Serializable {
 			sb.append("\"");
 
 			sb.append(_escape(templateKey));
+
+			sb.append("\"");
+		}
+
+		Type type = getType();
+
+		if (type != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"type\": ");
+
+			sb.append("\"");
+
+			sb.append(type);
 
 			sb.append("\"");
 		}
