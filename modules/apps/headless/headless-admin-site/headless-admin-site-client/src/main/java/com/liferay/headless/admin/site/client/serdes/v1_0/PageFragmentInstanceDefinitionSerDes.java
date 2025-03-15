@@ -322,6 +322,20 @@ public class PageFragmentInstanceDefinitionSerDes {
 			sb.append("\"");
 		}
 
+		if (pageFragmentInstanceDefinition.getType() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"type\": ");
+
+			sb.append("\"");
+
+			sb.append(pageFragmentInstanceDefinition.getType());
+
+			sb.append("\"");
+		}
+
 		if (pageFragmentInstanceDefinition.getUuid() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -527,6 +541,15 @@ public class PageFragmentInstanceDefinitionSerDes {
 				String.valueOf(pageFragmentInstanceDefinition.getNamespace()));
 		}
 
+		if (pageFragmentInstanceDefinition.getType() == null) {
+			map.put("type", null);
+		}
+		else {
+			map.put(
+				"type",
+				String.valueOf(pageFragmentInstanceDefinition.getType()));
+		}
+
 		if (pageFragmentInstanceDefinition.getUuid() == null) {
 			map.put("uuid", null);
 		}
@@ -609,6 +632,9 @@ public class PageFragmentInstanceDefinitionSerDes {
 				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "namespace")) {
+				return false;
+			}
+			else if (Objects.equals(jsonParserFieldName, "type")) {
 				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "uuid")) {
@@ -750,6 +776,13 @@ public class PageFragmentInstanceDefinitionSerDes {
 				if (jsonParserFieldValue != null) {
 					pageFragmentInstanceDefinition.setNamespace(
 						(String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "type")) {
+				if (jsonParserFieldValue != null) {
+					pageFragmentInstanceDefinition.setType(
+						PageFragmentInstanceDefinition.Type.create(
+							(String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "uuid")) {

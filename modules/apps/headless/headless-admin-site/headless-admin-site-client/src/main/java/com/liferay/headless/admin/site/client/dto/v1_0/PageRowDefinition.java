@@ -277,6 +277,33 @@ public class PageRowDefinition implements Cloneable, Serializable {
 
 	protected RowViewport[] rowViewports;
 
+	public Type getType() {
+		return type;
+	}
+
+	public String getTypeAsString() {
+		if (type == null) {
+			return null;
+		}
+
+		return type.toString();
+	}
+
+	public void setType(Type type) {
+		this.type = type;
+	}
+
+	public void setType(UnsafeSupplier<Type, Exception> typeUnsafeSupplier) {
+		try {
+			type = typeUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Type type;
+
 	public String getVerticalAlignment() {
 		return verticalAlignment;
 	}
@@ -327,6 +354,39 @@ public class PageRowDefinition implements Cloneable, Serializable {
 
 	public String toString() {
 		return PageRowDefinitionSerDes.toJSON(this);
+	}
+
+	public static enum Type {
+
+		ROW_DEFINITION("RowDefinition");
+
+		public static Type create(String value) {
+			for (Type type : values()) {
+				if (Objects.equals(type.getValue(), value) ||
+					Objects.equals(type.name(), value)) {
+
+					return type;
+				}
+			}
+
+			return null;
+		}
+
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private Type(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
 	}
 
 }

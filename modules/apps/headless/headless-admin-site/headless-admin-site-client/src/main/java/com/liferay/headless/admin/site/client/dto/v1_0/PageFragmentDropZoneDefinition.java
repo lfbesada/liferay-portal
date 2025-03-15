@@ -46,6 +46,33 @@ public class PageFragmentDropZoneDefinition implements Cloneable, Serializable {
 
 	protected String fragmentDropZoneId;
 
+	public Type getType() {
+		return type;
+	}
+
+	public String getTypeAsString() {
+		if (type == null) {
+			return null;
+		}
+
+		return type.toString();
+	}
+
+	public void setType(Type type) {
+		this.type = type;
+	}
+
+	public void setType(UnsafeSupplier<Type, Exception> typeUnsafeSupplier) {
+		try {
+			type = typeUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Type type;
+
 	@Override
 	public PageFragmentDropZoneDefinition clone()
 		throws CloneNotSupportedException {
@@ -79,6 +106,39 @@ public class PageFragmentDropZoneDefinition implements Cloneable, Serializable {
 
 	public String toString() {
 		return PageFragmentDropZoneDefinitionSerDes.toJSON(this);
+	}
+
+	public static enum Type {
+
+		FRAGMENT_DROP_ZONE_DEFINITION("FragmentDropZoneDefinition");
+
+		public static Type create(String value) {
+			for (Type type : values()) {
+				if (Objects.equals(type.getValue(), value) ||
+					Objects.equals(type.name(), value)) {
+
+					return type;
+				}
+			}
+
+			return null;
+		}
+
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private Type(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
 	}
 
 }

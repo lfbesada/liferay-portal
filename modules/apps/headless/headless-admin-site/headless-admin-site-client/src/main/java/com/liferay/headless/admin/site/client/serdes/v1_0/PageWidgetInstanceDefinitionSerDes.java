@@ -175,6 +175,20 @@ public class PageWidgetInstanceDefinitionSerDes {
 			sb.append("\"");
 		}
 
+		if (pageWidgetInstanceDefinition.getType() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"type\": ");
+
+			sb.append("\"");
+
+			sb.append(pageWidgetInstanceDefinition.getType());
+
+			sb.append("\"");
+		}
+
 		if (pageWidgetInstanceDefinition.getWidgetInstance() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -265,6 +279,14 @@ public class PageWidgetInstanceDefinitionSerDes {
 				"name", String.valueOf(pageWidgetInstanceDefinition.getName()));
 		}
 
+		if (pageWidgetInstanceDefinition.getType() == null) {
+			map.put("type", null);
+		}
+		else {
+			map.put(
+				"type", String.valueOf(pageWidgetInstanceDefinition.getType()));
+		}
+
 		if (pageWidgetInstanceDefinition.getWidgetInstance() == null) {
 			map.put("widgetInstance", null);
 		}
@@ -311,6 +333,9 @@ public class PageWidgetInstanceDefinitionSerDes {
 				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "name")) {
+				return false;
+			}
+			else if (Objects.equals(jsonParserFieldName, "type")) {
 				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "widgetInstance")) {
@@ -386,6 +411,13 @@ public class PageWidgetInstanceDefinitionSerDes {
 				if (jsonParserFieldValue != null) {
 					pageWidgetInstanceDefinition.setName(
 						(String)jsonParserFieldValue);
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "type")) {
+				if (jsonParserFieldValue != null) {
+					pageWidgetInstanceDefinition.setType(
+						PageWidgetInstanceDefinition.Type.create(
+							(String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "widgetInstance")) {
