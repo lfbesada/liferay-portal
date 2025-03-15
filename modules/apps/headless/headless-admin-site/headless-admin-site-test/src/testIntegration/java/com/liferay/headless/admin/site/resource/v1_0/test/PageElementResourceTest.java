@@ -7,6 +7,8 @@ package com.liferay.headless.admin.site.resource.v1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.headless.admin.site.client.dto.v1_0.PageElement;
+import com.liferay.headless.admin.site.client.dto.v1_0.PageElementDefinition;
+import com.liferay.headless.admin.site.client.function.UnsafeSupplier;
 import com.liferay.headless.admin.site.client.problem.Problem;
 import com.liferay.headless.admin.site.dto.v1_0.DefaultFragmentReference;
 import com.liferay.headless.admin.site.dto.v1_0.PageCollectionDefinition;
@@ -159,7 +161,7 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 			testPostSiteSiteByExternalReferenceCodePageExperiencePageElement_addPageElement(
 				randomPageElement());
 
-		postPageElement.setDefinition(() -> null);
+		postPageElement.setPageElementDefinition(() -> null);
 
 		SegmentsExperience segmentsExperience =
 			_segmentsExperienceLocalService.fetchSegmentsExperience(
@@ -429,7 +431,9 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 		PageElement randomPageElement = _randomPageElement(
 			PageElement.Type.COLLECTION);
 
-		randomPageElement.setDefinition(new PageCollectionDefinition());
+		randomPageElement.setPageElementDefinition(
+			(UnsafeSupplier<PageElementDefinition, Exception>)
+				new PageCollectionDefinition());
 
 		_assertPostSiteSiteByExternalReferenceCodePageExperiencePageElement(
 			randomPageElement);
@@ -441,7 +445,9 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 		PageElement randomPageElement = _randomPageElement(
 			PageElement.Type.COLLECTION_ITEM);
 
-		randomPageElement.setDefinition(new PageCollectionItemDefinition());
+		randomPageElement.setPageElementDefinition(
+			(UnsafeSupplier<PageElementDefinition, Exception>)
+				new PageCollectionItemDefinition());
 
 		_assertPostSiteSiteByExternalReferenceCodePageExperiencePageElement(
 			randomPageElement);
@@ -453,7 +459,9 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 		PageElement randomPageElement = _randomPageElement(
 			PageElement.Type.COLUMN);
 
-		randomPageElement.setDefinition(new PageColumnDefinition());
+		randomPageElement.setPageElementDefinition(
+			(UnsafeSupplier<PageElementDefinition, Exception>)
+				new PageColumnDefinition());
 
 		_assertPostSiteSiteByExternalReferenceCodePageExperiencePageElement(
 			randomPageElement);
@@ -465,7 +473,9 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 		PageElement randomPageElement = _randomPageElement(
 			PageElement.Type.CONTAINER);
 
-		randomPageElement.setDefinition(new PageContainerDefinition());
+		randomPageElement.setPageElementDefinition(
+			(UnsafeSupplier<PageElementDefinition, Exception>)
+				new PageContainerDefinition());
 
 		_assertPostSiteSiteByExternalReferenceCodePageExperiencePageElement(
 			randomPageElement);
@@ -477,7 +487,9 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 		PageElement randomPageElement = _randomPageElement(
 			PageElement.Type.DROP_ZONE);
 
-		randomPageElement.setDefinition(new PageDropZoneDefinition());
+		randomPageElement.setPageElementDefinition(
+			(UnsafeSupplier<PageElementDefinition, Exception>)
+				new PageDropZoneDefinition());
 
 		_assertPostSiteSiteByExternalReferenceCodePageExperiencePageElement(
 			randomPageElement);
@@ -489,7 +501,9 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 		PageElement randomPageElement = _randomPageElement(
 			PageElement.Type.FORM);
 
-		randomPageElement.setDefinition(new PageFormDefinition());
+		randomPageElement.setPageElementDefinition(
+			(UnsafeSupplier<PageElementDefinition, Exception>)
+				new PageFormDefinition());
 
 		_assertPostSiteSiteByExternalReferenceCodePageExperiencePageElement(
 			randomPageElement);
@@ -501,7 +515,9 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 		PageElement randomPageElement = _randomPageElement(
 			PageElement.Type.FORM_STEP_CONTAINER);
 
-		randomPageElement.setDefinition(new PageFormStepContainerDefinition());
+		randomPageElement.setPageElementDefinition(
+			(UnsafeSupplier<PageElementDefinition, Exception>)
+				new PageFormStepContainerDefinition());
 
 		_assertPostSiteSiteByExternalReferenceCodePageExperiencePageElement(
 			randomPageElement);
@@ -513,7 +529,9 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 		PageElement randomPageElement = _randomPageElement(
 			PageElement.Type.FORM_STEP);
 
-		randomPageElement.setDefinition(new PageFormStepDefinition());
+		randomPageElement.setPageElementDefinition(
+			(UnsafeSupplier<PageElementDefinition, Exception>)
+				new PageFormStepDefinition());
 
 		_assertPostSiteSiteByExternalReferenceCodePageExperiencePageElement(
 			randomPageElement);
@@ -525,7 +543,9 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 		PageElement randomPageElement = _randomPageElement(
 			PageElement.Type.FRAGMENT_DROP_ZONE);
 
-		randomPageElement.setDefinition(new PageFragmentDropZoneDefinition());
+		randomPageElement.setPageElementDefinition(
+			(UnsafeSupplier<PageElementDefinition, Exception>)
+				new PageFragmentDropZoneDefinition());
 
 		_assertPostSiteSiteByExternalReferenceCodePageExperiencePageElement(
 			randomPageElement);
@@ -537,8 +557,10 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 		PageElement randomPageElement = _randomPageElement(
 			PageElement.Type.FRAGMENT);
 
-		randomPageElement.setDefinition(
-			new PageFragmentInstanceDefinition() {
+		randomPageElement.setPageElementDefinition(
+			new com.liferay.headless.admin.site.client.dto.v1_0.
+				PageFragmentInstanceDefinition() {
+
 				{
 					setFragmentReference(
 						new DefaultFragmentReference() {
@@ -560,7 +582,9 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 		PageElement randomPageElement = _randomPageElement(
 			PageElement.Type.ROW);
 
-		randomPageElement.setDefinition(new PageRowDefinition());
+		randomPageElement.setPageElementDefinition(
+			(UnsafeSupplier<PageElementDefinition, Exception>)
+				new PageRowDefinition());
 
 		_assertPostSiteSiteByExternalReferenceCodePageExperiencePageElement(
 			randomPageElement);

@@ -9,6 +9,7 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.headless.admin.site.client.dto.v1_0.ContentPageSpecification;
 import com.liferay.headless.admin.site.client.dto.v1_0.ItemExternalReference;
 import com.liferay.headless.admin.site.client.dto.v1_0.PageElement;
+import com.liferay.headless.admin.site.client.dto.v1_0.PageElementDefinition;
 import com.liferay.headless.admin.site.client.dto.v1_0.PageExperience;
 import com.liferay.headless.admin.site.client.dto.v1_0.PageSpecification;
 import com.liferay.headless.admin.site.client.dto.v1_0.Settings;
@@ -963,8 +964,11 @@ public class PageSpecificationResourceTest
 
 			pageElements[i] = new PageElement() {
 				{
-					setDefinition(() -> new PageContainerDefinition());
 					setExternalReferenceCode(curExternalReferenceCode);
+					setPageElementDefinition(
+						(com.liferay.headless.admin.site.client.function.
+							UnsafeSupplier<PageElementDefinition, Exception>)
+								new PageContainerDefinition());
 					setPageElements(
 						() -> {
 							if (!RandomTestUtil.randomBoolean()) {
