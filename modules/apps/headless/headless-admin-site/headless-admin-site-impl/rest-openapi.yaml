@@ -1667,8 +1667,8 @@ components:
                             FormStepContainerDefinition: "#/components/schemas/PageFormStepContainerDefinition"
                             FormStepDefinition: "#/components/schemas/PageFormStepDefinition"
                             FragmentCompositionInstanceDefinition: "#/components/schemas/PageFragmentCompositionInstanceDefinition"
-                            FragmentInstanceDefinition: "#/components/schemas/PageFragmentInstanceDefinition"
                             FragmentDropZoneDefinition: "#/components/schemas/PageFragmentDropZoneDefinition"
+                            FragmentInstanceDefinition: "#/components/schemas/PageFragmentInstanceDefinition"
                             RowDefinition: "#/components/schemas/PageRowDefinition"
                             WidgetInstanceDefinition: "#/components/schemas/PageWidgetInstanceDefinition"
                         propertyName: type
