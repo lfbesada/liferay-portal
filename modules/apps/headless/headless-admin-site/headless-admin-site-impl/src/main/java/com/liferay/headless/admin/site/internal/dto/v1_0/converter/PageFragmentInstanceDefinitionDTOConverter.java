@@ -105,6 +105,7 @@ public class PageFragmentInstanceDefinitionDTOConverter
 				setIndexed(fragmentStyledLayoutStructureItem::isIndexed);
 				setName(fragmentStyledLayoutStructureItem::getName);
 				setNamespace(fragmentEntryLink::getNamespace);
+				setType(() -> Type.FRAGMENT_INSTANCE_DEFINITION);
 			}
 		};
 	}

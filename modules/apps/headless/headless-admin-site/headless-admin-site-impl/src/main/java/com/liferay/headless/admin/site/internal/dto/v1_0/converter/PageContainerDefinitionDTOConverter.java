@@ -63,6 +63,7 @@ public class PageContainerDefinitionDTOConverter
 						containerStyledLayoutStructureItem));
 				setIndexed(containerStyledLayoutStructureItem::isIndexed);
 				setName(containerStyledLayoutStructureItem::getName);
+				setType(() -> Type.CONTAINER_DEFINITION);
 			}
 		};
 	}

@@ -83,6 +83,7 @@ public class PageCollectionDefinitionDTOConverter
 							getPaginationType()));
 				setTemplateKey(
 					collectionStyledLayoutStructureItem::getTemplateKey);
+				setType(() -> Type.COLLECTION_DEFINITION);
 			}
 		};
 	}

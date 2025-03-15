@@ -36,6 +36,7 @@ public class PageColumnDefinitionDTOConverter
 		return new PageColumnDefinition() {
 			{
 				setSize(columnLayoutStructureItem::getSize);
+				setType(() -> Type.COLUMN_DEFINITION);
 			}
 		};
 	}

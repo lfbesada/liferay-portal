@@ -57,6 +57,7 @@ public class PageRowDefinitionDTOConverter
 				setNumberOfColumns(
 					rowStyledLayoutStructureItem::getNumberOfColumns);
 				setReverseOrder(rowStyledLayoutStructureItem::isReverseOrder);
+				setType(() -> Type.ROW_DEFINITION);
 			}
 		};
 	}

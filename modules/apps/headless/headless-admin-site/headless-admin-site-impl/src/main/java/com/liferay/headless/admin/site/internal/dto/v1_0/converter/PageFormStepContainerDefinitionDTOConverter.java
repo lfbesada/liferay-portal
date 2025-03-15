@@ -56,6 +56,7 @@ public class PageFormStepContainerDefinitionDTOConverter
 				setCustomCSS(
 					formStepContainerStyledLayoutStructureItem::getCustomCSS);
 				setName(formStepContainerStyledLayoutStructureItem::getName);
+				setType(() -> Type.FORM_STEP_CONTAINER_DEFINITION);
 			}
 		};
 	}

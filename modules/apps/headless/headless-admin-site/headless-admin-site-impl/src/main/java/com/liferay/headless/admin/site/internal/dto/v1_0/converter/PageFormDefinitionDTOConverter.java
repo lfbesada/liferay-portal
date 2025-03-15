@@ -59,6 +59,7 @@ public class PageFormDefinitionDTOConverter
 					() -> _toFormConfig(formStyledLayoutStructureItem));
 				setIndexed(formStyledLayoutStructureItem::isIndexed);
 				setName(formStyledLayoutStructureItem::getName);
+				setType(() -> Type.FORM_DEFINITION);
 			}
 		};
 	}
