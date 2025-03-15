@@ -14,7 +14,6 @@ import com.fasterxml.jackson.annotation.JsonValue;
 
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
@@ -52,50 +51,6 @@ public class PageElement implements Serializable {
 	public static PageElement unsafeToDTO(String json) {
 		return ObjectMapperUtil.unsafeReadValue(PageElement.class, json);
 	}
-
-	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The page element's definition."
-	)
-	@Valid
-	public Object getDefinition() {
-		if (_definitionSupplier != null) {
-			definition = _definitionSupplier.get();
-
-			_definitionSupplier = null;
-		}
-
-		return definition;
-	}
-
-	public void setDefinition(Object definition) {
-		this.definition = definition;
-
-		_definitionSupplier = null;
-	}
-
-	@JsonIgnore
-	public void setDefinition(
-		UnsafeSupplier<Object, Exception> definitionUnsafeSupplier) {
-
-		_definitionSupplier = () -> {
-			try {
-				return definitionUnsafeSupplier.get();
-			}
-			catch (RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			catch (Exception exception) {
-				throw new RuntimeException(exception);
-			}
-		};
-	}
-
-	@GraphQLField(description = "The page element's definition.")
-	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected Object definition;
-
-	@JsonIgnore
-	private Supplier<Object> _definitionSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "The page element's external reference code. Unique within the site."
@@ -141,6 +96,53 @@ public class PageElement implements Serializable {
 
 	@JsonIgnore
 	private Supplier<String> _externalReferenceCodeSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The page element's definition."
+	)
+	@Valid
+	public PageElementDefinition getPageElementDefinition() {
+		if (_pageElementDefinitionSupplier != null) {
+			pageElementDefinition = _pageElementDefinitionSupplier.get();
+
+			_pageElementDefinitionSupplier = null;
+		}
+
+		return pageElementDefinition;
+	}
+
+	public void setPageElementDefinition(
+		PageElementDefinition pageElementDefinition) {
+
+		this.pageElementDefinition = pageElementDefinition;
+
+		_pageElementDefinitionSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setPageElementDefinition(
+		UnsafeSupplier<PageElementDefinition, Exception>
+			pageElementDefinitionUnsafeSupplier) {
+
+		_pageElementDefinitionSupplier = () -> {
+			try {
+				return pageElementDefinitionUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(description = "The page element's definition.")
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected PageElementDefinition pageElementDefinition;
+
+	@JsonIgnore
+	private Supplier<PageElementDefinition> _pageElementDefinitionSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "A list of the page elements this page element has."
@@ -366,29 +368,6 @@ public class PageElement implements Serializable {
 
 		sb.append("{");
 
-		Object definition = getDefinition();
-
-		if (definition != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"definition\": ");
-
-			if (definition instanceof Map) {
-				sb.append(
-					JSONFactoryUtil.createJSONObject((Map<?, ?>)definition));
-			}
-			else if (definition instanceof String) {
-				sb.append("\"");
-				sb.append(_escape((String)definition));
-				sb.append("\"");
-			}
-			else {
-				sb.append(definition);
-			}
-		}
-
 		String externalReferenceCode = getExternalReferenceCode();
 
 		if (externalReferenceCode != null) {
@@ -403,6 +382,19 @@ public class PageElement implements Serializable {
 			sb.append(_escape(externalReferenceCode));
 
 			sb.append("\"");
+		}
+
+		PageElementDefinition pageElementDefinition =
+			getPageElementDefinition();
+
+		if (pageElementDefinition != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"pageElementDefinition\": ");
+
+			sb.append(String.valueOf(pageElementDefinition));
 		}
 
 		PageElement[] pageElements = getPageElements();

@@ -1,11 +1,11 @@
 /**
- * SPDX-FileCopyrightText: (c) 2024 Liferay, Inc. https://liferay.com
+ * SPDX-FileCopyrightText: (c) 2025 Liferay, Inc. https://liferay.com
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
 package com.liferay.headless.admin.site.client.serdes.v1_0;
 
-import com.liferay.headless.admin.site.client.dto.v1_0.HtmlProperties;
+import com.liferay.headless.admin.site.client.dto.v1_0.HTMLProperties;
 import com.liferay.headless.admin.site.client.json.BaseJSONParser;
 
 import java.util.Iterator;
@@ -21,23 +21,23 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class HtmlPropertiesSerDes {
+public class HTMLPropertiesSerDes {
 
-	public static HtmlProperties toDTO(String json) {
-		HtmlPropertiesJSONParser htmlPropertiesJSONParser =
-			new HtmlPropertiesJSONParser();
+	public static HTMLProperties toDTO(String json) {
+		HTMLPropertiesJSONParser htmlPropertiesJSONParser =
+			new HTMLPropertiesJSONParser();
 
 		return htmlPropertiesJSONParser.parseToDTO(json);
 	}
 
-	public static HtmlProperties[] toDTOs(String json) {
-		HtmlPropertiesJSONParser htmlPropertiesJSONParser =
-			new HtmlPropertiesJSONParser();
+	public static HTMLProperties[] toDTOs(String json) {
+		HTMLPropertiesJSONParser htmlPropertiesJSONParser =
+			new HTMLPropertiesJSONParser();
 
 		return htmlPropertiesJSONParser.parseToDTOs(json);
 	}
 
-	public static String toJSON(HtmlProperties htmlProperties) {
+	public static String toJSON(HTMLProperties htmlProperties) {
 		if (htmlProperties == null) {
 			return "null";
 		}
@@ -66,13 +66,13 @@ public class HtmlPropertiesSerDes {
 	}
 
 	public static Map<String, Object> toMap(String json) {
-		HtmlPropertiesJSONParser htmlPropertiesJSONParser =
-			new HtmlPropertiesJSONParser();
+		HTMLPropertiesJSONParser htmlPropertiesJSONParser =
+			new HTMLPropertiesJSONParser();
 
 		return htmlPropertiesJSONParser.parseToMap(json);
 	}
 
-	public static Map<String, String> toMap(HtmlProperties htmlProperties) {
+	public static Map<String, String> toMap(HTMLProperties htmlProperties) {
 		if (htmlProperties == null) {
 			return null;
 		}
@@ -89,17 +89,17 @@ public class HtmlPropertiesSerDes {
 		return map;
 	}
 
-	public static class HtmlPropertiesJSONParser
-		extends BaseJSONParser<HtmlProperties> {
+	public static class HTMLPropertiesJSONParser
+		extends BaseJSONParser<HTMLProperties> {
 
 		@Override
-		protected HtmlProperties createDTO() {
-			return new HtmlProperties();
+		protected HTMLProperties createDTO() {
+			return new HTMLProperties();
 		}
 
 		@Override
-		protected HtmlProperties[] createDTOArray(int size) {
-			return new HtmlProperties[size];
+		protected HTMLProperties[] createDTOArray(int size) {
+			return new HTMLProperties[size];
 		}
 
 		@Override
@@ -113,13 +113,13 @@ public class HtmlPropertiesSerDes {
 
 		@Override
 		protected void setField(
-			HtmlProperties htmlProperties, String jsonParserFieldName,
+			HTMLProperties htmlProperties, String jsonParserFieldName,
 			Object jsonParserFieldValue) {
 
 			if (Objects.equals(jsonParserFieldName, "htmlTag")) {
 				if (jsonParserFieldValue != null) {
 					htmlProperties.setHtmlTag(
-						HtmlProperties.HtmlTag.create(
+						HTMLProperties.HtmlTag.create(
 							(String)jsonParserFieldValue));
 				}
 			}

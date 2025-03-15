@@ -20,7 +20,7 @@ import javax.annotation.Generated;
  */
 @Generated("")
 public class PageFragmentCompositionInstanceDefinition
-	implements Cloneable, Serializable {
+	extends PageElementDefinition implements Cloneable, Serializable {
 
 	public static PageFragmentCompositionInstanceDefinition toDTO(String json) {
 		return PageFragmentCompositionInstanceDefinitionSerDes.toDTO(json);

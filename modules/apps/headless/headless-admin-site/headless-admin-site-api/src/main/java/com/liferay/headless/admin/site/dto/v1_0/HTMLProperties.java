@@ -1,5 +1,5 @@
 /**
- * SPDX-FileCopyrightText: (c) 2024 Liferay, Inc. https://liferay.com
+ * SPDX-FileCopyrightText: (c) 2025 Liferay, Inc. https://liferay.com
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
@@ -39,18 +39,19 @@ import javax.xml.bind.annotation.XmlRootElement;
  */
 @Generated("")
 @GraphQLName(
-	description = "The page section's html properties", value = "HtmlProperties"
+	description = "The HTML properties of a page section.",
+	value = "HTMLProperties"
 )
 @JsonFilter("Liferay.Vulcan")
-@XmlRootElement(name = "HtmlProperties")
-public class HtmlProperties implements Serializable {
+@XmlRootElement(name = "HTMLProperties")
+public class HTMLProperties implements Serializable {
 
-	public static HtmlProperties toDTO(String json) {
-		return ObjectMapperUtil.readValue(HtmlProperties.class, json);
+	public static HTMLProperties toDTO(String json) {
+		return ObjectMapperUtil.readValue(HTMLProperties.class, json);
 	}
 
-	public static HtmlProperties unsafeToDTO(String json) {
-		return ObjectMapperUtil.unsafeReadValue(HtmlProperties.class, json);
+	public static HTMLProperties unsafeToDTO(String json) {
+		return ObjectMapperUtil.unsafeReadValue(HTMLProperties.class, json);
 	}
 
 	@io.swagger.v3.oas.annotations.media.Schema
@@ -113,11 +114,11 @@ public class HtmlProperties implements Serializable {
 			return true;
 		}
 
-		if (!(object instanceof HtmlProperties)) {
+		if (!(object instanceof HTMLProperties)) {
 			return false;
 		}
 
-		HtmlProperties htmlProperties = (HtmlProperties)object;
+		HTMLProperties htmlProperties = (HTMLProperties)object;
 
 		return Objects.equals(toString(), htmlProperties.toString());
 	}
@@ -157,7 +158,7 @@ public class HtmlProperties implements Serializable {
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY,
-		defaultValue = "com.liferay.headless.admin.site.dto.v1_0.HtmlProperties",
+		defaultValue = "com.liferay.headless.admin.site.dto.v1_0.HTMLProperties",
 		name = "x-class-name"
 	)
 	public String xClassName;

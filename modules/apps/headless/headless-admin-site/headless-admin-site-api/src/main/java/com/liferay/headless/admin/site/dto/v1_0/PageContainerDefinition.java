@@ -41,7 +41,8 @@ import javax.xml.bind.annotation.XmlRootElement;
 )
 @JsonFilter("Liferay.Vulcan")
 @XmlRootElement(name = "PageContainerDefinition")
-public class PageContainerDefinition implements Serializable {
+public class PageContainerDefinition
+	extends PageElementDefinition implements Serializable {
 
 	public static PageContainerDefinition toDTO(String json) {
 		return ObjectMapperUtil.readValue(PageContainerDefinition.class, json);
@@ -417,10 +418,10 @@ public class PageContainerDefinition implements Serializable {
 	private Supplier<FragmentViewport[]> _fragmentViewportsSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The page section's html properties"
+		description = "The HTML properties of the page section."
 	)
 	@Valid
-	public HtmlProperties getHtmlProperties() {
+	public HTMLProperties getHtmlProperties() {
 		if (_htmlPropertiesSupplier != null) {
 			htmlProperties = _htmlPropertiesSupplier.get();
 
@@ -430,7 +431,7 @@ public class PageContainerDefinition implements Serializable {
 		return htmlProperties;
 	}
 
-	public void setHtmlProperties(HtmlProperties htmlProperties) {
+	public void setHtmlProperties(HTMLProperties htmlProperties) {
 		this.htmlProperties = htmlProperties;
 
 		_htmlPropertiesSupplier = null;
@@ -438,7 +439,7 @@ public class PageContainerDefinition implements Serializable {
 
 	@JsonIgnore
 	public void setHtmlProperties(
-		UnsafeSupplier<HtmlProperties, Exception>
+		UnsafeSupplier<HTMLProperties, Exception>
 			htmlPropertiesUnsafeSupplier) {
 
 		_htmlPropertiesSupplier = () -> {
@@ -454,12 +455,12 @@ public class PageContainerDefinition implements Serializable {
 		};
 	}
 
-	@GraphQLField(description = "The page section's html properties")
+	@GraphQLField(description = "The HTML properties of the page section.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected HtmlProperties htmlProperties;
+	protected HTMLProperties htmlProperties;
 
 	@JsonIgnore
-	private Supplier<HtmlProperties> _htmlPropertiesSupplier;
+	private Supplier<HTMLProperties> _htmlPropertiesSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "A flag that indicates whether the page section is indexed or not."
@@ -757,7 +758,7 @@ public class PageContainerDefinition implements Serializable {
 			sb.append("]");
 		}
 
-		HtmlProperties htmlProperties = getHtmlProperties();
+		HTMLProperties htmlProperties = getHtmlProperties();
 
 		if (htmlProperties != null) {
 			if (sb.length() > 1) {
@@ -805,6 +806,22 @@ public class PageContainerDefinition implements Serializable {
 			sb.append("\"");
 
 			sb.append(_escape(name));
+
+			sb.append("\"");
+		}
+
+		Type type = getType();
+
+		if (type != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"type\": ");
+
+			sb.append("\"");
+
+			sb.append(type);
 
 			sb.append("\"");
 		}

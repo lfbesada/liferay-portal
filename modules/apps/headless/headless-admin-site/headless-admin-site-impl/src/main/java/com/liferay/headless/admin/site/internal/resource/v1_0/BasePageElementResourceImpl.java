@@ -142,7 +142,7 @@ public abstract class BasePageElementResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/page-specifications/{pageSpecificationExternalReferenceCode}/page-experiences/{pageExperienceExternalReferenceCode}/page-elements' -d $'{"definition": ___, "externalReferenceCode": ___, "pageElements": ___, "parentExternalReferenceCode": ___, "position": ___, "type": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'POST' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/page-specifications/{pageSpecificationExternalReferenceCode}/page-experiences/{pageExperienceExternalReferenceCode}/page-elements' -d $'{"externalReferenceCode": ___, "pageElementDefinition": ___, "pageElements": ___, "parentExternalReferenceCode": ___, "position": ___, "type": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Adds a new page element to an experience in a page specification in draft status of a site page."
@@ -336,7 +336,7 @@ public abstract class BasePageElementResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/page-specifications/{pageSpecificationExternalReferenceCode}/page-experiences/{pageExperienceExternalReferenceCode}/page-elements/{pageElementExternalReferenceCode}' -d $'{"definition": ___, "externalReferenceCode": ___, "pageElements": ___, "parentExternalReferenceCode": ___, "position": ___, "type": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'PATCH' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/page-specifications/{pageSpecificationExternalReferenceCode}/page-experiences/{pageExperienceExternalReferenceCode}/page-elements/{pageElementExternalReferenceCode}' -d $'{"externalReferenceCode": ___, "pageElementDefinition": ___, "pageElements": ___, "parentExternalReferenceCode": ___, "position": ___, "type": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates a page element within an experience of a specific page specification of a site page within a site. Updates only the fields received in the request body, leaving any other fields untouched."
@@ -410,10 +410,6 @@ public abstract class BasePageElementResourceImpl
 				pageExperienceExternalReferenceCode,
 				pageElementExternalReferenceCode);
 
-		if (pageElement.getDefinition() != null) {
-			existingPageElement.setDefinition(pageElement.getDefinition());
-		}
-
 		if (pageElement.getExternalReferenceCode() != null) {
 			existingPageElement.setExternalReferenceCode(
 				pageElement.getExternalReferenceCode());
@@ -443,7 +439,7 @@ public abstract class BasePageElementResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
-	 * curl -X 'PUT' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/page-specifications/{pageSpecificationExternalReferenceCode}/page-experiences/{pageExperienceExternalReferenceCode}/page-elements/{pageElementExternalReferenceCode}' -d $'{"definition": ___, "externalReferenceCode": ___, "pageElements": ___, "parentExternalReferenceCode": ___, "position": ___, "type": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
+	 * curl -X 'PUT' 'http://localhost:8080/o/headless-admin-site/v1.0/sites/{siteExternalReferenceCode}/page-specifications/{pageSpecificationExternalReferenceCode}/page-experiences/{pageExperienceExternalReferenceCode}/page-elements/{pageElementExternalReferenceCode}' -d $'{"externalReferenceCode": ___, "pageElementDefinition": ___, "pageElements": ___, "parentExternalReferenceCode": ___, "position": ___, "type": ___}' --header 'Content-Type: application/json' -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
 		description = "Updates a page element within an experience of a specific page specification of a site page within a site."

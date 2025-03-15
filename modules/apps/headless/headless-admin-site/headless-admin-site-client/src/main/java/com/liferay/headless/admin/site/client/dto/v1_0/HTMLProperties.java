@@ -1,12 +1,12 @@
 /**
- * SPDX-FileCopyrightText: (c) 2024 Liferay, Inc. https://liferay.com
+ * SPDX-FileCopyrightText: (c) 2025 Liferay, Inc. https://liferay.com
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
 package com.liferay.headless.admin.site.client.dto.v1_0;
 
 import com.liferay.headless.admin.site.client.function.UnsafeSupplier;
-import com.liferay.headless.admin.site.client.serdes.v1_0.HtmlPropertiesSerDes;
+import com.liferay.headless.admin.site.client.serdes.v1_0.HTMLPropertiesSerDes;
 
 import java.io.Serializable;
 
@@ -19,10 +19,10 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class HtmlProperties implements Cloneable, Serializable {
+public class HTMLProperties implements Cloneable, Serializable {
 
-	public static HtmlProperties toDTO(String json) {
-		return HtmlPropertiesSerDes.toDTO(json);
+	public static HTMLProperties toDTO(String json) {
+		return HTMLPropertiesSerDes.toDTO(json);
 	}
 
 	public HtmlTag getHtmlTag() {
@@ -55,8 +55,8 @@ public class HtmlProperties implements Cloneable, Serializable {
 	protected HtmlTag htmlTag;
 
 	@Override
-	public HtmlProperties clone() throws CloneNotSupportedException {
-		return (HtmlProperties)super.clone();
+	public HTMLProperties clone() throws CloneNotSupportedException {
+		return (HTMLProperties)super.clone();
 	}
 
 	@Override
@@ -65,11 +65,11 @@ public class HtmlProperties implements Cloneable, Serializable {
 			return true;
 		}
 
-		if (!(object instanceof HtmlProperties)) {
+		if (!(object instanceof HTMLProperties)) {
 			return false;
 		}
 
-		HtmlProperties htmlProperties = (HtmlProperties)object;
+		HTMLProperties htmlProperties = (HTMLProperties)object;
 
 		return Objects.equals(toString(), htmlProperties.toString());
 	}
@@ -82,7 +82,7 @@ public class HtmlProperties implements Cloneable, Serializable {
 	}
 
 	public String toString() {
-		return HtmlPropertiesSerDes.toJSON(this);
+		return HTMLPropertiesSerDes.toJSON(this);
 	}
 
 	public static enum HtmlTag {

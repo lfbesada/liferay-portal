@@ -19,7 +19,8 @@ import javax.annotation.Generated;
  * @generated
  */
 @Generated("")
-public class PageContainerDefinition implements Cloneable, Serializable {
+public class PageContainerDefinition
+	extends PageElementDefinition implements Cloneable, Serializable {
 
 	public static PageContainerDefinition toDTO(String json) {
 		return PageContainerDefinitionSerDes.toDTO(json);
@@ -199,16 +200,16 @@ public class PageContainerDefinition implements Cloneable, Serializable {
 
 	protected FragmentViewport[] fragmentViewports;
 
-	public HtmlProperties getHtmlProperties() {
+	public HTMLProperties getHtmlProperties() {
 		return htmlProperties;
 	}
 
-	public void setHtmlProperties(HtmlProperties htmlProperties) {
+	public void setHtmlProperties(HTMLProperties htmlProperties) {
 		this.htmlProperties = htmlProperties;
 	}
 
 	public void setHtmlProperties(
-		UnsafeSupplier<HtmlProperties, Exception>
+		UnsafeSupplier<HTMLProperties, Exception>
 			htmlPropertiesUnsafeSupplier) {
 
 		try {
@@ -219,7 +220,7 @@ public class PageContainerDefinition implements Cloneable, Serializable {
 		}
 	}
 
-	protected HtmlProperties htmlProperties;
+	protected HTMLProperties htmlProperties;
 
 	public Boolean getIndexed() {
 		return indexed;
