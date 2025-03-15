@@ -11,6 +11,7 @@ import com.liferay.headless.admin.site.dto.v1_0.PageColumnDefinition;
 import com.liferay.headless.admin.site.dto.v1_0.PageContainerDefinition;
 import com.liferay.headless.admin.site.dto.v1_0.PageDropZoneDefinition;
 import com.liferay.headless.admin.site.dto.v1_0.PageElement;
+import com.liferay.headless.admin.site.dto.v1_0.PageElementDefinition;
 import com.liferay.headless.admin.site.dto.v1_0.PageFormDefinition;
 import com.liferay.headless.admin.site.dto.v1_0.PageFormStepContainerDefinition;
 import com.liferay.headless.admin.site.dto.v1_0.PageFormStepDefinition;
@@ -75,8 +76,9 @@ public class PageElementDTOConverter
 
 		return new PageElement() {
 			{
-				setDefinition(() -> _getDefinition(layoutStructureItem));
 				setExternalReferenceCode(layoutStructureItem::getItemId);
+				setPageElementDefinition(
+					() -> _getPageElementDefinition(layoutStructureItem));
 				setPageElements(
 					() -> _getPageElements(
 						dtoConverterContext, layoutStructure,
@@ -111,7 +113,8 @@ public class PageElementDTOConverter
 		};
 	}
 
-	private Object _getDefinition(LayoutStructureItem layoutStructureItem)
+	private PageElementDefinition _getPageElementDefinition(
+			LayoutStructureItem layoutStructureItem)
 		throws Exception {
 
 		if (Objects.equals(

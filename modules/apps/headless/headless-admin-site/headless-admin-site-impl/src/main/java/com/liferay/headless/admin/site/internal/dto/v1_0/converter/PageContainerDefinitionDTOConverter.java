@@ -5,7 +5,7 @@
 
 package com.liferay.headless.admin.site.internal.dto.v1_0.converter;
 
-import com.liferay.headless.admin.site.dto.v1_0.HtmlProperties;
+import com.liferay.headless.admin.site.dto.v1_0.HTMLProperties;
 import com.liferay.headless.admin.site.dto.v1_0.PageContainerDefinition;
 import com.liferay.layout.util.structure.ContainerStyledLayoutStructureItem;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -67,10 +67,10 @@ public class PageContainerDefinitionDTOConverter
 		};
 	}
 
-	private HtmlProperties _toHtmlProperties(
+	private HTMLProperties _toHtmlProperties(
 		ContainerStyledLayoutStructureItem containerStyledLayoutStructureItem) {
 
-		return new HtmlProperties() {
+		return new HTMLProperties() {
 			{
 				setHtmlTag(
 					() -> _internalToExternalValuesMap.get(
@@ -79,21 +79,21 @@ public class PageContainerDefinitionDTOConverter
 		};
 	}
 
-	private static final Map<String, HtmlProperties.HtmlTag>
+	private static final Map<String, HTMLProperties.HtmlTag>
 		_internalToExternalValuesMap = HashMapBuilder.put(
-			"article", HtmlProperties.HtmlTag.ARTICLE
+			"article", HTMLProperties.HtmlTag.ARTICLE
 		).put(
-			"aside", HtmlProperties.HtmlTag.ASIDE
+			"aside", HTMLProperties.HtmlTag.ASIDE
 		).put(
-			"div", HtmlProperties.HtmlTag.DIV
+			"div", HTMLProperties.HtmlTag.DIV
 		).put(
-			"footer", HtmlProperties.HtmlTag.FOOTER
+			"footer", HTMLProperties.HtmlTag.FOOTER
 		).put(
-			"header", HtmlProperties.HtmlTag.HEADER
+			"header", HTMLProperties.HtmlTag.HEADER
 		).put(
-			"nav", HtmlProperties.HtmlTag.NAV
+			"nav", HTMLProperties.HtmlTag.NAV
 		).put(
-			"section", HtmlProperties.HtmlTag.SECTION
+			"section", HTMLProperties.HtmlTag.SECTION
 		).build();
 
 }
