@@ -460,6 +460,26 @@ components:
                     description:
                         The display page template's SEO settings.
             type: object
+        EmptyCollectionConfig:
+            # @review
+            description:
+                The empty collection config of a page collection definition.
+            properties:
+                displayMessage:
+                    # @review
+                    description:
+                        Whether to display a message when the collection is empty or no results match the applied
+                        filters (true by default).
+                    type: boolean
+                message_i18n:
+                    additionalProperties:
+                        type: string
+                    # @review
+                    description:
+                        The localized message to display when the collection is empty or no results match the applied
+                        filters ('No Results Found' by default).
+                    type: object
+            type: object
         FragmentComposition:
             # @review
             description:
@@ -1107,6 +1127,15 @@ components:
                     format: double
                     type: number
             type: object
+        HtmlProperties:
+            # @review
+            description:
+                The HTML properties of a page section.
+            properties:
+                htmlTag:
+                    enum: [Article, Aside, Div, Footer, Header, Nav, Section]
+                    type: string
+            type: object
         ItemExternalReference:
             # @review
             description:
@@ -1360,22 +1389,10 @@ components:
                         Whether to show all pages when pagination is enabled.
                     type: boolean
                 emptyCollectionConfig:
-                    properties:
-                        displayMessage:
-                            # @review
-                            description:
-                                Whether to display a message when the collection is empty or no results match the
-                                applied filters (true by default).
-                            type: boolean
-                        message_i18n:
-                            additionalProperties:
-                                type: string
-                            # @review
-                            description:
-                                The localized message to display when the collection is empty or no results match the
-                                applied filters ('No Results Found' by default).
-                            type: object
-                    type: object
+                    $ref: "#/components/schemas/EmptyCollectionConfig"
+                    # @review
+                    description:
+                        The empty collection config of a page collection.
                 fragmentStyle:
                     $ref: "#/components/schemas/FragmentStyle"
                     # @review
@@ -1543,14 +1560,10 @@ components:
                         $ref: "#/components/schemas/FragmentViewport"
                     type: array
                 htmlProperties:
+                    $ref: "#/components/schemas/HtmlProperties"
                     # @review
                     description:
-                        The page section's html properties
-                    properties:
-                        htmlTag:
-                            enum: [Article, Aside, Div, Footer, Header, Nav, Section]
-                            type: string
-                    type: object
+                        The HTML properties of the page section.
                 indexed:
                     # @review
                     description:
