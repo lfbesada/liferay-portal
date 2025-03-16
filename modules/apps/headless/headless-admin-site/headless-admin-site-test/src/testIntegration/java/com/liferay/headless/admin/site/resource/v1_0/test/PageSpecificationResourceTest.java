@@ -963,7 +963,9 @@ public class PageSpecificationResourceTest
 
 			pageElements[i] = new PageElement() {
 				{
-					setDefinition(() -> new PageContainerDefinition());
+					setDefinition(() -> new PageContainerDefinition() {{
+						setType(Type.CONTAINER_DEFINITION);
+					}});
 					setExternalReferenceCode(curExternalReferenceCode);
 					setPageElements(
 						() -> {
