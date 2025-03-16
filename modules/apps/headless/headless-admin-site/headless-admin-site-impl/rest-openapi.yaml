@@ -1672,20 +1672,7 @@ components:
                             RowDefinition: "#/components/schemas/PageRowDefinition"
                             WidgetInstanceDefinition: "#/components/schemas/PageWidgetInstanceDefinition"
                         propertyName: type
-                    oneOf:
-                        - $ref: "#/components/schemas/PageCollectionDefinition"
-                        - $ref: "#/components/schemas/PageCollectionItemDefinition"
-                        - $ref: "#/components/schemas/PageColumnDefinition"
-                        - $ref: "#/components/schemas/PageContainerDefinition"
-                        - $ref: "#/components/schemas/PageDropZoneDefinition"
-                        - $ref: "#/components/schemas/PageFormDefinition"
-                        - $ref: "#/components/schemas/PageFormStepContainerDefinition"
-                        - $ref: "#/components/schemas/PageFormStepDefinition"
-                        - $ref: "#/components/schemas/PageFragmentCompositionInstanceDefinition"
-                        - $ref: "#/components/schemas/PageFragmentDropZoneDefinition"
-                        - $ref: "#/components/schemas/PageFragmentInstanceDefinition"
-                        - $ref: "#/components/schemas/PageRowDefinition"
-                        - $ref: "#/components/schemas/PageWidgetInstanceDefinition"
+                    type: object
                 externalReferenceCode:
                     description:
                         The page element's external reference code. Unique within the site.

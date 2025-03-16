@@ -410,10 +410,6 @@ public abstract class BasePageElementResourceImpl
 				pageExperienceExternalReferenceCode,
 				pageElementExternalReferenceCode);
 
-		if (pageElement.getDefinition() != null) {
-			existingPageElement.setDefinition(pageElement.getDefinition());
-		}
-
 		if (pageElement.getExternalReferenceCode() != null) {
 			existingPageElement.setExternalReferenceCode(
 				pageElement.getExternalReferenceCode());
