@@ -29,13 +29,13 @@ export default function buildObjectDefinition({
 		label,
 		objectDefinitionSettings: [
 			{
-				name: 'acceptedGroupExternalReferenceCodes',
-				value: config.acceptedGroupExternalReferenceCodes,
+				name: 'acceptAllGroups',
+				value: 'true',
 			},
 		],
 		objectFields: buildFields(fields),
 		pluralLabel: label,
-		scope: 'depot',
+		scope: 'site',
 	};
 
 	if (id) {
