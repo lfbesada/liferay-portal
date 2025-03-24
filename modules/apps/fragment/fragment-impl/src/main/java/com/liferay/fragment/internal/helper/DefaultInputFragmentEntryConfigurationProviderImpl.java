@@ -18,6 +18,7 @@ import com.liferay.info.field.type.NumberInfoFieldType;
 import com.liferay.info.field.type.RelationshipInfoFieldType;
 import com.liferay.info.field.type.SelectInfoFieldType;
 import com.liferay.info.field.type.TextInfoFieldType;
+import com.liferay.info.field.type.URLInfoFieldType;
 import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
@@ -156,6 +157,9 @@ public class DefaultInputFragmentEntryConfigurationProviderImpl
 		).put(
 			TextInfoFieldType.INSTANCE.getName(),
 			JSONUtil.put("key", "INPUTS-text-input")
+		).put(
+			URLInfoFieldType.INSTANCE.getName(),
+			JSONUtil.put("key", "INPUTS-friendly-url-input")
 		);
 
 	@Reference
