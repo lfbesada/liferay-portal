@@ -20,6 +20,7 @@ import com.liferay.info.field.type.NumberInfoFieldType;
 import com.liferay.info.field.type.RelationshipInfoFieldType;
 import com.liferay.info.field.type.SelectInfoFieldType;
 import com.liferay.info.field.type.TextInfoFieldType;
+import com.liferay.info.field.type.URLInfoFieldType;
 import com.liferay.info.form.InfoForm;
 import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.item.provider.InfoItemFormProvider;
@@ -370,7 +371,8 @@ public class InfoRequestFieldValuesProviderHelper {
 			infoField.getInfoFieldType() instanceof LongTextInfoFieldType ||
 			infoField.getInfoFieldType() instanceof RelationshipInfoFieldType ||
 			infoField.getInfoFieldType() instanceof SelectInfoFieldType ||
-			infoField.getInfoFieldType() instanceof TextInfoFieldType) {
+			infoField.getInfoFieldType() instanceof TextInfoFieldType ||
+			infoField.getInfoFieldType() instanceof URLInfoFieldType) {
 
 			return value;
 		}
