@@ -9,6 +9,7 @@ import com.liferay.info.field.InfoField;
 import com.liferay.info.field.type.DateInfoFieldType;
 import com.liferay.info.field.type.ImageInfoFieldType;
 import com.liferay.info.field.type.TextInfoFieldType;
+import com.liferay.info.field.type.URLInfoFieldType;
 import com.liferay.info.localized.InfoLocalizedValue;
 import com.liferay.object.model.ObjectEntry;
 
@@ -52,6 +53,14 @@ public class ObjectEntryInfoItemFields {
 		).labelInfoLocalizedValue(
 			InfoLocalizedValue.localize(
 				ObjectEntryInfoItemFields.class, "modified-date")
+		).build();
+	public static final InfoField<URLInfoFieldType> objectEntryFriendlyURLInfoField =
+		BuilderHolder._builder.infoFieldType(
+			URLInfoFieldType.INSTANCE
+		).name(
+			"objectEntryFriendlyURL"
+		).labelInfoLocalizedValue(
+			InfoLocalizedValue.localize(ObjectEntryInfoItemFields.class, "friendlyURL")
 		).build();
 	public static final InfoField<TextInfoFieldType> objectEntryIdInfoField =
 		BuilderHolder._builder.infoFieldType(
