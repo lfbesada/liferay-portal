@@ -11,6 +11,7 @@ import com.liferay.info.field.type.ImageInfoFieldType;
 import com.liferay.info.field.type.TextInfoFieldType;
 import com.liferay.info.field.type.URLInfoFieldType;
 import com.liferay.info.localized.InfoLocalizedValue;
+import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
 
 /**
@@ -54,14 +55,6 @@ public class ObjectEntryInfoItemFields {
 			InfoLocalizedValue.localize(
 				ObjectEntryInfoItemFields.class, "modified-date")
 		).build();
-	public static final InfoField<URLInfoFieldType> objectEntryFriendlyURLInfoField =
-		BuilderHolder._builder.infoFieldType(
-			URLInfoFieldType.INSTANCE
-		).name(
-			"objectEntryFriendlyURL"
-		).labelInfoLocalizedValue(
-			InfoLocalizedValue.localize(ObjectEntryInfoItemFields.class, "friendlyURL")
-		).build();
 	public static final InfoField<TextInfoFieldType> objectEntryIdInfoField =
 		BuilderHolder._builder.infoFieldType(
 			TextInfoFieldType.INSTANCE
@@ -97,6 +90,21 @@ public class ObjectEntryInfoItemFields {
 			InfoLocalizedValue.localize(
 				ObjectEntryInfoItemFields.class, "user-profile-image")
 		).build();
+
+	public static InfoField getFriendlyURLInfoField(
+		ObjectDefinition objectDefinition) {
+
+		return BuilderHolder._builder.infoFieldType(
+			URLInfoFieldType.INSTANCE
+		).name(
+			"objectEntryFriendlyURL"
+		).editable(
+			objectDefinition.isEnableFriendlyURLCustomization()
+		).labelInfoLocalizedValue(
+			InfoLocalizedValue.localize(
+				ObjectEntryInfoItemFields.class, "friendly-url")
+		).build();
+	}
 
 	private static class BuilderHolder {
 
