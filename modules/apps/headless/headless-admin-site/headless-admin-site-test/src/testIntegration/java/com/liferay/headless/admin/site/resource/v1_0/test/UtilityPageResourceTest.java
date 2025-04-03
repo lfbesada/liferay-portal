@@ -365,9 +365,16 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 			_getUtilityPage(
 				Boolean.TRUE,
 				layoutUtilityPageEntry.getExternalReferenceCode()));
+
+		utilityPage = _getUtilityPage(
+			null, layoutUtilityPageEntry.getExternalReferenceCode());
+
+		expectedUtilityPage = utilityPage.clone();
+
+		expectedUtilityPage.setMarkedAsDefault(false);
+
 		_testPutSiteSiteByExternalReferenceCodeUtilityPage(
-			_getUtilityPage(
-				null, layoutUtilityPageEntry.getExternalReferenceCode()));
+			utilityPage, expectedUtilityPage);
 
 		_testPutSiteSiteByExternalReferenceCodeUtilityPageWithPageSpecifications(
 			PageSpecification.Status.APPROVED,
