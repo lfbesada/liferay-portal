@@ -265,8 +265,9 @@ public class UtilityPageResourceImpl extends BaseUtilityPageResourceImpl {
 			_layoutUtilityPageEntryService.addLayoutUtilityPageEntry(
 				utilityPage.getExternalReferenceCode(), groupId,
 				_getLayoutPlid(groupId, utilityPage, serviceContext), 0L,
-				utilityPage.getMarkedAsDefault(), utilityPage.getName(),
-				_getType(utilityPage.getType()), 0L, serviceContext));
+				GetterUtil.getBoolean(utilityPage.getMarkedAsDefault()),
+				utilityPage.getName(), _getType(utilityPage.getType()), 0L,
+				serviceContext));
 	}
 
 	private long _getLayoutPlid(
