@@ -204,7 +204,11 @@ public class UtilityPageResourceImpl extends BaseUtilityPageResourceImpl {
 		}
 
 		UtilityPageSEOSettings utilityPageSEOSettings =
-			utilityPageSettings.getSeoSettings();
+			new UtilityPageSEOSettings();
+
+		if (utilityPageSettings.getSeoSettings() != null) {
+			utilityPageSEOSettings = utilityPageSettings.getSeoSettings();
+		}
 
 		LayoutUtil.updateContentLayout(
 			layout, layout.getNameMap(),
