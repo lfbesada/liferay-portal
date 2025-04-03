@@ -232,9 +232,12 @@ public class MasterPageResourceImpl extends BaseMasterPageResourceImpl {
 					previewFileEntryId);
 		}
 
-		Layout layout = LayoutUtil.updateContentLayout(
-			layoutPageTemplateEntry.getPlid(),
-			masterPage.getPageSpecifications(),
+		Layout layout = _layoutLocalService.getLayout(
+			layoutPageTemplateEntry.getPlid());
+
+		layout = LayoutUtil.updateContentLayout(
+			layout, layout.getNameMap(), layout.getTitleMap(),
+			layout.getDescriptionMap(), masterPage.getPageSpecifications(),
 			_getServiceContext(groupId, masterPage));
 
 		if (!layoutPageTemplateEntry.isApproved() && layout.isPublished()) {
@@ -318,8 +321,8 @@ public class MasterPageResourceImpl extends BaseMasterPageResourceImpl {
 			LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT);
 
 		Layout layout = LayoutUtil.addContentLayout(
-			groupId, masterPage.getPageSpecifications(), true, nameMap,
-			nameMap, nameMap, LayoutConstants.TYPE_CONTENT, true, true,
+			groupId, masterPage.getPageSpecifications(), true, nameMap, nameMap,
+			nameMap, LayoutConstants.TYPE_CONTENT, true, true,
 			WorkflowConstants.STATUS_APPROVED, serviceContext);
 
 		if (layout == null) {
