@@ -197,8 +197,11 @@ public class UtilityPageResourceImpl extends BaseUtilityPageResourceImpl {
 		Layout layout = _layoutLocalService.getLayout(
 			layoutUtilityPageEntry.getPlid());
 
-		UtilityPageSettings utilityPageSettings =
-			utilityPage.getUtilityPageSettings();
+		UtilityPageSettings utilityPageSettings = new UtilityPageSettings();
+
+		if (utilityPage.getUtilityPageSettings() != null) {
+			utilityPageSettings = utilityPage.getUtilityPageSettings();
+		}
 
 		UtilityPageSEOSettings utilityPageSEOSettings =
 			utilityPageSettings.getSeoSettings();
