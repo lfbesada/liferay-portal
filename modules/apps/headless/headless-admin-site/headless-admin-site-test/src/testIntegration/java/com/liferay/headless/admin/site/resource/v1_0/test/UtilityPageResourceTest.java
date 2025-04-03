@@ -338,6 +338,27 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 
 		_testPutSiteSiteByExternalReferenceCodeUtilityPage(randomUtilityPage());
 
+		UtilityPage utilityPage = randomUtilityPage();
+
+		utilityPage.setUtilityPageSettings(() -> null);
+
+		UtilityPage expectedUtilityPage = utilityPage.clone();
+
+		expectedUtilityPage.setUtilityPageSettings(
+			new UtilityPageSettings() {
+				{
+					seoSettings = new UtilityPageSEOSettings() {
+						{
+							description_i18n = new HashMap<>();
+							htmlTitle_i18n = new HashMap<>();
+						}
+					};
+				}
+			});
+
+		_testPutSiteSiteByExternalReferenceCodeUtilityPage(
+			utilityPage, expectedUtilityPage);
+
 		LayoutUtilityPageEntry layoutUtilityPageEntry =
 			LayoutUtilityPageEntryTestUtil.getLayoutUtilityPageEntry(
 				ServiceContextTestUtil.getServiceContext(
