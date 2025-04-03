@@ -408,7 +408,8 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 	@Override
 	protected String[] getAdditionalAssertFieldNames() {
 		return new String[] {
-			"externalReferenceCode", "name", "utilityPageSettings"
+			"externalReferenceCode", "markedAsDefault", "name",
+			"utilityPageSettings"
 		};
 	}
 
