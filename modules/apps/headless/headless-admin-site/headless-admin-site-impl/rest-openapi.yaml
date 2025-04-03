@@ -2893,6 +2893,7 @@ components:
                         The localized relative URLs to the utility page's rendered content.
                     type: object
                 markedAsDefault:
+                    default: false
                     # @review
                     description:
                         Specifies if the utility page should be the default for the given type.
