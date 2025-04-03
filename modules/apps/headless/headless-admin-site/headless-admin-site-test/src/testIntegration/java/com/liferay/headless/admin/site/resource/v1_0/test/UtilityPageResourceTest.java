@@ -784,16 +784,16 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 			Boolean expectedMarkedAsDefault, UtilityPage utilityPage)
 		throws Exception {
 
-		UtilityPage pathUtilityPage =
+		UtilityPage patchUtilityPage =
 			utilityPageResource.patchSiteSiteByExternalReferenceCodeUtilityPage(
 				testGroup.getExternalReferenceCode(),
 				utilityPage.getExternalReferenceCode(), utilityPage);
 
-		assertEquals(utilityPage, pathUtilityPage);
-		assertValid(pathUtilityPage);
+		assertEquals(utilityPage, patchUtilityPage);
+		assertValid(patchUtilityPage);
 
 		Assert.assertEquals(
-			expectedMarkedAsDefault, pathUtilityPage.getMarkedAsDefault());
+			expectedMarkedAsDefault, patchUtilityPage.getMarkedAsDefault());
 	}
 
 	private void
