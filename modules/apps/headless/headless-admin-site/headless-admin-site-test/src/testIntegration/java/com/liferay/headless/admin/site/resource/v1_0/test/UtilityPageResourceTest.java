@@ -857,12 +857,20 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 			UtilityPage utilityPage)
 		throws Exception {
 
+		_testPutSiteSiteByExternalReferenceCodeUtilityPage(
+			utilityPage, utilityPage);
+	}
+
+	private void _testPutSiteSiteByExternalReferenceCodeUtilityPage(
+			UtilityPage utilityPage, UtilityPage expectedUtilityPage)
+		throws Exception {
+
 		UtilityPage putUtilityPage =
 			utilityPageResource.putSiteSiteByExternalReferenceCodeUtilityPage(
 				testGroup.getExternalReferenceCode(),
 				utilityPage.getExternalReferenceCode(), utilityPage);
 
-		assertEquals(utilityPage, putUtilityPage);
+		assertEquals(expectedUtilityPage, putUtilityPage);
 		assertValid(putUtilityPage);
 	}
 
