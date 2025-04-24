@@ -6,6 +6,8 @@
 package com.liferay.fragment.collection.contributor.hhs.internal.fragment.renderer;
 
 import com.liferay.fragment.constants.FragmentConstants;
+import com.liferay.fragment.input.template.parser.FragmentEntryInputTemplateNodeContextHelper;
+import com.liferay.fragment.input.template.parser.InputTemplateNode;
 import com.liferay.fragment.renderer.FragmentRenderer;
 import com.liferay.fragment.renderer.FragmentRendererContext;
 import com.liferay.frontend.taglib.react.servlet.taglib.ComponentTag;
@@ -15,6 +17,7 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.taglib.servlet.PageContextFactoryUtil;
 
 import java.io.PrintWriter;
@@ -75,6 +78,26 @@ public class MemberSelectorFragmentRenderer implements FragmentRenderer {
 			componentTag.setPageContext(
 				PageContextFactoryUtil.create(
 					httpServletRequest, httpServletResponse));
+			componentTag.setProps(
+				HashMapBuilder.<String, Object>put(
+					"input",
+					() -> {
+						InputTemplateNode inputTemplateNode =
+							_fragmentEntryInputTemplateNodeContextHelper.
+								toInputTemplateNode(
+									fragmentRendererContext.getAttributes(),
+									_language.get(
+										fragmentRendererContext.getLocale(),
+										"Member Selector"),
+									fragmentRendererContext.
+										getFragmentEntryLink(),
+									httpServletRequest,
+									fragmentRendererContext.getInfoForm(),
+									fragmentRendererContext.getLocale());
+
+						return inputTemplateNode.toJSONObject();
+					}
+				).build());
 
 			componentTag.setServletContext(_servletContext);
 
@@ -93,6 +116,10 @@ public class MemberSelectorFragmentRenderer implements FragmentRenderer {
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		MemberSelectorFragmentRenderer.class);
+
+	@Reference
+	private FragmentEntryInputTemplateNodeContextHelper
+		_fragmentEntryInputTemplateNodeContextHelper;
 
 	@Reference
 	private JSONFactory _jsonFactory;
