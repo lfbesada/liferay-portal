@@ -8,11 +8,18 @@ package com.liferay.fragment.collection.contributor.hhs.internal.fragment.render
 import com.liferay.fragment.renderer.FragmentRenderer;
 import com.liferay.fragment.renderer.FragmentRendererContext;
 import com.liferay.frontend.taglib.react.servlet.taglib.ComponentTag;
+import com.liferay.info.item.ClassPKInfoItemIdentifier;
+import com.liferay.info.item.ERCInfoItemIdentifier;
+import com.liferay.info.item.InfoItemReference;
 import com.liferay.object.admin.rest.resource.v1_0.ObjectDefinitionResource;
+import com.liferay.object.model.ObjectEntry;
+import com.liferay.object.service.ObjectEntryLocalService;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.taglib.servlet.PageContextFactoryUtil;
 
 import java.io.PrintWriter;
@@ -61,6 +68,12 @@ public class MemberTableFragmentRenderer implements FragmentRenderer {
 			componentTag.setPageContext(
 				PageContextFactoryUtil.create(
 					httpServletRequest, httpServletResponse));
+			componentTag.setProps(
+				HashMapBuilder.<String, Object>put(
+					"externalReferenceCode",
+					_getExternalReferenceCode(
+						fragmentRendererContext.getContextInfoItemReference())
+				).build());
 
 			componentTag.setServletContext(_servletContext);
 
@@ -77,6 +90,43 @@ public class MemberTableFragmentRenderer implements FragmentRenderer {
 		}
 	}
 
+	private String _getExternalReferenceCode(
+		InfoItemReference infoItemReference) {
+
+		if (infoItemReference == null) {
+			return StringPool.BLANK;
+		}
+
+		if (infoItemReference.getInfoItemIdentifier() instanceof
+				ERCInfoItemIdentifier) {
+
+			ERCInfoItemIdentifier ercInfoItemIdentifier =
+				(ERCInfoItemIdentifier)
+					infoItemReference.getInfoItemIdentifier();
+
+			return ercInfoItemIdentifier.getExternalReferenceCode();
+		}
+
+		if (!(infoItemReference.getInfoItemIdentifier() instanceof
+				ClassPKInfoItemIdentifier)) {
+
+			return StringPool.BLANK;
+		}
+
+		ClassPKInfoItemIdentifier classPKInfoItemIdentifier =
+			(ClassPKInfoItemIdentifier)
+				infoItemReference.getInfoItemIdentifier();
+
+		ObjectEntry objectEntry = _objectEntryLocalService.fetchObjectEntry(
+			classPKInfoItemIdentifier.getClassPK());
+
+		if (objectEntry == null) {
+			return StringPool.BLANK;
+		}
+
+		return objectEntry.getExternalReferenceCode();
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		MemberTableFragmentRenderer.class);
 
@@ -88,6 +138,9 @@ public class MemberTableFragmentRenderer implements FragmentRenderer {
 
 	@Reference
 	private ObjectDefinitionResource.Factory _objectDefinitionResourceFactory;
+
+	@Reference
+	private ObjectEntryLocalService _objectEntryLocalService;
 
 	@Reference(
 		target = "(osgi.web.symbolicname=com.liferay.fragment.collection.contributor.hhs)"
