@@ -4,4 +4,5 @@
  */
 
 export {default as MemberSelector} from './components/MemberSelector';
+export {default as MemberTable} from './components/MemberTable';
 export {default as QualifyButton} from './components/QualifyButton';
