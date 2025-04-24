@@ -5,6 +5,7 @@
 
 package com.liferay.fragment.collection.contributor.hhs.internal.fragment.renderer;
 
+import com.liferay.fragment.constants.FragmentConstants;
 import com.liferay.fragment.renderer.FragmentRenderer;
 import com.liferay.fragment.renderer.FragmentRendererContext;
 import com.liferay.frontend.taglib.react.servlet.taglib.ComponentTag;
@@ -40,6 +41,11 @@ public class MemberSelectorFragmentRenderer implements FragmentRenderer {
 	@Override
 	public String getLabel(Locale locale) {
 		return _language.get(locale, "Member Selector");
+	}
+
+	@Override
+	public int getType() {
+		return FragmentConstants.TYPE_INPUT;
 	}
 
 	@Override
