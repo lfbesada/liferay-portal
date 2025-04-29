@@ -392,29 +392,18 @@ public class DisplayPageTemplateResourceImpl
 			throw new UnsupportedOperationException();
 		}
 
-		LayoutPageTemplateEntry layoutPageTemplateEntry =
+		return _displayPageTemplateDTOConverter.toDTO(
 			_layoutPageTemplateEntryService.addLayoutPageTemplateEntry(
 				displayPageTemplate.getExternalReferenceCode(), groupId,
 				layoutPageTemplateCollectionId, displayPageTemplate.getKey(),
 				_portal.getClassNameId(contentTypeReference.getClassName()),
 				_getClassTypeId(contentTypeReference, groupId),
-				displayPageTemplate.getName(), 0L,
-				WorkflowConstants.STATUS_DRAFT,
-				_getServiceContext(displayPageTemplate, groupId));
-
-		long previewFileEntryId = FileEntryUtil.getPreviewFileEntryId(
-			groupId, displayPageTemplate.getThumbnail());
-
-		if (previewFileEntryId !=
-				layoutPageTemplateEntry.getPreviewFileEntryId()) {
-
-			layoutPageTemplateEntry =
-				_layoutPageTemplateEntryService.updateLayoutPageTemplateEntry(
-					layoutPageTemplateEntry.getLayoutPageTemplateEntryId(),
-					previewFileEntryId);
-		}
-
-		return _displayPageTemplateDTOConverter.toDTO(layoutPageTemplateEntry);
+				displayPageTemplate.getName(),
+				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
+				FileEntryUtil.getPreviewFileEntryId(
+					groupId, displayPageTemplate.getThumbnail()),
+				false, 0, 0, 0L, WorkflowConstants.STATUS_DRAFT,
+				_getServiceContext(displayPageTemplate, groupId)));
 	}
 
 	private long _getClassTypeId(
