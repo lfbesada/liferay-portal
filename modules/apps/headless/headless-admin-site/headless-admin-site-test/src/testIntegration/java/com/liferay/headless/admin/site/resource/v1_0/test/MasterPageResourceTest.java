@@ -450,11 +450,15 @@ public class MasterPageResourceTest extends BaseMasterPageResourceTestCase {
 	protected MasterPage randomMasterPage() throws Exception {
 		MasterPage masterPage = super.randomMasterPage();
 
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(
+				testGroup, TestPropsValues.getUserId());
+
 		masterPage.setKeywordItemExternalReferences(
-			_randomKeywordItemExternalReferences());
+			_randomKeywordItemExternalReferences(serviceContext));
 		masterPage.setMarkedAsDefault(Boolean.FALSE);
 		masterPage.setTaxonomyCategoryItemExternalReferences(
-			_randomTaxonomyCategoryItemExternalReferences());
+			_randomTaxonomyCategoryItemExternalReferences(serviceContext));
 
 		return masterPage;
 	}
@@ -711,7 +715,8 @@ public class MasterPageResourceTest extends BaseMasterPageResourceTestCase {
 		for (int i = 0; i < RandomTestUtil.randomInt(1, 3); i++) {
 			AssetVocabulary assetVocabulary =
 				_assetVocabularyLocalService.addVocabulary(
-					TestPropsValues.getUserId(), testGroup.getGroupId(),
+					TestPropsValues.getUserId(),
+					serviceContext.getScopeGroupId(),
 					RandomTestUtil.randomString(), serviceContext);
 
 			assetCategories = ListUtil.concat(
@@ -729,7 +734,8 @@ public class MasterPageResourceTest extends BaseMasterPageResourceTestCase {
 			_randomAssetCategories(assetVocabulary, serviceContext));
 	}
 
-	private ItemExternalReference[] _randomKeywordItemExternalReferences()
+	private ItemExternalReference[] _randomKeywordItemExternalReferences(
+			ServiceContext serviceContext)
 		throws Exception {
 
 		int length = RandomTestUtil.randomInt(1, 3);
@@ -743,10 +749,9 @@ public class MasterPageResourceTest extends BaseMasterPageResourceTestCase {
 
 			AssetTag assetTag = _assetTagLocalService.addTag(
 				StringUtil.toLowerCase(RandomTestUtil.randomString()),
-				TestPropsValues.getUserId(), testGroup.getGroupId(),
+				TestPropsValues.getUserId(), serviceContext.getScopeGroupId(),
 				StringUtil.toLowerCase(RandomTestUtil.randomString()),
-				ServiceContextTestUtil.getServiceContext(
-					testGroup, TestPropsValues.getUserId()));
+				serviceContext);
 
 			itemExternalReference.setExternalReferenceCode(
 				assetTag.getExternalReferenceCode());
@@ -758,12 +763,12 @@ public class MasterPageResourceTest extends BaseMasterPageResourceTestCase {
 	}
 
 	private ItemExternalReference[]
-			_randomTaxonomyCategoryItemExternalReferences()
+			_randomTaxonomyCategoryItemExternalReferences(
+				ServiceContext serviceContext)
 		throws Exception {
 
 		List<AssetCategory> assetCategories = _randomAssetCategories(
-			ServiceContextTestUtil.getServiceContext(
-				testGroup, TestPropsValues.getUserId()));
+			serviceContext);
 
 		return TransformUtil.unsafeTransformToArray(
 			assetCategories,
@@ -773,7 +778,7 @@ public class MasterPageResourceTest extends BaseMasterPageResourceTestCase {
 						assetCategory.getExternalReferenceCode());
 					setScope(
 						() -> _getScope(
-							testGroup.getGroupId(),
+							serviceContext.getScopeGroupId(),
 							assetCategory.getGroupId()));
 				}
 			},
