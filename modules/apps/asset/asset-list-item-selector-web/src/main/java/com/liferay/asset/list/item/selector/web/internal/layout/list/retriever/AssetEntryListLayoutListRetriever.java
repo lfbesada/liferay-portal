@@ -71,19 +71,6 @@ public class AssetEntryListLayoutListRetriever
 				layoutListRetrieverContext.getPagination(), 0);
 		}
 
-		if (!StringUtil.equals(
-				assetListEntry.getAssetEntryType(),
-				classedModelListObjectReference.getItemType())) {
-
-			if (_log.isWarnEnabled()) {
-				_log.warn("Asset entry type does not equal item type");
-			}
-
-			return InfoPage.of(
-				Collections.emptyList(),
-				layoutListRetrieverContext.getPagination(), 0);
-		}
-
 		long[] segmentsEntryIds =
 			layoutListRetrieverContext.getSegmentsEntryIds();
 
