@@ -9,6 +9,7 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.exportimport.kernel.service.StagingLocalService;
 import com.liferay.headless.admin.site.client.dto.v1_0.DisplayPageTemplateFolder;
 import com.liferay.headless.admin.site.client.problem.Problem;
+import com.liferay.headless.admin.site.client.resource.v1_0.DisplayPageTemplateFolderResource;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateCollectionTypeConstants;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateCollection;
@@ -19,17 +20,21 @@ import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.lazy.referencing.LazyReferencingThreadLocal;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ListUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
+import com.liferay.portal.util.PropsValues;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -722,6 +727,22 @@ public class DisplayPageTemplateFolderResourceTest
 
 		try (SafeCloseable safeCloseable =
 				LazyReferencingThreadLocal.setEnabledWithSafeCloseable(true)) {
+
+			User user = UserTestUtil.getAdminUser(testCompany.getCompanyId());
+
+			DisplayPageTemplateFolderResource
+				displayPageTemplateFolderResource =
+					DisplayPageTemplateFolderResource.builder(
+					).authentication(
+						user.getEmailAddress(),
+						PropsValues.DEFAULT_ADMIN_PASSWORD
+					).endpoint(
+						testCompany.getVirtualHostname(), 8080, "http"
+					).locale(
+						LocaleUtil.getDefault()
+					).parameters(
+						"fakeBatching", "true"
+					).build();
 
 			displayPageTemplateFolderResource.
 				putSiteSiteByExternalReferenceCodeDisplayPageTemplateFolder(

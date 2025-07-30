@@ -13,6 +13,7 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateCollection;
 import com.liferay.layout.page.template.service.LayoutPageTemplateCollectionServiceUtil;
 import com.liferay.portal.kernel.lazy.referencing.LazyReferencingThreadLocal;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -54,7 +55,9 @@ public class DisplayPageTemplateFolderUtil {
 				displayPageTemplateFolder.
 					getParentDisplayPageTemplateFolderExternalReferenceCode())) {
 
-			if (!LazyReferencingThreadLocal.isEnabled() ||
+			if ((!LazyReferencingThreadLocal.isEnabled() &&
+				 !GetterUtil.getBoolean(
+					 httpServletRequest.getParameter("fakeBatching"))) ||
 				(parentDisplayPageTemplateFolder == null) ||
 				Validator.isNull(
 					parentDisplayPageTemplateFolder.
@@ -78,7 +81,9 @@ public class DisplayPageTemplateFolderUtil {
 
 		if ((parentLayoutPageTemplateCollection == null) &&
 			(parentDisplayPageTemplateFolder != null) &&
-			LazyReferencingThreadLocal.isEnabled()) {
+			(LazyReferencingThreadLocal.isEnabled() ||
+			 GetterUtil.getBoolean(
+				 httpServletRequest.getParameter("fakeBatching")))) {
 
 			if (!Objects.equals(
 					displayPageTemplateFolder.

@@ -34,7 +34,7 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateCollectionLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.test.util.ContentLayoutTestUtil;
-import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.petra.function.UnsafeBiFunction;
 import com.liferay.petra.function.UnsafeRunnable;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringPool;
@@ -909,9 +909,9 @@ public class DisplayPageTemplateResourceTest
 
 	private void
 			_testCreatingDisplayPageTemplateFolderWithLazyReferencingEnabled(
-				UnsafeFunction
-					<DisplayPageTemplateFolder, DisplayPageTemplate, Exception>
-						unsafeFunction)
+				UnsafeBiFunction
+					<DisplayPageTemplateFolder, DisplayPageTemplateResource,
+					 DisplayPageTemplate, Exception> unsafeBiFunction)
 		throws Exception {
 
 		DisplayPageTemplateFolder displayPageTemplateFolder =
@@ -940,7 +940,8 @@ public class DisplayPageTemplateResourceTest
 
 		_assertProblemException(
 			"BAD_REQUEST", null,
-			() -> unsafeFunction.apply(displayPageTemplateFolder));
+			() -> unsafeBiFunction.apply(
+				displayPageTemplateFolder, displayPageTemplateResource));
 
 		Assert.assertNull(
 			_layoutPageTemplateCollectionLocalService.
@@ -957,8 +958,22 @@ public class DisplayPageTemplateResourceTest
 		try (SafeCloseable safeCloseable =
 				LazyReferencingThreadLocal.setEnabledWithSafeCloseable(true)) {
 
-			DisplayPageTemplate displayPageTemplate = unsafeFunction.apply(
-				displayPageTemplateFolder);
+			User user = UserTestUtil.getAdminUser(testCompany.getCompanyId());
+
+			DisplayPageTemplateResource displayPageTemplateResource =
+				DisplayPageTemplateResource.builder(
+				).authentication(
+					user.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
+				).endpoint(
+					testCompany.getVirtualHostname(), 8080, "http"
+				).locale(
+					LocaleUtil.getDefault()
+				).parameters(
+					"fakeBatching", "true"
+				).build();
+
+			DisplayPageTemplate displayPageTemplate = unsafeBiFunction.apply(
+				displayPageTemplateFolder, displayPageTemplateResource);
 
 			DisplayPageTemplateFolder addedDisplayPageTemplateFolder =
 				displayPageTemplate.getParentFolder();
@@ -1345,7 +1360,9 @@ public class DisplayPageTemplateResourceTest
 			postDisplayPageTemplateFolder.getExternalReferenceCode());
 
 		_testCreatingDisplayPageTemplateFolderWithLazyReferencingEnabled(
-			nonexistingDisplayPageTemplateFolder -> {
+			(nonexistingDisplayPageTemplateFolder,
+			 displayPageTemplateResource) -> {
+
 				DisplayPageTemplate randomDisplayPageTemplate =
 					randomDisplayPageTemplate();
 
@@ -1445,7 +1462,9 @@ public class DisplayPageTemplateResourceTest
 			displayPageTemplateFolder.getExternalReferenceCode());
 
 		_testCreatingDisplayPageTemplateFolderWithLazyReferencingEnabled(
-			nonexistingDisplayPageTemplateFolder -> {
+			(nonexistingDisplayPageTemplateFolder,
+			 displayPageTemplateResource) -> {
+
 				DisplayPageTemplate postDisplayPageTemplate =
 					testPostSiteSiteByExternalReferenceCodeDisplayPageTemplate_addDisplayPageTemplate(
 						randomDisplayPageTemplate());

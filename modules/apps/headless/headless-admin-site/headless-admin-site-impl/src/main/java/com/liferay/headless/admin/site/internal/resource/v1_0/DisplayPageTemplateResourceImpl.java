@@ -543,7 +543,10 @@ public class DisplayPageTemplateResourceImpl
 					groupId);
 
 		if (layoutPageTemplateCollection == null) {
-			if (!LazyReferencingThreadLocal.isEnabled()) {
+			if (!LazyReferencingThreadLocal.isEnabled() &&
+				!GetterUtil.getBoolean(
+					contextHttpServletRequest.getParameter("fakeBatching"))) {
+
 				throw new UnsupportedOperationException();
 			}
 

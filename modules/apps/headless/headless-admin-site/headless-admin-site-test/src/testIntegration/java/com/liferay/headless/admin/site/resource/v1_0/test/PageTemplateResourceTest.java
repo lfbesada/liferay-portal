@@ -33,8 +33,8 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateCollectionLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.petra.function.UnsafeBiConsumer;
+import com.liferay.petra.function.UnsafeBiFunction;
 import com.liferay.petra.function.UnsafeConsumer;
-import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.UnsafeRunnable;
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.lang.SafeCloseable;
@@ -1076,8 +1076,9 @@ public class PageTemplateResourceTest extends BasePageTemplateResourceTestCase {
 	}
 
 	private void _testCreatingPageTemplateSetWithLazyReferencingEnabled(
-			UnsafeFunction<PageTemplateSet, PageTemplate, Exception>
-				unsafeFunction)
+			UnsafeBiFunction
+				<PageTemplateResource, PageTemplateSet, PageTemplate, Exception>
+					unsafeBiFunction)
 		throws Exception {
 
 		PageTemplateSet pageTemplateSet = new PageTemplateSet() {
@@ -1089,7 +1090,9 @@ public class PageTemplateResourceTest extends BasePageTemplateResourceTestCase {
 		};
 
 		_assertProblemException(
-			"BAD_REQUEST", () -> unsafeFunction.apply(pageTemplateSet));
+			"BAD_REQUEST",
+			() -> unsafeBiFunction.apply(
+				pageTemplateResource, pageTemplateSet));
 
 		Assert.assertNull(
 			_layoutPageTemplateCollectionLocalService.
@@ -1100,7 +1103,22 @@ public class PageTemplateResourceTest extends BasePageTemplateResourceTestCase {
 		try (SafeCloseable safeCloseable =
 				LazyReferencingThreadLocal.setEnabledWithSafeCloseable(true)) {
 
-			PageTemplate pageTemplate = unsafeFunction.apply(pageTemplateSet);
+			User user = UserTestUtil.getAdminUser(testCompany.getCompanyId());
+
+			PageTemplateResource pageTemplateResource =
+				PageTemplateResource.builder(
+				).authentication(
+					user.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
+				).endpoint(
+					testCompany.getVirtualHostname(), 8080, "http"
+				).locale(
+					LocaleUtil.getDefault()
+				).parameters(
+					"fakeBatching", "true"
+				).build();
+
+			PageTemplate pageTemplate = unsafeBiFunction.apply(
+				pageTemplateResource, pageTemplateSet);
 
 			PageTemplateSet addedPageTemplateSet =
 				pageTemplate.getPageTemplateSet();
@@ -1403,7 +1421,7 @@ public class PageTemplateResourceTest extends BasePageTemplateResourceTestCase {
 						patchPageTemplate));
 
 		_testCreatingPageTemplateSetWithLazyReferencingEnabled(
-			pageTemplateSet -> {
+			(pageTemplateResource, pageTemplateSet) -> {
 				patchPageTemplate.setPageTemplateSet(pageTemplateSet);
 
 				return pageTemplateResource.
@@ -1579,7 +1597,7 @@ public class PageTemplateResourceTest extends BasePageTemplateResourceTestCase {
 				pageTemplate, testGroup.getExternalReferenceCode()));
 
 		_testCreatingPageTemplateSetWithLazyReferencingEnabled(
-			pageTemplateSet -> {
+			(pageTemplateResource, pageTemplateSet) -> {
 				pageTemplate.setPageTemplateSet(pageTemplateSet);
 
 				return pageTemplateResource.
@@ -1739,7 +1757,7 @@ public class PageTemplateResourceTest extends BasePageTemplateResourceTestCase {
 						pageTemplate.getExternalReferenceCode(), pageTemplate));
 
 		_testCreatingPageTemplateSetWithLazyReferencingEnabled(
-			pageTemplateSet -> {
+			(pageTemplateResource, pageTemplateSet) -> {
 				pageTemplate.setPageTemplateSet(pageTemplateSet);
 
 				return pageTemplateResource.
