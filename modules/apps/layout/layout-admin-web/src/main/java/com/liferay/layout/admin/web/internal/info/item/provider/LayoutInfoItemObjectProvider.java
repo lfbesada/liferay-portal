@@ -27,7 +27,10 @@ import org.osgi.service.component.annotations.Reference;
  * @author Adolfo Pérez
  */
 @Component(
-	property = "info.item.identifier=com.liferay.info.item.ClassPKInfoItemIdentifier",
+	property = {
+		"info.item.identifier=com.liferay.info.item.ClassPKInfoItemIdentifier",
+		"info.item.identifier=com.liferay.info.item.ERCInfoItemIdentifier"
+	},
 	service = InfoItemObjectProvider.class
 )
 public class LayoutInfoItemObjectProvider
