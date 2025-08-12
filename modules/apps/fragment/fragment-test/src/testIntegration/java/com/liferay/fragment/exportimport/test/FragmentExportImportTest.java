@@ -12,6 +12,7 @@ import com.liferay.exportimport.test.util.lar.BasePortletExportImportTestCase;
 import com.liferay.fragment.configuration.FragmentServiceConfiguration;
 import com.liferay.fragment.constants.FragmentConstants;
 import com.liferay.fragment.constants.FragmentPortletKeys;
+import com.liferay.fragment.entry.processor.constants.FragmentEntryProcessorConstants;
 import com.liferay.fragment.model.FragmentCollection;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.model.FragmentEntryLink;
@@ -41,6 +42,7 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
+import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.log.LogCapture;
@@ -225,6 +227,56 @@ public class FragmentExportImportTest extends BasePortletExportImportTestCase {
 				fetchFragmentEntryLinkByUuidAndGroupId(
 					marketplaceFragmentEntry.getUuid(),
 					importedGroup.getGroupId()));
+	}
+
+	@Test
+	@TestInfo("LPD-61879")
+	public void testImportFragmentEntryLinkWithNamespaceInEditableID()
+		throws Exception {
+
+		Layout layout = LayoutTestUtil.addTypePortletLayout(group);
+
+		FragmentEntryLink fragmentEntryLink =
+			_fragmentEntryLinkLocalService.addFragmentEntryLink(
+				null, TestPropsValues.getUserId(), _group.getGroupId(), 0,
+				RandomTestUtil.randomLong(),
+				_segmentsExperienceLocalService.
+					fetchDefaultSegmentsExperienceId(layout.getPlid()),
+				layout.getPlid(), StringPool.BLANK,
+				"<h1 data-lfr-editable-id=\"${fragmentEntryLinkNamespace}-" +
+					"element-text\" data-lfr-editable-type=\"text\">" +
+						"Heading Example</h1>",
+				StringPool.BLANK, StringPool.BLANK, StringPool.BLANK,
+				StringPool.BLANK, 0, StringPool.BLANK,
+				FragmentConstants.TYPE_COMPONENT,
+				ServiceContextTestUtil.getServiceContext());
+
+		fragmentEntryLink =
+			_fragmentEntryLinkLocalService.updateFragmentEntryLink(
+				TestPropsValues.getUserId(),
+				fragmentEntryLink.getFragmentEntryLinkId(),
+				JSONUtil.put(
+					FragmentEntryProcessorConstants.
+						KEY_EDITABLE_FRAGMENT_ENTRY_PROCESSOR,
+					JSONUtil.put(
+						fragmentEntryLink.getNamespace() + "-element-text",
+						JSONUtil.put(
+							LocaleUtil.toLanguageId(
+								_portal.getSiteDefaultLocale(_group)),
+							RandomTestUtil.randomString()))
+				).toString());
+
+		exportImportPortlet(FragmentPortletKeys.FRAGMENT, false);
+
+		FragmentEntryLink importedFragmentEntryLink =
+			_fragmentEntryLinkLocalService.getFragmentEntryLinkByUuidAndGroupId(
+				fragmentEntryLink.getUuid(), fragmentEntryLink.getGroupId());
+
+		String editableValues = importedFragmentEntryLink.getEditableValues();
+
+		Assert.assertTrue(
+			editableValues,
+			editableValues.contains(importedFragmentEntryLink.getNamespace()));
 	}
 
 	@Test
