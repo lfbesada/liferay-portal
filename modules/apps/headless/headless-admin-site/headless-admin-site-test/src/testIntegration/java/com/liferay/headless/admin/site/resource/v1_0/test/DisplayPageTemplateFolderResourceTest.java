@@ -415,44 +415,27 @@ public class DisplayPageTemplateFolderResourceTest
 	private static
 		com.liferay.headless.admin.site.dto.v1_0.DisplayPageTemplateFolder
 			_toDisplayPageTemplateFolder(
-				DisplayPageTemplateFolder originalDisplayPageTemplateFolder) {
+				DisplayPageTemplateFolder displayPageTemplateFolder) {
 
-		if (originalDisplayPageTemplateFolder == null) {
+		if (displayPageTemplateFolder == null) {
 			return null;
 		}
 
-		com.liferay.headless.admin.site.dto.v1_0.DisplayPageTemplateFolder
-			displayPageTemplateFolder =
-				com.liferay.headless.admin.site.dto.v1_0.
-					DisplayPageTemplateFolder.toDTO(
-						originalDisplayPageTemplateFolder.toString());
-
-		displayPageTemplateFolder.setParentDisplayPageTemplateFolder(
-			_toDisplayPageTemplateFolder(
-				originalDisplayPageTemplateFolder.
-					getParentDisplayPageTemplateFolder()));
-
-		return displayPageTemplateFolder;
+		return com.liferay.headless.admin.site.dto.v1_0.
+			DisplayPageTemplateFolder.toDTO(
+				displayPageTemplateFolder.toString());
 	}
 
 	private static DisplayPageTemplateFolder _toDisplayPageTemplateFolder(
 		com.liferay.headless.admin.site.dto.v1_0.DisplayPageTemplateFolder
-			originalDisplayPageTemplateFolder) {
+			displayPageTemplateFolder) {
 
-		if (originalDisplayPageTemplateFolder == null) {
+		if (displayPageTemplateFolder == null) {
 			return null;
 		}
 
-		DisplayPageTemplateFolder displayPageTemplateFolder =
-			DisplayPageTemplateFolder.toDTO(
-				originalDisplayPageTemplateFolder.toString());
-
-		displayPageTemplateFolder.setParentDisplayPageTemplateFolder(
-			_toDisplayPageTemplateFolder(
-				originalDisplayPageTemplateFolder.
-					getParentDisplayPageTemplateFolder()));
-
-		return displayPageTemplateFolder;
+		return DisplayPageTemplateFolder.toDTO(
+			displayPageTemplateFolder.toString());
 	}
 
 	private void _assertNoParentDisplayPageTemplateFolder(
