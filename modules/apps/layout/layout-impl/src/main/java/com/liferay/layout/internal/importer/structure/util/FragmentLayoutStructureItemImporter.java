@@ -444,45 +444,6 @@ public class FragmentLayoutStructureItemImporter
 				StringUtil.randomId(), position, fragmentKey, type,
 				serviceContext);
 
-		JSONObject restoredEditableValuesJSONObject =
-			JSONFactoryUtil.createJSONObject();
-		JSONObject editableValuesJSONObject =
-			fragmentEntryLink.getEditableValuesJSONObject();
-
-		for (String key : editableValuesJSONObject.keySet()) {
-			Object value = editableValuesJSONObject.get(key);
-
-			if (!(value instanceof JSONObject valueJSONObject)) {
-				restoredEditableValuesJSONObject.put(key, value);
-
-				continue;
-			}
-
-			JSONObject restoredJSONObject = JSONFactoryUtil.createJSONObject();
-
-			String editableValues = fragmentEntryLink.getEditableValues();
-			String fragmentEntryLinkNamespace =
-				fragmentEntryLink.getNamespace();
-
-			if (editableValues.contains(fragmentEntryLinkNamespace)) {
-				for (String curKey : valueJSONObject.keySet()) {
-					restoredJSONObject.put(
-						StringUtil.replace(
-							curKey, "[namespace]", fragmentEntryLinkNamespace),
-						valueJSONObject.get(curKey));
-				}
-
-				restoredEditableValuesJSONObject.put(key, restoredJSONObject);
-			}
-		}
-
-		fragmentEntryLink.setEditableValues(
-			String.valueOf(restoredEditableValuesJSONObject));
-
-		fragmentEntryLink =
-			_fragmentEntryLinkLocalService.updateFragmentEntryLink(
-				fragmentEntryLink);
-
 		List<Object> widgetInstances = (List<Object>)definitionMap.get(
 			"widgetInstances");
 

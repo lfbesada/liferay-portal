@@ -342,53 +342,30 @@ public class PageFragmentInstanceDefinitionMapper {
 			return new FragmentField[0];
 		}
 
-		JSONObject editableValuesJSONObject =
-			fragmentEntryLink.getEditableValuesJSONObject();
+		JSONObject editableValuesJSONObject = null;
 
-		String fragmentEntryLinkNamespace = fragmentEntryLink.getNamespace();
-
-		JSONObject duplicatedEditableValuesJSONObject =
-			_jsonFactory.createJSONObject();
-
-		for (String key : editableValuesJSONObject.keySet()) {
-			Object value = editableValuesJSONObject.get(key);
-
-			if (!(value instanceof JSONObject)) {
-				duplicatedEditableValuesJSONObject.put(key, value);
-
-				continue;
+		try {
+			editableValuesJSONObject = _jsonFactory.createJSONObject(
+				fragmentEntryLink.getEditableValues());
+		}
+		catch (JSONException jsonException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(jsonException);
 			}
 
-			String editableValues = fragmentEntryLink.getEditableValues();
-
-			if (editableValues.contains(fragmentEntryLinkNamespace)) {
-				JSONObject jsonObject = (JSONObject)value;
-				JSONObject duplicatedJSONObject =
-					_jsonFactory.createJSONObject();
-
-				for (String curKey : jsonObject.keySet()) {
-					duplicatedJSONObject.put(
-						StringUtil.replace(
-							curKey, fragmentEntryLinkNamespace, "[namespace]"),
-						jsonObject.get(curKey));
-				}
-
-				duplicatedEditableValuesJSONObject.put(
-					key, duplicatedJSONObject);
-			}
+			return null;
 		}
 
 		List<FragmentField> fragmentFields = new ArrayList<>(
 			_getBackgroundImageFragmentFields(
-				duplicatedEditableValuesJSONObject.getJSONObject(
+				editableValuesJSONObject.getJSONObject(
 					FragmentEntryProcessorConstants.
 						KEY_BACKGROUND_IMAGE_FRAGMENT_ENTRY_PROCESSOR),
 				saveMapping));
 
-		JSONObject jsonObject =
-			duplicatedEditableValuesJSONObject.getJSONObject(
-				FragmentEntryProcessorConstants.
-					KEY_EDITABLE_FRAGMENT_ENTRY_PROCESSOR);
+		JSONObject jsonObject = editableValuesJSONObject.getJSONObject(
+			FragmentEntryProcessorConstants.
+				KEY_EDITABLE_FRAGMENT_ENTRY_PROCESSOR);
 
 		if (jsonObject != null) {
 			fragmentFields.addAll(
