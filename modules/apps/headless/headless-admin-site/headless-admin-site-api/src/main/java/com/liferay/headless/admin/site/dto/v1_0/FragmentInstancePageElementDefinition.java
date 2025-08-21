@@ -611,6 +611,62 @@ public class FragmentInstancePageElementDefinition
 	private Supplier<FragmentStyle> _fragmentStyleSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The fragment instance's type (basic, form)."
+	)
+	@JsonGetter("fragmentType")
+	@Valid
+	public FragmentType getFragmentType() {
+		if (_fragmentTypeSupplier != null) {
+			fragmentType = _fragmentTypeSupplier.get();
+
+			_fragmentTypeSupplier = null;
+		}
+
+		return fragmentType;
+	}
+
+	@JsonIgnore
+	public String getFragmentTypeAsString() {
+		FragmentType fragmentType = getFragmentType();
+
+		if (fragmentType == null) {
+			return null;
+		}
+
+		return fragmentType.toString();
+	}
+
+	public void setFragmentType(FragmentType fragmentType) {
+		this.fragmentType = fragmentType;
+
+		_fragmentTypeSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setFragmentType(
+		UnsafeSupplier<FragmentType, Exception> fragmentTypeUnsafeSupplier) {
+
+		_fragmentTypeSupplier = () -> {
+			try {
+				return fragmentTypeUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(description = "The fragment instance's type (basic, form).")
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected FragmentType fragmentType;
+
+	@JsonIgnore
+	private Supplier<FragmentType> _fragmentTypeSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "A list of fragment viewports of the fragment instance page element."
 	)
 	@Valid
@@ -828,7 +884,7 @@ public class FragmentInstancePageElementDefinition
 	private Supplier<String> _nameSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The fragment instance page element's namespace."
+		description = "The fragment instance page element's namespace.."
 	)
 	public String getNamespace() {
 		if (_namespaceSupplier != null) {
@@ -864,67 +920,13 @@ public class FragmentInstancePageElementDefinition
 	}
 
 	@GraphQLField(
-		description = "The fragment instance page element's namespace."
+		description = "The fragment instance page element's namespace.."
 	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	protected String namespace;
 
 	@JsonIgnore
 	private Supplier<String> _namespaceSupplier;
-
-	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The fragment instance's type (basic, form)."
-	)
-	@JsonGetter("type")
-	@Valid
-	public Type getType() {
-		if (_typeSupplier != null) {
-			type = _typeSupplier.get();
-
-			_typeSupplier = null;
-		}
-
-		return type;
-	}
-
-	@JsonIgnore
-	public String getTypeAsString() {
-		Type type = getType();
-
-		if (type == null) {
-			return null;
-		}
-
-		return type.toString();
-	}
-
-	public void setType(Type type) {
-		this.type = type;
-
-		_typeSupplier = null;
-	}
-
-	@JsonIgnore
-	public void setType(UnsafeSupplier<Type, Exception> typeUnsafeSupplier) {
-		_typeSupplier = () -> {
-			try {
-				return typeUnsafeSupplier.get();
-			}
-			catch (RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			catch (Exception exception) {
-				throw new RuntimeException(exception);
-			}
-		};
-	}
-
-	@GraphQLField(description = "The fragment instance's type (basic, form).")
-	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected Type type;
-
-	@JsonIgnore
-	private Supplier<Type> _typeSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "A valid external identifier to reference this fragment instance page element."
@@ -1264,6 +1266,22 @@ public class FragmentInstancePageElementDefinition
 			sb.append(String.valueOf(fragmentStyle));
 		}
 
+		FragmentType fragmentType = getFragmentType();
+
+		if (fragmentType != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"fragmentType\": ");
+
+			sb.append("\"");
+
+			sb.append(fragmentType);
+
+			sb.append("\"");
+		}
+
 		FragmentViewport[] fragmentViewports = getFragmentViewports();
 
 		if (fragmentViewports != null) {
@@ -1362,22 +1380,6 @@ public class FragmentInstancePageElementDefinition
 			sb.append("\"");
 		}
 
-		Type type = getType();
-
-		if (type != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"type\": ");
-
-			sb.append("\"");
-
-			sb.append(type);
-
-			sb.append("\"");
-		}
-
 		String uuid = getUuid();
 
 		if (uuid != null) {
@@ -1416,6 +1418,22 @@ public class FragmentInstancePageElementDefinition
 			sb.append("]");
 		}
 
+		Type type = getType();
+
+		if (type != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"type\": ");
+
+			sb.append("\"");
+
+			sb.append(type);
+
+			sb.append("\"");
+		}
+
 		sb.append("}");
 
 		return sb.toString();
@@ -1428,20 +1446,20 @@ public class FragmentInstancePageElementDefinition
 	)
 	public String xClassName;
 
-	@GraphQLName("Type")
-	public static enum Type {
+	@GraphQLName("FragmentType")
+	public static enum FragmentType {
 
 		BASIC("Basic"), FORM("Form");
 
 		@JsonCreator
-		public static Type create(String value) {
+		public static FragmentType create(String value) {
 			if ((value == null) || value.equals("")) {
 				return null;
 			}
 
-			for (Type type : values()) {
-				if (Objects.equals(type.getValue(), value)) {
-					return type;
+			for (FragmentType fragmentType : values()) {
+				if (Objects.equals(fragmentType.getValue(), value)) {
+					return fragmentType;
 				}
 			}
 
@@ -1458,7 +1476,7 @@ public class FragmentInstancePageElementDefinition
 			return _value;
 		}
 
-		private Type(String value) {
+		private FragmentType(String value) {
 			_value = value;
 		}
 

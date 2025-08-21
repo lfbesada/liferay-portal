@@ -286,6 +286,35 @@ public class FragmentInstancePageElementDefinition
 
 	protected FragmentStyle fragmentStyle;
 
+	public FragmentType getFragmentType() {
+		return fragmentType;
+	}
+
+	public String getFragmentTypeAsString() {
+		if (fragmentType == null) {
+			return null;
+		}
+
+		return fragmentType.toString();
+	}
+
+	public void setFragmentType(FragmentType fragmentType) {
+		this.fragmentType = fragmentType;
+	}
+
+	public void setFragmentType(
+		UnsafeSupplier<FragmentType, Exception> fragmentTypeUnsafeSupplier) {
+
+		try {
+			fragmentType = fragmentTypeUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected FragmentType fragmentType;
+
 	public FragmentViewport[] getFragmentViewports() {
 		return fragmentViewports;
 	}
@@ -407,33 +436,6 @@ public class FragmentInstancePageElementDefinition
 
 	protected String namespace;
 
-	public Type getType() {
-		return type;
-	}
-
-	public String getTypeAsString() {
-		if (type == null) {
-			return null;
-		}
-
-		return type.toString();
-	}
-
-	public void setType(Type type) {
-		this.type = type;
-	}
-
-	public void setType(UnsafeSupplier<Type, Exception> typeUnsafeSupplier) {
-		try {
-			type = typeUnsafeSupplier.get();
-		}
-		catch (Exception e) {
-			throw new RuntimeException(e);
-		}
-	}
-
-	protected Type type;
-
 	public String getUuid() {
 		return uuid;
 	}
@@ -511,16 +513,16 @@ public class FragmentInstancePageElementDefinition
 		return FragmentInstancePageElementDefinitionSerDes.toJSON(this);
 	}
 
-	public static enum Type {
+	public static enum FragmentType {
 
 		BASIC("Basic"), FORM("Form");
 
-		public static Type create(String value) {
-			for (Type type : values()) {
-				if (Objects.equals(type.getValue(), value) ||
-					Objects.equals(type.name(), value)) {
+		public static FragmentType create(String value) {
+			for (FragmentType fragmentType : values()) {
+				if (Objects.equals(fragmentType.getValue(), value) ||
+					Objects.equals(fragmentType.name(), value)) {
 
-					return type;
+					return fragmentType;
 				}
 			}
 
@@ -536,7 +538,7 @@ public class FragmentInstancePageElementDefinition
 			return _value;
 		}
 
-		private Type(String value) {
+		private FragmentType(String value) {
 			_value = value;
 		}
 

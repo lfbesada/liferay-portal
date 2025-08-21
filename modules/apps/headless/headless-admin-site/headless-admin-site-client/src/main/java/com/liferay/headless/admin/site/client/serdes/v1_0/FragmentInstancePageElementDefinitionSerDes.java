@@ -299,6 +299,20 @@ public class FragmentInstancePageElementDefinitionSerDes {
 					fragmentInstancePageElementDefinition.getFragmentStyle()));
 		}
 
+		if (fragmentInstancePageElementDefinition.getFragmentType() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"fragmentType\": ");
+
+			sb.append("\"");
+
+			sb.append(fragmentInstancePageElementDefinition.getFragmentType());
+
+			sb.append("\"");
+		}
+
 		if (fragmentInstancePageElementDefinition.getFragmentViewports() !=
 				null) {
 
@@ -397,20 +411,6 @@ public class FragmentInstancePageElementDefinitionSerDes {
 			sb.append("\"");
 		}
 
-		if (fragmentInstancePageElementDefinition.getType() != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"type\": ");
-
-			sb.append("\"");
-
-			sb.append(fragmentInstancePageElementDefinition.getType());
-
-			sb.append("\"");
-		}
-
 		if (fragmentInstancePageElementDefinition.getUuid() != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
@@ -454,6 +454,20 @@ public class FragmentInstancePageElementDefinitionSerDes {
 			}
 
 			sb.append("]");
+		}
+
+		if (fragmentInstancePageElementDefinition.getType() != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"type\": ");
+
+			sb.append("\"");
+
+			sb.append(fragmentInstancePageElementDefinition.getType());
+
+			sb.append("\"");
 		}
 
 		sb.append("}");
@@ -610,6 +624,16 @@ public class FragmentInstancePageElementDefinitionSerDes {
 					fragmentInstancePageElementDefinition.getFragmentStyle()));
 		}
 
+		if (fragmentInstancePageElementDefinition.getFragmentType() == null) {
+			map.put("fragmentType", null);
+		}
+		else {
+			map.put(
+				"fragmentType",
+				String.valueOf(
+					fragmentInstancePageElementDefinition.getFragmentType()));
+		}
+
 		if (fragmentInstancePageElementDefinition.getFragmentViewports() ==
 				null) {
 
@@ -672,16 +696,6 @@ public class FragmentInstancePageElementDefinitionSerDes {
 					fragmentInstancePageElementDefinition.getNamespace()));
 		}
 
-		if (fragmentInstancePageElementDefinition.getType() == null) {
-			map.put("type", null);
-		}
-		else {
-			map.put(
-				"type",
-				String.valueOf(
-					fragmentInstancePageElementDefinition.getType()));
-		}
-
 		if (fragmentInstancePageElementDefinition.getUuid() == null) {
 			map.put("uuid", null);
 		}
@@ -703,6 +717,16 @@ public class FragmentInstancePageElementDefinitionSerDes {
 				String.valueOf(
 					fragmentInstancePageElementDefinition.
 						getWidgetInstances()));
+		}
+
+		if (fragmentInstancePageElementDefinition.getType() == null) {
+			map.put("type", null);
+		}
+		else {
+			map.put(
+				"type",
+				String.valueOf(
+					fragmentInstancePageElementDefinition.getType()));
 		}
 
 		return map;
@@ -766,6 +790,9 @@ public class FragmentInstancePageElementDefinitionSerDes {
 			else if (Objects.equals(jsonParserFieldName, "fragmentStyle")) {
 				return false;
 			}
+			else if (Objects.equals(jsonParserFieldName, "fragmentType")) {
+				return false;
+			}
 			else if (Objects.equals(jsonParserFieldName, "fragmentViewports")) {
 				return false;
 			}
@@ -784,13 +811,13 @@ public class FragmentInstancePageElementDefinitionSerDes {
 			else if (Objects.equals(jsonParserFieldName, "namespace")) {
 				return false;
 			}
-			else if (Objects.equals(jsonParserFieldName, "type")) {
-				return false;
-			}
 			else if (Objects.equals(jsonParserFieldName, "uuid")) {
 				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "widgetInstances")) {
+				return false;
+			}
+			else if (Objects.equals(jsonParserFieldName, "type")) {
 				return false;
 			}
 
@@ -905,6 +932,13 @@ public class FragmentInstancePageElementDefinitionSerDes {
 							(String)jsonParserFieldValue));
 				}
 			}
+			else if (Objects.equals(jsonParserFieldName, "fragmentType")) {
+				if (jsonParserFieldValue != null) {
+					fragmentInstancePageElementDefinition.setFragmentType(
+						FragmentInstancePageElementDefinition.FragmentType.
+							create((String)jsonParserFieldValue));
+				}
+			}
 			else if (Objects.equals(jsonParserFieldName, "fragmentViewports")) {
 				if (jsonParserFieldValue != null) {
 					Object[] jsonParserFieldValues =
@@ -953,13 +987,6 @@ public class FragmentInstancePageElementDefinitionSerDes {
 						(String)jsonParserFieldValue);
 				}
 			}
-			else if (Objects.equals(jsonParserFieldName, "type")) {
-				if (jsonParserFieldValue != null) {
-					fragmentInstancePageElementDefinition.setType(
-						FragmentInstancePageElementDefinition.Type.create(
-							(String)jsonParserFieldValue));
-				}
-			}
 			else if (Objects.equals(jsonParserFieldName, "uuid")) {
 				if (jsonParserFieldValue != null) {
 					fragmentInstancePageElementDefinition.setUuid(
@@ -981,6 +1008,13 @@ public class FragmentInstancePageElementDefinitionSerDes {
 
 					fragmentInstancePageElementDefinition.setWidgetInstances(
 						widgetInstancesArray);
+				}
+			}
+			else if (Objects.equals(jsonParserFieldName, "type")) {
+				if (jsonParserFieldValue != null) {
+					fragmentInstancePageElementDefinition.setType(
+						FragmentInstancePageElementDefinition.Type.create(
+							(String)jsonParserFieldValue));
 				}
 			}
 		}
