@@ -73,6 +73,11 @@ public class FragmentInstancePageElementDefinitionDTOConverter
 							fragmentStyledLayoutStructureItem.getCssClasses());
 					});
 				setCustomCSS(fragmentStyledLayoutStructureItem::getCustomCSS);
+				setDatePropagated(fragmentEntryLink::getLastPropagationDate);
+				setDatePublished(fragmentEntryLink::getLastPublishDate);
+				setDraftPageElementExternalReferenceCode(
+					() -> _getDraftPageElementExternalReferenceCode(
+						fragmentEntryLink));
 				setFragmentReference(
 					() -> {
 						FragmentEntry fragmentEntry =
@@ -120,8 +125,30 @@ public class FragmentInstancePageElementDefinitionDTOConverter
 				setName(fragmentStyledLayoutStructureItem::getName);
 				setNamespace(fragmentEntryLink::getNamespace);
 				setType(PageElementDefinition.Type.FRAGMENT);
+				setUuid(fragmentEntryLink::getUuid);
 			}
 		};
+	}
+
+	private String _getDraftPageElementExternalReferenceCode(
+		FragmentEntryLink fragmentEntryLink) {
+
+		long originalFragmentEntryLinkId =
+			fragmentEntryLink.getOriginalFragmentEntryLinkId();
+
+		if (originalFragmentEntryLinkId == 0) {
+			return null;
+		}
+
+		FragmentEntryLink originalFragmentEntryLink =
+			_fragmentEntryLinkLocalService.fetchFragmentEntryLink(
+				originalFragmentEntryLinkId);
+
+		if (originalFragmentEntryLink == null) {
+			return null;
+		}
+
+		return originalFragmentEntryLink.getExternalReferenceCode();
 	}
 
 	@Reference
