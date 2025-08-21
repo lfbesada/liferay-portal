@@ -1270,6 +1270,13 @@ components:
                             # @review
                             description:
                                 The fragment style of the fragment instance page element.
+                            type: string
+                        fragmentType:
+                            # @review
+                            description:
+                                The fragment instance's type (basic, form).
+                            enum: [Basic, Form]
+                            type: string
                         fragmentViewports:
                             # @review
                             description:
@@ -1301,12 +1308,6 @@ components:
                             # @review
                             description:
                                 The fragment instance page element's namespace.
-                            type: string
-                        type:
-                            # @review
-                            description:
-                                The fragment instance's type (basic, form).
-                            enum: [Basic, Form]
                             type: string
                         uuid:
                             # @review
