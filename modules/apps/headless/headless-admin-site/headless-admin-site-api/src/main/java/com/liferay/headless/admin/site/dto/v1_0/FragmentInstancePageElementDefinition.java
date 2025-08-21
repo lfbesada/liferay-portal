@@ -5,9 +5,12 @@
 
 package com.liferay.headless.admin.site.dto.v1_0;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
@@ -60,6 +63,90 @@ public class FragmentInstancePageElementDefinition
 		return ObjectMapperUtil.unsafeReadValue(
 			FragmentInstancePageElementDefinition.class, json);
 	}
+
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The fragment instance's configuration."
+	)
+	public String getConfiguration() {
+		if (_configurationSupplier != null) {
+			configuration = _configurationSupplier.get();
+
+			_configurationSupplier = null;
+		}
+
+		return configuration;
+	}
+
+	public void setConfiguration(String configuration) {
+		this.configuration = configuration;
+
+		_configurationSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setConfiguration(
+		UnsafeSupplier<String, Exception> configurationUnsafeSupplier) {
+
+		_configurationSupplier = () -> {
+			try {
+				return configurationUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(description = "The fragment instance's configuration.")
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected String configuration;
+
+	@JsonIgnore
+	private Supplier<String> _configurationSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The fragment instance's CSS."
+	)
+	public String getCss() {
+		if (_cssSupplier != null) {
+			css = _cssSupplier.get();
+
+			_cssSupplier = null;
+		}
+
+		return css;
+	}
+
+	public void setCss(String css) {
+		this.css = css;
+
+		_cssSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setCss(UnsafeSupplier<String, Exception> cssUnsafeSupplier) {
+		_cssSupplier = () -> {
+			try {
+				return cssUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(description = "The fragment instance's CSS.")
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected String css;
+
+	@JsonIgnore
+	private Supplier<String> _cssSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "A list of CSS classes that are applied to the fragment instance."
@@ -571,6 +658,47 @@ public class FragmentInstancePageElementDefinition
 	private Supplier<FragmentViewport[]> _fragmentViewportsSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The fragment instance's HTML."
+	)
+	public String getHtml() {
+		if (_htmlSupplier != null) {
+			html = _htmlSupplier.get();
+
+			_htmlSupplier = null;
+		}
+
+		return html;
+	}
+
+	public void setHtml(String html) {
+		this.html = html;
+
+		_htmlSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setHtml(UnsafeSupplier<String, Exception> htmlUnsafeSupplier) {
+		_htmlSupplier = () -> {
+			try {
+				return htmlUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(description = "The fragment instance's HTML.")
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected String html;
+
+	@JsonIgnore
+	private Supplier<String> _htmlSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "A flag that indicates whether the fragment instance page element is indexed or not."
 	)
 	public Boolean getIndexed() {
@@ -614,6 +742,47 @@ public class FragmentInstancePageElementDefinition
 
 	@JsonIgnore
 	private Supplier<Boolean> _indexedSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The fragment instance's JS."
+	)
+	public String getJs() {
+		if (_jsSupplier != null) {
+			js = _jsSupplier.get();
+
+			_jsSupplier = null;
+		}
+
+		return js;
+	}
+
+	public void setJs(String js) {
+		this.js = js;
+
+		_jsSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setJs(UnsafeSupplier<String, Exception> jsUnsafeSupplier) {
+		_jsSupplier = () -> {
+			try {
+				return jsUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(description = "The fragment instance's JS.")
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected String js;
+
+	@JsonIgnore
+	private Supplier<String> _jsSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "The custom name of a fragment instance page element."
@@ -702,6 +871,60 @@ public class FragmentInstancePageElementDefinition
 
 	@JsonIgnore
 	private Supplier<String> _namespaceSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The fragment instance's type (basic, form)."
+	)
+	@JsonGetter("type")
+	@Valid
+	public Type getType() {
+		if (_typeSupplier != null) {
+			type = _typeSupplier.get();
+
+			_typeSupplier = null;
+		}
+
+		return type;
+	}
+
+	@JsonIgnore
+	public String getTypeAsString() {
+		Type type = getType();
+
+		if (type == null) {
+			return null;
+		}
+
+		return type.toString();
+	}
+
+	public void setType(Type type) {
+		this.type = type;
+
+		_typeSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setType(UnsafeSupplier<Type, Exception> typeUnsafeSupplier) {
+		_typeSupplier = () -> {
+			try {
+				return typeUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(description = "The fragment instance's type (basic, form).")
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Type type;
+
+	@JsonIgnore
+	private Supplier<Type> _typeSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "A valid external identifier to reference this fragment instance page element."
@@ -825,6 +1048,38 @@ public class FragmentInstancePageElementDefinition
 
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
+
+		String configuration = getConfiguration();
+
+		if (configuration != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"configuration\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(configuration));
+
+			sb.append("\"");
+		}
+
+		String css = getCss();
+
+		if (css != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"css\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(css));
+
+			sb.append("\"");
+		}
 
 		String[] cssClasses = getCssClasses();
 
@@ -1031,6 +1286,22 @@ public class FragmentInstancePageElementDefinition
 			sb.append("]");
 		}
 
+		String html = getHtml();
+
+		if (html != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"html\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(html));
+
+			sb.append("\"");
+		}
+
 		Boolean indexed = getIndexed();
 
 		if (indexed != null) {
@@ -1041,6 +1312,22 @@ public class FragmentInstancePageElementDefinition
 			sb.append("\"indexed\": ");
 
 			sb.append(indexed);
+		}
+
+		String js = getJs();
+
+		if (js != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"js\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(js));
+
+			sb.append("\"");
 		}
 
 		String name = getName();
@@ -1071,6 +1358,22 @@ public class FragmentInstancePageElementDefinition
 			sb.append("\"");
 
 			sb.append(_escape(namespace));
+
+			sb.append("\"");
+		}
+
+		Type type = getType();
+
+		if (type != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"type\": ");
+
+			sb.append("\"");
+
+			sb.append(type);
 
 			sb.append("\"");
 		}
@@ -1113,22 +1416,6 @@ public class FragmentInstancePageElementDefinition
 			sb.append("]");
 		}
 
-		Type type = getType();
-
-		if (type != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"type\": ");
-
-			sb.append("\"");
-
-			sb.append(type);
-
-			sb.append("\"");
-		}
-
 		sb.append("}");
 
 		return sb.toString();
@@ -1140,6 +1427,44 @@ public class FragmentInstancePageElementDefinition
 		name = "x-class-name"
 	)
 	public String xClassName;
+
+	@GraphQLName("Type")
+	public static enum Type {
+
+		BASIC("Basic"), FORM("Form");
+
+		@JsonCreator
+		public static Type create(String value) {
+			if ((value == null) || value.equals("")) {
+				return null;
+			}
+
+			for (Type type : values()) {
+				if (Objects.equals(type.getValue(), value)) {
+					return type;
+				}
+			}
+
+			throw new IllegalArgumentException("Invalid enum value: " + value);
+		}
+
+		@JsonValue
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private Type(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
+	}
 
 	private static String _escape(Object object) {
 		return StringUtil.replace(

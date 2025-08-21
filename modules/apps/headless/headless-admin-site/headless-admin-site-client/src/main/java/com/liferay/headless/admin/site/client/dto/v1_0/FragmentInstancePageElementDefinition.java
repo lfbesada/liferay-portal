@@ -28,6 +28,46 @@ public class FragmentInstancePageElementDefinition
 		return FragmentInstancePageElementDefinitionSerDes.toDTO(json);
 	}
 
+	public String getConfiguration() {
+		return configuration;
+	}
+
+	public void setConfiguration(String configuration) {
+		this.configuration = configuration;
+	}
+
+	public void setConfiguration(
+		UnsafeSupplier<String, Exception> configurationUnsafeSupplier) {
+
+		try {
+			configuration = configurationUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String configuration;
+
+	public String getCss() {
+		return css;
+	}
+
+	public void setCss(String css) {
+		this.css = css;
+	}
+
+	public void setCss(UnsafeSupplier<String, Exception> cssUnsafeSupplier) {
+		try {
+			css = cssUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String css;
+
 	public String[] getCssClasses() {
 		return cssClasses;
 	}
@@ -268,6 +308,25 @@ public class FragmentInstancePageElementDefinition
 
 	protected FragmentViewport[] fragmentViewports;
 
+	public String getHtml() {
+		return html;
+	}
+
+	public void setHtml(String html) {
+		this.html = html;
+	}
+
+	public void setHtml(UnsafeSupplier<String, Exception> htmlUnsafeSupplier) {
+		try {
+			html = htmlUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String html;
+
 	public Boolean getIndexed() {
 		return indexed;
 	}
@@ -288,6 +347,25 @@ public class FragmentInstancePageElementDefinition
 	}
 
 	protected Boolean indexed;
+
+	public String getJs() {
+		return js;
+	}
+
+	public void setJs(String js) {
+		this.js = js;
+	}
+
+	public void setJs(UnsafeSupplier<String, Exception> jsUnsafeSupplier) {
+		try {
+			js = jsUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected String js;
 
 	public String getName() {
 		return name;
@@ -328,6 +406,33 @@ public class FragmentInstancePageElementDefinition
 	}
 
 	protected String namespace;
+
+	public Type getType() {
+		return type;
+	}
+
+	public String getTypeAsString() {
+		if (type == null) {
+			return null;
+		}
+
+		return type.toString();
+	}
+
+	public void setType(Type type) {
+		this.type = type;
+	}
+
+	public void setType(UnsafeSupplier<Type, Exception> typeUnsafeSupplier) {
+		try {
+			type = typeUnsafeSupplier.get();
+		}
+		catch (Exception e) {
+			throw new RuntimeException(e);
+		}
+	}
+
+	protected Type type;
 
 	public String getUuid() {
 		return uuid;
@@ -404,6 +509,39 @@ public class FragmentInstancePageElementDefinition
 
 	public String toString() {
 		return FragmentInstancePageElementDefinitionSerDes.toJSON(this);
+	}
+
+	public static enum Type {
+
+		BASIC("Basic"), FORM("Form");
+
+		public static Type create(String value) {
+			for (Type type : values()) {
+				if (Objects.equals(type.getValue(), value) ||
+					Objects.equals(type.name(), value)) {
+
+					return type;
+				}
+			}
+
+			return null;
+		}
+
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private Type(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
 	}
 
 }
