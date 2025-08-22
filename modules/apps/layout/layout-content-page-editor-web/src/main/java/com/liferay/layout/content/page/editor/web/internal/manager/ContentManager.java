@@ -1186,8 +1186,8 @@ public class ContentManager {
 		LayoutDisplayPageObjectProvider<?> layoutDisplayPageObjectProvider =
 			layoutDisplayPageProvider.getLayoutDisplayPageObjectProvider(
 				_getInfoItemIdentifier(
-					externalReferenceCode, className, classPK, jsonObject.getString(
-						"scopeExternalReferenceCode", null)));
+					externalReferenceCode, className, classPK,
+					jsonObject.getString("scopeExternalReferenceCode", null)));
 
 		if (layoutDisplayPageObjectProvider == null) {
 			return;
