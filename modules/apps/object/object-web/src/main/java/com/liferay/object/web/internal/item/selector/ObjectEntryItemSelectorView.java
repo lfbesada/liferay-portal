@@ -42,9 +42,6 @@ public class ObjectEntryItemSelectorView
 	implements InfoItemSelectorView,
 			   ItemSelectorView<InfoItemItemSelectorCriterion> {
 
-	private final GroupLocalService _groupLocalService;
-
-
 	public ObjectEntryItemSelectorView(
 		GroupLocalService groupLocalService,
 		InfoPermissionProvider<ObjectEntry> infoPermissionProvider,
@@ -110,8 +107,7 @@ public class ObjectEntryItemSelectorView
 			servletRequest, servletResponse, infoItemItemSelectorCriterion,
 			portletURL, itemSelectedEventName, search,
 			new ObjectEntryItemSelectorViewDescriptor(
-				_groupLocalService,
-				(HttpServletRequest)servletRequest,
+				_groupLocalService, (HttpServletRequest)servletRequest,
 				infoItemItemSelectorCriterion, _objectDefinition,
 				_objectEntryManager, _objectRelatedModelsProviderRegistry,
 				_objectScopeProviderRegistry, _portal, portletURL));
@@ -123,6 +119,7 @@ public class ObjectEntryItemSelectorView
 			new InfoItemItemSelectorReturnType(),
 			new ObjectEntryItemSelectorReturnType());
 
+	private final GroupLocalService _groupLocalService;
 	private final InfoPermissionProvider<ObjectEntry> _infoPermissionProvider;
 	private final ItemSelectorViewDescriptorRenderer
 		<InfoItemItemSelectorCriterion> _itemSelectorViewDescriptorRenderer;

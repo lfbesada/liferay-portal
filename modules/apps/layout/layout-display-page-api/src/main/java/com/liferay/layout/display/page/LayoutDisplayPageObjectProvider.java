@@ -6,6 +6,8 @@
 package com.liferay.layout.display.page;
 
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 
 import java.util.Locale;
@@ -31,6 +33,20 @@ public interface LayoutDisplayPageObjectProvider<T> {
 
 	public default String getExternalReferenceCode() {
 		return StringPool.BLANK;
+	}
+
+	public default String getScopeExternalReferenceCode(long groupId) {
+		if (getGroupId() == groupId) {
+			return null;
+		}
+
+		Group group = GroupLocalServiceUtil.fetchGroup(groupId);
+
+		if (group == null) {
+			return null;
+		}
+
+		return group.getExternalReferenceCode();
 	}
 
 	public long getGroupId();
