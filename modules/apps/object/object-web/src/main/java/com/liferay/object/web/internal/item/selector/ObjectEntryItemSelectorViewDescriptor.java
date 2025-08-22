@@ -26,6 +26,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.JavaConstants;
@@ -43,6 +44,7 @@ import jakarta.portlet.PortletRequest;
 import jakarta.portlet.PortletURL;
 
 import jakarta.servlet.http.HttpServletRequest;
+import org.osgi.service.component.annotations.Reference;
 
 import java.util.ArrayList;
 
@@ -82,10 +84,12 @@ public class ObjectEntryItemSelectorViewDescriptor
 	public String getDefaultDisplayStyle() {
 		return "descriptive";
 	}
-
+@Reference
+	private GroupLocalService _groupLocalService;
 	@Override
 	public ItemDescriptor getItemDescriptor(ObjectEntry objectEntry) {
 		return new ObjectEntryItemDescriptor(
+			_groupLocalService,
 			_httpServletRequest, _objectDefinition, objectEntry, _portal);
 	}
 
