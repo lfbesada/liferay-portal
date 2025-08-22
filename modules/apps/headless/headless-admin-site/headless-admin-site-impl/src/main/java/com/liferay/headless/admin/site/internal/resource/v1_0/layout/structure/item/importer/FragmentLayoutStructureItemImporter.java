@@ -21,6 +21,7 @@ import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -104,6 +105,11 @@ public class FragmentLayoutStructureItemImporter
 			type = FragmentConstants.TYPE_INPUT;
 		}
 
+		ServiceContext serviceContext =
+			ServiceContextThreadLocal.getServiceContext();
+
+		serviceContext.setUuid(fragmentInstancePageElementDefinition.getUuid());
+
 		return FragmentEntryLinkLocalServiceUtil.addFragmentEntryLink(
 			null, layoutStructureItemImporterContext.getUserId(),
 			layout.getGroupId(), 0, fragmentEntry.getFragmentEntryId(),
@@ -113,8 +119,7 @@ public class FragmentLayoutStructureItemImporter
 			fragmentInstancePageElementDefinition.getJs(),
 			fragmentInstancePageElementDefinition.getConfiguration(),
 			StringPool.BLANK, StringUtil.randomId(), 0,
-			fragmentEntry.getFragmentEntryKey(), type,
-			ServiceContextThreadLocal.getServiceContext());
+			fragmentEntry.getFragmentEntryKey(), type, serviceContext);
 	}
 
 	private FragmentEntry _getFragmentEntry(
