@@ -35,6 +35,10 @@ public interface LayoutDisplayPageObjectProvider<T> {
 		return StringPool.BLANK;
 	}
 
+	public long getGroupId();
+
+	public String getKeywords(Locale locale);
+
 	public default String getScopeExternalReferenceCode(long groupId) {
 		if (getGroupId() == groupId) {
 			return null;
@@ -48,10 +52,6 @@ public interface LayoutDisplayPageObjectProvider<T> {
 
 		return group.getExternalReferenceCode();
 	}
-
-	public long getGroupId();
-
-	public String getKeywords(Locale locale);
 
 	public String getTitle(Locale locale);
 
