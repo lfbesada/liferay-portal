@@ -487,7 +487,7 @@ public class ContentManager {
 		InfoItemReference infoItemReference = _getInfoItemIdentifier(
 			layoutClassedModelUsage.getClassExternalReferenceCode(),
 			layoutClassedModelUsage.getClassName(),
-			layoutClassedModelUsage.getClassPK());
+			layoutClassedModelUsage.getClassPK(), null);
 
 		boolean hasUpdatePermission = false;
 
@@ -1001,7 +1001,8 @@ public class ContentManager {
 	}
 
 	private InfoItemReference _getInfoItemIdentifier(
-		String classExternalReferenceCode, String className, long classPK) {
+		String classExternalReferenceCode, String className, long classPK,
+		String scopeExternalReferenceCode) {
 
 		InfoItemIdentifier infoItemIdentifier = null;
 
@@ -1010,7 +1011,7 @@ public class ContentManager {
 		}
 		else {
 			infoItemIdentifier = new ERCInfoItemIdentifier(
-				classExternalReferenceCode);
+				classExternalReferenceCode, scopeExternalReferenceCode);
 		}
 
 		return new InfoItemReference(className, infoItemIdentifier);
@@ -1108,7 +1109,7 @@ public class ContentManager {
 					_getInfoItemIdentifier(
 						layoutClassedModelUsage.getClassExternalReferenceCode(),
 						layoutClassedModelUsage.getClassName(),
-						layoutClassedModelUsage.getClassPK()));
+						layoutClassedModelUsage.getClassPK(), null));
 
 			if (layoutDisplayPageObjectProvider == null) {
 				_layoutClassedModelUsageLocalService.
@@ -1185,7 +1186,8 @@ public class ContentManager {
 		LayoutDisplayPageObjectProvider<?> layoutDisplayPageObjectProvider =
 			layoutDisplayPageProvider.getLayoutDisplayPageObjectProvider(
 				_getInfoItemIdentifier(
-					externalReferenceCode, className, classPK));
+					externalReferenceCode, className, classPK, jsonObject.getString(
+						"scopeExternalReferenceCode", null)));
 
 		if (layoutDisplayPageObjectProvider == null) {
 			return;
