@@ -44,7 +44,6 @@ import jakarta.portlet.PortletRequest;
 import jakarta.portlet.PortletURL;
 
 import jakarta.servlet.http.HttpServletRequest;
-import org.osgi.service.component.annotations.Reference;
 
 import java.util.ArrayList;
 
@@ -55,6 +54,7 @@ public class ObjectEntryItemSelectorViewDescriptor
 	implements ItemSelectorViewDescriptor<ObjectEntry> {
 
 	public ObjectEntryItemSelectorViewDescriptor(
+		GroupLocalService groupLocalService,
 		HttpServletRequest httpServletRequest,
 		InfoItemItemSelectorCriterion infoItemItemSelectorCriterion,
 		ObjectDefinition objectDefinition,
@@ -63,6 +63,7 @@ public class ObjectEntryItemSelectorViewDescriptor
 		ObjectScopeProviderRegistry objectScopeProviderRegistry, Portal portal,
 		PortletURL portletURL) {
 
+		_groupLocalService = groupLocalService;
 		_httpServletRequest = httpServletRequest;
 		_infoItemItemSelectorCriterion = infoItemItemSelectorCriterion;
 		_objectDefinition = objectDefinition;
@@ -84,13 +85,12 @@ public class ObjectEntryItemSelectorViewDescriptor
 	public String getDefaultDisplayStyle() {
 		return "descriptive";
 	}
-@Reference
-	private GroupLocalService _groupLocalService;
+
 	@Override
 	public ItemDescriptor getItemDescriptor(ObjectEntry objectEntry) {
 		return new ObjectEntryItemDescriptor(
-			_groupLocalService,
-			_httpServletRequest, _objectDefinition, objectEntry, _portal);
+			_groupLocalService, _httpServletRequest, _objectDefinition,
+			objectEntry, _portal);
 	}
 
 	@Override
@@ -221,6 +221,7 @@ public class ObjectEntryItemSelectorViewDescriptor
 	private static final Log _log = LogFactoryUtil.getLog(
 		ObjectEntryItemSelectorViewDescriptor.class);
 
+	private final GroupLocalService _groupLocalService;
 	private final HttpServletRequest _httpServletRequest;
 	private final InfoItemItemSelectorCriterion _infoItemItemSelectorCriterion;
 	private final String _keywords;

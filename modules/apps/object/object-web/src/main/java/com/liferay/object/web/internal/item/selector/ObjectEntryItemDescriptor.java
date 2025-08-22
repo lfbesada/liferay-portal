@@ -28,8 +28,6 @@ import java.util.Locale;
 public class ObjectEntryItemDescriptor
 	implements ItemSelectorViewDescriptor.ItemDescriptor {
 
-	private final GroupLocalService _groupLocalService;
-
 	public ObjectEntryItemDescriptor(
 		GroupLocalService groupLocalService,
 		HttpServletRequest httpServletRequest,
@@ -85,9 +83,11 @@ public class ObjectEntryItemDescriptor
 		).put(
 			"externalReferenceCode", _objectEntry.getExternalReferenceCode()
 		).put(
-			"scopeExternalReferenceCode", () -> {
+			"scopeExternalReferenceCode",
+			() -> {
+				if (_objectEntry.getGroupId() ==
+						themeDisplay.getScopeGroupId()) {
 
-				if (_objectEntry.getGroupId() == themeDisplay.getScopeGroupId()) {
 					return null;
 				}
 
@@ -150,6 +150,7 @@ public class ObjectEntryItemDescriptor
 		return String.valueOf(_objectEntry.getObjectEntryId());
 	}
 
+	private final GroupLocalService _groupLocalService;
 	private final HttpServletRequest _httpServletRequest;
 	private final ObjectDefinition _objectDefinition;
 	private final ObjectEntry _objectEntry;

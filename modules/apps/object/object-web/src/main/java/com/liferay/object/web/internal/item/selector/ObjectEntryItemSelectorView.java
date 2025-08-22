@@ -18,6 +18,7 @@ import com.liferay.object.model.ObjectEntry;
 import com.liferay.object.related.models.ObjectRelatedModelsProviderRegistry;
 import com.liferay.object.rest.manager.v1_0.ObjectEntryManager;
 import com.liferay.object.scope.ObjectScopeProviderRegistry;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Portal;
 
@@ -41,7 +42,11 @@ public class ObjectEntryItemSelectorView
 	implements InfoItemSelectorView,
 			   ItemSelectorView<InfoItemItemSelectorCriterion> {
 
+	private final GroupLocalService _groupLocalService;
+
+
 	public ObjectEntryItemSelectorView(
+		GroupLocalService groupLocalService,
 		InfoPermissionProvider<ObjectEntry> infoPermissionProvider,
 		ItemSelectorViewDescriptorRenderer<InfoItemItemSelectorCriterion>
 			itemSelectorViewDescriptorRenderer,
@@ -51,6 +56,7 @@ public class ObjectEntryItemSelectorView
 		ObjectScopeProviderRegistry objectScopeProviderRegistry,
 		Portal portal) {
 
+		_groupLocalService = groupLocalService;
 		_infoPermissionProvider = infoPermissionProvider;
 		_itemSelectorViewDescriptorRenderer =
 			itemSelectorViewDescriptorRenderer;
@@ -104,6 +110,7 @@ public class ObjectEntryItemSelectorView
 			servletRequest, servletResponse, infoItemItemSelectorCriterion,
 			portletURL, itemSelectedEventName, search,
 			new ObjectEntryItemSelectorViewDescriptor(
+				_groupLocalService,
 				(HttpServletRequest)servletRequest,
 				infoItemItemSelectorCriterion, _objectDefinition,
 				_objectEntryManager, _objectRelatedModelsProviderRegistry,
