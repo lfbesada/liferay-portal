@@ -361,16 +361,13 @@ public class FragmentEntryProcessorHelperImpl
 
 			InfoItemIdentifier infoItemIdentifier = null;
 
-			if (Validator.isNotNull(
-					layoutDisplayPageObjectProvider.
-						getExternalReferenceCode())) {
+			if (layoutDisplayPageObjectProvider.getClassPK() > 0) {
+				infoItemIdentifier = new ClassPKInfoItemIdentifier(
+					layoutDisplayPageObjectProvider.getClassPK());
+			} else {
 
 				infoItemIdentifier = new ERCInfoItemIdentifier(
 					layoutDisplayPageObjectProvider.getExternalReferenceCode());
-			}
-			else {
-				infoItemIdentifier = new ClassPKInfoItemIdentifier(
-					layoutDisplayPageObjectProvider.getClassPK());
 			}
 
 			infoItemReference = new InfoItemReference(
