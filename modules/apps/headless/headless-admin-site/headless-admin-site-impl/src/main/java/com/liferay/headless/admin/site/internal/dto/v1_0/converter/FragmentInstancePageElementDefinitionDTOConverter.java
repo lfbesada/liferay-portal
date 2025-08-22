@@ -6,6 +6,7 @@
 package com.liferay.headless.admin.site.internal.dto.v1_0.converter;
 
 import com.liferay.fragment.contributor.FragmentCollectionContributorRegistry;
+import com.liferay.fragment.entry.processor.constants.FragmentEntryProcessorConstants;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
@@ -15,11 +16,13 @@ import com.liferay.headless.admin.site.dto.v1_0.FragmentInstancePageElementDefin
 import com.liferay.headless.admin.site.dto.v1_0.ItemExternalReference;
 import com.liferay.headless.admin.site.dto.v1_0.PageElementDefinition;
 import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
@@ -78,6 +81,7 @@ public class FragmentInstancePageElementDefinitionDTOConverter
 				setDraftPageElementExternalReferenceCode(
 					() -> _getDraftPageElementExternalReferenceCode(
 						fragmentEntryLink));
+				setFragmentConfig(() -> _getFragmentConfig(fragmentEntryLink));
 				setFragmentReference(
 					() -> {
 						FragmentEntry fragmentEntry =
@@ -149,6 +153,34 @@ public class FragmentInstancePageElementDefinitionDTOConverter
 		}
 
 		return originalFragmentEntryLink.getExternalReferenceCode();
+	}
+
+	private Map<String, Object> _getFragmentConfig(
+		FragmentEntryLink fragmentEntryLink) {
+
+		JSONObject editableValuesJSONObject =
+			fragmentEntryLink.getEditableValuesJSONObject();
+
+		if ((editableValuesJSONObject == null) ||
+			!editableValuesJSONObject.has(
+				FragmentEntryProcessorConstants.
+					KEY_FREEMARKER_FRAGMENT_ENTRY_PROCESSOR)) {
+
+			return null;
+		}
+
+		Map<String, Object> map = new HashMap<>();
+
+		JSONObject freeMarkerJSONObject =
+			editableValuesJSONObject.getJSONObject(
+				FragmentEntryProcessorConstants.
+					KEY_FREEMARKER_FRAGMENT_ENTRY_PROCESSOR);
+
+		for (String key : freeMarkerJSONObject.keySet()) {
+			map.put(key, freeMarkerJSONObject.get(key));
+		}
+
+		return map;
 	}
 
 	@Reference
