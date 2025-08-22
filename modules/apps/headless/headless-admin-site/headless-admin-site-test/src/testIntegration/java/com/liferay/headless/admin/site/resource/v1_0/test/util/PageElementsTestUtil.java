@@ -134,21 +134,6 @@ public class PageElementsTestUtil {
 			};
 		}
 
-		if (Objects.equals(type, PageElementDefinition.Type.FRAGMENT)) {
-			return new FragmentInstancePageElementDefinition() {
-				{
-					setFragmentReference(
-						new DefaultFragmentReference() {
-							{
-								setDefaultFragmentKey(
-									() -> "BASIC_COMPONENT-heading");
-							}
-						});
-					setType(Type.FRAGMENT);
-				}
-			};
-		}
-
 		if (Objects.equals(type, PageElementDefinition.Type.ROW)) {
 			return new RowPageElementDefinition() {
 				{
