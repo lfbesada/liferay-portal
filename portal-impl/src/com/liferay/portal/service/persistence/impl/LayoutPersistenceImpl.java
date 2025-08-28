@@ -21839,7 +21839,7 @@ public class LayoutPersistenceImpl
 		ctMergeColumnNames.add("iconImageId");
 		ctMergeColumnNames.add("themeId");
 		ctMergeColumnNames.add("colorSchemeId");
-		ctMergeColumnNames.add("styleBookEntryId");
+		ctMergeColumnNames.add("styleBookEntryERC");
 		ctMergeColumnNames.add("css");
 		ctMergeColumnNames.add("priority");
 		ctMergeColumnNames.add("faviconFileEntryId");
