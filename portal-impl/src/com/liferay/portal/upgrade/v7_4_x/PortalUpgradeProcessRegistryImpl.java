@@ -671,6 +671,12 @@ public class PortalUpgradeProcessRegistryImpl
 			new LayoutLayoutSetPrototypeLayoutERCUpgradeProcess());
 
 		upgradeVersionTreeMap.put(new Version(34, 1, 0), new UpgradeDB2());
+
+		upgradeVersionTreeMap.put(
+			new Version(35, 0, 0), new LayoutStyleBookEntryERCUpgradeProcess());
+
+		upgradeVersionTreeMap.put(
+			new Version(35, 0, 0), new LayoutStyleBookEntryERCUpgradeProcess());
 	}
 
 }
