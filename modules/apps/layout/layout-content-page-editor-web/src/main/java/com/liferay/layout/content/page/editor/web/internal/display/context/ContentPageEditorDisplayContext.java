@@ -695,29 +695,31 @@ public class ContentPageEditorDisplayContext {
 						theme.getThemeId(), layoutSet.getThemeId());
 				}
 			).put(
-				"styleBookEntryId",
+				"styleBookEntryERC",
 				() -> {
 					Layout layout = themeDisplay.getLayout();
 
-					long styleBookEntryId = _getStyleBookEntryId(layout);
+					String styleBookEntryERC = GetterUtil.getString(
+						layout.getStyleBookEntryERC());
 
 					if (!FeatureFlagManagerUtil.isEnabled(
 							layout.getCompanyId(), "LPD-30204")) {
 
-						return styleBookEntryId;
+						return styleBookEntryERC;
 					}
 
-					if (styleBookEntryId > 0) {
+					if (Validator.isNull(styleBookEntryERC)) {
 						StyleBookEntry defaultStyleBookEntry =
 							DefaultStyleBookEntryUtil.getDefaultStyleBookEntry(
 								layout);
 
 						if (defaultStyleBookEntry != null) {
-							return defaultStyleBookEntry.getStyleBookEntryId();
+							return defaultStyleBookEntry.
+								getExternalReferenceCode();
 						}
 					}
 
-					return "0";
+					return styleBookEntryERC;
 				}
 			).put(
 				"styleBooks", _getStyleBooks()
@@ -1954,23 +1956,6 @@ public class ContentPageEditorDisplayContext {
 				itemSelectorCriterion));
 	}
 
-	private long _getStyleBookEntryId(Layout layout) {
-		if (Validator.isNull(layout.getStyleBookEntryERC())) {
-			return 0;
-		}
-
-		StyleBookEntry styleBookEntry =
-			_styleBookEntryLocalService.
-				fetchStyleBookEntryByExternalReferenceCode(
-					layout.getStyleBookEntryERC(), layout.getGroupId());
-
-		if (styleBookEntry == null) {
-			return 0;
-		}
-
-		return styleBookEntry.getStyleBookEntryId();
-	}
-
 	private List<Map<String, Object>> _getStyleBooks() throws Exception {
 		ArrayList<Map<String, Object>> styleBooks = new ArrayList<>();
 
@@ -2004,6 +1989,8 @@ public class ContentPageEditorDisplayContext {
 		if (frontendTokenDefinition != null) {
 			styleBooks.add(
 				HashMapBuilder.<String, Object>put(
+					"externalReferenceCode", StringPool.BLANK
+				).put(
 					"imagePreviewURL",
 					() -> {
 						StyleBookEntry defaultStyleBookEntry =
@@ -2023,8 +2010,6 @@ public class ContentPageEditorDisplayContext {
 						StyleBookUtil.getStyleFromThemeStyleBookEntry(
 							themeDisplay.getLayout(), themeDisplay.getLocale()))
 				).put(
-					"styleBookEntryId", "0"
-				).put(
 					"subtitle",
 					() -> {
 						StyleBookEntry defaultStyleBookEntry =
@@ -2042,12 +2027,13 @@ public class ContentPageEditorDisplayContext {
 		for (StyleBookEntry styleBookEntry : styleBookEntries) {
 			styleBooks.add(
 				HashMapBuilder.<String, Object>put(
+					"externalReferenceCode",
+					styleBookEntry.getExternalReferenceCode()
+				).put(
 					"imagePreviewURL",
 					styleBookEntry.getImagePreviewURL(themeDisplay)
 				).put(
 					"name", styleBookEntry.getName()
-				).put(
-					"styleBookEntryId", styleBookEntry.getStyleBookEntryId()
 				).build());
 		}
 
