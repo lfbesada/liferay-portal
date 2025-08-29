@@ -11,6 +11,8 @@ import com.liferay.change.tracking.spi.display.context.DisplayContext;
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.ColorScheme;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
@@ -27,7 +29,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.style.book.model.StyleBookEntry;
-import com.liferay.style.book.service.StyleBookEntryLocalService;
+import com.liferay.style.book.service.StyleBookEntryService;
 
 import jakarta.portlet.PortletRequest;
 import jakarta.portlet.PortletURL;
@@ -221,15 +223,22 @@ public class LayoutCTDisplayRenderer extends BaseCTDisplayRenderer<Layout> {
 		).display(
 			"style-book",
 			() -> {
-				long styleBookEntryId = layout.getStyleBookEntryId();
-
-				if (styleBookEntryId <= 0) {
+				if (Validator.isNull(layout.getStyleBookEntryERC())) {
 					return null;
 				}
 
-				StyleBookEntry styleBookEntry =
-					_styleBookEntryLocalService.fetchStyleBookEntry(
-						layout.getStyleBookEntryId());
+				StyleBookEntry styleBookEntry = null;
+
+				try {
+					_styleBookEntryService.
+						getStyleBookEntryByExternalReferenceCode(
+							layout.getStyleBookEntryERC(), layout.getGroupId());
+				}
+				catch (PortalException portalException) {
+					if (_log.isDebugEnabled()) {
+						_log.debug(portalException);
+					}
+				}
 
 				if (styleBookEntry == null) {
 					return null;
@@ -260,6 +269,9 @@ public class LayoutCTDisplayRenderer extends BaseCTDisplayRenderer<Layout> {
 		);
 	}
 
+	private static final Log _log = LogFactoryUtil.getLog(
+		LayoutCTDisplayRenderer.class);
+
 	@Reference
 	private LayoutPermission _layoutPermission;
 
@@ -267,6 +279,6 @@ public class LayoutCTDisplayRenderer extends BaseCTDisplayRenderer<Layout> {
 	private Portal _portal;
 
 	@Reference
-	private StyleBookEntryLocalService _styleBookEntryLocalService;
+	private StyleBookEntryService _styleBookEntryService;
 
 }

@@ -137,7 +137,7 @@ import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.sites.kernel.util.Sites;
 import com.liferay.staging.configuration.StagingConfiguration;
 import com.liferay.style.book.model.StyleBookEntry;
-import com.liferay.style.book.service.StyleBookEntryLocalService;
+import com.liferay.style.book.service.StyleBookEntryService;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -1668,19 +1668,15 @@ public class LayoutStagedModelDataHandler
 			Layout layout, PortletDataContext portletDataContext)
 		throws Exception {
 
-		if (layout.getStyleBookEntryId() == 0) {
+		StyleBookEntry styleBookEntry = _getStyleBookEntry(layout);
+
+		if (styleBookEntry == null) {
 			return;
 		}
 
-		StyleBookEntry styleBookEntry =
-			_styleBookEntryLocalService.fetchStyleBookEntry(
-				layout.getStyleBookEntryId());
-
-		if (styleBookEntry != null) {
-			StagedModelDataHandlerUtil.exportReferenceStagedModel(
-				portletDataContext, layout, styleBookEntry,
-				PortletDataContext.REFERENCE_TYPE_DEPENDENCY);
-		}
+		StagedModelDataHandlerUtil.exportReferenceStagedModel(
+			portletDataContext, layout, styleBookEntry,
+			PortletDataContext.REFERENCE_TYPE_DEPENDENCY);
 	}
 
 	private void _exportTheme(
@@ -1999,6 +1995,25 @@ public class LayoutStagedModelDataHandler
 		}
 
 		return portletIds;
+	}
+
+	private StyleBookEntry _getStyleBookEntry(Layout layout) {
+		if (Validator.isNull(layout.getStyleBookEntryERC())) {
+			return null;
+		}
+
+		try {
+			return _styleBookEntryService.
+				getStyleBookEntryByExternalReferenceCode(
+					layout.getStyleBookEntryERC(), layout.getGroupId());
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException);
+			}
+		}
+
+		return null;
 	}
 
 	private String _getUniqueFriendlyURL(
@@ -2600,22 +2615,17 @@ public class LayoutStagedModelDataHandler
 			PortletDataContext portletDataContext)
 		throws Exception {
 
-		if (layout.getStyleBookEntryId() == 0) {
+		StyleBookEntry styleBookEntry = _getStyleBookEntry(layout);
+
+		if (styleBookEntry == null) {
 			return;
 		}
 
 		StagedModelDataHandlerUtil.importReferenceStagedModel(
 			portletDataContext, layout, StyleBookEntry.class,
-			layout.getStyleBookEntryId());
+			styleBookEntry.getStyleBookEntryId());
 
-		Map<Long, Long> styleBooksEntryNewPrimaryKeysMap =
-			(Map<Long, Long>)portletDataContext.getNewPrimaryKeysMap(
-				StyleBookEntry.class);
-
-		importedLayout.setStyleBookEntryId(
-			MapUtil.getLong(
-				styleBooksEntryNewPrimaryKeysMap, layout.getStyleBookEntryId(),
-				layout.getStyleBookEntryId()));
+		importedLayout.setStyleBookEntryERC(layout.getStyleBookEntryERC());
 	}
 
 	private void _importTheme(
@@ -3211,7 +3221,7 @@ public class LayoutStagedModelDataHandler
 	private Staging _staging;
 
 	@Reference
-	private StyleBookEntryLocalService _styleBookEntryLocalService;
+	private StyleBookEntryService _styleBookEntryService;
 
 	@Reference
 	private UserLocalService _userLocalService;

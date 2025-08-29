@@ -42,7 +42,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 import com.liferay.style.book.model.StyleBookEntry;
-import com.liferay.style.book.service.StyleBookEntryLocalService;
+import com.liferay.style.book.service.StyleBookEntryService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -348,9 +348,23 @@ public class PageDefinitionDTOConverter
 					});
 				setStyleBook(
 					() -> {
-						StyleBookEntry styleBookEntry =
-							_styleBookEntryLocalService.fetchStyleBookEntry(
-								layout.getStyleBookEntryId());
+						if (Validator.isNull(layout.getStyleBookEntryERC())) {
+							return null;
+						}
+
+						StyleBookEntry styleBookEntry = null;
+
+						try {
+							_styleBookEntryService.
+								getStyleBookEntryByExternalReferenceCode(
+									layout.getStyleBookEntryERC(),
+									layout.getGroupId());
+						}
+						catch (PortalException portalException) {
+							if (_log.isDebugEnabled()) {
+								_log.debug(portalException);
+							}
+						}
 
 						if (styleBookEntry == null) {
 							return null;
@@ -437,7 +451,7 @@ public class PageDefinitionDTOConverter
 	private Portal _portal;
 
 	@Reference
-	private StyleBookEntryLocalService _styleBookEntryLocalService;
+	private StyleBookEntryService _styleBookEntryService;
 
 	private static class AttributesDTOConverterContext
 		implements DTOConverterContext {

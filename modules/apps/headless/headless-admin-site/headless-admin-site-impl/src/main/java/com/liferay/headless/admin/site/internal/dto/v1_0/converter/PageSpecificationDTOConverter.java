@@ -43,8 +43,6 @@ import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.segments.service.SegmentsExperienceService;
-import com.liferay.style.book.model.StyleBookEntry;
-import com.liferay.style.book.service.StyleBookEntryLocalService;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -278,18 +276,14 @@ public class PageSpecificationDTOConverter
 					});
 				setStyleBookItemExternalReference(
 					() -> {
-						StyleBookEntry styleBookEntry =
-							_styleBookEntryLocalService.fetchStyleBookEntry(
-								layout.getStyleBookEntryId());
-
-						if (styleBookEntry == null) {
+						if (Validator.isNull(layout.getStyleBookEntryERC())) {
 							return null;
 						}
 
 						return new ItemExternalReference() {
 							{
 								setExternalReferenceCode(
-									styleBookEntry::getExternalReferenceCode);
+									layout::getStyleBookEntryERC);
 							}
 						};
 					});
@@ -507,9 +501,6 @@ public class PageSpecificationDTOConverter
 
 	@Reference
 	private SegmentsExperienceService _segmentsExperienceService;
-
-	@Reference
-	private StyleBookEntryLocalService _styleBookEntryLocalService;
 
 	@Reference(
 		target = "(component.name=com.liferay.headless.admin.site.internal.dto.v1_0.converter.WidgetPageWidgetInstanceDTOConverter)"

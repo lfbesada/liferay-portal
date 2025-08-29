@@ -8,13 +8,18 @@ package com.liferay.style.book.util;
 import com.liferay.exportimport.kernel.staging.StagingUtil;
 import com.liferay.frontend.token.definition.FrontendTokenDefinition;
 import com.liferay.frontend.token.definition.FrontendTokenDefinitionRegistry;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.style.book.model.StyleBookEntry;
 import com.liferay.style.book.service.StyleBookEntryLocalServiceUtil;
+import com.liferay.style.book.service.StyleBookEntryServiceUtil;
 
 import java.util.Locale;
 import java.util.Objects;
@@ -47,12 +52,7 @@ public class DefaultStyleBookEntryUtil {
 	}
 
 	public static StyleBookEntry getDefaultStyleBookEntry(Layout layout) {
-		StyleBookEntry styleBookEntry = null;
-
-		if (layout.getStyleBookEntryId() > 0) {
-			styleBookEntry = StyleBookEntryLocalServiceUtil.fetchStyleBookEntry(
-				layout.getStyleBookEntryId());
-		}
+		StyleBookEntry styleBookEntry = _getStyleBookEntry(layout);
 
 		if ((styleBookEntry == null) ||
 			!_isStyleBookEntryApplicable(layout, styleBookEntry)) {
@@ -107,13 +107,30 @@ public class DefaultStyleBookEntryUtil {
 				layout.getMasterLayoutPlid());
 
 			if (masterLayout != null) {
-				styleBookEntry =
-					StyleBookEntryLocalServiceUtil.fetchStyleBookEntry(
-						masterLayout.getStyleBookEntryId());
+				styleBookEntry = _getStyleBookEntry(masterLayout);
 			}
 		}
 
 		return styleBookEntry;
+	}
+
+	private static StyleBookEntry _getStyleBookEntry(Layout layout) {
+		if (Validator.isNull(layout.getStyleBookEntryERC())) {
+			return null;
+		}
+
+		try {
+			return StyleBookEntryServiceUtil.
+				getStyleBookEntryByExternalReferenceCode(
+					layout.getStyleBookEntryERC(), layout.getGroupId());
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException);
+			}
+		}
+
+		return null;
 	}
 
 	private static boolean _isStyleBookEntryApplicable(
@@ -141,6 +158,9 @@ public class DefaultStyleBookEntryUtil {
 
 		return false;
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		DefaultStyleBookEntryUtil.class);
 
 	private static final Snapshot<FrontendTokenDefinitionRegistry>
 		_frontendTokenDefinitionRegistrySnapshot = new Snapshot<>(

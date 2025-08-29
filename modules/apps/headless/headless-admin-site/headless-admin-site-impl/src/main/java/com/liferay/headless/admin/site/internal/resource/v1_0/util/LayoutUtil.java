@@ -68,8 +68,6 @@ import com.liferay.portal.vulcan.custom.field.CustomFieldsUtil;
 import com.liferay.portal.vulcan.util.LocalizedMapUtil;
 import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsExperienceServiceUtil;
-import com.liferay.style.book.model.StyleBookEntry;
-import com.liferay.style.book.service.StyleBookEntryServiceUtil;
 
 import java.util.Collection;
 import java.util.HashMap;
@@ -467,7 +465,7 @@ public class LayoutUtil {
 		if (pageSpecifications == null) {
 			return _updateLayout(
 				layout, nameMap, titleMap, descriptionMap, robotsMap,
-				layout.getStyleBookEntryId(), layout.getFaviconFileEntryId(),
+				layout.getStyleBookEntryERC(), layout.getFaviconFileEntryId(),
 				layout.getMasterLayoutPlid(), friendlyURLMap, serviceContext);
 		}
 
@@ -600,7 +598,7 @@ public class LayoutUtil {
 
 		return _updateLayout(
 			layout, nameMap, titleMap, descriptionMap, robotsMap,
-			_getStyleBookEntryId(serviceContext.getScopeGroupId(), settings),
+			_getStyleBookEntryERC(settings),
 			_getFaviconFileEntryId(settings, serviceContext),
 			_getMasterLayoutPlid(
 				serviceContext.getScopeGroupId(), layout, settings),
@@ -783,11 +781,9 @@ public class LayoutUtil {
 		return layoutPageTemplateEntry.getPlid();
 	}
 
-	private static long _getStyleBookEntryId(long groupId, Settings settings)
-		throws Exception {
-
+	private static String _getStyleBookEntryERC(Settings settings) {
 		if (settings == null) {
-			return 0;
+			return null;
 		}
 
 		ItemExternalReference itemExternalReference =
@@ -797,14 +793,10 @@ public class LayoutUtil {
 			Validator.isNull(
 				itemExternalReference.getExternalReferenceCode())) {
 
-			return 0;
+			return null;
 		}
 
-		StyleBookEntry styleBookEntry =
-			StyleBookEntryServiceUtil.getStyleBookEntryByExternalReferenceCode(
-				itemExternalReference.getExternalReferenceCode(), groupId);
-
-		return styleBookEntry.getStyleBookEntryId();
+		return itemExternalReference.getExternalReferenceCode();
 	}
 
 	private static void _importPortletConfiguration(
@@ -978,7 +970,7 @@ public class LayoutUtil {
 	private static Layout _updateLayout(
 			Layout layout, Map<Locale, String> nameMap,
 			Map<Locale, String> titleMap, Map<Locale, String> descriptionMap,
-			Map<Locale, String> robotsMap, long styleBookEntryId,
+			Map<Locale, String> robotsMap, String styleBookEntryERC,
 			long faviconFileEntryId, long masterLayoutPlid,
 			Map<Locale, String> friendlyURLMap, ServiceContext serviceContext)
 		throws Exception {
@@ -997,7 +989,7 @@ public class LayoutUtil {
 			robotsMap, layout.getType(),
 			GetterUtil.getBoolean(
 				serviceContext.getAttribute("hidden"), layout.isHidden()),
-			friendlyURLMap, layout.getIconImage(), null, styleBookEntryId,
+			friendlyURLMap, layout.getIconImage(), null, styleBookEntryERC,
 			faviconFileEntryId, masterLayoutPlid, serviceContext);
 	}
 
