@@ -43,8 +43,6 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.sites.kernel.util.Sites;
-import com.liferay.style.book.model.StyleBookEntry;
-import com.liferay.style.book.service.StyleBookEntryLocalService;
 
 import jakarta.portlet.ActionRequest;
 import jakarta.portlet.ActionResponse;
@@ -214,17 +212,8 @@ public class EditLayoutDesignMVCActionCommand extends BaseMVCActionCommand {
 
 			Layout layout = _layoutLocalService.getLayout(selPlid);
 
-			String styleBookEntryERC = null;
-
-			StyleBookEntry styleBookEntry =
-				_styleBookEntryLocalService.fetchStyleBookEntry(
-					ParamUtil.getLong(
-						uploadPortletRequest, "styleBookEntryId"));
-
-			if (styleBookEntry != null) {
-				styleBookEntryERC = styleBookEntry.getExternalReferenceCode();
-			}
-
+			String styleBookEntryERC = ParamUtil.getString(
+				uploadPortletRequest, "styleBookEntryERC");
 			long faviconFileEntryId = ParamUtil.getLong(
 				uploadPortletRequest, "faviconFileEntryId",
 				layout.getFaviconFileEntryId());
@@ -381,8 +370,5 @@ public class EditLayoutDesignMVCActionCommand extends BaseMVCActionCommand {
 
 	@Reference
 	private Portal _portal;
-
-	@Reference
-	private StyleBookEntryLocalService _styleBookEntryLocalService;
 
 }

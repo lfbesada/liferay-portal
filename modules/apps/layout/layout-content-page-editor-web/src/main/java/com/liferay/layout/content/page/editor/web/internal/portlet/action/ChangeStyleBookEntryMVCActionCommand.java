@@ -59,15 +59,8 @@ public class ChangeStyleBookEntryMVCActionCommand
 		LayoutPermissionUtil.checkLayoutRestrictedUpdatePermission(
 			themeDisplay.getPermissionChecker(), layout);
 
-		String styleBookEntryERC = null;
-
-		StyleBookEntry styleBookEntry =
-			_styleBookEntryLocalService.fetchStyleBookEntry(
-				ParamUtil.getLong(actionRequest, "styleBookEntryId"));
-
-		if (styleBookEntry != null) {
-			styleBookEntryERC = styleBookEntry.getExternalReferenceCode();
-		}
+		String styleBookEntryERC = ParamUtil.getString(
+			actionRequest, "styleBookEntryERC");
 
 		Layout updatedLayout = _layoutLocalService.updateStyleBookEntryERC(
 			layout.getGroupId(), layout.isPrivateLayout(), layout.getLayoutId(),
@@ -105,6 +98,11 @@ public class ChangeStyleBookEntryMVCActionCommand
 						themeDisplay.getSiteGroupId(),
 						group.isLayoutSetPrototype()));
 		}
+
+		StyleBookEntry styleBookEntry =
+			_styleBookEntryLocalService.
+				fetchStyleBookEntryByExternalReferenceCode(
+					styleBookEntryERC, layout.getGroupId());
 
 		if (styleBookEntry == null) {
 			styleBookEntry = DefaultStyleBookEntryUtil.getDefaultStyleBookEntry(
