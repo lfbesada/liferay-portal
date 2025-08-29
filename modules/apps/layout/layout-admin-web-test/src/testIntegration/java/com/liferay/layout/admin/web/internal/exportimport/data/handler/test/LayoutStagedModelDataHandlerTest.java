@@ -154,7 +154,7 @@ import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.segments.test.util.SegmentsTestUtil;
 import com.liferay.style.book.model.StyleBookEntry;
-import com.liferay.style.book.service.StyleBookEntryLocalService;
+import com.liferay.style.book.service.StyleBookEntryService;
 import com.liferay.template.model.TemplateEntry;
 import com.liferay.template.service.TemplateEntryLocalService;
 import com.liferay.template.test.util.TemplateTestUtil;
@@ -1250,9 +1250,9 @@ public class LayoutStagedModelDataHandlerTest
 
 		Layout layout = LayoutTestUtil.addTypeContentLayout(stagingGroup);
 
-		layout = _layoutLocalService.updateStyleBookEntryId(
+		layout = _layoutLocalService.updateStyleBookEntryERC(
 			layout.getGroupId(), layout.isPrivateLayout(), layout.getLayoutId(),
-			styleBookEntry.getStyleBookEntryId());
+			styleBookEntry.getExternalReferenceCode());
 
 		StagedModelDataHandlerUtil.exportStagedModel(
 			portletDataContext, layout);
@@ -1284,10 +1284,12 @@ public class LayoutStagedModelDataHandlerTest
 			layout.getUuid(), liveGroup.getGroupId(), layout.isPrivateLayout());
 
 		Assert.assertNotEquals(
-			layout.getStyleBookEntryId(), importedLayout.getStyleBookEntryId());
+			layout.getStyleBookEntryERC(),
+			importedLayout.getStyleBookEntryERC());
 		Assert.assertNotNull(
-			_styleBookEntryLocalService.fetchStyleBookEntry(
-				importedLayout.getStyleBookEntryId()));
+			_styleBookEntryService.getStyleBookEntryByExternalReferenceCode(
+				importedLayout.getStyleBookEntryERC(),
+				importedLayout.getGroupId()));
 	}
 
 	@Test
@@ -2674,7 +2676,7 @@ public class LayoutStagedModelDataHandlerTest
 	private StagingLocalService _stagingLocalService;
 
 	@Inject
-	private StyleBookEntryLocalService _styleBookEntryLocalService;
+	private StyleBookEntryService _styleBookEntryService;
 
 	@Inject
 	private TemplateEntryLocalService _templateEntryLocalService;
