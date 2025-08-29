@@ -154,7 +154,7 @@ import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.segments.test.util.SegmentsTestUtil;
 import com.liferay.style.book.model.StyleBookEntry;
-import com.liferay.style.book.service.StyleBookEntryService;
+import com.liferay.style.book.service.StyleBookEntryLocalService;
 import com.liferay.template.model.TemplateEntry;
 import com.liferay.template.service.TemplateEntryLocalService;
 import com.liferay.template.test.util.TemplateTestUtil;
@@ -1287,9 +1287,10 @@ public class LayoutStagedModelDataHandlerTest
 			layout.getStyleBookEntryERC(),
 			importedLayout.getStyleBookEntryERC());
 		Assert.assertNotNull(
-			_styleBookEntryService.getStyleBookEntryByExternalReferenceCode(
-				importedLayout.getStyleBookEntryERC(),
-				importedLayout.getGroupId()));
+			_styleBookEntryLocalService.
+				fetchStyleBookEntryByExternalReferenceCode(
+					importedLayout.getStyleBookEntryERC(),
+					importedLayout.getGroupId()));
 	}
 
 	@Test
@@ -2676,7 +2677,7 @@ public class LayoutStagedModelDataHandlerTest
 	private StagingLocalService _stagingLocalService;
 
 	@Inject
-	private StyleBookEntryService _styleBookEntryService;
+	private StyleBookEntryLocalService _styleBookEntryLocalService;
 
 	@Inject
 	private TemplateEntryLocalService _templateEntryLocalService;

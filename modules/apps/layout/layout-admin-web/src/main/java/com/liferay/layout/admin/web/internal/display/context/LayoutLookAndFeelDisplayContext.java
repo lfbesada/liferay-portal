@@ -21,15 +21,12 @@ import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeCon
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServiceUtil;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutSet;
@@ -50,7 +47,7 @@ import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.style.book.item.selector.StyleBookEntryItemSelectorCriterion;
 import com.liferay.style.book.model.StyleBookEntry;
-import com.liferay.style.book.service.StyleBookEntryServiceUtil;
+import com.liferay.style.book.service.StyleBookEntryLocalServiceUtil;
 import com.liferay.style.book.util.DefaultStyleBookEntryUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
@@ -249,20 +246,11 @@ public class LayoutLookAndFeelDisplayContext {
 					return "0";
 				}
 
-				StyleBookEntry styleBookEntry = null;
-
-				try {
-					styleBookEntry =
-						StyleBookEntryServiceUtil.
-							getStyleBookEntryByExternalReferenceCode(
-								selLayout.getStyleBookEntryERC(),
-								selLayout.getGroupId());
-				}
-				catch (PortalException portalException) {
-					if (_log.isDebugEnabled()) {
-						_log.debug(portalException);
-					}
-				}
+				StyleBookEntry styleBookEntry =
+					StyleBookEntryLocalServiceUtil.
+						fetchStyleBookEntryByExternalReferenceCode(
+							selLayout.getStyleBookEntryERC(),
+							selLayout.getGroupId());
 
 				if (styleBookEntry == null) {
 					return null;
@@ -287,18 +275,11 @@ public class LayoutLookAndFeelDisplayContext {
 				selLayout);
 		}
 		else if (Validator.isNull(selLayout.getStyleBookEntryERC())) {
-			try {
-				styleBookEntry =
-					StyleBookEntryServiceUtil.
-						getStyleBookEntryByExternalReferenceCode(
-							selLayout.getStyleBookEntryERC(),
-							selLayout.getGroupId());
-			}
-			catch (PortalException portalException) {
-				if (_log.isDebugEnabled()) {
-					_log.debug(portalException);
-				}
-			}
+			styleBookEntry =
+				StyleBookEntryLocalServiceUtil.
+					fetchStyleBookEntryByExternalReferenceCode(
+						selLayout.getStyleBookEntryERC(),
+						selLayout.getGroupId());
 		}
 
 		return DefaultStyleBookEntryUtil.getStyleBookEntryName(
@@ -572,9 +553,6 @@ public class LayoutLookAndFeelDisplayContext {
 		return group.getLayoutRootNodeName(
 			layoutSet.isPrivateLayout(), _themeDisplay.getLocale());
 	}
-
-	private static final Log _log = LogFactoryUtil.getLog(
-		LayoutLookAndFeelDisplayContext.class);
 
 	private Boolean _hasEditableMasterLayout;
 	private Boolean _hasMasterLayout;

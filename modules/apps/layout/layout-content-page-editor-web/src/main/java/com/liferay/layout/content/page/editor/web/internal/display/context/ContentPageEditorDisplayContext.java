@@ -132,7 +132,6 @@ import com.liferay.site.navigation.item.selector.SiteNavigationMenuItemSelectorR
 import com.liferay.staging.StagingGroupHelper;
 import com.liferay.style.book.model.StyleBookEntry;
 import com.liferay.style.book.service.StyleBookEntryLocalService;
-import com.liferay.style.book.service.StyleBookEntryServiceUtil;
 import com.liferay.style.book.util.DefaultStyleBookEntryUtil;
 import com.liferay.style.book.util.StyleBookUtil;
 import com.liferay.style.book.util.comparator.StyleBookEntryNameComparator;
@@ -1960,21 +1959,16 @@ public class ContentPageEditorDisplayContext {
 			return 0;
 		}
 
-		try {
-			StyleBookEntry styleBookEntry =
-				StyleBookEntryServiceUtil.
-					getStyleBookEntryByExternalReferenceCode(
-						layout.getStyleBookEntryERC(), layout.getGroupId());
+		StyleBookEntry styleBookEntry =
+			_styleBookEntryLocalService.
+				fetchStyleBookEntryByExternalReferenceCode(
+					layout.getStyleBookEntryERC(), layout.getGroupId());
 
-			return styleBookEntry.getStyleBookEntryId();
-		}
-		catch (PortalException portalException) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(portalException);
-			}
+		if (styleBookEntry == null) {
+			return 0;
 		}
 
-		return 0;
+		return styleBookEntry.getStyleBookEntryId();
 	}
 
 	private List<Map<String, Object>> _getStyleBooks() throws Exception {

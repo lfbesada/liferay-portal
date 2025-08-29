@@ -137,7 +137,7 @@ import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.sites.kernel.util.Sites;
 import com.liferay.staging.configuration.StagingConfiguration;
 import com.liferay.style.book.model.StyleBookEntry;
-import com.liferay.style.book.service.StyleBookEntryService;
+import com.liferay.style.book.service.StyleBookEntryLocalService;
 
 import java.util.Collection;
 import java.util.Collections;
@@ -1668,7 +1668,14 @@ public class LayoutStagedModelDataHandler
 			Layout layout, PortletDataContext portletDataContext)
 		throws Exception {
 
-		StyleBookEntry styleBookEntry = _getStyleBookEntry(layout);
+		if (Validator.isNull(layout.getStyleBookEntryERC())) {
+			return;
+		}
+
+		StyleBookEntry styleBookEntry =
+			_styleBookEntryLocalService.
+				fetchStyleBookEntryByExternalReferenceCode(
+					layout.getStyleBookEntryERC(), layout.getGroupId());
 
 		if (styleBookEntry == null) {
 			return;
@@ -1995,25 +2002,6 @@ public class LayoutStagedModelDataHandler
 		}
 
 		return portletIds;
-	}
-
-	private StyleBookEntry _getStyleBookEntry(Layout layout) {
-		if (Validator.isNull(layout.getStyleBookEntryERC())) {
-			return null;
-		}
-
-		try {
-			return _styleBookEntryService.
-				getStyleBookEntryByExternalReferenceCode(
-					layout.getStyleBookEntryERC(), layout.getGroupId());
-		}
-		catch (PortalException portalException) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(portalException);
-			}
-		}
-
-		return null;
 	}
 
 	private String _getUniqueFriendlyURL(
@@ -2615,7 +2603,14 @@ public class LayoutStagedModelDataHandler
 			PortletDataContext portletDataContext)
 		throws Exception {
 
-		StyleBookEntry styleBookEntry = _getStyleBookEntry(layout);
+		if (Validator.isNull(layout.getStyleBookEntryERC())) {
+			return;
+		}
+
+		StyleBookEntry styleBookEntry =
+			_styleBookEntryLocalService.
+				fetchStyleBookEntryByExternalReferenceCode(
+					layout.getStyleBookEntryERC(), layout.getGroupId());
 
 		if (styleBookEntry == null) {
 			return;
@@ -3221,7 +3216,7 @@ public class LayoutStagedModelDataHandler
 	private Staging _staging;
 
 	@Reference
-	private StyleBookEntryService _styleBookEntryService;
+	private StyleBookEntryLocalService _styleBookEntryLocalService;
 
 	@Reference
 	private UserLocalService _userLocalService;
