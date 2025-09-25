@@ -106,12 +106,14 @@ public class ServiceContextUtil {
 	}
 
 	public static ServiceContext createServiceContext(
-		long groupId, HttpServletRequest httpServletRequest, long userId) {
+		long companyId, long groupId, HttpServletRequest httpServletRequest,
+		long userId) {
 
 		ServiceContext serviceContext = ServiceContextBuilder.create(
 			groupId, httpServletRequest, null
 		).build();
 
+		serviceContext.setCompanyId(companyId);
 		serviceContext.setUserId(userId);
 
 		return serviceContext;
