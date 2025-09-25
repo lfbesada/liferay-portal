@@ -188,8 +188,8 @@ public class PageExperienceResourceImpl extends BasePageExperienceResourceImpl {
 			SegmentsExperienceUtil.updateSegmentsExperience(
 				layout, pageExperience, segmentsExperience,
 				ServiceContextUtil.createServiceContext(
-					groupId, contextHttpServletRequest,
-					contextUser.getUserId())));
+					contextCompany.getCompanyId(), groupId,
+					contextHttpServletRequest, contextUser.getUserId())));
 	}
 
 	@Override
@@ -218,8 +218,8 @@ public class PageExperienceResourceImpl extends BasePageExperienceResourceImpl {
 			SegmentsExperienceUtil.addSegmentsExperience(
 				layout, pageExperience,
 				ServiceContextUtil.createServiceContext(
-					groupId, contextHttpServletRequest,
-					contextUser.getUserId())));
+					contextCompany.getCompanyId(), groupId,
+					contextHttpServletRequest, contextUser.getUserId())));
 	}
 
 	private PageExperience _toPageExperience(

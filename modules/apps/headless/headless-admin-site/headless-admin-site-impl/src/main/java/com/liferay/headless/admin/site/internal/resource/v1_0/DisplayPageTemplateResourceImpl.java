@@ -240,6 +240,7 @@ public class DisplayPageTemplateResourceImpl
 				_layoutLocalService.getLayout(
 					layoutPageTemplateEntry.getPlid()),
 				ServiceContextUtil.createServiceContext(
+					contextCompany.getCompanyId(),
 					layoutPageTemplateEntry.getGroupId(),
 					contextHttpServletRequest, contextUser.getUserId())));
 	}

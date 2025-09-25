@@ -145,6 +145,7 @@ public class MasterPageResourceImpl
 				_layoutLocalService.getLayout(
 					layoutPageTemplateEntry.getPlid()),
 				ServiceContextUtil.createServiceContext(
+					contextCompany.getCompanyId(),
 					layoutPageTemplateEntry.getGroupId(),
 					contextHttpServletRequest, contextUser.getUserId())));
 	}
