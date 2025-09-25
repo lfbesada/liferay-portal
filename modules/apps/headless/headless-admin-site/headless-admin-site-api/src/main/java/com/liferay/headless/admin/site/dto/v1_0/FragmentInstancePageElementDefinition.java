@@ -66,7 +66,8 @@ public class FragmentInstancePageElementDefinition
 	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "The fragment instance's configuration."
 	)
-	public String getConfiguration() {
+	@Valid
+	public Map<String, Object> getConfiguration() {
 		if (_configurationSupplier != null) {
 			configuration = _configurationSupplier.get();
 
@@ -76,7 +77,7 @@ public class FragmentInstancePageElementDefinition
 		return configuration;
 	}
 
-	public void setConfiguration(String configuration) {
+	public void setConfiguration(Map<String, Object> configuration) {
 		this.configuration = configuration;
 
 		_configurationSupplier = null;
@@ -84,7 +85,8 @@ public class FragmentInstancePageElementDefinition
 
 	@JsonIgnore
 	public void setConfiguration(
-		UnsafeSupplier<String, Exception> configurationUnsafeSupplier) {
+		UnsafeSupplier<Map<String, Object>, Exception>
+			configurationUnsafeSupplier) {
 
 		_configurationSupplier = () -> {
 			try {
@@ -101,10 +103,10 @@ public class FragmentInstancePageElementDefinition
 
 	@GraphQLField(description = "The fragment instance's configuration.")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected String configuration;
+	protected Map<String, Object> configuration;
 
 	@JsonIgnore
-	private Supplier<String> _configurationSupplier;
+	private Supplier<Map<String, Object>> _configurationSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "The fragment instance's CSS."
@@ -1060,7 +1062,7 @@ public class FragmentInstancePageElementDefinition
 		DateFormat liferayToJSONDateFormat = new SimpleDateFormat(
 			"yyyy-MM-dd'T'HH:mm:ss'Z'");
 
-		String configuration = getConfiguration();
+		Map<String, Object> configuration = getConfiguration();
 
 		if (configuration != null) {
 			if (sb.length() > 1) {
@@ -1069,11 +1071,7 @@ public class FragmentInstancePageElementDefinition
 
 			sb.append("\"configuration\": ");
 
-			sb.append("\"");
-
-			sb.append(_escape(configuration));
-
-			sb.append("\"");
+			sb.append(_toJSON(configuration));
 		}
 
 		String css = getCss();

@@ -28,16 +28,17 @@ public class FragmentInstancePageElementDefinition
 		return FragmentInstancePageElementDefinitionSerDes.toDTO(json);
 	}
 
-	public String getConfiguration() {
+	public Map<String, Object> getConfiguration() {
 		return configuration;
 	}
 
-	public void setConfiguration(String configuration) {
+	public void setConfiguration(Map<String, Object> configuration) {
 		this.configuration = configuration;
 	}
 
 	public void setConfiguration(
-		UnsafeSupplier<String, Exception> configurationUnsafeSupplier) {
+		UnsafeSupplier<Map<String, Object>, Exception>
+			configurationUnsafeSupplier) {
 
 		try {
 			configuration = configurationUnsafeSupplier.get();
@@ -47,7 +48,7 @@ public class FragmentInstancePageElementDefinition
 		}
 	}
 
-	protected String configuration;
+	protected Map<String, Object> configuration;
 
 	public String getCss() {
 		return css;

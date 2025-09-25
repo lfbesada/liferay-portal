@@ -69,13 +69,9 @@ public class FragmentInstancePageElementDefinitionSerDes {
 
 			sb.append("\"configuration\": ");
 
-			sb.append("\"");
-
 			sb.append(
-				_escape(
+				_toJSON(
 					fragmentInstancePageElementDefinition.getConfiguration()));
-
-			sb.append("\"");
 		}
 
 		if (fragmentInstancePageElementDefinition.getCss() != null) {
@@ -744,7 +740,7 @@ public class FragmentInstancePageElementDefinitionSerDes {
 		@Override
 		protected boolean parseMaps(String jsonParserFieldName) {
 			if (Objects.equals(jsonParserFieldName, "configuration")) {
-				return false;
+				return true;
 			}
 			else if (Objects.equals(jsonParserFieldName, "css")) {
 				return false;
@@ -830,7 +826,7 @@ public class FragmentInstancePageElementDefinitionSerDes {
 			if (Objects.equals(jsonParserFieldName, "configuration")) {
 				if (jsonParserFieldValue != null) {
 					fragmentInstancePageElementDefinition.setConfiguration(
-						(String)jsonParserFieldValue);
+						(Map<String, Object>)jsonParserFieldValue);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "css")) {
