@@ -24,6 +24,7 @@ import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
@@ -148,8 +149,7 @@ public class FragmentLayoutStructureItemImporter
 					fragmentInstancePageElementDefinition.getHtml()),
 				GetterUtil.getString(
 					fragmentInstancePageElementDefinition.getJs()),
-				GetterUtil.getString(
-					fragmentInstancePageElementDefinition.getConfiguration()),
+				_getConfiguration(fragmentInstancePageElementDefinition),
 				StringPool.BLANK,
 				fragmentInstancePageElementDefinition.getNamespace(), 0,
 				fragmentEntry.getFragmentEntryKey(),
@@ -160,6 +160,15 @@ public class FragmentLayoutStructureItemImporter
 			serviceContext.setCreateDate(createDate);
 			serviceContext.setUuid(uuid);
 		}
+	}
+
+	private String _getConfiguration(
+		FragmentInstancePageElementDefinition
+			fragmentInstancePageElementDefinition) {
+
+		return String.valueOf(
+			JSONFactoryUtil.createJSONObject(
+				fragmentInstancePageElementDefinition.getConfiguration()));
 	}
 
 	private FragmentEntry _getFragmentEntry(
@@ -291,8 +300,7 @@ public class FragmentLayoutStructureItemImporter
 			GetterUtil.getString(
 				fragmentInstancePageElementDefinition.getJs()));
 		fragmentEntryLink.setConfiguration(
-			GetterUtil.getString(
-				fragmentInstancePageElementDefinition.getConfiguration()));
+			_getConfiguration(fragmentInstancePageElementDefinition));
 		fragmentEntryLink.setNamespace(
 			fragmentInstancePageElementDefinition.getNamespace());
 		fragmentEntryLink.setRendererKey(fragmentEntry.getFragmentEntryKey());
