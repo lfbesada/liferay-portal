@@ -16,10 +16,12 @@ import com.liferay.headless.admin.site.dto.v1_0.FragmentItemExternalReference;
 import com.liferay.headless.admin.site.dto.v1_0.PageElementDefinition;
 import com.liferay.headless.admin.site.dto.v1_0.Scope;
 import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 
@@ -61,7 +63,7 @@ public class FragmentInstancePageElementDefinitionDTOConverter
 
 		return new FragmentInstancePageElementDefinition() {
 			{
-				setConfiguration(fragmentEntryLink::getConfiguration);
+				setConfiguration(() -> _getConfiguration(fragmentEntryLink));
 				setCss(fragmentEntryLink::getCss);
 				setCssClasses(
 					() -> {
@@ -164,6 +166,17 @@ public class FragmentInstancePageElementDefinitionDTOConverter
 		};
 	}
 
+	private Map<String, Object> _getConfiguration(
+		FragmentEntryLink fragmentEntryLink) {
+
+		if (Validator.isNull(fragmentEntryLink.getConfiguration())) {
+			return null;
+		}
+
+		return (Map<String, Object>)_jsonFactory.looseDeserialize(
+			fragmentEntryLink.getConfiguration());
+	}
+
 	private String _getDraftFragmentInstanceExternalReferenceCode(
 		FragmentEntryLink fragmentEntryLink) {
 
@@ -197,5 +210,8 @@ public class FragmentInstancePageElementDefinitionDTOConverter
 
 	@Reference
 	private GroupLocalService _groupLocalService;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 }
