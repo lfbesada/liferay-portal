@@ -435,8 +435,6 @@ public class PageSpecificationDTOConverter
 
 				return PageSpecification.Status.DRAFT;
 			});
-		contentPageSpecification.setType(
-			() -> PageSpecification.Type.CONTENT_PAGE_SPECIFICATION);
 
 		return contentPageSpecification;
 	}
@@ -481,8 +479,6 @@ public class PageSpecificationDTOConverter
 				});
 		widgetPageSpecification.setStatus(
 			() -> PageSpecification.Status.APPROVED);
-		widgetPageSpecification.setType(
-			() -> PageSpecification.Type.WIDGET_PAGE_SPECIFICATION);
 		widgetPageSpecification.setWidgetPageSections(
 			() -> _getWidgetPageSections(dtoConverterContext, layout));
 
