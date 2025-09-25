@@ -209,18 +209,15 @@ public class PageSpecificationDTOConverter
 							ClientExtensionEntryConstants.TYPE_THEME_FAVICON);
 
 						if (clientExtension != null) {
-							return new FavIconClientExtension() {
-								{
-									setClientExtensionConfig(
-										clientExtension::
-											getClientExtensionConfig);
-									setExternalReferenceCode(
-										clientExtension::
-											getExternalReferenceCode);
-									setFavIconType(
-										() -> FavIconType.CLIENT_EXTENSION);
-								}
-							};
+							FavIconClientExtension favIconClientExtension =
+								new FavIconClientExtension();
+
+							favIconClientExtension.setClientExtensionConfig(
+								clientExtension::getClientExtensionConfig);
+							favIconClientExtension.setExternalReferenceCode(
+								clientExtension::getExternalReferenceCode);
+
+							return favIconClientExtension;
 						}
 
 						long faviconFileEntryId =
@@ -237,19 +234,19 @@ public class PageSpecificationDTOConverter
 							return null;
 						}
 
-						return new FavIconItemExternalReference() {
-							{
-								setClassName(FileEntry.class::getName);
-								setExternalReferenceCode(
-									fileEntry::getExternalReferenceCode);
-								setFavIconType(
-									() -> FavIconType.ITEM_EXTERNAL_REFERENCE);
-								setScope(
-									() -> ScopeUtil.getScope(
-										layout.getGroupId(),
-										fileEntry.getGroupId()));
-							}
-						};
+						FavIconItemExternalReference
+							favIconItemExternalReference =
+								new FavIconItemExternalReference();
+
+						favIconItemExternalReference.setClassName(
+							FileEntry.class::getName);
+						favIconItemExternalReference.setExternalReferenceCode(
+							fileEntry::getExternalReferenceCode);
+						favIconItemExternalReference.setScope(
+							() -> ScopeUtil.getScope(
+								layout.getGroupId(), fileEntry.getGroupId()));
+
+						return favIconItemExternalReference;
 					});
 				setGlobalCSSClientExtensions(
 					() -> _getClientExtensions(
