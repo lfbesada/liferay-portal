@@ -167,8 +167,6 @@ public class FragmentInstancePageElementDefinitionDTOConverter
 			fragmentStyledLayoutStructureItem::getName);
 		fragmentInstancePageElementDefinition.setNamespace(
 			fragmentEntryLink::getNamespace);
-		fragmentInstancePageElementDefinition.setType(
-			PageElementDefinition.Type.FRAGMENT);
 		fragmentInstancePageElementDefinition.setUuid(
 			fragmentEntryLink::getUuid);
 
