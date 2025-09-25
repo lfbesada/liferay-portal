@@ -1212,10 +1212,12 @@ components:
                 -   $ref: "#/components/schemas/PageElementDefinition"
                 -   properties:
                         configuration:
+                            additionalProperties:
+                                type: object
                             # @review
                             description:
                                 The fragment instance's configuration.
-                            type: string
+                            type: object
                         css:
                             # @review
                             description:
