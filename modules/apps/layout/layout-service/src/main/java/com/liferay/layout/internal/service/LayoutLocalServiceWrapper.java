@@ -188,8 +188,6 @@ public class LayoutLocalServiceWrapper
 			String data, Layout layout, long segmentsExperienceId)
 		throws Exception {
 
-		boolean copyLayout = CopyLayoutThreadLocal.isCopyLayout();
-
 		ServiceContext currentServiceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
@@ -197,8 +195,7 @@ public class LayoutLocalServiceWrapper
 				CTCollectionThreadLocal.setCTCollectionIdWithSafeCloseable(
 					layout.getCtCollectionId())) {
 
-			CopyLayoutThreadLocal.setCopyLayout(true);
-
+			//TODO Do we need to compute the user this way?
 			User user = _getUser(0, 0, currentServiceContext);
 
 			if ((currentServiceContext == null) ||
@@ -215,9 +212,11 @@ public class LayoutLocalServiceWrapper
 			TransactionInvokerUtil.invoke(
 				_transactionConfig,
 				() -> {
-					_updateLayoutPageTemplateStructureData(
-						data, layout, segmentsExperienceId, layout,
-						segmentsExperienceId, user);
+					_layoutPageTemplateStructureLocalService.
+						updateLayoutPageTemplateStructureData(
+							user.getUserId(), layout.getGroupId(),
+							layout.getPlid(), segmentsExperienceId,
+							data);
 
 					return null;
 				});
@@ -230,8 +229,6 @@ public class LayoutLocalServiceWrapper
 			throw new Exception(throwable);
 		}
 		finally {
-			CopyLayoutThreadLocal.setCopyLayout(copyLayout);
-
 			ServiceContextThreadLocal.pushServiceContext(currentServiceContext);
 		}
 	}
