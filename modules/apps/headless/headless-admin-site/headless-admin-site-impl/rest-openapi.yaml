@@ -31,6 +31,73 @@ components:
                 justify:
                     enum: [Center, End, None, SpaceAround, SpaceBetween, Start]
                     type: string
+        CategoryConfigurationField:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationField"
+            # @review
+            description:
+                The configuration field of type category.
+            type: object
+        CategoryConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value_i18n:
+                            additionalProperties:
+                                $ref: "#/components/schemas/ItemExternalReference"
+                            # @review
+                            description:
+                                The localized value of the configuration field of type category.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type category.
+            type: object
+        CheckboxConfigurationField:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationField"
+                -   properties:
+                        typeOptions:
+                            $ref: "#/components/schemas/CheckboxConfigurationFieldTypeOptions"
+                            type: object
+            # @review
+            description:
+                The configuration field of type checkbox.
+            type: object
+        CheckboxConfigurationFieldTypeOptions:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldTypeOptions"
+                -   properties:
+                        displayType:
+                            # @review
+                            description:
+                                The display type of the type options of the configuration field checkbox (checkbox,
+                                toggle).
+                            enum: [Checkbox, Toggle]
+                            type: string
+                        type:
+                            default: Checkbox
+                            enum: [Checkbox]
+                            type: string
+            # @review
+            description:
+                The type options of a checkbox configuration field.
+            type: object
+        CheckboxConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value_i18n:
+                            additionalProperties:
+                                type: boolean
+                            # @review
+                            description:
+                                Whether the configuration field of type checkbox is checked.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type checkbox.
+            type: object
         ClassNameReference:
             allOf:
                 -   $ref: "#/components/schemas/CollectionReference"
@@ -72,6 +139,55 @@ components:
                     description:
                         The client extension's external reference code.
                     type: string
+            type: object
+        CollectionConfigurationField:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationField"
+                -   properties:
+                        typeOptions:
+                            $ref: "#/components/schemas/CollectionConfigurationFieldTypeOptions"
+                            type: object
+            # @review
+            description:
+                The configuration field of type collection.
+            type: object
+        CollectionConfigurationFieldTypeOptions:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldTypeOptions"
+                -   properties:
+                        contentTypeReference:
+                            $ref: "#/components/schemas/ClassSubtypeReference"
+                            # @review
+                            description:
+                                The content type (and optionally subtype) associated to the collection.
+                        numberOfItems:
+                            # @review
+                            description:
+                                Minimum number of items allowed in the collection.
+                            minimum: 1
+                            type: integer
+                        type:
+                            default: Collection
+                            enum: [Collection]
+                            type: string
+            # @review
+            description:
+                The type options of a collection selector configuration field.
+            type: object
+        CollectionConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value_i18n:
+                            additionalProperties:
+                                $ref: "#/components/schemas/CollectionReference"
+                            # @review
+                            description:
+                                The localized value of the configuration field of type collection.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type collection.
             type: object
         CollectionItemExternalReference:
             allOf:
@@ -233,6 +349,228 @@ components:
             required:
                 -   id
                 -   collectionViewportDefinition
+            type: object
+        ColorPaletteConfigurationField:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationField"
+            # @review
+            description:
+                The configuration field of type color pallete.
+            type: object
+        ColorPaletteConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value_i18n:
+                            additionalProperties:
+                                color:
+                                    type: string
+                                cssClass:
+                                    type: string
+                                rgbValue:
+                                    type: string
+                                type: object
+                            # @review
+                            description:
+                                The localized value of the configuration field of type color palette.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type color palette.
+            type: object
+        ColorPickerConfigurationField:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationField"
+            # @review
+            description:
+                The configuration field of type color picker.
+            type: object
+        ColorPickerConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value_i18n:
+                            additionalProperties:
+                                type: string
+                            # @review
+                            description:
+                                The localized value of the configuration field of type color picker.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type color picker.
+            type: object
+        ConfigurationDependency:
+            # @review
+            description:
+                The configuration dependency of a configuration field.
+            properties:
+                configurationFieldName:
+                    # @review
+                    description:
+                        The name of the configuration field.
+                    type: string
+                type:
+                    # @review
+                    description:
+                        The type of the configuration dependency.
+                    enum: [Equal, NotEqual]
+                    type: string
+                value:
+                    # @review
+                    description:
+                        The value to be compare with.
+                    type: string
+            required:
+                -   type
+                -   value
+            type: object
+        ConfigurationField:
+            # @review
+            description:
+                A configuration field.
+            discriminator:
+                mapping:
+                    Category: "#/components/schemas/CategoryConfigurationField"
+                    Checkbox: "#/components/schemas/CheckboxConfigurationField"
+                    Collection: "#/components/schemas/CollectionConfigurationField"
+                    ColorPalette: "#/components/schemas/ColorPaletteConfigurationField"
+                    ColorPicker: "#/components/schemas/ColorPickerConfigurationField"
+                    Item: "#/components/schemas/ItemConfigurationField"
+                    Length: "#/components/schemas/LengthConfigurationField"
+                    NavigationMenu: "#/components/schemas/NavigationMenuConfigurationField"
+                    Select: "#/components/schemas/SelectConfigurationField"
+                    Text: "#/components/schemas/TextConfigurationField"
+                    Url: "#/components/schemas/UrlConfigurationField"
+                    Video: "#/components/schemas/VideoConfigurationField"
+                propertyName: type
+            properties:
+                dataType:
+                    # @review
+                    description:
+                        The configuration field's data type (array, double, int, object, string).
+                    enum: [Array, Double, Int, Object, String]
+                    type: string
+                defaultValue:
+                    anyOf:
+                        -   type: array
+                        -   type: boolean
+                        -   type: object
+                        -   type: string
+                    # @review
+                    description:
+                        The default value of the configuration field.
+                description:
+                    # @review
+                    description:
+                        The description of the configuration field.
+                    type: string
+                label:
+                    # @review
+                    description:
+                        The display label of the configuration field.
+                    type: string
+                localizable:
+                    # @review
+                    description:
+                        Whether the configuration field value can be localized.
+                    type: boolean
+                name:
+                    # @review
+                    description:
+                        The name of the configuration field.
+                    type: string
+                type:
+                    # @review
+                    description:
+                        The configuration field's type (checkbox, collection, colorPalette, colorPicker, item, length,
+                        select, text).
+                    enum: [Checkbox, Collection, ColorPalette, ColorPicker, Item, Length, Select, Text]
+                    type: string
+            required:
+                -   name
+                -   type
+            type: object
+        ConfigurationFieldSet:
+            # @review
+            description:
+                A configuration field set.
+            properties:
+                configurationFields:
+                    # @review
+                    description:
+                        The list of the configuration fields.
+                    items:
+                        $ref: "#/components/schemas/ConfigurationField"
+                    type: array
+                configurationRole:
+                    # @review
+                    description:
+                        The configuration field set's role (advanced, styling).
+                    enum: [Advanced, Styling]
+                    type: string
+                label:
+                    # @review
+                    description:
+                        The display label of the configuration field set.
+                    type: string
+            required:
+                -   configurationFields
+            type: object
+        ConfigurationFieldTypeOptions:
+            # @review
+            description:
+                The type options of a configuration field.
+            discriminator:
+                mapping:
+                    Checkbox: "#/components/schemas/CheckboxConfigurationFieldTypeOptions"
+                    Collection: "#/components/schemas/CollectionConfigurationFieldTypeOptions"
+                    Item: "#/components/schemas/ItemConfigurationFieldTypeOptions"
+                    Length: "#/components/schemas/LengthConfigurationFieldTypeOptions"
+                    Select: "#/components/schemas/SelectConfigurationFieldTypeOptions"
+                    Text: "#/components/schemas/TextConfigurationFieldTypeOptions"
+                propertyName: type
+            properties:
+                dependency:
+                    $ref: "#/components/schemas/ConfigurationDependency"
+                    type: object
+            type: object
+        ConfigurationFieldValue:
+            # @review
+            description:
+                The value of a configuration field.
+            discriminator:
+                mapping:
+                    Category: "#/components/schemas/CategoryConfigurationFieldValue"
+                    Checkbox: "#/components/schemas/CheckboxConfigurationFieldValue"
+                    Collection: "#/components/schemas/CollectionConfigurationFieldValue"
+                    ColorPalette: "#/components/schemas/ColorPaletteConfigurationFieldValue"
+                    ColorPicker: "#/components/schemas/ColorPickerConfigurationFieldValue"
+                    Item: "#/components/schemas/ItemConfigurationFieldValue"
+                    Length: "#/components/schemas/LengthConfigurationFieldValue"
+                    NavigationMenu: "#/components/schemas/NavigationMenuConfigurationFieldValue"
+                    Select: "#/components/schemas/SelectConfigurationFieldValue"
+                    Text: "#/components/schemas/TextConfigurationFieldValue"
+                    Url: "#/components/schemas/UrlConfigurationFieldValue"
+                    Video: "#/components/schemas/VideoConfigurationFieldValue"
+                propertyName: type
+            properties:
+                name:
+                    # @review
+                    description:
+                        The name of the configuration field.
+                    type: string
+                type:
+                  # @review
+                  description:
+                    The configuration field's type (checkbox, collection, colorPalette, colorPicker, item, length,
+                    select, text).
+                  enum: [Checkbox, Collection, ColorPalette, ColorPicker, Item, Length, Select, Text]
+                  type: string
+            required:
+                -   name
+                -   type
+                -   value_i18n
             type: object
         ContainerPageElementDefinition:
             allOf:
@@ -1114,15 +1452,29 @@ components:
                         The localized fragment's inline values.
                     type: object
             type: object
+        FragmentInstanceConfiguration:
+            # @review
+            description:
+                A fragment instance's configuration.
+            properties:
+                configurationFieldSets:
+                    # @review
+                    description:
+                        A list of the configuration field sets of the fragment instance's configuration.
+                    items:
+                        $ref: "#/components/schemas/ConfigurationFieldSet"
+                    type: array
+            type: object
         FragmentInstancePageElementDefinition:
             allOf:
                 -   $ref: "#/components/schemas/PageElementDefinition"
                 -   properties:
                         configuration:
+                            $ref: "#/components/schemas/FragmentInstanceConfiguration"
                             # @review
                             description:
                                 The fragment instance's configuration.
-                            type: string
+                            type: object
                         css:
                             # @review
                             description:
@@ -1159,12 +1511,12 @@ components:
                                 page. Available only in the published page specification.
                             type: string
                         fragmentConfig:
-                            additionalProperties:
-                                type: object
                             # @review
                             description:
                                 The configuration values of the fragment instance.
-                            type: object
+                            items:
+                                $ref: "#/components/schemas/ConfigurationFieldValue"
+                            type: array
                         fragmentFields:
                             # @review
                             description:
@@ -1833,6 +2185,67 @@ components:
                     enum: [Article, Aside, Div, Footer, Header, Nav, Section]
                     type: string
             type: object
+        ItemConfigurationField:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationField"
+                -   properties:
+                        typeOptions:
+                            $ref: "#/components/schemas/ItemConfigurationFieldTypeOptions"
+                            type: object
+            # @review
+            description:
+                The configuration field of type item.
+            type: object
+        ItemConfigurationFieldTypeOptions:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldTypeOptions"
+                -   properties:
+                        contentTypeReference:
+                            $ref: "#/components/schemas/ClassSubtypeReference"
+                            # @review
+                            description:
+                                The content type (and optionally subtype) associated to the collection.
+                        enableSelectTemplate:
+                            # @review
+                            description:
+                                Whether template selection is enabled.
+                            type: boolean
+                        mimeTypes:
+                            # @review
+                            description:
+                                Allowed MIME types for selection.
+                            items:
+                                type: string
+                            type: array
+                        type:
+                            default: Item
+                            enum: [Item]
+                            type: string
+            # @review
+            description:
+                The type options of a item selector configuration field.
+            type: object
+        ItemConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value_i18n:
+                            additionalProperties:
+                                item:
+                                    $ref: "#/components/schemas/ItemExternalReference"
+                                    type: object
+                                template:
+                                    $ref: "#/components/schemas/TemplateReference"
+                                    type: object
+                                type: object
+                            # @review
+                            description:
+                                The localized value of the configuration field of type item.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type item.
+            type: object
         ItemExternalReference:
             # @review
             description:
@@ -1868,6 +2281,44 @@ components:
                                 The width's type (fixed or fluid).
                             enum: [Fixed, Fluid]
                             type: string
+        LengthConfigurationField:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationField"
+                -   properties:
+                        typeOptions:
+                            $ref: "#/components/schemas/LengthConfigurationFieldTypeOptions"
+                            type: object
+            # @review
+            description:
+                The configuration field of type length.
+            type: object
+        LengthConfigurationFieldTypeOptions:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldTypeOptions"
+                -   properties:
+                        type:
+                            default: Length
+                            enum: [Length]
+                            type: string
+            # @review
+            description:
+                The type options of a length configuration field.
+            type: object
+        LengthConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value_i18n:
+                            additionalProperties:
+                                type: string
+                            # @review
+                            description:
+                                The localized value of the configuration field of type length.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type length.
+            type: object
         MasterPage:
             # @review
             description:
@@ -2087,98 +2538,127 @@ components:
                     format: int64
                     readOnly: true
                     type: integer
-        NavigationMenuItem:
+        NavigationMenuConfigurationField:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationField"
             # @review
             description:
-                Represents a navigation menu item.
-            properties:
-                availableLanguages:
-                    # @review
-                    description:
-                        The list of languages the navigation menu item has a translation for.
-                    items:
-                        type: string
-                    readOnly: true
-                    type: array
-                creator:
-                    $ref: ../../headless-admin-user/headless-admin-user-impl/rest-openapi.yaml#Creator
-                    # @review
-                    description:
-                        The navigation menu item's creator. It is not returned by default. It can be embedded via
-                        nestedFields.
-                    readOnly: true
-                customFields:
-                    # @review
-                    description:
-                        A list of the custom fields associated with the navigation menu item.
-                    items:
-                        type: customField
-                    type: array
-                dateCreated:
-                    # @review
-                    description:
-                        The navigation menu item's creation date.
-                    format: date-time
-                    readOnly: true
-                    type: string
-                dateModified:
-                    # @review
-                    description:
-                        The last time the navigation menu item changed.
-                    format: date-time
-                    readOnly: true
-                    type: string
-                externalReferenceCode:
-                    description:
-                        The navigation menu item's external reference code.
-                    type: string
-                id:
-                    # @review
-                    description:
-                        The navigation menu item's ID.
-                    format: int64
-                    type: integer
-                name:
-                    # @review
-                    description:
-                        The navigation menu item's name.
-                    type: string
-                name_i18n:
-                    additionalProperties:
-                        type: string
-                    # @review
-                    description:
-                        The localized navigation menu item's names.
-                    type: object
-                navigationMenuItems:
-                    # @review
-                    description:
-                        The navigation menu items this navigation menu item has.
-                    items:
-                        $ref: "#/components/schemas/NavigationMenuItem"
-                    type: array
-                parentNavigationMenuId:
-                    # @review
-                    description:
-                        The ID of the navigation menu item's parent.
-                    format: int64
-                    readOnly: true
-                    type: integer
-                type:
-                    # @review
-                    description:
-                        The navigation menu item's type.
-                    type: string
-                typeSettings:
-                    additionalProperties:
-                        type: string
-                    description:
-                        The navigation menu item's type settings.
-                    type: object
-                useCustomName:
-                    type: boolean
-            required:
-                -   typeSettings
+                The configuration field of type navigation menu.
+            type: object        
+        NavigationMenuConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value_i18n:
+                            additionalProperties:
+                                navigationMenu:
+                                    $ref: "#/components/schemas/ItemExternalReference"
+                                    type: object
+                                parentItemExternalReferenceCode:
+                                    type: string
+                                privateLayout:
+                                    type: boolean
+                                type: object
+                            # @review
+                            description:
+                                The localized value of the configuration field of type navigation menu.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type navigation menu.
+            type: object
+        NavigationMenuItem:
+          # @review
+          description:
+            Represents a navigation menu item.
+          properties:
+            availableLanguages:
+              # @review
+              description:
+                The list of languages the navigation menu item has a translation for.
+              items:
+                type: string
+              readOnly: true
+              type: array
+            creator:
+              $ref: ../../headless-admin-user/headless-admin-user-impl/rest-openapi.yaml#Creator
+              # @review
+              description:
+                The navigation menu item's creator. It is not returned by default. It can be embedded via
+                nestedFields.
+              readOnly: true
+            customFields:
+              # @review
+              description:
+                A list of the custom fields associated with the navigation menu item.
+              items:
+                type: customField
+              type: array
+            dateCreated:
+              # @review
+              description:
+                The navigation menu item's creation date.
+              format: date-time
+              readOnly: true
+              type: string
+            dateModified:
+              # @review
+              description:
+                The last time the navigation menu item changed.
+              format: date-time
+              readOnly: true
+              type: string
+            externalReferenceCode:
+              description:
+                The navigation menu item's external reference code.
+              type: string
+            id:
+              # @review
+              description:
+                The navigation menu item's ID.
+              format: int64
+              type: integer
+            name:
+              # @review
+              description:
+                The navigation menu item's name.
+              type: string
+            name_i18n:
+              additionalProperties:
+                type: string
+              # @review
+              description:
+                The localized navigation menu item's names.
+              type: object
+            navigationMenuItems:
+              # @review
+              description:
+                The navigation menu items this navigation menu item has.
+              items:
+                $ref: "#/components/schemas/NavigationMenuItem"
+              type: array
+            parentNavigationMenuId:
+              # @review
+              description:
+                The ID of the navigation menu item's parent.
+              format: int64
+              readOnly: true
+              type: integer
+            type:
+              # @review
+              description:
+                The navigation menu item's type.
+              type: string
+            typeSettings:
+              additionalProperties:
+                type: string
+              description:
+                The navigation menu item's type settings.
+              type: object
+            useCustomName:
+              type: boolean
+          required:
+            -   typeSettings
         NavigationSettings:
             # @review
             description:
@@ -2222,6 +2702,24 @@ components:
                     # @review
                     description:
                         The localized text to display when an action is executed.
+            type: object
+        NumberValidationRule:
+            allOf:
+                -   $ref: "#/components/schemas/ValidationRule"
+                -   properties:
+                        max:
+                            # @review
+                            description:
+                                The maximum number allowed for the input field.
+                            type: number
+                        min:
+                            # @review
+                            description:
+                                The maximum number allowed for the input field.
+                            type: number
+            # @review
+            description:
+                The number validation rule.
             type: object
         OpenGraphSettings:
             # @review
@@ -2734,6 +3232,37 @@ components:
                         -   WidgetPageTemplateSettings
                     type: string
             type: object
+        PatternValidationRule:
+            allOf:
+                -   $ref: "#/components/schemas/ValidationRule"
+                -   properties:
+                        regexp:
+                            # @review
+                            description:
+                                The regular expression for the input field.
+                            type: string
+            # @review
+            description:
+                The regexp validation rule.
+            required:
+                -   regexp
+            type: object
+        RendererClassNameTemplateReference:
+            allOf:
+                -   $ref: "#/components/schemas/TemplateReference"
+                -   properties:
+                        className:
+                            type: string
+                        type:
+                            default: Renderer
+                            enum: [Renderer]
+                            type: string
+            # @review
+            description:
+                A reference specifying the renderer class name.
+            required:
+                -   className
+            type: object
         SEOSettings:
             # @review
             description:
@@ -2779,6 +3308,68 @@ components:
                     # @review
                     description:
                         Represents settings related with the site map.
+            type: object
+        SelectConfigurationField:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationField"
+                -   properties:
+                        typeOptions:
+                            $ref: "#/components/schemas/SelectConfigurationFieldTypeOptions"
+                            type: object
+            # @review
+            description:
+                The configuration field of type select.
+            type: object
+        SelectConfigurationFieldTypeOptions:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldTypeOptions"
+                -   properties:
+                        options:
+                            # @review
+                            description:
+                                List of possible option for the select.
+                            items:
+                                additionalProperties: false
+                                properties:
+                                    label:
+                                        # @review
+                                        description:
+                                            Display label for the option.
+                                        type: string
+                                    value:
+                                        # @review
+                                        description:
+                                            Value to be stored when this option is selected.
+                                        type: string
+                                required:
+                                    -   value
+                                type: object
+                            minItems: 1
+                            type: array
+                        type:
+                            default: Select
+                            enum: [Select]
+                            type: string
+            # @review
+            description:
+                The type options of a select configuration field.
+            required:
+                -   validValues
+            type: object                    
+        SelectConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value_i18n:
+                            additionalProperties:
+                                type: string
+                            # @review
+                            description:
+                                The localized value of the configuration field of type select.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type select.
             type: object
         Settings:
             # @review
@@ -3101,6 +3692,107 @@ components:
                     minimum: 0
                     type: number
             type: object
+        TemplateItemExternalReference:
+            allOf:
+                -   $ref: "#/components/schemas/TemplateReference"
+                -   $ref: "#/components/schemas/ItemExternalReference"
+                -   properties:
+                        type:
+                            default: Template
+                            enum: [Template]
+                            type: string
+            # @review
+            description:
+                A unique reference to a template which remains constant across environments.
+            type: object
+        TemplateReference:
+            # @review
+            description:
+                The template's reference.
+            discriminator:
+                mapping:
+                    Renderer: "#/components/schemas/RendererClassNameTemplateReference"
+                    Template: "#/components/schemas/TemplateItemExternalReference"
+                propertyName: type
+            type: object
+        TextConfigurationField:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationField"
+                -   properties:
+                        typeOptions:
+                            $ref: "#/components/schemas/SelectConfigurationFieldTypeOptions"
+                            type: object
+            # @review
+            description:
+                The configuration field of type select.
+            type: object
+        TextConfigurationFieldTypeOptions:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldTypeOptions"
+                -   properties:
+                        placeholder:
+                            # @review
+                            description:
+                                The placeholder for the input text configuration field.
+                            type: string
+                        type:
+                            default: Text
+                            enum: [Text]
+                            type: string
+                        validationRule:
+                            $ref: "#/components/schemas/ValidationRule"
+                            type: object
+            # @review
+            description:
+                The type options of a text configuration field.
+            type: object                           
+        TextConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value_i18n:
+                            additionalProperties:
+                                type: string
+                            # @review
+                            description:
+                                The localized value of the configuration field of type navigation menu.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type text.
+            type: object
+        TextValidationRule:
+            allOf:
+                -   $ref: "#/components/schemas/ValidationRule"
+                -   properties:
+                        maxLength:
+                            # @review
+                            description:
+                                The maximum length allowed for the input field.
+                            type: number
+                        minLength:
+                            # @review
+                            description:
+                                The maximum length allowed for the input field.
+                            type: number
+            # @review
+            description:
+                The text validation rule.
+            type: object
+        EmailValidationRule:
+            allOf:
+                -   $ref: "#/components/schemas/TextValidationRule"
+            # @review
+            description:
+                The email validation rule.
+            type: object
+        UrlValidationRule:
+            allOf:
+                -   $ref: "#/components/schemas/TextValidationRule"
+            # @review
+            description:
+                The url validation rule.
+            type: object
         URLActionExecutionResult:
             # @review
             description:
@@ -3122,6 +3814,33 @@ components:
                     # @review
                     description:
                         The localized submission of URL type.
+            type: object
+        UrlConfigurationField:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationField"
+            # @review
+            description:
+                The configuration field of type url.
+            type: object                                  
+        UrlConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value_i18n:
+                            additionalProperties:
+                                href:
+                                    type: string
+                                layout:
+                                    $ref: "#/components/schemas/ItemExternalReference"
+                                    type: object
+                                type: object
+                            # @review
+                            description:
+                                The localized value of the configuration field of type url.
+                            type: object                            
+            # @review
+            description:
+                The value of a configuration field of type url.
             type: object
         UtilityPage:
             description:
@@ -3243,6 +3962,59 @@ components:
                     # @review
                     description:
                         The utility page's SEO settings.
+            type: object
+        ValidationRule:
+            # @review
+            description:
+                The validation rules.
+            discriminator:
+                mapping:
+                    Email: "#/components/schemas/EmailValidationRule"
+                    Number: "#/components/schemas/NumberValidationRule"
+                    Pattern: "#/components/schemas/PatternValidationRule"
+                    Text: "#/components/schemas/TextValidationRule"
+                    Url: "#/components/schemas/UrlValidationRule"
+                propertyName: type
+            properties:
+                errorMessage:
+                    # @review
+                    description:
+                        The error message for the validation rule.
+                    type: string
+                type:
+                    # @review
+                    description:
+                        The type of the validation rule (email, number, pattern, text, url).
+                    enum: [Email, Number, Pattern, Text, Url]
+                    type: string
+            required:
+                -   type
+            type: object
+        VideoConfigurationField:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationField"
+            # @review
+            description:
+                The configuration field of type video.
+            type: object                                 
+        VideoConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value_i18n:
+                            additionalProperties:
+                                html:
+                                    type: string
+                                title:
+                                    type: string
+                                type: object
+                            # @review
+                            description:
+                                The localized value of the configuration field of type video.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type video.
             type: object
         WidgetInstance:
             # @review
