@@ -23,7 +23,7 @@ import java.util.Objects;
 public class CollectionUtil {
 
 	public static CollectionReference getCollectionReference(
-		JSONObject jsonObject) {
+		long companyId, JSONObject jsonObject, long scopeGroupId) {
 
 		if (jsonObject == null) {
 			return null;
@@ -42,7 +42,19 @@ public class CollectionUtil {
 				AssetListEntryLocalServiceUtil.fetchAssetListEntry(
 					jsonObject.getLong("classPK"));
 
-			if (assetListEntry == null) {
+			if (assetListEntry != null) {
+				return new CollectionItemExternalReference() {
+					{
+						setCollectionType(CollectionType.COLLECTION);
+						setExternalReferenceCode(
+							assetListEntry::getExternalReferenceCode);
+					}
+				};
+			}
+
+			if (Validator.isNull(
+					jsonObject.getString("externalReferenceCode"))) {
+
 				return null;
 			}
 
@@ -50,7 +62,12 @@ public class CollectionUtil {
 				{
 					setCollectionType(CollectionType.COLLECTION);
 					setExternalReferenceCode(
-						assetListEntry::getExternalReferenceCode);
+						() -> jsonObject.getString("externalReferenceCode"));
+					setScope(
+						() -> ItemScopeUtil.getItemScope(
+							companyId,
+							jsonObject.getString("scopeExternalReferenceCode"),
+							scopeGroupId));
 				}
 			};
 		}

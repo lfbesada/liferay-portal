@@ -43,12 +43,22 @@ public class CollectionPageElementDefinitionDTOConverter
 				collectionStyledLayoutStructureItem)
 		throws Exception {
 
+		Long companyId = (Long)dtoConverterContext.getAttribute("companyId");
+		Long scopeGroupId = (Long)dtoConverterContext.getAttribute(
+			"scopeGroupId");
+
+		if ((companyId == null) || (scopeGroupId == null)) {
+			throw new UnsupportedOperationException();
+		}
+
 		return new CollectionPageElementDefinition() {
 			{
 				setCollectionReference(
 					() -> CollectionUtil.getCollectionReference(
+						companyId,
 						collectionStyledLayoutStructureItem.
-							getCollectionJSONObject()));
+							getCollectionJSONObject(),
+						scopeGroupId));
 				setDisplayAllItems(
 					collectionStyledLayoutStructureItem::isDisplayAllItems);
 				setDisplayAllPages(
