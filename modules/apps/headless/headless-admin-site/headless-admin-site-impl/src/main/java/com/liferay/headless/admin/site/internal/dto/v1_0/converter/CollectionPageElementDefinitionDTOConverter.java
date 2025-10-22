@@ -5,30 +5,20 @@
 
 package com.liferay.headless.admin.site.internal.dto.v1_0.converter;
 
-import com.liferay.asset.list.model.AssetListEntry;
-import com.liferay.asset.list.service.AssetListEntryLocalService;
-import com.liferay.headless.admin.site.dto.v1_0.ClassNameReference;
-import com.liferay.headless.admin.site.dto.v1_0.CollectionItemExternalReference;
 import com.liferay.headless.admin.site.dto.v1_0.CollectionPageElementDefinition;
-import com.liferay.headless.admin.site.dto.v1_0.CollectionReference;
 import com.liferay.headless.admin.site.dto.v1_0.EmptyCollectionConfig;
 import com.liferay.headless.admin.site.dto.v1_0.PageElementDefinition;
-import com.liferay.info.list.provider.item.selector.criterion.InfoListProviderItemSelectorReturnType;
-import com.liferay.item.selector.criteria.InfoListItemSelectorReturnType;
+import com.liferay.headless.admin.site.internal.dto.v1_0.util.CollectionUtil;
 import com.liferay.layout.util.CollectionPaginationUtil;
 import com.liferay.layout.util.structure.CollectionStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.collection.EmptyCollectionOptions;
-import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 
 import java.util.Map;
-import java.util.Objects;
 
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Eudaldo Alonso
@@ -56,8 +46,9 @@ public class CollectionPageElementDefinitionDTOConverter
 		return new CollectionPageElementDefinition() {
 			{
 				setCollectionReference(
-					() -> _toCollectionReference(
-						collectionStyledLayoutStructureItem));
+					() -> CollectionUtil.getCollectionReference(
+						collectionStyledLayoutStructureItem.
+							getCollectionJSONObject()));
 				setDisplayAllItems(
 					collectionStyledLayoutStructureItem::isDisplayAllItems);
 				setDisplayAllPages(
@@ -87,57 +78,6 @@ public class CollectionPageElementDefinitionDTOConverter
 				setType(PageElementDefinition.Type.COLLECTION);
 			}
 		};
-	}
-
-	private CollectionReference _toCollectionReference(
-		CollectionStyledLayoutStructureItem
-			collectionStyledLayoutStructureItem) {
-
-		JSONObject jsonObject =
-			collectionStyledLayoutStructureItem.getCollectionJSONObject();
-
-		if (jsonObject == null) {
-			return null;
-		}
-
-		String type = jsonObject.getString("type");
-
-		if (Validator.isNull(type)) {
-			return null;
-		}
-
-		if (Objects.equals(
-				type, InfoListItemSelectorReturnType.class.getName())) {
-
-			AssetListEntry assetListEntry =
-				_assetListEntryLocalService.fetchAssetListEntry(
-					jsonObject.getLong("classPK"));
-
-			if (assetListEntry == null) {
-				return null;
-			}
-
-			return new CollectionItemExternalReference() {
-				{
-					setCollectionType(CollectionType.COLLECTION);
-					setExternalReferenceCode(
-						assetListEntry::getExternalReferenceCode);
-				}
-			};
-		}
-		else if (Objects.equals(
-					type,
-					InfoListProviderItemSelectorReturnType.class.getName())) {
-
-			return new ClassNameReference() {
-				{
-					setClassName(() -> jsonObject.getString("key"));
-					setCollectionType(CollectionType.COLLECTION_PROVIDER);
-				}
-			};
-		}
-
-		return null;
 	}
 
 	private EmptyCollectionConfig _toEmptyCollectionOption(
@@ -174,8 +114,5 @@ public class CollectionPageElementDefinitionDTOConverter
 				CollectionPaginationUtil.PAGINATION_TYPE_SIMPLE,
 				CollectionPageElementDefinition.PaginationType.SIMPLE
 			).build();
-
-	@Reference
-	private AssetListEntryLocalService _assetListEntryLocalService;
 
 }
