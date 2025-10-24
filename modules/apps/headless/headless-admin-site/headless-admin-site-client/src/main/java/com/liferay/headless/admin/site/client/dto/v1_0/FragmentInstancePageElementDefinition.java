@@ -179,16 +179,18 @@ public class FragmentInstancePageElementDefinition
 
 	protected String draftFragmentInstanceExternalReferenceCode;
 
-	public Map<String, Object> getFragmentConfig() {
+	public Map<String, ConfigurationFieldValue> getFragmentConfig() {
 		return fragmentConfig;
 	}
 
-	public void setFragmentConfig(Map<String, Object> fragmentConfig) {
+	public void setFragmentConfig(
+		Map<String, ConfigurationFieldValue> fragmentConfig) {
+
 		this.fragmentConfig = fragmentConfig;
 	}
 
 	public void setFragmentConfig(
-		UnsafeSupplier<Map<String, Object>, Exception>
+		UnsafeSupplier<Map<String, ConfigurationFieldValue>, Exception>
 			fragmentConfigUnsafeSupplier) {
 
 		try {
@@ -199,7 +201,7 @@ public class FragmentInstancePageElementDefinition
 		}
 	}
 
-	protected Map<String, Object> fragmentConfig;
+	protected Map<String, ConfigurationFieldValue> fragmentConfig;
 
 	public FragmentField[] getFragmentFields() {
 		return fragmentFields;
