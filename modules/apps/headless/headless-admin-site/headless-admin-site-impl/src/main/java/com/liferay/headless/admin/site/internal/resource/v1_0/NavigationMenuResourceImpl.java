@@ -594,7 +594,7 @@ public class NavigationMenuResourceImpl extends BaseNavigationMenuResourceImpl {
 		UnicodeProperties unicodeProperties = _getUnicodeProperties(
 			siteNavigationMenuItem);
 
-		String navigationMenuItemType = _toType(
+		final String navigationMenuItemType = _toType(
 			siteNavigationMenuItem.getType());
 
 		return new NavigationMenuItem() {
