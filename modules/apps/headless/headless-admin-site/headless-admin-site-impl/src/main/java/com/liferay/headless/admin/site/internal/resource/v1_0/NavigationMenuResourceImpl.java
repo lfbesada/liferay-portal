@@ -351,18 +351,6 @@ public class NavigationMenuResourceImpl extends BaseNavigationMenuResourceImpl {
 		}
 	}
 
-	private void _deleteNavigationMenuItems(
-			List<SiteNavigationMenuItem> siteNavigationMenuItems)
-		throws Exception {
-
-		for (SiteNavigationMenuItem siteNavigationMenuItem :
-				siteNavigationMenuItems) {
-
-			_siteNavigationMenuItemService.deleteSiteNavigationMenuItem(
-				siteNavigationMenuItem.getSiteNavigationMenuItemId(), true);
-		}
-	}
-
 	private Layout _getLayout(SiteNavigationMenuItem siteNavigationMenuItem) {
 		UnicodeProperties unicodeProperties = _getUnicodeProperties(
 			siteNavigationMenuItem);
@@ -756,61 +744,66 @@ public class NavigationMenuResourceImpl extends BaseNavigationMenuResourceImpl {
 			_siteNavigationMenuItemService.getSiteNavigationMenuItems(
 				siteNavigationMenuId, parentSiteNavigationMenuItemId));
 
-		if (navigationMenuItems == null) {
-			_deleteNavigationMenuItems(siteNavigationMenuItems);
+		if (navigationMenuItems != null) {
+			for (NavigationMenuItem navigationMenuItem : navigationMenuItems) {
+				Long navigationMenuItemId = navigationMenuItem.getId();
 
-			return;
-		}
+				SiteNavigationMenuItem siteNavigationMenuItem = null;
 
-		for (NavigationMenuItem navigationMenuItem : navigationMenuItems) {
-			Long navigationMenuItemId = navigationMenuItem.getId();
+				for (SiteNavigationMenuItem curSiteNavigationMenuItem :
+						siteNavigationMenuItems) {
 
-			SiteNavigationMenuItem siteNavigationMenuItem = null;
+					if (Objects.equals(
+							navigationMenuItemId,
+							curSiteNavigationMenuItem.
+								getSiteNavigationMenuItemId())) {
 
-			for (SiteNavigationMenuItem curSiteNavigationMenuItem :
-					siteNavigationMenuItems) {
+						siteNavigationMenuItem = curSiteNavigationMenuItem;
 
-				if (Objects.equals(
-						navigationMenuItemId,
-						curSiteNavigationMenuItem.
-							getSiteNavigationMenuItemId())) {
+						break;
+					}
+				}
 
-					siteNavigationMenuItem = curSiteNavigationMenuItem;
+				if (siteNavigationMenuItem != null) {
+					SiteNavigationMenuItem updatedSiteNavigationMenuItem =
+						_siteNavigationMenuItemService.
+							updateSiteNavigationMenuItem(
+								navigationMenuItemId,
+								String.valueOf(
+									navigationMenuItem.getTypeSettings()),
+								ServiceContextBuilder.create(
+									siteId, contextHttpServletRequest, null
+								).expandoBridgeAttributes(
+									CustomFieldsUtil.toMap(
+										SiteNavigationMenuItem.class.getName(),
+										contextCompany.getCompanyId(),
+										navigationMenuItem.getCustomFields(),
+										contextAcceptLanguage.
+											getPreferredLocale())
+								).build());
 
-					break;
+					_updateNavigationMenuItems(
+						navigationMenuItem.getNavigationMenuItems(),
+						updatedSiteNavigationMenuItem.
+							getSiteNavigationMenuItemId(),
+						siteId, siteNavigationMenuId);
+
+					siteNavigationMenuItems.remove(siteNavigationMenuItem);
+				}
+				else {
+					_createNavigationMenuItem(
+						navigationMenuItem, parentSiteNavigationMenuItemId,
+						siteId, siteNavigationMenuId);
 				}
 			}
-
-			if (siteNavigationMenuItem != null) {
-				SiteNavigationMenuItem updatedSiteNavigationMenuItem =
-					_siteNavigationMenuItemService.updateSiteNavigationMenuItem(
-						navigationMenuItemId,
-						String.valueOf(navigationMenuItem.getTypeSettings()),
-						ServiceContextBuilder.create(
-							siteId, contextHttpServletRequest, null
-						).expandoBridgeAttributes(
-							CustomFieldsUtil.toMap(
-								SiteNavigationMenuItem.class.getName(),
-								contextCompany.getCompanyId(),
-								navigationMenuItem.getCustomFields(),
-								contextAcceptLanguage.getPreferredLocale())
-						).build());
-
-				_updateNavigationMenuItems(
-					navigationMenuItem.getNavigationMenuItems(),
-					updatedSiteNavigationMenuItem.getSiteNavigationMenuItemId(),
-					siteId, siteNavigationMenuId);
-
-				siteNavigationMenuItems.remove(siteNavigationMenuItem);
-			}
-			else {
-				_createNavigationMenuItem(
-					navigationMenuItem, parentSiteNavigationMenuItemId, siteId,
-					siteNavigationMenuId);
-			}
 		}
 
-		_deleteNavigationMenuItems(siteNavigationMenuItems);
+		for (SiteNavigationMenuItem siteNavigationMenuItem :
+				siteNavigationMenuItems) {
+
+			_siteNavigationMenuItemService.deleteSiteNavigationMenuItem(
+				siteNavigationMenuItem.getSiteNavigationMenuItemId(), true);
+		}
 	}
 
 	private static final EntityModel _entityModel =
