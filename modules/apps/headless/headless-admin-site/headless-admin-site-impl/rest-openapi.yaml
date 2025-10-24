@@ -3624,12 +3624,13 @@ components:
                 -   $ref: "#/components/schemas/ConfigurationFieldValue"
                 -   properties:
                         value:
+                            $ref: "#/components/schemas/VideoValue"
+                            # @review
                             description:
                                 The value of the configuration field of type video.
-                            type: object
                         value_i18n:
                             additionalProperties:
-                                type: object
+                                $ref: "#/components/schemas/VideoValue"
                             # @review
                             description:
                                 The localized value of the configuration field of type video.
@@ -3637,6 +3638,16 @@ components:
             # @review
             description:
                 The value of a configuration field of type video.
+            type: object
+        VideoValue:
+            # @review
+            description:
+                A value of a field of type video.
+            properties:
+                html:
+                    type: string
+                title:
+                    type: string
             type: object
         WidgetInstance:
             # @review
