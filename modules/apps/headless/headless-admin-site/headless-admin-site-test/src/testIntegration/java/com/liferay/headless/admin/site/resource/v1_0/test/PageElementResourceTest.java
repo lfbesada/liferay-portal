@@ -515,93 +515,52 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 				new WidgetPermission[0]));
 
 		_testPutSitePageSpecificationPageExperiencePageElementWithFragmentInstancePageElement(
-			"BASIC_COMPONENT-heading", HashMapBuilder.<String, Object>put(
-						"headingLevel", "h1"
-					).build(), HashMapBuilder.<String, Object>put(
-						"headingLevel", "h2"
-					).build(), Collections.emptyMap(), HashMapBuilder.<String, Object>put(
-						"headingLevel", "h6"
-					).build());
+			"BASIC_COMPONENT-heading",
+			HashMapBuilder.<String, Object>put(
+				"headingLevel", "h1"
+			).build(),
+			HashMapBuilder.<String, Object>put(
+				"headingLevel", "h2"
+			).build(),
+			Collections.emptyMap(),
+			HashMapBuilder.<String, Object>put(
+				"headingLevel", "h6"
+			).build());
 
 		DDMTemplate ddmTemplate = DDMTemplateTestUtil.addTemplate(
-			journalArticle.getDDMStructureId(), _portal.getClassNameId(JournalArticle.class.getName()));
+			journalArticle.getDDMStructureId(),
+			_portal.getClassNameId(JournalArticle.class.getName()));
 
 		_testPutSitePageSpecificationPageExperiencePageElementWithFragmentInstancePageElement(
-			"com.liferay.fragment.internal.renderer.ContentObjectFragmentRenderer",
-			_getItemSelectorMap("com.liferay.journal.web.internal.info.item.renderer.JournalArticleTitleInfoItemRenderer", journalArticle, null),
+			"com.liferay.fragment.internal.renderer." +
+				"ContentObjectFragmentRenderer",
+			_getItemSelectorMap(
+				"com.liferay.journal.web.internal.info.item.renderer." +
+					"JournalArticleTitleInfoItemRenderer",
+				journalArticle, null),
 			Collections.emptyMap(),
-			_getItemSelectorMap("com.liferay.document.library.web.internal.info.item.renderer.FileEntryTitleInfoItemRenderer", fileEntry, null),
-		_getItemSelectorMap(null, journalArticle, ddmTemplate.getTemplateKey()));
+			_getItemSelectorMap(
+				"com.liferay.document.library.web.internal.info.item.renderer." +
+					"FileEntryTitleInfoItemRenderer",
+				fileEntry, null),
+			_getItemSelectorMap(
+				null, journalArticle, ddmTemplate.getTemplateKey()));
 	}
 
-	@Inject
-	private Portal _portal;
-	@Inject
-	private JSONFactory _jsonFactory;
-	@Inject
-	private FragmentRendererRegistry _fragmentRendererRegistry;
-	@Inject
-	private FragmentCollectionContributorRegistry
-		_fragmentCollectionContributorRegistry;
+	@Override
+	protected void assertEquals(
+		PageElement pageElement1, PageElement pageElement2) {
 
-	private Map<String, Object> _getItemSelectorMap(String infoItemRendererKey, Object object, String templateKey) {
-		return HashMapBuilder.<String, Object>put(
-			"itemSelector", HashMapBuilder.<String, Object>put(
-				"item", object
-			).put(
-				"infoItemRendererKey",infoItemRendererKey
-			).put(
-				"templateKey",templateKey
-			).build()).build();
-	}
+		ObjectMapper objectMapper = getClientSerDesObjectMapper();
 
-	private void _testPutSitePageSpecificationPageExperiencePageElementWithFragmentInstancePageElement(
-		String fragmentEntryKey,  Map<String, Object>... objectsMaps
-	)
-		throws Exception {
-
-		String externalReferenceCode = RandomTestUtil.randomString();
-
-		FragmentEntry fragmentEntry =
-			_fragmentCollectionContributorRegistry.
-				getFragmentEntry(fragmentEntryKey);
-
-
-		JSONObject configurationJSONObject = null;
-		FragmentRenderer fragmentRenderer = null;
-
-		if (fragmentEntry == null) {
-			fragmentRenderer =
-				_fragmentRendererRegistry.getFragmentRenderer(fragmentEntryKey);
-
-			configurationJSONObject =
-				fragmentRenderer.getConfigurationJSONObject(
-					new DefaultFragmentRendererContext(null));
-
-		}  else {
-			configurationJSONObject = _jsonFactory.createJSONObject(fragmentEntry.getConfiguration());
+		try {
+			super.assertEquals(
+				PageElementSerDes.toDTO(
+					objectMapper.writeValueAsString(pageElement1)),
+				pageElement2);
 		}
-
-		for (Map<String, Object> objectsMap : objectsMaps) {
-
-			FragmentInstancePageElementDefinition
-				fragmentInstancePageElementDefinition = null;
-
-			if (fragmentEntry != null) {
-				fragmentInstancePageElementDefinition = PageElementsTestUtil.getFragmentInstancePageElementDefinition(
-					FragmentConfigTestUtil.getFragmentConfigMap(
-						configurationJSONObject, objectsMap, testGroup.getGroupId()), fragmentEntry);
-
-			} else {
-				fragmentInstancePageElementDefinition = PageElementsTestUtil.getFragmentInstancePageElementDefinition(
-					FragmentConfigTestUtil.getFragmentConfigMap(
-						configurationJSONObject, objectsMap, testGroup.getGroupId()), fragmentRenderer);
-
-			}
-
-			_testPutSitePageSpecificationPageExperiencePageElement(
-				_getFragmentInstancePageElement(
-					externalReferenceCode, fragmentInstancePageElementDefinition,  StringPool.BLANK));
+		catch (JsonProcessingException jsonProcessingException) {
+			throw new RuntimeException(jsonProcessingException);
 		}
 	}
 
@@ -809,6 +768,34 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 
 		return _getPageElement(
 			containerPageElementDefinition, pageElementExternalReferenceCode);
+	}
+
+	private PageElement _getFragmentInstancePageElement(
+			String externalReferenceCode,
+			FragmentInstancePageElementDefinition
+				fragmentInstancePageElementDefinition,
+			String parentExternalReferenceCode)
+		throws Exception {
+
+		PageElement pageElement = super.randomPageElement();
+
+		pageElement.setExternalReferenceCode(externalReferenceCode);
+
+		pageElement.setPageElementDefinition(
+			() -> fragmentInstancePageElementDefinition);
+
+		pageElement.setPageElements(new PageElement[0]);
+		pageElement.setParentExternalReferenceCode(parentExternalReferenceCode);
+
+		int position = 0;
+
+		if (Validator.isNull(parentExternalReferenceCode)) {
+			position = _position;
+		}
+
+		pageElement.setPosition(position);
+
+		return pageElement;
 	}
 
 	private FragmentLink _getFragmentLink(
@@ -1046,6 +1033,21 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 				}
 			}
 		};
+	}
+
+	private Map<String, Object> _getItemSelectorMap(
+		String infoItemRendererKey, Object object, String templateKey) {
+
+		return HashMapBuilder.<String, Object>put(
+			"itemSelector",
+			HashMapBuilder.<String, Object>put(
+				"infoItemRendererKey", infoItemRendererKey
+			).put(
+				"item", object
+			).put(
+				"templateKey", templateKey
+			).build()
+		).build();
 	}
 
 	private LayoutStructure _getLayoutStructure() {
@@ -1297,34 +1299,6 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 		return pageElement;
 	}
 
-	private PageElement _getFragmentInstancePageElement(
-		String externalReferenceCode,
-		FragmentInstancePageElementDefinition
-			fragmentInstancePageElementDefinition ,
-		String parentExternalReferenceCode)
-		throws Exception {
-
-		PageElement pageElement = super.randomPageElement();
-
-		pageElement.setExternalReferenceCode(externalReferenceCode);
-
-		pageElement.setPageElementDefinition(
-			() -> fragmentInstancePageElementDefinition);
-
-		pageElement.setPageElements(new PageElement[0]);
-		pageElement.setParentExternalReferenceCode(parentExternalReferenceCode);
-
-		int position = 0;
-
-		if (Validator.isNull(parentExternalReferenceCode)) {
-			position = _position;
-		}
-
-		pageElement.setPosition(position);
-
-		return pageElement;
-	}
-
 	private void _testPostSitePageSpecificationPageExperiencePageElement(
 			PageElement pageElement)
 		throws Exception {
@@ -1343,23 +1317,6 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 
 		assertEquals(pageElement, postPageElement);
 		assertValid(postPageElement);
-	}
-
-	@Override
-	protected void assertEquals(
-		PageElement pageElement1, PageElement pageElement2) {
-
-		ObjectMapper objectMapper = getClientSerDesObjectMapper();
-
-		try {
-			super.assertEquals(
-				PageElementSerDes.toDTO(
-					objectMapper.writeValueAsString(pageElement1)),
-				pageElement2);
-		}
-		catch (JsonProcessingException jsonProcessingException) {
-			throw new RuntimeException(jsonProcessingException);
-		}
 	}
 
 	private void _testPutSitePageSpecificationPageExperiencePageElement(
@@ -1383,7 +1340,75 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 		assertValid(putPageElement);
 	}
 
+	private void
+			_testPutSitePageSpecificationPageExperiencePageElementWithFragmentInstancePageElement(
+				String fragmentEntryKey, Map<String, Object>... objectsMaps)
+		throws Exception {
+
+		String externalReferenceCode = RandomTestUtil.randomString();
+
+		FragmentEntry fragmentEntry =
+			_fragmentCollectionContributorRegistry.getFragmentEntry(
+				fragmentEntryKey);
+
+		JSONObject configurationJSONObject = null;
+		FragmentRenderer fragmentRenderer = null;
+
+		if (fragmentEntry == null) {
+			fragmentRenderer = _fragmentRendererRegistry.getFragmentRenderer(
+				fragmentEntryKey);
+
+			configurationJSONObject =
+				fragmentRenderer.getConfigurationJSONObject(
+					new DefaultFragmentRendererContext(null));
+		}
+		else {
+			configurationJSONObject = _jsonFactory.createJSONObject(
+				fragmentEntry.getConfiguration());
+		}
+
+		for (Map<String, Object> objectsMap : objectsMaps) {
+			FragmentInstancePageElementDefinition
+				fragmentInstancePageElementDefinition = null;
+
+			if (fragmentEntry != null) {
+				fragmentInstancePageElementDefinition =
+					PageElementsTestUtil.
+						getFragmentInstancePageElementDefinition(
+							FragmentConfigTestUtil.getFragmentConfigMap(
+								configurationJSONObject, objectsMap,
+								testGroup.getGroupId()),
+							fragmentEntry);
+			}
+			else {
+				fragmentInstancePageElementDefinition =
+					PageElementsTestUtil.
+						getFragmentInstancePageElementDefinition(
+							FragmentConfigTestUtil.getFragmentConfigMap(
+								configurationJSONObject, objectsMap,
+								testGroup.getGroupId()),
+							fragmentRenderer);
+			}
+
+			_testPutSitePageSpecificationPageExperiencePageElement(
+				_getFragmentInstancePageElement(
+					externalReferenceCode,
+					fragmentInstancePageElementDefinition, StringPool.BLANK));
+		}
+	}
+
 	private Layout _draftLayout;
+
+	@Inject
+	private FragmentCollectionContributorRegistry
+		_fragmentCollectionContributorRegistry;
+
+	@Inject
+	private FragmentRendererRegistry _fragmentRendererRegistry;
+
+	@Inject
+	private JSONFactory _jsonFactory;
+
 	private Layout _layout;
 
 	@Inject
@@ -1392,6 +1417,9 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 	@Inject
 	private LayoutPageTemplateStructureLocalService
 		_layoutPageTemplateStructureLocalService;
+
+	@Inject
+	private Portal _portal;
 
 	private int _position;
 
