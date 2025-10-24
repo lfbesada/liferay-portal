@@ -3282,17 +3282,8 @@ components:
                     Href: "#/components/schemas/HrefUrlValue"
                     Layout: "#/components/schemas/LayoutUrlValue"
                 propertyName: urlType
-            oneOf:
-                -   properties:
-                        href:
-                            $ref: "#/components/schemas/ItemExternalReference"
-                    type: object
-                -   properties:
-                        layout:
-                            $ref: "#/components/schemas/ItemExternalReference"
-                    type: object
             properties:
-                type:
+                urlType:
                     # @review
                     description:
                         The url value's type (href, layout).
