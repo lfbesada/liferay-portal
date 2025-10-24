@@ -20,6 +20,7 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
 
@@ -84,6 +85,13 @@ public class FragmentInstancePageElementDefinitionDTOConverter
 					fragmentEntryLink::getExternalReferenceCode);
 				setFragmentReference(
 					() -> {
+						if ((fragmentEntryLink.getFragmentEntryId() == 0) &&
+							Validator.isNull(
+								fragmentEntryLink.getRendererKey())) {
+
+							return null;
+						}
+
 						FragmentEntry fragmentEntry =
 							_fragmentEntryLocalService.fetchFragmentEntry(
 								fragmentEntryLink.getFragmentEntryId());
