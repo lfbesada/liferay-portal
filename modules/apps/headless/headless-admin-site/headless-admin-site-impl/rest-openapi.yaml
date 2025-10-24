@@ -3470,10 +3470,26 @@ components:
                             # @review
                             description:
                                 The value of the configuration field of type url.
-                            type: object
+                            oneOf:
+                                -   properties:
+                                        href:
+                                            type: string
+                                    type: object
+                                -   properties:
+                                        layout:
+                                            $ref: "#/components/schemas/ItemExternalReference"
+                                    type: object
                         value_i18n:
                             additionalProperties:
-                                type: object
+                                oneOf:
+                                    -   properties:
+                                            href:
+                                                type: string
+                                        type: object
+                                    -   properties:
+                                            layout:
+                                                $ref: "#/components/schemas/ItemExternalReference"
+                                        type: object
                             # @review
                             description:
                                 The localized value of the configuration field of type url.
