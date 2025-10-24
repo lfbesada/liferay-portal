@@ -5,6 +5,9 @@
 
 package com.liferay.headless.admin.site.resource.v1_0.test;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.asset.publisher.constants.AssetPublisherPortletKeys;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
@@ -32,6 +35,7 @@ import com.liferay.headless.admin.site.client.dto.v1_0.WidgetInstance;
 import com.liferay.headless.admin.site.client.dto.v1_0.WidgetInstancePageElementDefinition;
 import com.liferay.headless.admin.site.client.dto.v1_0.WidgetPermission;
 import com.liferay.headless.admin.site.client.problem.Problem;
+import com.liferay.headless.admin.site.client.serdes.v1_0.PageElementSerDes;
 import com.liferay.headless.admin.site.resource.v1_0.test.util.PageElementsTestUtil;
 import com.liferay.journal.constants.JournalContentPortletKeys;
 import com.liferay.journal.constants.JournalFolderConstants;
@@ -1207,6 +1211,23 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 
 		assertEquals(pageElement, postPageElement);
 		assertValid(postPageElement);
+	}
+
+	@Override
+	protected void assertEquals(
+		PageElement pageElement1, PageElement pageElement2) {
+
+		ObjectMapper objectMapper = getClientSerDesObjectMapper();
+
+		try {
+			super.assertEquals(
+				PageElementSerDes.toDTO(
+					objectMapper.writeValueAsString(pageElement1)),
+				pageElement2);
+		}
+		catch (JsonProcessingException jsonProcessingException) {
+			throw new RuntimeException(jsonProcessingException);
+		}
 	}
 
 	private void _testPutSitePageSpecificationPageExperiencePageElement(
