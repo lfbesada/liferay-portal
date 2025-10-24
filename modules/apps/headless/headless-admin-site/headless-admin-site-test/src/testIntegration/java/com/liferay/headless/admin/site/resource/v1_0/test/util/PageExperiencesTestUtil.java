@@ -57,7 +57,7 @@ public class PageExperiencesTestUtil {
 	}
 
 	public static PageExperience[] getPageExperiences(
-		String contentPageSpecificationExternalReferenceCode) {
+		String contentPageSpecificationExternalReferenceCode) throws Exception {
 
 		return new PageExperience[] {
 			new PageExperience() {

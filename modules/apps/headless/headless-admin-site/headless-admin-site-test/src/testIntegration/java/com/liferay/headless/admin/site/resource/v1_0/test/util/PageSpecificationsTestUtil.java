@@ -343,7 +343,8 @@ public class PageSpecificationsTestUtil {
 		String contentPageSpecificationExternalReferenceCode,
 		CustomField[] customFields,
 		String draftContentPageSpecificationExternalReferenceCode,
-		PageExperience[] pageExperiences, PageSpecification.Status status) {
+		PageExperience[] pageExperiences, PageSpecification.Status status)
+		throws Exception {
 
 		ContentPageSpecification contentPageSpecification =
 			new ContentPageSpecification() {
@@ -375,7 +376,7 @@ public class PageSpecificationsTestUtil {
 
 	public static ContentPageSpecification getContentPageSpecification(
 		String draftContentPageSpecificationExternalReferenceCode,
-		PageSpecification.Status status) {
+		PageSpecification.Status status) throws Exception {
 
 		return getContentPageSpecification(
 			RandomTestUtil.randomString(), null,
@@ -383,7 +384,8 @@ public class PageSpecificationsTestUtil {
 	}
 
 	public static PageSpecification[] getContentPageSpecifications(
-		String publishedPageSpecificationExternalReferenceCode) {
+		String publishedPageSpecificationExternalReferenceCode)
+		throws Exception {
 
 		return _getContentPageSpecifications(
 			getCustomFields(), RandomTestUtil.randomString(), null,
@@ -406,7 +408,7 @@ public class PageSpecificationsTestUtil {
 	}
 
 	public static PageSpecification[] getPageSpecifications(
-		String externalReferenceCode, SitePage.Type type) {
+		String externalReferenceCode, SitePage.Type type) throws Exception {
 
 		if (type == SitePage.Type.CONTENT_PAGE) {
 			ContentPageSpecification draftContentPageSpecification =
@@ -444,7 +446,7 @@ public class PageSpecificationsTestUtil {
 	}
 
 	public static PageSpecification[] getPatchPageSpecifications(
-		PageSpecification[] pageSpecifications) {
+		PageSpecification[] pageSpecifications) throws Exception {
 
 		if (pageSpecifications.length == 2) {
 			ContentPageSpecification draftContentPageSpecification = null;
@@ -774,7 +776,8 @@ public class PageSpecificationsTestUtil {
 		PageExperience[] draftPageSpecificationPageExperiences,
 		CustomField[] publishedPageSpecificationCustomFields,
 		String publishedPageSpecificationExternalReferenceCode,
-		PageExperience[] publishedPageSpecificationPageExperiences) {
+		PageExperience[] publishedPageSpecificationPageExperiences)
+		throws Exception {
 
 		ContentPageSpecification draftContentPageSpecification =
 			getContentPageSpecification(
