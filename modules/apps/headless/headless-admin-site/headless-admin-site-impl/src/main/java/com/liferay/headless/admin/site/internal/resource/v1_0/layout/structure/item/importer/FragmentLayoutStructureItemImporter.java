@@ -7,8 +7,11 @@ package com.liferay.headless.admin.site.internal.resource.v1_0.layout.structure.
 
 import com.liferay.fragment.constants.FragmentConstants;
 import com.liferay.fragment.contributor.util.FragmentCollectionContributorRegistryUtil;
+import com.liferay.fragment.entry.processor.constants.FragmentEntryProcessorConstants;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.model.FragmentEntryLink;
+import com.liferay.fragment.renderer.FragmentRenderer;
+import com.liferay.fragment.renderer.util.FragmentRendererRegistryUtil;
 import com.liferay.fragment.service.FragmentEntryLinkLocalServiceUtil;
 import com.liferay.fragment.service.FragmentEntryLocalServiceUtil;
 import com.liferay.headless.admin.site.dto.v1_0.DefaultFragmentReference;
@@ -18,12 +21,13 @@ import com.liferay.headless.admin.site.dto.v1_0.FragmentReference;
 import com.liferay.headless.admin.site.dto.v1_0.PageElement;
 import com.liferay.headless.admin.site.dto.v1_0.Scope;
 import com.liferay.headless.admin.site.internal.resource.v1_0.layout.structure.item.importer.context.LayoutStructureItemImporterContext;
+import com.liferay.headless.admin.site.internal.resource.v1_0.layout.structure.item.importer.util.FragmentInstanceConfigurationFieldValuesUtil;
 import com.liferay.headless.admin.site.internal.resource.v1_0.util.GroupUtil;
 import com.liferay.headless.admin.site.internal.resource.v1_0.util.LayoutStructureUtil;
 import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.layout.util.structure.LayoutStructureItem;
-import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
@@ -109,11 +113,23 @@ public class FragmentLayoutStructureItemImporter
 				layoutStructureItemImporterContext)
 		throws Exception {
 
+		String fragmentEntryKey = null;
+		long fragmentEntryId = 0;
+
 		FragmentEntry fragmentEntry = _getFragmentEntry(
 			fragmentInstancePageElementDefinition,
 			layoutStructureItemImporterContext);
 
-		if (fragmentEntry == null) {
+		if (fragmentEntry != null) {
+			fragmentEntryKey = fragmentEntry.getFragmentEntryKey();
+			fragmentEntryId = fragmentEntry.getFragmentEntryId();
+		}
+		else {
+			fragmentEntryKey = _getFragmentRendererKey(
+				fragmentInstancePageElementDefinition.getFragmentReference());
+		}
+
+		if (Validator.isNull(fragmentEntryKey) && (fragmentEntryId == 0)) {
 			throw new UnsupportedOperationException();
 		}
 
@@ -139,7 +155,7 @@ public class FragmentLayoutStructureItemImporter
 				_getOriginalFragmentEntryLinkId(
 					fragmentInstancePageElementDefinition,
 					layoutStructureItemImporterContext),
-				fragmentEntry.getFragmentEntryId(),
+				fragmentEntryId,
 				layoutStructureItemImporterContext.getSegmentsExperienceId(),
 				layout.getPlid(),
 				GetterUtil.getString(
@@ -150,9 +166,11 @@ public class FragmentLayoutStructureItemImporter
 					fragmentInstancePageElementDefinition.getJs()),
 				GetterUtil.getString(
 					fragmentInstancePageElementDefinition.getConfiguration()),
-				StringPool.BLANK,
+				_getEditableValues(
+					fragmentInstancePageElementDefinition,
+					layoutStructureItemImporterContext),
 				fragmentInstancePageElementDefinition.getNamespace(), 0,
-				fragmentEntry.getFragmentEntryKey(),
+				fragmentEntryKey,
 				_getType(fragmentInstancePageElementDefinition),
 				serviceContext);
 		}
@@ -160,6 +178,24 @@ public class FragmentLayoutStructureItemImporter
 			serviceContext.setCreateDate(createDate);
 			serviceContext.setUuid(uuid);
 		}
+	}
+
+	private String _getEditableValues(
+			FragmentInstancePageElementDefinition
+				fragmentInstancePageElementDefinition,
+			LayoutStructureItemImporterContext
+				layoutStructureItemImporterContext)
+		throws Exception {
+
+		return JSONUtil.put(
+			FragmentEntryProcessorConstants.
+				KEY_FREEMARKER_FRAGMENT_ENTRY_PROCESSOR,
+			FragmentInstanceConfigurationFieldValuesUtil.
+				getFreeMarkerFragmentEntryProcessorJSONObject(
+					fragmentInstancePageElementDefinition.getConfiguration(),
+					fragmentInstancePageElementDefinition.getFragmentConfig(),
+					layoutStructureItemImporterContext)
+		).toString();
 	}
 
 	private FragmentEntry _getFragmentEntry(
@@ -209,6 +245,36 @@ public class FragmentLayoutStructureItemImporter
 		return FragmentCollectionContributorRegistryUtil.getFragmentEntry(
 			GetterUtil.getString(
 				defaultFragmentReference.getDefaultFragmentKey()));
+	}
+
+	private String _getFragmentRendererKey(
+		FragmentReference fragmentReference) {
+
+		if (fragmentReference == null) {
+			throw new UnsupportedOperationException();
+		}
+
+		if (!Objects.equals(
+				fragmentReference.getFragmentReferenceType(),
+				FragmentReference.FragmentReferenceType.
+					DEFAULT_FRAGMENT_REFERENCE)) {
+
+			return null;
+		}
+
+		DefaultFragmentReference defaultFragmentReference =
+			(DefaultFragmentReference)fragmentReference;
+
+		FragmentRenderer fragmentRenderer =
+			FragmentRendererRegistryUtil.getFragmentRenderer(
+				GetterUtil.getString(
+					defaultFragmentReference.getDefaultFragmentKey()));
+
+		if (fragmentRenderer == null) {
+			return null;
+		}
+
+		return fragmentRenderer.getKey();
 	}
 
 	private long _getOriginalFragmentEntryLinkId(
@@ -261,13 +327,29 @@ public class FragmentLayoutStructureItemImporter
 				layoutStructureItemImporterContext)
 		throws Exception {
 
+		String fragmentEntryKey = null;
+		long fragmentEntryId = 0;
+
 		FragmentEntry fragmentEntry = _getFragmentEntry(
 			fragmentInstancePageElementDefinition,
 			layoutStructureItemImporterContext);
+
+		if (fragmentEntry != null) {
+			fragmentEntryKey = fragmentEntry.getFragmentEntryKey();
+			fragmentEntryId = fragmentEntry.getFragmentEntryId();
+		}
+		else {
+			fragmentEntryKey = _getFragmentRendererKey(
+				fragmentInstancePageElementDefinition.getFragmentReference());
+		}
+
+		if (Validator.isNull(fragmentEntryKey) && (fragmentEntryId == 0)) {
+			throw new UnsupportedOperationException();
+		}
+
 		Layout layout = layoutStructureItemImporterContext.getLayout();
 
-		if ((fragmentEntry == null) ||
-			(fragmentEntryLink.getPlid() != layout.getPlid()) ||
+		if ((fragmentEntryLink.getPlid() != layout.getPlid()) ||
 			(fragmentEntryLink.getSegmentsExperienceId() !=
 				layoutStructureItemImporterContext.getSegmentsExperienceId())) {
 
@@ -279,8 +361,7 @@ public class FragmentLayoutStructureItemImporter
 				fragmentInstancePageElementDefinition,
 				layoutStructureItemImporterContext));
 
-		fragmentEntryLink.setFragmentEntryId(
-			fragmentEntry.getFragmentEntryId());
+		fragmentEntryLink.setFragmentEntryId(fragmentEntryId);
 		fragmentEntryLink.setCss(
 			GetterUtil.getString(
 				fragmentInstancePageElementDefinition.getCss()));
@@ -293,9 +374,13 @@ public class FragmentLayoutStructureItemImporter
 		fragmentEntryLink.setConfiguration(
 			GetterUtil.getString(
 				fragmentInstancePageElementDefinition.getConfiguration()));
+		fragmentEntryLink.setEditableValues(
+			_getEditableValues(
+				fragmentInstancePageElementDefinition,
+				layoutStructureItemImporterContext));
 		fragmentEntryLink.setNamespace(
 			fragmentInstancePageElementDefinition.getNamespace());
-		fragmentEntryLink.setRendererKey(fragmentEntry.getFragmentEntryKey());
+		fragmentEntryLink.setRendererKey(fragmentEntryKey);
 		fragmentEntryLink.setType(
 			_getType(fragmentInstancePageElementDefinition));
 		fragmentEntryLink.setLastPropagationDate(
