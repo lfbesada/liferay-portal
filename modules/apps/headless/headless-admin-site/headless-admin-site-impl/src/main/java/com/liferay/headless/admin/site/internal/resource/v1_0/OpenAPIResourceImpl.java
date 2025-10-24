@@ -95,8 +95,6 @@ public class OpenAPIResourceImpl {
 
 			add(MasterPageResourceImpl.class);
 
-			add(NavigationMenuResourceImpl.class);
-
 			add(PageElementResourceImpl.class);
 
 			add(PageExperienceResourceImpl.class);
