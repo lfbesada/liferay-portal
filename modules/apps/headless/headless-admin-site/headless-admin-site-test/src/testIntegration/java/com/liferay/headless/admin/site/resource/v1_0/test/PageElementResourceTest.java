@@ -12,7 +12,15 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.asset.publisher.constants.AssetPublisherPortletKeys;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
+import com.liferay.dynamic.data.mapping.model.DDMTemplate;
+import com.liferay.dynamic.data.mapping.test.util.DDMTemplateTestUtil;
+import com.liferay.fragment.contributor.FragmentCollectionContributorRegistry;
+import com.liferay.fragment.model.FragmentEntry;
+import com.liferay.fragment.renderer.DefaultFragmentRendererContext;
+import com.liferay.fragment.renderer.FragmentRenderer;
+import com.liferay.fragment.renderer.FragmentRendererRegistry;
 import com.liferay.headless.admin.site.client.dto.v1_0.ContainerPageElementDefinition;
+import com.liferay.headless.admin.site.client.dto.v1_0.FragmentInstancePageElementDefinition;
 import com.liferay.headless.admin.site.client.dto.v1_0.FragmentLink;
 import com.liferay.headless.admin.site.client.dto.v1_0.FragmentLinkInlineValue;
 import com.liferay.headless.admin.site.client.dto.v1_0.FragmentLinkMappedValue;
@@ -36,6 +44,7 @@ import com.liferay.headless.admin.site.client.dto.v1_0.WidgetInstancePageElement
 import com.liferay.headless.admin.site.client.dto.v1_0.WidgetPermission;
 import com.liferay.headless.admin.site.client.problem.Problem;
 import com.liferay.headless.admin.site.client.serdes.v1_0.PageElementSerDes;
+import com.liferay.headless.admin.site.resource.v1_0.test.util.FragmentConfigTestUtil;
 import com.liferay.headless.admin.site.resource.v1_0.test.util.PageElementsTestUtil;
 import com.liferay.journal.constants.JournalContentPortletKeys;
 import com.liferay.journal.constants.JournalFolderConstants;
@@ -48,6 +57,8 @@ import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.repository.model.FileEntry;
@@ -62,6 +73,7 @@ import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.MimeTypesUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
@@ -69,6 +81,7 @@ import com.liferay.segments.constants.SegmentsExperienceConstants;
 import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
 
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Objects;
@@ -499,6 +512,96 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 				widgetInstanceExternalReferenceCode, widgetInstanceId,
 				AssetPublisherPortletKeys.ASSET_PUBLISHER,
 				new WidgetPermission[0]));
+
+		_testPutSitePageSpecificationPageExperiencePageElementWithFragmentInstancePageElement(
+			"BASIC_COMPONENT-heading", HashMapBuilder.<String, Object>put(
+						"headingLevel", "h1"
+					).build(), HashMapBuilder.<String, Object>put(
+						"headingLevel", "h2"
+					).build(), Collections.emptyMap(), HashMapBuilder.<String, Object>put(
+						"headingLevel", "h6"
+					).build());
+
+		DDMTemplate ddmTemplate = DDMTemplateTestUtil.addTemplate(
+			journalArticle.getDDMStructureId(), _portal.getClassNameId(JournalArticle.class.getName()));
+
+		_testPutSitePageSpecificationPageExperiencePageElementWithFragmentInstancePageElement(
+			"com.liferay.fragment.internal.renderer.ContentObjectFragmentRenderer",
+			_getItemSelectorMap("com.liferay.journal.web.internal.info.item.renderer.JournalArticleTitleInfoItemRenderer", journalArticle, null),
+			Collections.emptyMap(),
+			_getItemSelectorMap("com.liferay.document.library.web.internal.info.item.renderer.FileEntryTitleInfoItemRenderer", fileEntry, null),
+		_getItemSelectorMap(null, journalArticle, ddmTemplate.getTemplateKey()));
+	}
+
+	@Inject
+	private Portal _portal;
+	@Inject
+	private JSONFactory _jsonFactory;
+	@Inject
+	private FragmentRendererRegistry _fragmentRendererRegistry;
+	@Inject
+	private FragmentCollectionContributorRegistry
+		_fragmentCollectionContributorRegistry;
+
+	private Map<String, Object> _getItemSelectorMap(String infoItemRendererKey, Object object, String templateKey) {
+		return HashMapBuilder.<String, Object>put(
+			"itemSelector", HashMapBuilder.<String, Object>put(
+				"item", object
+			).put(
+				"infoItemRendererKey",infoItemRendererKey
+			).put(
+				"templateKey",templateKey
+			).build()).build();
+	}
+
+	private void _testPutSitePageSpecificationPageExperiencePageElementWithFragmentInstancePageElement(
+		String fragmentEntryKey,  Map<String, Object>... objectsMaps
+	)
+		throws Exception {
+
+		String externalReferenceCode = RandomTestUtil.randomString();
+
+		FragmentEntry fragmentEntry =
+			_fragmentCollectionContributorRegistry.
+				getFragmentEntry(fragmentEntryKey);
+
+
+		JSONObject configurationJSONObject = null;
+		FragmentRenderer fragmentRenderer = null;
+
+		if (fragmentEntry == null) {
+			fragmentRenderer =
+				_fragmentRendererRegistry.getFragmentRenderer(fragmentEntryKey);
+
+			configurationJSONObject =
+				fragmentRenderer.getConfigurationJSONObject(
+					new DefaultFragmentRendererContext(null));
+
+		}  else {
+			configurationJSONObject = _jsonFactory.createJSONObject(fragmentEntry.getConfiguration());
+		}
+
+		for (Map<String, Object> objectsMap : objectsMaps) {
+
+			FragmentInstancePageElementDefinition
+				fragmentInstancePageElementDefinition = null;
+
+			if (fragmentEntry != null) {
+				fragmentInstancePageElementDefinition = PageElementsTestUtil.getFragmentInstancePageElementDefinition(
+					FragmentConfigTestUtil.getFragmentConfigMap(
+						configurationJSONObject, objectsMap, testGroup.getGroupId()), fragmentEntry);
+
+			} else {
+				fragmentInstancePageElementDefinition = PageElementsTestUtil.getFragmentInstancePageElementDefinition(
+					FragmentConfigTestUtil.getFragmentConfigMap(
+						configurationJSONObject, objectsMap, testGroup.getGroupId()), fragmentRenderer);
+
+			}
+
+			_testPutSitePageSpecificationPageExperiencePageElement(
+				_getFragmentInstancePageElement(
+					externalReferenceCode, fragmentInstancePageElementDefinition,  StringPool.BLANK));
+		}
 	}
 
 	@Override
@@ -1186,6 +1289,34 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 
 		if (Validator.isNull(parentExternalReferenceCode)) {
 			position = _position++;
+		}
+
+		pageElement.setPosition(position);
+
+		return pageElement;
+	}
+
+	private PageElement _getFragmentInstancePageElement(
+		String externalReferenceCode,
+		FragmentInstancePageElementDefinition
+			fragmentInstancePageElementDefinition ,
+		String parentExternalReferenceCode)
+		throws Exception {
+
+		PageElement pageElement = super.randomPageElement();
+
+		pageElement.setExternalReferenceCode(externalReferenceCode);
+
+		pageElement.setPageElementDefinition(
+			() -> fragmentInstancePageElementDefinition);
+
+		pageElement.setPageElements(new PageElement[0]);
+		pageElement.setParentExternalReferenceCode(parentExternalReferenceCode);
+
+		int position = 0;
+
+		if (Validator.isNull(parentExternalReferenceCode)) {
+			position = _position;
 		}
 
 		pageElement.setPosition(position);
