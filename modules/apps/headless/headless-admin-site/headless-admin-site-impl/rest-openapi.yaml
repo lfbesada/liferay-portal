@@ -3155,6 +3155,22 @@ components:
                     minimum: 0
                     type: number
             type: object
+        TemplateReference:
+            # @review
+            description:
+                The template's reference.
+            properties:
+                rendererKey:
+                    # @review
+                    description:
+                        The renderer's key.
+                    type: string
+                templateKey:
+                    # @review
+                    description:
+                        The template's key.
+                    type: string
+            type: object
         TextConfigurationFieldValue:
             allOf:
                 -   $ref: "#/components/schemas/ConfigurationFieldValue"
