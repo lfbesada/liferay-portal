@@ -3404,7 +3404,6 @@ components:
                     type: boolean
             type: object
         NavigationMenu:
-            deprecated: true
             # @review
             description:
                 Represents a navigation menu.
@@ -3480,7 +3479,6 @@ components:
                     readOnly: true
                     type: integer
         NavigationMenuItem:
-            deprecated: true
             # @review
             description:
                 Represents a navigation menu item.
@@ -12054,7 +12052,6 @@ paths:
             tags: ["MessageBoardThread"]
     "/navigation-menus/{navigationMenuId}":
         delete:
-            deprecated: true
             # @review
             description:
                 Deletes the navigation menu and returns a 204 if the operation succeeds
@@ -12073,7 +12070,6 @@ paths:
                         application/xml: {}
             tags: ["NavigationMenu"]
         get:
-            deprecated: true
             operationId: getNavigationMenu
             parameters:
                 -   in: path
@@ -12105,7 +12101,6 @@ paths:
                                 $ref: "#/components/schemas/NavigationMenu"
             tags: ["NavigationMenu"]
         put:
-            deprecated: true
             # @review
             description:
                 Replaces the navigation menu with the information sent in the request body. Any missing fields are
@@ -12138,7 +12133,6 @@ paths:
             tags: ["NavigationMenu"]
     "/navigation-menus/{navigationMenuId}/permissions":
         get:
-            deprecated: true
             operationId: getNavigationMenuPermissionsPage
             parameters:
                 -   in: path
@@ -12170,7 +12164,6 @@ paths:
                         application/xml: {}
             tags: ["NavigationMenu"]
         put:
-            deprecated: true
             operationId: putNavigationMenuPermissionsPage
             parameters:
                 -   in: path
@@ -15659,7 +15652,6 @@ paths:
             tags: ["MessageBoardThread"]
     "/sites/{siteId}/navigation-menus":
         get:
-            deprecated: true
             operationId: getSiteNavigationMenusPage
             parameters:
                 -   in: path
@@ -15715,7 +15707,6 @@ paths:
                                 type: array
             tags: ["NavigationMenu"]
         post:
-            deprecated: true
             # @review
             description:
                 Creates a new navigation menu.
@@ -15747,7 +15738,6 @@ paths:
             tags: ["NavigationMenu"]
     "/sites/{siteId}/navigation-menus/by-external-reference-code/{externalReferenceCode}":
         delete:
-            deprecated: true
             # @review
             description:
                 Deletes the navigation menu by external reference code and returns a 204 if the operation succeeds
@@ -15771,7 +15761,6 @@ paths:
                         application/xml: {}
             tags: ["NavigationMenu"]
         get:
-            deprecated: true
             # @review
             description:
                 Retrieves the navigation menu by external reference code.
@@ -15811,7 +15800,6 @@ paths:
                                 $ref: "#/components/schemas/NavigationMenu"
             tags: ["NavigationMenu"]
         put:
-            deprecated: true
             # @review
             description:
                 Updates the navigation menu with the given external reference code or creates it if it does not exist.
@@ -15848,7 +15836,6 @@ paths:
             tags: ["NavigationMenu"]
     "/sites/{siteId}/navigation-menus/permissions":
         get:
-            deprecated: true
             operationId: getSiteNavigationMenuPermissionsPage
             parameters:
                 -   in: path
@@ -15880,7 +15867,6 @@ paths:
                         application/xml: {}
             tags: ["NavigationMenu"]
         put:
-            deprecated: true
             operationId: putSiteNavigationMenuPermissionsPage
             parameters:
                 -   in: path
