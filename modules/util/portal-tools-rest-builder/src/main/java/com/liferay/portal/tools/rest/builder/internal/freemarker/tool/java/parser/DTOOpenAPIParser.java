@@ -161,6 +161,13 @@ public class DTOOpenAPIParser {
 		String javaDataType = OpenAPIParserUtil.getJavaDataType(
 			javaDataTypeMap, propertySchema);
 
+		if (javaDataType == null) {
+			throw new RuntimeException(
+				"javaDataType == null!!!! propertySchema:" +
+					propertySchema.getName() + " propertySchema:" +
+						propertySchema.getDescription());
+		}
+
 		if (javaDataType.startsWith("[")) {
 			String name = OpenAPIParserUtil.getElementClassName(javaDataType);
 
