@@ -95,6 +95,26 @@ public class ItemScopeUtil {
 		return itemScope.getExternalReferenceCode();
 	}
 
+	public static String getScopeExternalReferenceCode(
+			Scope scope, long scopeGroupId)
+		throws PortalException {
+
+		if (scope == null) {
+			return null;
+		}
+
+		Group group = GroupLocalServiceUtil.getGroup(scopeGroupId);
+
+		if (StringUtil.equals(
+				scope.getExternalReferenceCode(),
+				group.getExternalReferenceCode())) {
+
+			return null;
+		}
+
+		return scope.getExternalReferenceCode();
+	}
+
 	private static Scope _getScope(Group group) {
 		return new Scope() {
 			{
