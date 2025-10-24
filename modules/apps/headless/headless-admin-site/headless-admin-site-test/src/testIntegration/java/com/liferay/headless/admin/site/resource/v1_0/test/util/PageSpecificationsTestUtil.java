@@ -340,10 +340,10 @@ public class PageSpecificationsTestUtil {
 	}
 
 	public static ContentPageSpecification getContentPageSpecification(
-		String contentPageSpecificationExternalReferenceCode,
-		CustomField[] customFields,
-		String draftContentPageSpecificationExternalReferenceCode,
-		PageExperience[] pageExperiences, PageSpecification.Status status)
+			String contentPageSpecificationExternalReferenceCode,
+			CustomField[] customFields,
+			String draftContentPageSpecificationExternalReferenceCode,
+			PageExperience[] pageExperiences, PageSpecification.Status status)
 		throws Exception {
 
 		ContentPageSpecification contentPageSpecification =
@@ -375,8 +375,9 @@ public class PageSpecificationsTestUtil {
 	}
 
 	public static ContentPageSpecification getContentPageSpecification(
-		String draftContentPageSpecificationExternalReferenceCode,
-		PageSpecification.Status status) throws Exception {
+			String draftContentPageSpecificationExternalReferenceCode,
+			PageSpecification.Status status)
+		throws Exception {
 
 		return getContentPageSpecification(
 			RandomTestUtil.randomString(), null,
@@ -384,7 +385,7 @@ public class PageSpecificationsTestUtil {
 	}
 
 	public static PageSpecification[] getContentPageSpecifications(
-		String publishedPageSpecificationExternalReferenceCode)
+			String publishedPageSpecificationExternalReferenceCode)
 		throws Exception {
 
 		return _getContentPageSpecifications(
@@ -408,7 +409,8 @@ public class PageSpecificationsTestUtil {
 	}
 
 	public static PageSpecification[] getPageSpecifications(
-		String externalReferenceCode, SitePage.Type type) throws Exception {
+			String externalReferenceCode, SitePage.Type type)
+		throws Exception {
 
 		if (type == SitePage.Type.CONTENT_PAGE) {
 			ContentPageSpecification draftContentPageSpecification =
@@ -446,7 +448,8 @@ public class PageSpecificationsTestUtil {
 	}
 
 	public static PageSpecification[] getPatchPageSpecifications(
-		PageSpecification[] pageSpecifications) throws Exception {
+			PageSpecification[] pageSpecifications)
+		throws Exception {
 
 		if (pageSpecifications.length == 2) {
 			ContentPageSpecification draftContentPageSpecification = null;
@@ -771,12 +774,12 @@ public class PageSpecificationsTestUtil {
 	}
 
 	private static ContentPageSpecification[] _getContentPageSpecifications(
-		CustomField[] draftPageSpecificationCustomFields,
-		String draftPageSpecificationExternalReferenceCode,
-		PageExperience[] draftPageSpecificationPageExperiences,
-		CustomField[] publishedPageSpecificationCustomFields,
-		String publishedPageSpecificationExternalReferenceCode,
-		PageExperience[] publishedPageSpecificationPageExperiences)
+			CustomField[] draftPageSpecificationCustomFields,
+			String draftPageSpecificationExternalReferenceCode,
+			PageExperience[] draftPageSpecificationPageExperiences,
+			CustomField[] publishedPageSpecificationCustomFields,
+			String publishedPageSpecificationExternalReferenceCode,
+			PageExperience[] publishedPageSpecificationPageExperiences)
 		throws Exception {
 
 		ContentPageSpecification draftContentPageSpecification =
