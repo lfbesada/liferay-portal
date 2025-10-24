@@ -36,51 +36,45 @@ import java.util.function.Supplier;
  */
 @Generated("")
 @GraphQLName(
-	description = "The value of a configuration field of type url.",
-	value = "UrlConfigurationFieldValue"
+	description = "The layout value of a configuration field of type url.",
+	value = "LayoutUrlValue"
 )
 @JsonFilter("Liferay.Vulcan")
-@XmlRootElement(name = "UrlConfigurationFieldValue")
-public class UrlConfigurationFieldValue
-	extends ConfigurationFieldValue implements Serializable {
+@XmlRootElement(name = "LayoutUrlValue")
+public class LayoutUrlValue extends UrlValue implements Serializable {
 
-	public static UrlConfigurationFieldValue toDTO(String json) {
-		return ObjectMapperUtil.readValue(
-			UrlConfigurationFieldValue.class, json);
+	public static LayoutUrlValue toDTO(String json) {
+		return ObjectMapperUtil.readValue(LayoutUrlValue.class, json);
 	}
 
-	public static UrlConfigurationFieldValue unsafeToDTO(String json) {
-		return ObjectMapperUtil.unsafeReadValue(
-			UrlConfigurationFieldValue.class, json);
+	public static LayoutUrlValue unsafeToDTO(String json) {
+		return ObjectMapperUtil.unsafeReadValue(LayoutUrlValue.class, json);
 	}
 
-	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The value of the configuration field of type url."
-	)
-	@Valid
-	public UrlValue getValue() {
-		if (_valueSupplier != null) {
-			value = _valueSupplier.get();
+	@io.swagger.v3.oas.annotations.media.Schema
+	public String getClassName() {
+		if (_classNameSupplier != null) {
+			className = _classNameSupplier.get();
 
-			_valueSupplier = null;
+			_classNameSupplier = null;
 		}
 
-		return value;
+		return className;
 	}
 
-	public void setValue(UrlValue value) {
-		this.value = value;
+	public void setClassName(String className) {
+		this.className = className;
 
-		_valueSupplier = null;
+		_classNameSupplier = null;
 	}
 
 	@JsonIgnore
-	public void setValue(
-		UnsafeSupplier<UrlValue, Exception> valueUnsafeSupplier) {
+	public void setClassName(
+		UnsafeSupplier<String, Exception> classNameUnsafeSupplier) {
 
-		_valueSupplier = () -> {
+		_classNameSupplier = () -> {
 			try {
-				return valueUnsafeSupplier.get();
+				return classNameUnsafeSupplier.get();
 			}
 			catch (RuntimeException runtimeException) {
 				throw runtimeException;
@@ -91,43 +85,37 @@ public class UrlConfigurationFieldValue
 		};
 	}
 
-	@GraphQLField(
-		description = "The value of the configuration field of type url."
-	)
+	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected UrlValue value;
+	protected String className;
 
 	@JsonIgnore
-	private Supplier<UrlValue> _valueSupplier;
+	private Supplier<String> _classNameSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The localized value of the configuration field of type url."
-	)
-	@Valid
-	public Map<String, UrlValue> getValue_i18n() {
-		if (_value_i18nSupplier != null) {
-			value_i18n = _value_i18nSupplier.get();
+	@io.swagger.v3.oas.annotations.media.Schema
+	public String getExternalReferenceCode() {
+		if (_externalReferenceCodeSupplier != null) {
+			externalReferenceCode = _externalReferenceCodeSupplier.get();
 
-			_value_i18nSupplier = null;
+			_externalReferenceCodeSupplier = null;
 		}
 
-		return value_i18n;
+		return externalReferenceCode;
 	}
 
-	public void setValue_i18n(Map<String, UrlValue> value_i18n) {
-		this.value_i18n = value_i18n;
+	public void setExternalReferenceCode(String externalReferenceCode) {
+		this.externalReferenceCode = externalReferenceCode;
 
-		_value_i18nSupplier = null;
+		_externalReferenceCodeSupplier = null;
 	}
 
 	@JsonIgnore
-	public void setValue_i18n(
-		UnsafeSupplier<Map<String, UrlValue>, Exception>
-			value_i18nUnsafeSupplier) {
+	public void setExternalReferenceCode(
+		UnsafeSupplier<String, Exception> externalReferenceCodeUnsafeSupplier) {
 
-		_value_i18nSupplier = () -> {
+		_externalReferenceCodeSupplier = () -> {
 			try {
-				return value_i18nUnsafeSupplier.get();
+				return externalReferenceCodeUnsafeSupplier.get();
 			}
 			catch (RuntimeException runtimeException) {
 				throw runtimeException;
@@ -138,14 +126,52 @@ public class UrlConfigurationFieldValue
 		};
 	}
 
-	@GraphQLField(
-		description = "The localized value of the configuration field of type url."
-	)
+	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected Map<String, UrlValue> value_i18n;
+	protected String externalReferenceCode;
 
 	@JsonIgnore
-	private Supplier<Map<String, UrlValue>> _value_i18nSupplier;
+	private Supplier<String> _externalReferenceCodeSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema
+	@Valid
+	public Scope getScope() {
+		if (_scopeSupplier != null) {
+			scope = _scopeSupplier.get();
+
+			_scopeSupplier = null;
+		}
+
+		return scope;
+	}
+
+	public void setScope(Scope scope) {
+		this.scope = scope;
+
+		_scopeSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setScope(UnsafeSupplier<Scope, Exception> scopeUnsafeSupplier) {
+		_scopeSupplier = () -> {
+			try {
+				return scopeUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected Scope scope;
+
+	@JsonIgnore
+	private Supplier<Scope> _scopeSupplier;
 
 	@Override
 	public boolean equals(Object object) {
@@ -153,15 +179,13 @@ public class UrlConfigurationFieldValue
 			return true;
 		}
 
-		if (!(object instanceof UrlConfigurationFieldValue)) {
+		if (!(object instanceof LayoutUrlValue)) {
 			return false;
 		}
 
-		UrlConfigurationFieldValue urlConfigurationFieldValue =
-			(UrlConfigurationFieldValue)object;
+		LayoutUrlValue layoutUrlValue = (LayoutUrlValue)object;
 
-		return Objects.equals(
-			toString(), urlConfigurationFieldValue.toString());
+		return Objects.equals(toString(), layoutUrlValue.toString());
 	}
 
 	@Override
@@ -176,42 +200,62 @@ public class UrlConfigurationFieldValue
 
 		sb.append("{");
 
-		UrlValue value = getValue();
+		String className = getClassName();
 
-		if (value != null) {
+		if (className != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"value\": ");
-
-			sb.append(String.valueOf(value));
-		}
-
-		Map<String, UrlValue> value_i18n = getValue_i18n();
-
-		if (value_i18n != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"value_i18n\": ");
-
-			sb.append(_toJSON(value_i18n));
-		}
-
-		Type type = getType();
-
-		if (type != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"type\": ");
+			sb.append("\"className\": ");
 
 			sb.append("\"");
 
-			sb.append(type);
+			sb.append(_escape(className));
+
+			sb.append("\"");
+		}
+
+		String externalReferenceCode = getExternalReferenceCode();
+
+		if (externalReferenceCode != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"externalReferenceCode\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(externalReferenceCode));
+
+			sb.append("\"");
+		}
+
+		Scope scope = getScope();
+
+		if (scope != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"scope\": ");
+
+			sb.append(String.valueOf(scope));
+		}
+
+		UrlType urlType = getUrlType();
+
+		if (urlType != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"urlType\": ");
+
+			sb.append("\"");
+
+			sb.append(urlType);
 
 			sb.append("\"");
 		}
@@ -223,7 +267,7 @@ public class UrlConfigurationFieldValue
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY,
-		defaultValue = "com.liferay.headless.admin.site.dto.v1_0.UrlConfigurationFieldValue",
+		defaultValue = "com.liferay.headless.admin.site.dto.v1_0.LayoutUrlValue",
 		name = "x-class-name"
 	)
 	public String xClassName;

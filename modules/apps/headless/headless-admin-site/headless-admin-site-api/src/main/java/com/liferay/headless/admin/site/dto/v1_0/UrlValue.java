@@ -5,9 +5,14 @@
 
 package com.liferay.headless.admin.site.dto.v1_0;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
@@ -19,6 +24,7 @@ import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 import jakarta.annotation.Generated;
 
 import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import jakarta.xml.bind.annotation.XmlRootElement;
 
@@ -36,51 +42,73 @@ import java.util.function.Supplier;
  */
 @Generated("")
 @GraphQLName(
-	description = "The value of a configuration field of type url.",
-	value = "UrlConfigurationFieldValue"
+	description = "A value of a field of type url.", value = "UrlValue"
+)
+@io.swagger.v3.oas.annotations.media.Schema(
+	description = "A value of a field of type url.",
+	requiredProperties = {"urlType"}
 )
 @JsonFilter("Liferay.Vulcan")
-@XmlRootElement(name = "UrlConfigurationFieldValue")
-public class UrlConfigurationFieldValue
-	extends ConfigurationFieldValue implements Serializable {
+@JsonSubTypes(
+	{
+		@JsonSubTypes.Type(name = "Href", value = HrefUrlValue.class),
+		@JsonSubTypes.Type(name = "Layout", value = LayoutUrlValue.class)
+	}
+)
+@JsonTypeInfo(
+	include = JsonTypeInfo.As.PROPERTY, property = "urlType",
+	use = JsonTypeInfo.Id.NAME, visible = true
+)
+@XmlRootElement(name = "UrlValue")
+public abstract class UrlValue implements Serializable {
 
-	public static UrlConfigurationFieldValue toDTO(String json) {
-		return ObjectMapperUtil.readValue(
-			UrlConfigurationFieldValue.class, json);
+	public static UrlValue toDTO(String json) {
+		return ObjectMapperUtil.readValue(UrlValue.class, json);
 	}
 
-	public static UrlConfigurationFieldValue unsafeToDTO(String json) {
-		return ObjectMapperUtil.unsafeReadValue(
-			UrlConfigurationFieldValue.class, json);
+	public static UrlValue unsafeToDTO(String json) {
+		return ObjectMapperUtil.unsafeReadValue(UrlValue.class, json);
 	}
 
 	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The value of the configuration field of type url."
+		description = "The url value's type (href, layout)."
 	)
+	@JsonGetter("urlType")
 	@Valid
-	public UrlValue getValue() {
-		if (_valueSupplier != null) {
-			value = _valueSupplier.get();
+	public UrlType getUrlType() {
+		if (_urlTypeSupplier != null) {
+			urlType = _urlTypeSupplier.get();
 
-			_valueSupplier = null;
+			_urlTypeSupplier = null;
 		}
 
-		return value;
-	}
-
-	public void setValue(UrlValue value) {
-		this.value = value;
-
-		_valueSupplier = null;
+		return urlType;
 	}
 
 	@JsonIgnore
-	public void setValue(
-		UnsafeSupplier<UrlValue, Exception> valueUnsafeSupplier) {
+	public String getUrlTypeAsString() {
+		UrlType urlType = getUrlType();
 
-		_valueSupplier = () -> {
+		if (urlType == null) {
+			return null;
+		}
+
+		return urlType.toString();
+	}
+
+	public void setUrlType(UrlType urlType) {
+		this.urlType = urlType;
+
+		_urlTypeSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setUrlType(
+		UnsafeSupplier<UrlType, Exception> urlTypeUnsafeSupplier) {
+
+		_urlTypeSupplier = () -> {
 			try {
-				return valueUnsafeSupplier.get();
+				return urlTypeUnsafeSupplier.get();
 			}
 			catch (RuntimeException runtimeException) {
 				throw runtimeException;
@@ -91,61 +119,13 @@ public class UrlConfigurationFieldValue
 		};
 	}
 
-	@GraphQLField(
-		description = "The value of the configuration field of type url."
-	)
+	@GraphQLField(description = "The url value's type (href, layout).")
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected UrlValue value;
+	@NotNull
+	protected UrlType urlType;
 
 	@JsonIgnore
-	private Supplier<UrlValue> _valueSupplier;
-
-	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The localized value of the configuration field of type url."
-	)
-	@Valid
-	public Map<String, UrlValue> getValue_i18n() {
-		if (_value_i18nSupplier != null) {
-			value_i18n = _value_i18nSupplier.get();
-
-			_value_i18nSupplier = null;
-		}
-
-		return value_i18n;
-	}
-
-	public void setValue_i18n(Map<String, UrlValue> value_i18n) {
-		this.value_i18n = value_i18n;
-
-		_value_i18nSupplier = null;
-	}
-
-	@JsonIgnore
-	public void setValue_i18n(
-		UnsafeSupplier<Map<String, UrlValue>, Exception>
-			value_i18nUnsafeSupplier) {
-
-		_value_i18nSupplier = () -> {
-			try {
-				return value_i18nUnsafeSupplier.get();
-			}
-			catch (RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			catch (Exception exception) {
-				throw new RuntimeException(exception);
-			}
-		};
-	}
-
-	@GraphQLField(
-		description = "The localized value of the configuration field of type url."
-	)
-	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected Map<String, UrlValue> value_i18n;
-
-	@JsonIgnore
-	private Supplier<Map<String, UrlValue>> _value_i18nSupplier;
+	private Supplier<UrlType> _urlTypeSupplier;
 
 	@Override
 	public boolean equals(Object object) {
@@ -153,15 +133,13 @@ public class UrlConfigurationFieldValue
 			return true;
 		}
 
-		if (!(object instanceof UrlConfigurationFieldValue)) {
+		if (!(object instanceof UrlValue)) {
 			return false;
 		}
 
-		UrlConfigurationFieldValue urlConfigurationFieldValue =
-			(UrlConfigurationFieldValue)object;
+		UrlValue urlValue = (UrlValue)object;
 
-		return Objects.equals(
-			toString(), urlConfigurationFieldValue.toString());
+		return Objects.equals(toString(), urlValue.toString());
 	}
 
 	@Override
@@ -176,42 +154,18 @@ public class UrlConfigurationFieldValue
 
 		sb.append("{");
 
-		UrlValue value = getValue();
+		UrlType urlType = getUrlType();
 
-		if (value != null) {
+		if (urlType != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"value\": ");
-
-			sb.append(String.valueOf(value));
-		}
-
-		Map<String, UrlValue> value_i18n = getValue_i18n();
-
-		if (value_i18n != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"value_i18n\": ");
-
-			sb.append(_toJSON(value_i18n));
-		}
-
-		Type type = getType();
-
-		if (type != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"type\": ");
+			sb.append("\"urlType\": ");
 
 			sb.append("\"");
 
-			sb.append(type);
+			sb.append(urlType);
 
 			sb.append("\"");
 		}
@@ -223,10 +177,48 @@ public class UrlConfigurationFieldValue
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY,
-		defaultValue = "com.liferay.headless.admin.site.dto.v1_0.UrlConfigurationFieldValue",
+		defaultValue = "com.liferay.headless.admin.site.dto.v1_0.UrlValue",
 		name = "x-class-name"
 	)
 	public String xClassName;
+
+	@GraphQLName("UrlType")
+	public static enum UrlType {
+
+		HREF("Href"), LAYOUT("Layout");
+
+		@JsonCreator
+		public static UrlType create(String value) {
+			if ((value == null) || value.equals("")) {
+				return null;
+			}
+
+			for (UrlType urlType : values()) {
+				if (Objects.equals(urlType.getValue(), value)) {
+					return urlType;
+				}
+			}
+
+			throw new IllegalArgumentException("Invalid enum value: " + value);
+		}
+
+		@JsonValue
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private UrlType(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
+	}
 
 	private static String _escape(Object object) {
 		return StringUtil.replace(

@@ -12,6 +12,7 @@ import jakarta.annotation.Generated;
 
 import java.io.Serializable;
 
+import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -26,16 +27,16 @@ public class UrlConfigurationFieldValue
 		return UrlConfigurationFieldValueSerDes.toDTO(json);
 	}
 
-	public Object getValue() {
+	public UrlValue getValue() {
 		return value;
 	}
 
-	public void setValue(Object value) {
+	public void setValue(UrlValue value) {
 		this.value = value;
 	}
 
 	public void setValue(
-		UnsafeSupplier<Object, Exception> valueUnsafeSupplier) {
+		UnsafeSupplier<UrlValue, Exception> valueUnsafeSupplier) {
 
 		try {
 			value = valueUnsafeSupplier.get();
@@ -45,18 +46,19 @@ public class UrlConfigurationFieldValue
 		}
 	}
 
-	protected Object value;
+	protected UrlValue value;
 
-	public Object getValue_i18n() {
+	public Map<String, UrlValue> getValue_i18n() {
 		return value_i18n;
 	}
 
-	public void setValue_i18n(Object value_i18n) {
+	public void setValue_i18n(Map<String, UrlValue> value_i18n) {
 		this.value_i18n = value_i18n;
 	}
 
 	public void setValue_i18n(
-		UnsafeSupplier<Object, Exception> value_i18nUnsafeSupplier) {
+		UnsafeSupplier<Map<String, UrlValue>, Exception>
+			value_i18nUnsafeSupplier) {
 
 		try {
 			value_i18n = value_i18nUnsafeSupplier.get();
@@ -66,7 +68,7 @@ public class UrlConfigurationFieldValue
 		}
 	}
 
-	protected Object value_i18n;
+	protected Map<String, UrlValue> value_i18n;
 
 	@Override
 	public UrlConfigurationFieldValue clone()

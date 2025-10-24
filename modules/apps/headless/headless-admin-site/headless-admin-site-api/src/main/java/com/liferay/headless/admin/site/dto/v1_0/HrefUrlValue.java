@@ -18,8 +18,6 @@ import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 
 import jakarta.annotation.Generated;
 
-import jakarta.validation.Valid;
-
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.io.Serializable;
@@ -36,51 +34,43 @@ import java.util.function.Supplier;
  */
 @Generated("")
 @GraphQLName(
-	description = "The value of a configuration field of type url.",
-	value = "UrlConfigurationFieldValue"
+	description = "The href value of a configuration field of type url.",
+	value = "HrefUrlValue"
 )
 @JsonFilter("Liferay.Vulcan")
-@XmlRootElement(name = "UrlConfigurationFieldValue")
-public class UrlConfigurationFieldValue
-	extends ConfigurationFieldValue implements Serializable {
+@XmlRootElement(name = "HrefUrlValue")
+public class HrefUrlValue extends UrlValue implements Serializable {
 
-	public static UrlConfigurationFieldValue toDTO(String json) {
-		return ObjectMapperUtil.readValue(
-			UrlConfigurationFieldValue.class, json);
+	public static HrefUrlValue toDTO(String json) {
+		return ObjectMapperUtil.readValue(HrefUrlValue.class, json);
 	}
 
-	public static UrlConfigurationFieldValue unsafeToDTO(String json) {
-		return ObjectMapperUtil.unsafeReadValue(
-			UrlConfigurationFieldValue.class, json);
+	public static HrefUrlValue unsafeToDTO(String json) {
+		return ObjectMapperUtil.unsafeReadValue(HrefUrlValue.class, json);
 	}
 
-	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The value of the configuration field of type url."
-	)
-	@Valid
-	public UrlValue getValue() {
-		if (_valueSupplier != null) {
-			value = _valueSupplier.get();
+	@io.swagger.v3.oas.annotations.media.Schema
+	public String getHref() {
+		if (_hrefSupplier != null) {
+			href = _hrefSupplier.get();
 
-			_valueSupplier = null;
+			_hrefSupplier = null;
 		}
 
-		return value;
+		return href;
 	}
 
-	public void setValue(UrlValue value) {
-		this.value = value;
+	public void setHref(String href) {
+		this.href = href;
 
-		_valueSupplier = null;
+		_hrefSupplier = null;
 	}
 
 	@JsonIgnore
-	public void setValue(
-		UnsafeSupplier<UrlValue, Exception> valueUnsafeSupplier) {
-
-		_valueSupplier = () -> {
+	public void setHref(UnsafeSupplier<String, Exception> hrefUnsafeSupplier) {
+		_hrefSupplier = () -> {
 			try {
-				return valueUnsafeSupplier.get();
+				return hrefUnsafeSupplier.get();
 			}
 			catch (RuntimeException runtimeException) {
 				throw runtimeException;
@@ -91,61 +81,12 @@ public class UrlConfigurationFieldValue
 		};
 	}
 
-	@GraphQLField(
-		description = "The value of the configuration field of type url."
-	)
+	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected UrlValue value;
+	protected String href;
 
 	@JsonIgnore
-	private Supplier<UrlValue> _valueSupplier;
-
-	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The localized value of the configuration field of type url."
-	)
-	@Valid
-	public Map<String, UrlValue> getValue_i18n() {
-		if (_value_i18nSupplier != null) {
-			value_i18n = _value_i18nSupplier.get();
-
-			_value_i18nSupplier = null;
-		}
-
-		return value_i18n;
-	}
-
-	public void setValue_i18n(Map<String, UrlValue> value_i18n) {
-		this.value_i18n = value_i18n;
-
-		_value_i18nSupplier = null;
-	}
-
-	@JsonIgnore
-	public void setValue_i18n(
-		UnsafeSupplier<Map<String, UrlValue>, Exception>
-			value_i18nUnsafeSupplier) {
-
-		_value_i18nSupplier = () -> {
-			try {
-				return value_i18nUnsafeSupplier.get();
-			}
-			catch (RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			catch (Exception exception) {
-				throw new RuntimeException(exception);
-			}
-		};
-	}
-
-	@GraphQLField(
-		description = "The localized value of the configuration field of type url."
-	)
-	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected Map<String, UrlValue> value_i18n;
-
-	@JsonIgnore
-	private Supplier<Map<String, UrlValue>> _value_i18nSupplier;
+	private Supplier<String> _hrefSupplier;
 
 	@Override
 	public boolean equals(Object object) {
@@ -153,15 +94,13 @@ public class UrlConfigurationFieldValue
 			return true;
 		}
 
-		if (!(object instanceof UrlConfigurationFieldValue)) {
+		if (!(object instanceof HrefUrlValue)) {
 			return false;
 		}
 
-		UrlConfigurationFieldValue urlConfigurationFieldValue =
-			(UrlConfigurationFieldValue)object;
+		HrefUrlValue hrefUrlValue = (HrefUrlValue)object;
 
-		return Objects.equals(
-			toString(), urlConfigurationFieldValue.toString());
+		return Objects.equals(toString(), hrefUrlValue.toString());
 	}
 
 	@Override
@@ -176,42 +115,34 @@ public class UrlConfigurationFieldValue
 
 		sb.append("{");
 
-		UrlValue value = getValue();
+		String href = getHref();
 
-		if (value != null) {
+		if (href != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"value\": ");
-
-			sb.append(String.valueOf(value));
-		}
-
-		Map<String, UrlValue> value_i18n = getValue_i18n();
-
-		if (value_i18n != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"value_i18n\": ");
-
-			sb.append(_toJSON(value_i18n));
-		}
-
-		Type type = getType();
-
-		if (type != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"type\": ");
+			sb.append("\"href\": ");
 
 			sb.append("\"");
 
-			sb.append(type);
+			sb.append(_escape(href));
+
+			sb.append("\"");
+		}
+
+		UrlType urlType = getUrlType();
+
+		if (urlType != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"urlType\": ");
+
+			sb.append("\"");
+
+			sb.append(urlType);
 
 			sb.append("\"");
 		}
@@ -223,7 +154,7 @@ public class UrlConfigurationFieldValue
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY,
-		defaultValue = "com.liferay.headless.admin.site.dto.v1_0.UrlConfigurationFieldValue",
+		defaultValue = "com.liferay.headless.admin.site.dto.v1_0.HrefUrlValue",
 		name = "x-class-name"
 	)
 	public String xClassName;

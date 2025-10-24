@@ -6,6 +6,7 @@
 package com.liferay.headless.admin.site.client.serdes.v1_0;
 
 import com.liferay.headless.admin.site.client.dto.v1_0.UrlConfigurationFieldValue;
+import com.liferay.headless.admin.site.client.dto.v1_0.UrlValue;
 import com.liferay.headless.admin.site.client.json.BaseJSONParser;
 
 import jakarta.annotation.Generated;
@@ -57,14 +58,7 @@ public class UrlConfigurationFieldValueSerDes {
 
 			sb.append("\"value\": ");
 
-			if (urlConfigurationFieldValue.getValue() instanceof String) {
-				sb.append("\"");
-				sb.append((String)urlConfigurationFieldValue.getValue());
-				sb.append("\"");
-			}
-			else {
-				sb.append(urlConfigurationFieldValue.getValue());
-			}
+			sb.append(String.valueOf(urlConfigurationFieldValue.getValue()));
 		}
 
 		if (urlConfigurationFieldValue.getValue_i18n() != null) {
@@ -74,14 +68,7 @@ public class UrlConfigurationFieldValueSerDes {
 
 			sb.append("\"value_i18n\": ");
 
-			if (urlConfigurationFieldValue.getValue_i18n() instanceof String) {
-				sb.append("\"");
-				sb.append((String)urlConfigurationFieldValue.getValue_i18n());
-				sb.append("\"");
-			}
-			else {
-				sb.append(urlConfigurationFieldValue.getValue_i18n());
-			}
+			sb.append(_toJSON(urlConfigurationFieldValue.getValue_i18n()));
 		}
 
 		if (urlConfigurationFieldValue.getType() != null) {
@@ -167,7 +154,7 @@ public class UrlConfigurationFieldValueSerDes {
 				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "value_i18n")) {
-				return false;
+				return true;
 			}
 			else if (Objects.equals(jsonParserFieldName, "type")) {
 				return false;
@@ -184,13 +171,13 @@ public class UrlConfigurationFieldValueSerDes {
 			if (Objects.equals(jsonParserFieldName, "value")) {
 				if (jsonParserFieldValue != null) {
 					urlConfigurationFieldValue.setValue(
-						(Object)jsonParserFieldValue);
+						UrlValueSerDes.toDTO((String)jsonParserFieldValue));
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "value_i18n")) {
 				if (jsonParserFieldValue != null) {
 					urlConfigurationFieldValue.setValue_i18n(
-						(Object)jsonParserFieldValue);
+						(Map<String, UrlValue>)jsonParserFieldValue);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "type")) {
