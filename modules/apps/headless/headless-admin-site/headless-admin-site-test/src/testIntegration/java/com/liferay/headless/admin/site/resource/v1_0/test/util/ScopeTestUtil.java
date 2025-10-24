@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-
 package com.liferay.headless.admin.site.resource.v1_0.test.util;
 
 import com.liferay.headless.admin.site.client.dto.v1_0.Scope;
@@ -25,22 +24,27 @@ public class ScopeTestUtil {
 		Group group = GroupLocalServiceUtil.fetchGroup(itemGroupId);
 
 		if (group == null) {
-			return new Scope() {{
-				setExternalReferenceCode(RandomTestUtil::randomString);
-				setType(Type.SITE);
-			}};
+			return new Scope() {
+				{
+					setExternalReferenceCode(RandomTestUtil::randomString);
+					setType(Type.SITE);
+				}
+			};
 		}
 
-		return new Scope() {{
-			setExternalReferenceCode(group::getExternalReferenceCode);
-			setType(
-				() -> {
-					if (group.getType() == GroupConstants.TYPE_DEPOT) {
-						return Type.ASSET_LIBRARY;
-					}
+		return new Scope() {
+			{
+				setExternalReferenceCode(group::getExternalReferenceCode);
+				setType(
+					() -> {
+						if (group.getType() == GroupConstants.TYPE_DEPOT) {
+							return Type.ASSET_LIBRARY;
+						}
 
-					return Type.SITE;
-				});
-		}};
+						return Type.SITE;
+					});
+			}
+		};
 	}
+
 }
