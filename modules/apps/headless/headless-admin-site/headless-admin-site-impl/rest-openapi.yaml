@@ -2320,13 +2320,13 @@ components:
                 -   $ref: "#/components/schemas/ConfigurationFieldValue"
                 -   properties:
                         value:
+                            $ref: "#/components/schemas/NavigationMenuValue"
                             # @review
                             description:
                                 The value of the configuration field of type navigation menu.
-                            type: object
                         value_i18n:
                             additionalProperties:
-                                type: object
+                                $ref: "#/components/schemas/NavigationMenuValue"
                             # @review
                             description:
                                 The localized value of the configuration field of type navigation menu.
@@ -2427,6 +2427,18 @@ components:
                     type: boolean
             required:
                 -   typeSettings
+        NavigationMenuValue:
+            # @review
+            description:
+                A value of a field of type navigation menu.
+            properties:
+                navigationMenu:
+                    $ref: "#/components/schemas/ItemExternalReference"
+                parentItemExternalReferenceCode:
+                    type: string
+                privatePages:
+                    type: boolean
+            type: object
         NavigationSettings:
             # @review
             description:
