@@ -238,8 +238,7 @@ public class FragmentInstanceConfigurationFieldValuesUtil {
 			return _getConfigurationJSONObject(
 				fragmentConfigurationField.isLocalizable(),
 				navigationMenuValue -> _getNavigationMenuJSONObject(
-					layoutStructureItemImporterContext,
-					navigationMenuValue),
+					layoutStructureItemImporterContext, navigationMenuValue),
 				navigationMenuConfigurationFieldValue.getValue(),
 				navigationMenuConfigurationFieldValue.getValue_i18n());
 		}
@@ -654,10 +653,8 @@ public class FragmentInstanceConfigurationFieldValuesUtil {
 	}
 
 	private static JSONObject _getNavigationMenuJSONObject(
-			LayoutStructureItemImporterContext
-				layoutStructureItemImporterContext,
-			NavigationMenuValue navigationMenuValue)
-		{
+		LayoutStructureItemImporterContext layoutStructureItemImporterContext,
+		NavigationMenuValue navigationMenuValue) {
 
 		if (navigationMenuValue == null) {
 			return null;
@@ -725,21 +722,6 @@ public class FragmentInstanceConfigurationFieldValuesUtil {
 					getExternalReferenceCode();
 			}
 		).put(
-			"siteNavigationMenuScopeExternalReferenceCode",
-			() -> {
-
-				if (siteNavigationMenuItemExternalReference == null ||
-					siteNavigationMenuItemExternalReference.getScope() == null) {
-					return null;
-				}
-
-				Scope scope =
-					siteNavigationMenuItemExternalReference.getScope();
-
-				return scope.
-					getExternalReferenceCode();
-			}
-		).put(
 			"siteNavigationMenuItemId",
 			() -> {
 				if (siteNavigationMenu == null) {
@@ -748,6 +730,21 @@ public class FragmentInstanceConfigurationFieldValuesUtil {
 
 				return String.valueOf(
 					siteNavigationMenu.getSiteNavigationMenuId());
+			}
+		).put(
+			"siteNavigationMenuScopeExternalReferenceCode",
+			() -> {
+				if ((siteNavigationMenuItemExternalReference == null) ||
+					(siteNavigationMenuItemExternalReference.getScope() ==
+						null)) {
+
+					return null;
+				}
+
+				Scope scope =
+					siteNavigationMenuItemExternalReference.getScope();
+
+				return scope.getExternalReferenceCode();
 			}
 		).put(
 			"title",

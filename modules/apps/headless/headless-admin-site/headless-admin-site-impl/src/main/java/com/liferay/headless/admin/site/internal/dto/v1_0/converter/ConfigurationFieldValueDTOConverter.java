@@ -37,7 +37,6 @@ import com.liferay.headless.admin.site.internal.dto.v1_0.util.ItemScopeUtil;
 import com.liferay.headless.admin.site.internal.dto.v1_0.util.LocalizedValueUtil;
 import com.liferay.info.item.ERCInfoItemIdentifier;
 import com.liferay.info.item.InfoItemServiceRegistry;
-import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.Layout;
@@ -413,7 +412,7 @@ public class ConfigurationFieldValueDTOConverter
 	}
 
 	private ItemExternalReference _getInfoItemExternalReference(
-			long companyId, JSONObject jsonObject, long scopeGroupId) {
+		long companyId, JSONObject jsonObject, long scopeGroupId) {
 
 		if (JSONUtil.isEmpty(jsonObject)) {
 			return null;
@@ -501,7 +500,7 @@ public class ConfigurationFieldValueDTOConverter
 	}
 
 	private ItemValue _getItemValue(
-			long companyId, JSONObject jsonObject, long scopeGroupId) {
+		long companyId, JSONObject jsonObject, long scopeGroupId) {
 
 		ItemExternalReference infoItemExternalReference =
 			_getInfoItemExternalReference(companyId, jsonObject, scopeGroupId);
