@@ -3,7 +3,6 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-
 package com.liferay.headless.admin.site.resource.v1_0.test.util;
 
 import com.liferay.asset.kernel.model.AssetCategory;
@@ -18,8 +17,6 @@ import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.site.navigation.model.SiteNavigationMenu;
 
-import java.util.Collection;
-
 /**
  * @author Lourdes Fernández Besada
  */
@@ -33,27 +30,31 @@ public class ReferencesTestUtil {
 		}
 
 		if (object instanceof String) {
-			return new ClassNameReference () {{
-				setClassName(() -> GetterUtil.getString(object));
-				setCollectionType(() -> CollectionType.COLLECTION_PROVIDER);
-			}};
+			return new ClassNameReference() {
+				{
+					setClassName(() -> GetterUtil.getString(object));
+					setCollectionType(() -> CollectionType.COLLECTION_PROVIDER);
+				}
+			};
 		}
 
 		if (!(object instanceof AssetListEntry)) {
 			return null;
 		}
 
-		AssetListEntry  assetListEntry = (AssetListEntry)object;
+		AssetListEntry assetListEntry = (AssetListEntry)object;
 
-		return new CollectionItemExternalReference() {{
-
-			setClassName(() -> AssetListEntry.class.getName());
-			setCollectionType(() -> CollectionType.COLLECTION);
-			setExternalReferenceCode(assetListEntry::getExternalReferenceCode);
-			setScope(() -> ScopeTestUtil.getItemScope(
-				assetListEntry.getGroupId(), scopeGroupId));
-		}};
-
+		return new CollectionItemExternalReference() {
+			{
+				setClassName(() -> AssetListEntry.class.getName());
+				setCollectionType(() -> CollectionType.COLLECTION);
+				setExternalReferenceCode(
+					assetListEntry::getExternalReferenceCode);
+				setScope(
+					() -> ScopeTestUtil.getItemScope(
+						assetListEntry.getGroupId(), scopeGroupId));
+			}
+		};
 	}
 
 	public static ItemExternalReference getItemExternalReference(
@@ -64,23 +65,25 @@ public class ReferencesTestUtil {
 		}
 
 		if (object instanceof AssetCategory) {
-			AssetCategory  assetCategory = (AssetCategory)object;
+			AssetCategory assetCategory = (AssetCategory)object;
 
 			return getItemExternalReference(
-				AssetCategory.class.getName(), assetCategory.getExternalReferenceCode(),
+				AssetCategory.class.getName(),
+				assetCategory.getExternalReferenceCode(),
 				assetCategory.getGroupId(), scopeGroupId);
 		}
 
 		if (object instanceof AssetVocabulary) {
-			AssetVocabulary  assetVocabulary = (AssetVocabulary)object;
+			AssetVocabulary assetVocabulary = (AssetVocabulary)object;
 
 			return getItemExternalReference(
-				AssetVocabulary.class.getName(), assetVocabulary.getExternalReferenceCode(),
+				AssetVocabulary.class.getName(),
+				assetVocabulary.getExternalReferenceCode(),
 				assetVocabulary.getGroupId(), scopeGroupId);
 		}
 
 		if (object instanceof FileEntry) {
-			FileEntry  fileEntry = (FileEntry)object;
+			FileEntry fileEntry = (FileEntry)object;
 
 			return getItemExternalReference(
 				FileEntry.class.getName(), fileEntry.getExternalReferenceCode(),
@@ -88,18 +91,20 @@ public class ReferencesTestUtil {
 		}
 
 		if (object instanceof JournalArticle) {
-			JournalArticle  journalArticle = (JournalArticle)object;
+			JournalArticle journalArticle = (JournalArticle)object;
 
 			return getItemExternalReference(
-				JournalArticle.class.getName(), journalArticle.getExternalReferenceCode(),
+				JournalArticle.class.getName(),
+				journalArticle.getExternalReferenceCode(),
 				journalArticle.getGroupId(), scopeGroupId);
 		}
 
 		if (object instanceof SiteNavigationMenu) {
-			SiteNavigationMenu  siteNavigationMenu = (SiteNavigationMenu)object;
+			SiteNavigationMenu siteNavigationMenu = (SiteNavigationMenu)object;
 
 			return getItemExternalReference(
-				SiteNavigationMenu.class.getName(), siteNavigationMenu.getExternalReferenceCode(),
+				SiteNavigationMenu.class.getName(),
+				siteNavigationMenu.getExternalReferenceCode(),
 				siteNavigationMenu.getGroupId(), scopeGroupId);
 		}
 
@@ -107,17 +112,18 @@ public class ReferencesTestUtil {
 	}
 
 	private static ItemExternalReference getItemExternalReference(
-		String className, String externalReferenceCode, long itemGroupId, long scopeGroupId) {
+		String className, String externalReferenceCode, long itemGroupId,
+		long scopeGroupId) {
 
-		ItemExternalReference
-			itemExternalReference =
+		ItemExternalReference itemExternalReference =
 			new ItemExternalReference();
 
 		itemExternalReference.setClassName(className);
 		itemExternalReference.setExternalReferenceCode(externalReferenceCode);
-		itemExternalReference.setScope(() -> ScopeTestUtil.getItemScope(
-			itemGroupId, scopeGroupId));
+		itemExternalReference.setScope(
+			() -> ScopeTestUtil.getItemScope(itemGroupId, scopeGroupId));
 
 		return itemExternalReference;
 	}
+
 }
