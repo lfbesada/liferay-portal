@@ -5,7 +5,6 @@
 
 package com.liferay.headless.admin.site.internal.dto.v1_0.converter;
 
-import com.liferay.fragment.contributor.FragmentCollectionContributorRegistry;
 import com.liferay.fragment.model.FragmentEntry;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.service.FragmentEntryLinkLocalService;
@@ -23,8 +22,6 @@ import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterContext;
-
-import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -132,13 +129,7 @@ public class FragmentInstancePageElementDefinitionDTOConverter
 							};
 						}
 
-						Map<String, FragmentEntry> fragmentEntries =
-							_fragmentCollectionContributorRegistry.
-								getFragmentEntries();
-
-						if (!fragmentEntries.containsKey(
-								fragmentEntryLink.getRendererKey())) {
-
+						if (fragmentEntryLink.getFragmentEntryId() > 0) {
 							return null;
 						}
 
@@ -192,10 +183,6 @@ public class FragmentInstancePageElementDefinitionDTOConverter
 
 		return originalFragmentEntryLink.getExternalReferenceCode();
 	}
-
-	@Reference
-	private FragmentCollectionContributorRegistry
-		_fragmentCollectionContributorRegistry;
 
 	@Reference
 	private FragmentEntryLinkLocalService _fragmentEntryLinkLocalService;
