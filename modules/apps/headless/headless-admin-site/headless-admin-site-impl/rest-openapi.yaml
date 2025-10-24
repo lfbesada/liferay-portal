@@ -1969,6 +1969,16 @@ components:
                 -   gridViewportDefinition
                 -   id
             type: object
+        HrefUrlValue:
+            allOf:
+                -   $ref: "#/components/schemas/UrlValue"
+                -   properties:
+                        href:
+                            type: string          
+            # @review
+            description:
+                The href value of a configuration field of type url.
+            type: object
         HtmlProperties:
             properties:
                 htmlTag:
@@ -2040,6 +2050,14 @@ components:
                                 The width's type (fixed or fluid).
                             enum: [Fixed, Fluid]
                             type: string
+        LayoutUrlValue:
+            allOf:
+                -   $ref: "#/components/schemas/UrlValue"
+                -   $ref: "#/components/schemas/ItemExternalReference"
+            # @review
+            description:
+                The layout value of a configuration field of type url.
+            type: object
         LengthConfigurationFieldValue:
             allOf:
                 -   $ref: "#/components/schemas/ConfigurationFieldValue"
@@ -3240,36 +3258,48 @@ components:
                 -   $ref: "#/components/schemas/ConfigurationFieldValue"
                 -   properties:
                         value:
+                            $ref: "#/components/schemas/UrlValue"
                             # @review
                             description:
                                 The value of the configuration field of type url.
-                            oneOf:
-                                -   properties:
-                                        href:
-                                            type: string
-                                    type: object
-                                -   properties:
-                                        layout:
-                                            $ref: "#/components/schemas/ItemExternalReference"
-                                    type: object
                         value_i18n:
                             additionalProperties:
-                                oneOf:
-                                    -   properties:
-                                            href:
-                                                type: string
-                                        type: object
-                                    -   properties:
-                                            layout:
-                                                $ref: "#/components/schemas/ItemExternalReference"
-                                        type: object
+                                $ref: "#/components/schemas/UrlValue"
                             # @review
                             description:
                                 The localized value of the configuration field of type url.
-                            type: object                            
+                            type: object          
             # @review
             description:
                 The value of a configuration field of type url.
+            type: object
+        UrlValue:
+            # @review
+            description:
+                A value of a field of type url.
+            discriminator:
+                mapping:
+                    Href: "#/components/schemas/HrefUrlValue"
+                    Layout: "#/components/schemas/LayoutUrlValue"
+                propertyName: urlType
+            oneOf:
+                -   properties:
+                        href:
+                            $ref: "#/components/schemas/ItemExternalReference"
+                    type: object
+                -   properties:
+                        layout:
+                            $ref: "#/components/schemas/ItemExternalReference"
+                    type: object
+            properties:
+                type:
+                    # @review
+                    description:
+                        The url value's type (href, layout).
+                    enum: [Href, Layout]
+                    type: string
+            required:
+                -   urlType
             type: object
         UtilityPage:
             description:
