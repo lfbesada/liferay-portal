@@ -236,6 +236,32 @@ components:
                     enum: [Collection, CollectionProvider]
                     type: string
             type: object
+        ConfigurationFieldValue:
+            # @review
+            description:
+                The value of a configuration field.
+            properties:
+                type:
+                    # @review
+                    description:
+                        The configuration field's type (category, checkbox, collection, colorPalette, colorPicker, item,
+                        length, navigationMenu, select, text, url, video).
+                    enum: [Category, Checkbox, Collection, ColorPalette, ColorPicker, Item, Length, NavigationMenu, Select, Text, Url, Video]
+                    type: string
+                value:
+                  # @review
+                  description:
+                    The value of a no localized configuration field.
+                  type: string
+                value_i18n:
+                  additionalProperties:
+                    type: string
+                  # @review
+                  description:
+                    The localized value of the configuration field.
+            required:
+                -   type
+            type: object
         ContainerPageElementDefinition:
             allOf:
                 -   $ref: "#/components/schemas/PageElementDefinition"
@@ -1162,7 +1188,7 @@ components:
                             type: string
                         fragmentConfig:
                             additionalProperties:
-                                type: object
+                                $ref: "#/components/schemas/ConfigurationFieldValue"
                             # @review
                             description:
                                 The configuration values of the fragment instance.
