@@ -111,7 +111,7 @@ public class ReferencesTestUtil {
 		return null;
 	}
 
-	private static ItemExternalReference getItemExternalReference(
+	public static ItemExternalReference getItemExternalReference(
 		String className, String externalReferenceCode, long itemGroupId,
 		long scopeGroupId) {
 
