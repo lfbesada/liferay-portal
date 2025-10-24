@@ -8,15 +8,14 @@ package com.liferay.headless.admin.site.internal.resource.v1_0;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.headless.admin.site.dto.v1_0.NavigationMenu;
 import com.liferay.headless.admin.site.dto.v1_0.NavigationMenuItem;
+import com.liferay.headless.admin.site.dto.v1_0.util.CreatorUtil;
 import com.liferay.headless.admin.site.internal.odata.entity.v1_0.NavigationMenuEntityModel;
 import com.liferay.headless.admin.site.resource.v1_0.NavigationMenuResource;
-import com.liferay.headless.admin.user.dto.v1_0.Creator;
 import com.liferay.headless.common.spi.service.context.ServiceContextBuilder;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.search.Field;
 import com.liferay.portal.kernel.search.Sort;
@@ -32,11 +31,13 @@ import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.vulcan.custom.field.CustomFieldsUtil;
+import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedFieldsSupplier;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
@@ -468,21 +469,12 @@ public class NavigationMenuResourceImpl extends BaseNavigationMenuResourceImpl {
 							"putNavigationMenu")
 					).build());
 				setCreator(
-					() -> {
-						User user = _userLocalService.fetchUser(
-							siteNavigationMenu.getUserId());
-
-						if (user == null) {
-							return null;
-						}
-
-						return new Creator() {
-							{
-								setExternalReferenceCode(
-									user::getExternalReferenceCode);
-							}
-						};
-					});
+					() -> CreatorUtil.toCreator(
+						new DefaultDTOConverterContext(
+							null, null, null, contextUriInfo, null),
+						_portal,
+						_userLocalService.fetchUser(
+							siteNavigationMenu.getUserId())));
 				setDateCreated(siteNavigationMenu::getCreateDate);
 				setDateModified(siteNavigationMenu::getModifiedDate);
 				setExternalReferenceCode(
@@ -549,21 +541,12 @@ public class NavigationMenuResourceImpl extends BaseNavigationMenuResourceImpl {
 							locales.toArray(new Locale[localizedMap.size()]));
 					});
 				setCreator(
-					() -> {
-						User user = _userLocalService.fetchUser(
-							siteNavigationMenuItem.getUserId());
-
-						if (user == null) {
-							return null;
-						}
-
-						return new Creator() {
-							{
-								setExternalReferenceCode(
-									user::getExternalReferenceCode);
-							}
-						};
-					});
+					() -> CreatorUtil.toCreator(
+						new DefaultDTOConverterContext(
+							null, null, null, contextUriInfo, null),
+						_portal,
+						_userLocalService.fetchUser(
+							siteNavigationMenuItem.getUserId())));
 				setCustomFields(
 					() -> CustomFieldsUtil.toCustomFields(
 						contextAcceptLanguage.isAcceptAllLanguages(),
@@ -768,6 +751,9 @@ public class NavigationMenuResourceImpl extends BaseNavigationMenuResourceImpl {
 
 	@Reference
 	private PermissionService _permissionService;
+
+	@Reference
+	private Portal _portal;
 
 	@Reference
 	private ResourceActionLocalService _resourceActionLocalService;
