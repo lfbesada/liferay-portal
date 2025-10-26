@@ -239,24 +239,18 @@ components:
             description:
                 The value of a configuration field.
             properties:
-                type:
+                value:
+                    $ref: "#/components/schemas/FieldValue"
                     # @review
                     description:
-                        The configuration field's type (category, checkbox, collection, colorPalette, colorPicker, item,
-                        length, navigationMenu, select, text, url, video).
-                    enum: [Category, Checkbox, Collection, ColorPalette, ColorPicker, Item, Length, NavigationMenu, Select, Text, Url, Video]
-                    type: string
-                value:
-                  # @review
-                  description:
-                    The value of a no localized configuration field.
-                  type: string
+                        The value of a no localized configuration field.
+                    type: objetc
                 value_i18n:
-                  additionalProperties:
-                    type: string
-                  # @review
-                  description:
-                    The localized value of the configuration field.
+                    additionalProperties:
+                        $ref: "#/components/schemas/FieldValue"
+                    # @review
+                    description:
+                        The localized value of a configuration field.
             required:
                 -   type
             type: object
@@ -730,6 +724,21 @@ components:
             description:
                 A unique reference to a FavIcon of type ItemExternalReference which remains constant across
                 environments.
+            type: object
+        FieldValue:
+            # @review
+            description:
+                The type value of a configuration field.
+            properties:
+                type:
+                    # @review
+                    description:
+                        The configuration field's type (category, checkbox, collection, colorPalette, colorPicker, item,
+                        length, navigationMenu, select, text, url, video).
+                    enum: [Category, Checkbox, Collection, ColorPalette, ColorPicker, Item, Length, NavigationMenu, Select, Text, Url, Video]
+                    type: string
+            required:
+                -   type
             type: object
         FormConfig:
             # @review
