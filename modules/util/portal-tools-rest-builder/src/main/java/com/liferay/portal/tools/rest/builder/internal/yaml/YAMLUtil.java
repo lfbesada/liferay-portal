@@ -47,6 +47,7 @@ public class YAMLUtil {
 			return _YAML_OPEN_API.loadAs(yamlString, OpenAPIYAML.class);
 		}
 		catch (MarkedYAMLException markedYAMLException) {
+			System.out.println ("************ yamlString: " + yamlString);
 			throw new InvalidYAMLException(markedYAMLException);
 		}
 	}

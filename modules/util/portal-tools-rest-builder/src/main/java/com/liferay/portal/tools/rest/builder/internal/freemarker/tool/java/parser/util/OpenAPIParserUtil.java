@@ -93,6 +93,10 @@ public class OpenAPIParserUtil {
 				}
 			}
 			else {
+				if (allOfSchema.getPropertySchemas() == null) {
+					System.out.println ("****************+ allOfSchema.getPropertySchemas() == null schema.getDescription(): " + schema.getDescription());
+				}
+
 				propertySchemas.putAll(allOfSchema.getPropertySchemas());
 			}
 		}
