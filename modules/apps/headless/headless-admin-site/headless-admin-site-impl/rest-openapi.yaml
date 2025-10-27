@@ -31,6 +31,28 @@ components:
                 justify:
                     enum: [Center, End, None, SpaceAround, SpaceBetween, Start]
                     type: string
+        BooleanFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/FieldValue"
+                -   additionalProperties:
+                        enabled:
+                            # @review
+                            description:
+                                Whether the field is enabled.
+                            type: boolean
+                        type: object
+            # @review
+            description:
+                The boolean value of a field.
+            type: object
+        CategoryFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/FieldValue"
+                -   $ref: "#/components/schemas/ItemExternalReference"
+            # @review
+            description:
+                The value of a configuration field of type category.
+            type: object
         ClassNameReference:
             allOf:
                 -   $ref: "#/components/schemas/CollectionReference"
@@ -72,6 +94,14 @@ components:
                     description:
                         The client extension's external reference code.
                     type: string
+            type: object
+        CollectionFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/CollectionReference"
+                -   $ref: "#/components/schemas/FieldValue"
+            # @review
+            description:
+                The value of a configuration field of type collection.
             type: object
         CollectionItemExternalReference:
             allOf:
@@ -234,6 +264,15 @@ components:
                 -   id
                 -   collectionViewportDefinition
             type: object
+        ColorPaletteFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/FieldValue"
+                -   additionalProperties:
+                        type: object
+            # @review
+            description:
+                The value of a configuration field of type color palette.
+            type: object
         ConfigurationFieldValue:
             # @review
             description:
@@ -251,8 +290,6 @@ components:
                     # @review
                     description:
                         The localized value of a configuration field.
-            required:
-                -   type
             type: object
         ContainerPageElementDefinition:
             allOf:
@@ -729,6 +766,21 @@ components:
             # @review
             description:
                 The type value of a configuration field.
+            discriminator:
+                mapping:
+                    Category: "#/components/schemas/CategoryFieldValue"
+                    Checkbox: "#/components/schemas/BooleanFieldValue"
+                    Collection: "#/components/schemas/CollectionFieldValue"
+                    ColorPalette: "#/components/schemas/ColorPaletteFieldValue"
+                    ColorPicker: "#/components/schemas/ColorPickerFieldValue"
+                    Item: "#/components/schemas/ItemFieldValue"
+                    Length: "#/components/schemas/TextFieldValue"
+                    NavigationMenu: "#/components/schemas/NavigationMenuFieldValue"
+                    Select: "#/components/schemas/TextFieldValue"
+                    Text: "#/components/schemas/TextFieldValue"
+                    Url: "#/components/schemas/UrlFieldValue"
+                    Video: "#/components/schemas/VideoFieldValue"
+                propertyName: type
             properties:
                 type:
                     # @review
@@ -1891,6 +1943,19 @@ components:
             required:
                 -   externalReferenceCode
             type: object
+        ItemFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/FieldValue"
+                -   additionalProperties:
+                        item:
+                            $ref: "#/components/schemas/ItemExternalReference"
+                        template:
+                            $ref: "#/components/schemas/TemplateReference"
+                        type: object
+            # @review
+            description:
+                The value of a configuration field of type item.
+            type: object
         Layout:
             allOf:
                 -   $ref: "#/components/schemas/BasicLayout"
@@ -1903,6 +1968,22 @@ components:
                                 The width's type (fixed or fluid).
                             enum: [Fixed, Fluid]
                             type: string
+        TemplateReference:
+            # @review
+            description:
+                The template's reference.
+            properties:
+                rendererKey:
+                    # @review
+                    description:
+                        The renderer's key.
+                    type: string
+                templateKey:
+                    # @review
+                    description:
+                        The template's key.
+                    type: string
+            type: object
         MasterPage:
             # @review
             description:
@@ -2045,6 +2126,15 @@ components:
             required:
                 -   id
                 -   moduleViewportDefinition
+            type: object
+        NavigationMenuFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/FieldValue"
+                -   additionalProperties:
+                      type: object
+            # @review
+            description:
+                The value of a configuration field of type navigation menu.
             type: object
         NavigationSettings:
             # @review
@@ -2968,6 +3058,17 @@ components:
                     minimum: 0
                     type: number
             type: object
+        TextFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/FieldValue"
+                -   additionalProperties:
+                        text :
+                            type: string
+                        type: object
+            # @review
+            description:
+                The text value of a configuration field.
+            type: object
         URLActionExecutionResult:
             # @review
             description:
@@ -2989,6 +3090,15 @@ components:
                     # @review
                     description:
                         The localized submission of URL type.
+            type: object
+        UrlFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/FieldValue"
+                -   additionalProperties:
+                      type: object
+            # @review
+            description:
+                The value of a configuration field of type url.
             type: object
         UtilityPage:
             description:
@@ -3110,6 +3220,15 @@ components:
                     # @review
                     description:
                         The utility page's SEO settings.
+            type: object
+        VideoFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/FieldValue"
+                -   additionalProperties:
+                      type: object
+            # @review
+            description:
+                The value of a configuration field of type video.
             type: object
         WidgetInstance:
             # @review
