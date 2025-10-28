@@ -1114,6 +1114,58 @@ components:
                         The localized fragment's inline values.
                     type: object
             type: object
+        FragmentConfigurationFieldInstance:
+            discriminator:
+                mapping:
+                    Select: "#/components/schemas/SelectFragmentConfigurationFieldValue"
+                propertyName: fragmentConfigurationFieldType
+            properties:
+                name:
+                    type: string
+                fragmentConfigurationFieldType:
+                    enum: [Select]
+                    type: string
+            required:
+                -   name
+                -   fragmentConfigurationFieldType
+            type: object
+        SelectFragmentConfigurationFieldInstance:
+            allOf:
+                -   $ref: "#/components/schemas/FragmentConfigurationFieldInstance"
+                -   properties:
+                        selectFragmentConfigurationFieldValue:
+                            $ref: "#/components/schemas/SelectFragmentConfigurationFieldValue"
+                    type: object
+            type: object
+        SelectFragmentConfigurationFieldValue:
+            discriminator:
+                mapping:
+                    Localizable: "#/components/schemas/LocalizableSelectFragmentConfigurationFieldValue"
+                    Nonlocalizable: "#/components/schemas/NonlocalizableSelectFragmentConfigurationFieldValue"
+                propertyName: localizableType
+            properties:
+                localizableType:
+                  enum: [Localizable, Nonlocalizable]
+                  type: string
+            required:
+                -   localizableType
+            type: object
+        LocalizableSelectFragmentConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/SelectFragmentConfigurationFieldValue"
+                -   properties:
+                        value_i18n:
+                            additionalProperties:
+                                type: string
+                            type: object
+                    type: object
+        NonlocalizableSelectFragmentConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/SelectFragmentConfigurationFieldValue"
+                -   properties:
+                        value:
+                            type: string
+                    type: object
         FragmentInstancePageElementDefinition:
             allOf:
                 -   $ref: "#/components/schemas/PageElementDefinition"
@@ -1158,13 +1210,10 @@ components:
                                 The external reference code of the corresponding fragment instance in the draft of the
                                 page. Available only in the published page specification.
                             type: string
-                        fragmentConfig:
-                            additionalProperties:
-                                type: object
-                            # @review
-                            description:
-                                The configuration values of the fragment instance.
-                            type: object
+                        fragmentConfigurationFieldInstances:
+                            items:
+                                $ref: "#/components/schemas/FragmentConfigurationFieldInstance"
+                            type: array
                         fragmentFields:
                             # @review
                             description:
