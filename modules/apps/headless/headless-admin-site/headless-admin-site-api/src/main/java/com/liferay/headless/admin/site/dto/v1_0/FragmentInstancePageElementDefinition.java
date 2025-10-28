@@ -381,34 +381,39 @@ public class FragmentInstancePageElementDefinition
 	private Supplier<String>
 		_draftFragmentInstanceExternalReferenceCodeSupplier;
 
-	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The configuration values of the fragment instance."
-	)
+	@io.swagger.v3.oas.annotations.media.Schema
 	@Valid
-	public Map<String, Object> getFragmentConfig() {
-		if (_fragmentConfigSupplier != null) {
-			fragmentConfig = _fragmentConfigSupplier.get();
+	public FragmentConfigurationFieldInstance[]
+		getFragmentConfigurationFieldInstances() {
 
-			_fragmentConfigSupplier = null;
+		if (_fragmentConfigurationFieldInstancesSupplier != null) {
+			fragmentConfigurationFieldInstances =
+				_fragmentConfigurationFieldInstancesSupplier.get();
+
+			_fragmentConfigurationFieldInstancesSupplier = null;
 		}
 
-		return fragmentConfig;
+		return fragmentConfigurationFieldInstances;
 	}
 
-	public void setFragmentConfig(Map<String, Object> fragmentConfig) {
-		this.fragmentConfig = fragmentConfig;
+	public void setFragmentConfigurationFieldInstances(
+		FragmentConfigurationFieldInstance[]
+			fragmentConfigurationFieldInstances) {
 
-		_fragmentConfigSupplier = null;
+		this.fragmentConfigurationFieldInstances =
+			fragmentConfigurationFieldInstances;
+
+		_fragmentConfigurationFieldInstancesSupplier = null;
 	}
 
 	@JsonIgnore
-	public void setFragmentConfig(
-		UnsafeSupplier<Map<String, Object>, Exception>
-			fragmentConfigUnsafeSupplier) {
+	public void setFragmentConfigurationFieldInstances(
+		UnsafeSupplier<FragmentConfigurationFieldInstance[], Exception>
+			fragmentConfigurationFieldInstancesUnsafeSupplier) {
 
-		_fragmentConfigSupplier = () -> {
+		_fragmentConfigurationFieldInstancesSupplier = () -> {
 			try {
-				return fragmentConfigUnsafeSupplier.get();
+				return fragmentConfigurationFieldInstancesUnsafeSupplier.get();
 			}
 			catch (RuntimeException runtimeException) {
 				throw runtimeException;
@@ -419,14 +424,14 @@ public class FragmentInstancePageElementDefinition
 		};
 	}
 
-	@GraphQLField(
-		description = "The configuration values of the fragment instance."
-	)
+	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected Map<String, Object> fragmentConfig;
+	protected FragmentConfigurationFieldInstance[]
+		fragmentConfigurationFieldInstances;
 
 	@JsonIgnore
-	private Supplier<Map<String, Object>> _fragmentConfigSupplier;
+	private Supplier<FragmentConfigurationFieldInstance[]>
+		_fragmentConfigurationFieldInstancesSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "The fragment field values of the the fragment instance."
@@ -1189,16 +1194,31 @@ public class FragmentInstancePageElementDefinition
 			sb.append("\"");
 		}
 
-		Map<String, Object> fragmentConfig = getFragmentConfig();
+		FragmentConfigurationFieldInstance[]
+			fragmentConfigurationFieldInstances =
+				getFragmentConfigurationFieldInstances();
 
-		if (fragmentConfig != null) {
+		if (fragmentConfigurationFieldInstances != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"fragmentConfig\": ");
+			sb.append("\"fragmentConfigurationFieldInstances\": ");
 
-			sb.append(_toJSON(fragmentConfig));
+			sb.append("[");
+
+			for (int i = 0; i < fragmentConfigurationFieldInstances.length;
+				 i++) {
+
+				sb.append(
+					String.valueOf(fragmentConfigurationFieldInstances[i]));
+
+				if ((i + 1) < fragmentConfigurationFieldInstances.length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
 		}
 
 		FragmentField[] fragmentFields = getFragmentFields();

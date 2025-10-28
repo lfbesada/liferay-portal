@@ -6,6 +6,7 @@
 package com.liferay.headless.admin.site.client.serdes.v1_0;
 
 import com.liferay.headless.admin.site.client.dto.v1_0.CustomCSSViewport;
+import com.liferay.headless.admin.site.client.dto.v1_0.FragmentConfigurationFieldInstance;
 import com.liferay.headless.admin.site.client.dto.v1_0.FragmentField;
 import com.liferay.headless.admin.site.client.dto.v1_0.FragmentInstancePageElementDefinition;
 import com.liferay.headless.admin.site.client.dto.v1_0.FragmentViewport;
@@ -203,16 +204,35 @@ public class FragmentInstancePageElementDefinitionSerDes {
 			sb.append("\"");
 		}
 
-		if (fragmentInstancePageElementDefinition.getFragmentConfig() != null) {
+		if (fragmentInstancePageElementDefinition.
+				getFragmentConfigurationFieldInstances() != null) {
+
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"fragmentConfig\": ");
+			sb.append("\"fragmentConfigurationFieldInstances\": ");
 
-			sb.append(
-				_toJSON(
-					fragmentInstancePageElementDefinition.getFragmentConfig()));
+			sb.append("[");
+
+			for (int i = 0;
+				 i < fragmentInstancePageElementDefinition.
+					 getFragmentConfigurationFieldInstances().length;
+				 i++) {
+
+				sb.append(
+					String.valueOf(
+						fragmentInstancePageElementDefinition.
+							getFragmentConfigurationFieldInstances()[i]));
+
+				if ((i + 1) < fragmentInstancePageElementDefinition.
+						getFragmentConfigurationFieldInstances().length) {
+
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
 		}
 
 		if (fragmentInstancePageElementDefinition.getFragmentFields() != null) {
@@ -562,14 +582,17 @@ public class FragmentInstancePageElementDefinitionSerDes {
 						getDraftFragmentInstanceExternalReferenceCode()));
 		}
 
-		if (fragmentInstancePageElementDefinition.getFragmentConfig() == null) {
-			map.put("fragmentConfig", null);
+		if (fragmentInstancePageElementDefinition.
+				getFragmentConfigurationFieldInstances() == null) {
+
+			map.put("fragmentConfigurationFieldInstances", null);
 		}
 		else {
 			map.put(
-				"fragmentConfig",
+				"fragmentConfigurationFieldInstances",
 				String.valueOf(
-					fragmentInstancePageElementDefinition.getFragmentConfig()));
+					fragmentInstancePageElementDefinition.
+						getFragmentConfigurationFieldInstances()));
 		}
 
 		if (fragmentInstancePageElementDefinition.getFragmentFields() == null) {
@@ -769,8 +792,11 @@ public class FragmentInstancePageElementDefinitionSerDes {
 
 				return false;
 			}
-			else if (Objects.equals(jsonParserFieldName, "fragmentConfig")) {
-				return true;
+			else if (Objects.equals(
+						jsonParserFieldName,
+						"fragmentConfigurationFieldInstances")) {
+
+				return false;
 			}
 			else if (Objects.equals(jsonParserFieldName, "fragmentFields")) {
 				return false;
@@ -887,10 +913,31 @@ public class FragmentInstancePageElementDefinitionSerDes {
 							(String)jsonParserFieldValue);
 				}
 			}
-			else if (Objects.equals(jsonParserFieldName, "fragmentConfig")) {
+			else if (Objects.equals(
+						jsonParserFieldName,
+						"fragmentConfigurationFieldInstances")) {
+
 				if (jsonParserFieldValue != null) {
-					fragmentInstancePageElementDefinition.setFragmentConfig(
-						(Map<String, Object>)jsonParserFieldValue);
+					Object[] jsonParserFieldValues =
+						(Object[])jsonParserFieldValue;
+
+					FragmentConfigurationFieldInstance[]
+						fragmentConfigurationFieldInstancesArray =
+							new FragmentConfigurationFieldInstance
+								[jsonParserFieldValues.length];
+
+					for (int i = 0;
+						 i < fragmentConfigurationFieldInstancesArray.length;
+						 i++) {
+
+						fragmentConfigurationFieldInstancesArray[i] =
+							FragmentConfigurationFieldInstanceSerDes.toDTO(
+								(String)jsonParserFieldValues[i]);
+					}
+
+					fragmentInstancePageElementDefinition.
+						setFragmentConfigurationFieldInstances(
+							fragmentConfigurationFieldInstancesArray);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "fragmentFields")) {

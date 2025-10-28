@@ -5,9 +5,14 @@
 
 package com.liferay.headless.admin.site.dto.v1_0;
 
+import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonFilter;
+import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
+import com.fasterxml.jackson.annotation.JsonValue;
 
 import com.liferay.petra.function.UnsafeSupplier;
 import com.liferay.petra.string.StringBundler;
@@ -17,6 +22,9 @@ import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
 import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 
 import jakarta.annotation.Generated;
+
+import jakarta.validation.Valid;
+import jakarta.validation.constraints.NotNull;
 
 import jakarta.xml.bind.annotation.XmlRootElement;
 
@@ -33,48 +41,81 @@ import java.util.function.Supplier;
  * @generated
  */
 @Generated("")
-@GraphQLName(
-	description = "The widget instance's permissions.",
-	value = "WidgetPermission"
+@GraphQLName("SelectFragmentConfigurationFieldValue")
+@io.swagger.v3.oas.annotations.media.Schema(
+	requiredProperties = {"localizableType"}
 )
 @JsonFilter("Liferay.Vulcan")
-@XmlRootElement(name = "WidgetPermission")
-public class WidgetPermission implements Serializable {
+@JsonSubTypes(
+	{
+		@JsonSubTypes.Type(
+			name = "Localizable",
+			value = LocalizableSelectFragmentConfigurationFieldValue.class
+		),
+		@JsonSubTypes.Type(
+			name = "Nonlocalizable",
+			value = NonlocalizableSelectFragmentConfigurationFieldValue.class
+		)
+	}
+)
+@JsonTypeInfo(
+	include = JsonTypeInfo.As.PROPERTY, property = "localizableType",
+	use = JsonTypeInfo.Id.NAME, visible = true
+)
+@XmlRootElement(name = "SelectFragmentConfigurationFieldValue")
+public abstract class SelectFragmentConfigurationFieldValue
+	implements Serializable {
 
-	public static WidgetPermission toDTO(String json) {
-		return ObjectMapperUtil.readValue(WidgetPermission.class, json);
+	public static SelectFragmentConfigurationFieldValue toDTO(String json) {
+		return ObjectMapperUtil.readValue(
+			SelectFragmentConfigurationFieldValue.class, json);
 	}
 
-	public static WidgetPermission unsafeToDTO(String json) {
-		return ObjectMapperUtil.unsafeReadValue(WidgetPermission.class, json);
+	public static SelectFragmentConfigurationFieldValue unsafeToDTO(
+		String json) {
+
+		return ObjectMapperUtil.unsafeReadValue(
+			SelectFragmentConfigurationFieldValue.class, json);
 	}
 
-	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The IDs of the actions the role has permission for."
-	)
-	public String[] getActionIds() {
-		if (_actionIdsSupplier != null) {
-			actionIds = _actionIdsSupplier.get();
+	@io.swagger.v3.oas.annotations.media.Schema
+	@JsonGetter("localizableType")
+	@Valid
+	public LocalizableType getLocalizableType() {
+		if (_localizableTypeSupplier != null) {
+			localizableType = _localizableTypeSupplier.get();
 
-			_actionIdsSupplier = null;
+			_localizableTypeSupplier = null;
 		}
 
-		return actionIds;
-	}
-
-	public void setActionIds(String[] actionIds) {
-		this.actionIds = actionIds;
-
-		_actionIdsSupplier = null;
+		return localizableType;
 	}
 
 	@JsonIgnore
-	public void setActionIds(
-		UnsafeSupplier<String[], Exception> actionIdsUnsafeSupplier) {
+	public String getLocalizableTypeAsString() {
+		LocalizableType localizableType = getLocalizableType();
 
-		_actionIdsSupplier = () -> {
+		if (localizableType == null) {
+			return null;
+		}
+
+		return localizableType.toString();
+	}
+
+	public void setLocalizableType(LocalizableType localizableType) {
+		this.localizableType = localizableType;
+
+		_localizableTypeSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setLocalizableType(
+		UnsafeSupplier<LocalizableType, Exception>
+			localizableTypeUnsafeSupplier) {
+
+		_localizableTypeSupplier = () -> {
 			try {
-				return actionIdsUnsafeSupplier.get();
+				return localizableTypeUnsafeSupplier.get();
 			}
 			catch (RuntimeException runtimeException) {
 				throw runtimeException;
@@ -85,57 +126,13 @@ public class WidgetPermission implements Serializable {
 		};
 	}
 
-	@GraphQLField(
-		description = "The IDs of the actions the role has permission for."
-	)
+	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected String[] actionIds;
+	@NotNull
+	protected LocalizableType localizableType;
 
 	@JsonIgnore
-	private Supplier<String[]> _actionIdsSupplier;
-
-	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The role's name."
-	)
-	public String getRoleName() {
-		if (_roleNameSupplier != null) {
-			roleName = _roleNameSupplier.get();
-
-			_roleNameSupplier = null;
-		}
-
-		return roleName;
-	}
-
-	public void setRoleName(String roleName) {
-		this.roleName = roleName;
-
-		_roleNameSupplier = null;
-	}
-
-	@JsonIgnore
-	public void setRoleName(
-		UnsafeSupplier<String, Exception> roleNameUnsafeSupplier) {
-
-		_roleNameSupplier = () -> {
-			try {
-				return roleNameUnsafeSupplier.get();
-			}
-			catch (RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			catch (Exception exception) {
-				throw new RuntimeException(exception);
-			}
-		};
-	}
-
-	@GraphQLField(description = "The role's name.")
-	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected String roleName;
-
-	@JsonIgnore
-	private Supplier<String> _roleNameSupplier;
+	private Supplier<LocalizableType> _localizableTypeSupplier;
 
 	@Override
 	public boolean equals(Object object) {
@@ -143,13 +140,16 @@ public class WidgetPermission implements Serializable {
 			return true;
 		}
 
-		if (!(object instanceof WidgetPermission)) {
+		if (!(object instanceof SelectFragmentConfigurationFieldValue)) {
 			return false;
 		}
 
-		WidgetPermission widgetPermission = (WidgetPermission)object;
+		SelectFragmentConfigurationFieldValue
+			selectFragmentConfigurationFieldValue =
+				(SelectFragmentConfigurationFieldValue)object;
 
-		return Objects.equals(toString(), widgetPermission.toString());
+		return Objects.equals(
+			toString(), selectFragmentConfigurationFieldValue.toString());
 	}
 
 	@Override
@@ -164,44 +164,18 @@ public class WidgetPermission implements Serializable {
 
 		sb.append("{");
 
-		String[] actionIds = getActionIds();
+		LocalizableType localizableType = getLocalizableType();
 
-		if (actionIds != null) {
+		if (localizableType != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"actionIds\": ");
-
-			sb.append("[");
-
-			for (int i = 0; i < actionIds.length; i++) {
-				sb.append("\"");
-
-				sb.append(_escape(actionIds[i]));
-
-				sb.append("\"");
-
-				if ((i + 1) < actionIds.length) {
-					sb.append(", ");
-				}
-			}
-
-			sb.append("]");
-		}
-
-		String roleName = getRoleName();
-
-		if (roleName != null) {
-			if (sb.length() > 1) {
-				sb.append(", ");
-			}
-
-			sb.append("\"roleName\": ");
+			sb.append("\"localizableType\": ");
 
 			sb.append("\"");
 
-			sb.append(_escape(roleName));
+			sb.append(localizableType);
 
 			sb.append("\"");
 		}
@@ -213,10 +187,48 @@ public class WidgetPermission implements Serializable {
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY,
-		defaultValue = "com.liferay.headless.admin.site.dto.v1_0.WidgetPermission",
+		defaultValue = "com.liferay.headless.admin.site.dto.v1_0.SelectFragmentConfigurationFieldValue",
 		name = "x-class-name"
 	)
 	public String xClassName;
+
+	@GraphQLName("LocalizableType")
+	public static enum LocalizableType {
+
+		LOCALIZABLE("Localizable"), NONLOCALIZABLE("Nonlocalizable");
+
+		@JsonCreator
+		public static LocalizableType create(String value) {
+			if ((value == null) || value.equals("")) {
+				return null;
+			}
+
+			for (LocalizableType localizableType : values()) {
+				if (Objects.equals(localizableType.getValue(), value)) {
+					return localizableType;
+				}
+			}
+
+			throw new IllegalArgumentException("Invalid enum value: " + value);
+		}
+
+		@JsonValue
+		public String getValue() {
+			return _value;
+		}
+
+		@Override
+		public String toString() {
+			return _value;
+		}
+
+		private LocalizableType(String value) {
+			_value = value;
+		}
+
+		private final String _value;
+
+	}
 
 	private static String _escape(Object object) {
 		return StringUtil.replace(

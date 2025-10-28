@@ -18,6 +18,8 @@ import com.liferay.portal.vulcan.util.ObjectMapperUtil;
 
 import jakarta.annotation.Generated;
 
+import jakarta.validation.Valid;
+
 import jakarta.xml.bind.annotation.XmlRootElement;
 
 import java.io.Serializable;
@@ -33,48 +35,58 @@ import java.util.function.Supplier;
  * @generated
  */
 @Generated("")
-@GraphQLName(
-	description = "The widget instance's permissions.",
-	value = "WidgetPermission"
-)
+@GraphQLName("SelectFragmentConfigurationFieldInstance")
 @JsonFilter("Liferay.Vulcan")
-@XmlRootElement(name = "WidgetPermission")
-public class WidgetPermission implements Serializable {
+@XmlRootElement(name = "SelectFragmentConfigurationFieldInstance")
+public class SelectFragmentConfigurationFieldInstance
+	extends FragmentConfigurationFieldInstance implements Serializable {
 
-	public static WidgetPermission toDTO(String json) {
-		return ObjectMapperUtil.readValue(WidgetPermission.class, json);
+	public static SelectFragmentConfigurationFieldInstance toDTO(String json) {
+		return ObjectMapperUtil.readValue(
+			SelectFragmentConfigurationFieldInstance.class, json);
 	}
 
-	public static WidgetPermission unsafeToDTO(String json) {
-		return ObjectMapperUtil.unsafeReadValue(WidgetPermission.class, json);
+	public static SelectFragmentConfigurationFieldInstance unsafeToDTO(
+		String json) {
+
+		return ObjectMapperUtil.unsafeReadValue(
+			SelectFragmentConfigurationFieldInstance.class, json);
 	}
 
-	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The IDs of the actions the role has permission for."
-	)
-	public String[] getActionIds() {
-		if (_actionIdsSupplier != null) {
-			actionIds = _actionIdsSupplier.get();
+	@io.swagger.v3.oas.annotations.media.Schema
+	@Valid
+	public SelectFragmentConfigurationFieldValue
+		getSelectFragmentConfigurationFieldValue() {
 
-			_actionIdsSupplier = null;
+		if (_selectFragmentConfigurationFieldValueSupplier != null) {
+			selectFragmentConfigurationFieldValue =
+				_selectFragmentConfigurationFieldValueSupplier.get();
+
+			_selectFragmentConfigurationFieldValueSupplier = null;
 		}
 
-		return actionIds;
+		return selectFragmentConfigurationFieldValue;
 	}
 
-	public void setActionIds(String[] actionIds) {
-		this.actionIds = actionIds;
+	public void setSelectFragmentConfigurationFieldValue(
+		SelectFragmentConfigurationFieldValue
+			selectFragmentConfigurationFieldValue) {
 
-		_actionIdsSupplier = null;
+		this.selectFragmentConfigurationFieldValue =
+			selectFragmentConfigurationFieldValue;
+
+		_selectFragmentConfigurationFieldValueSupplier = null;
 	}
 
 	@JsonIgnore
-	public void setActionIds(
-		UnsafeSupplier<String[], Exception> actionIdsUnsafeSupplier) {
+	public void setSelectFragmentConfigurationFieldValue(
+		UnsafeSupplier<SelectFragmentConfigurationFieldValue, Exception>
+			selectFragmentConfigurationFieldValueUnsafeSupplier) {
 
-		_actionIdsSupplier = () -> {
+		_selectFragmentConfigurationFieldValueSupplier = () -> {
 			try {
-				return actionIdsUnsafeSupplier.get();
+				return selectFragmentConfigurationFieldValueUnsafeSupplier.
+					get();
 			}
 			catch (RuntimeException runtimeException) {
 				throw runtimeException;
@@ -85,57 +97,14 @@ public class WidgetPermission implements Serializable {
 		};
 	}
 
-	@GraphQLField(
-		description = "The IDs of the actions the role has permission for."
-	)
+	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected String[] actionIds;
+	protected SelectFragmentConfigurationFieldValue
+		selectFragmentConfigurationFieldValue;
 
 	@JsonIgnore
-	private Supplier<String[]> _actionIdsSupplier;
-
-	@io.swagger.v3.oas.annotations.media.Schema(
-		description = "The role's name."
-	)
-	public String getRoleName() {
-		if (_roleNameSupplier != null) {
-			roleName = _roleNameSupplier.get();
-
-			_roleNameSupplier = null;
-		}
-
-		return roleName;
-	}
-
-	public void setRoleName(String roleName) {
-		this.roleName = roleName;
-
-		_roleNameSupplier = null;
-	}
-
-	@JsonIgnore
-	public void setRoleName(
-		UnsafeSupplier<String, Exception> roleNameUnsafeSupplier) {
-
-		_roleNameSupplier = () -> {
-			try {
-				return roleNameUnsafeSupplier.get();
-			}
-			catch (RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			catch (Exception exception) {
-				throw new RuntimeException(exception);
-			}
-		};
-	}
-
-	@GraphQLField(description = "The role's name.")
-	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected String roleName;
-
-	@JsonIgnore
-	private Supplier<String> _roleNameSupplier;
+	private Supplier<SelectFragmentConfigurationFieldValue>
+		_selectFragmentConfigurationFieldValueSupplier;
 
 	@Override
 	public boolean equals(Object object) {
@@ -143,13 +112,16 @@ public class WidgetPermission implements Serializable {
 			return true;
 		}
 
-		if (!(object instanceof WidgetPermission)) {
+		if (!(object instanceof SelectFragmentConfigurationFieldInstance)) {
 			return false;
 		}
 
-		WidgetPermission widgetPermission = (WidgetPermission)object;
+		SelectFragmentConfigurationFieldInstance
+			selectFragmentConfigurationFieldInstance =
+				(SelectFragmentConfigurationFieldInstance)object;
 
-		return Objects.equals(toString(), widgetPermission.toString());
+		return Objects.equals(
+			toString(), selectFragmentConfigurationFieldInstance.toString());
 	}
 
 	@Override
@@ -164,44 +136,49 @@ public class WidgetPermission implements Serializable {
 
 		sb.append("{");
 
-		String[] actionIds = getActionIds();
+		SelectFragmentConfigurationFieldValue
+			selectFragmentConfigurationFieldValue =
+				getSelectFragmentConfigurationFieldValue();
 
-		if (actionIds != null) {
+		if (selectFragmentConfigurationFieldValue != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"actionIds\": ");
+			sb.append("\"selectFragmentConfigurationFieldValue\": ");
 
-			sb.append("[");
-
-			for (int i = 0; i < actionIds.length; i++) {
-				sb.append("\"");
-
-				sb.append(_escape(actionIds[i]));
-
-				sb.append("\"");
-
-				if ((i + 1) < actionIds.length) {
-					sb.append(", ");
-				}
-			}
-
-			sb.append("]");
+			sb.append(String.valueOf(selectFragmentConfigurationFieldValue));
 		}
 
-		String roleName = getRoleName();
+		FragmentConfigurationFieldType fragmentConfigurationFieldType =
+			getFragmentConfigurationFieldType();
 
-		if (roleName != null) {
+		if (fragmentConfigurationFieldType != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"roleName\": ");
+			sb.append("\"fragmentConfigurationFieldType\": ");
 
 			sb.append("\"");
 
-			sb.append(_escape(roleName));
+			sb.append(fragmentConfigurationFieldType);
+
+			sb.append("\"");
+		}
+
+		String name = getName();
+
+		if (name != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"name\": ");
+
+			sb.append("\"");
+
+			sb.append(_escape(name));
 
 			sb.append("\"");
 		}
@@ -213,7 +190,7 @@ public class WidgetPermission implements Serializable {
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY,
-		defaultValue = "com.liferay.headless.admin.site.dto.v1_0.WidgetPermission",
+		defaultValue = "com.liferay.headless.admin.site.dto.v1_0.SelectFragmentConfigurationFieldInstance",
 		name = "x-class-name"
 	)
 	public String xClassName;

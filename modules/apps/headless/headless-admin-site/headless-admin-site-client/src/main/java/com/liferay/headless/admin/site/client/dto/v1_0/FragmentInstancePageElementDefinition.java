@@ -13,7 +13,6 @@ import jakarta.annotation.Generated;
 import java.io.Serializable;
 
 import java.util.Date;
-import java.util.Map;
 import java.util.Objects;
 
 /**
@@ -179,27 +178,35 @@ public class FragmentInstancePageElementDefinition
 
 	protected String draftFragmentInstanceExternalReferenceCode;
 
-	public Map<String, Object> getFragmentConfig() {
-		return fragmentConfig;
+	public FragmentConfigurationFieldInstance[]
+		getFragmentConfigurationFieldInstances() {
+
+		return fragmentConfigurationFieldInstances;
 	}
 
-	public void setFragmentConfig(Map<String, Object> fragmentConfig) {
-		this.fragmentConfig = fragmentConfig;
+	public void setFragmentConfigurationFieldInstances(
+		FragmentConfigurationFieldInstance[]
+			fragmentConfigurationFieldInstances) {
+
+		this.fragmentConfigurationFieldInstances =
+			fragmentConfigurationFieldInstances;
 	}
 
-	public void setFragmentConfig(
-		UnsafeSupplier<Map<String, Object>, Exception>
-			fragmentConfigUnsafeSupplier) {
+	public void setFragmentConfigurationFieldInstances(
+		UnsafeSupplier<FragmentConfigurationFieldInstance[], Exception>
+			fragmentConfigurationFieldInstancesUnsafeSupplier) {
 
 		try {
-			fragmentConfig = fragmentConfigUnsafeSupplier.get();
+			fragmentConfigurationFieldInstances =
+				fragmentConfigurationFieldInstancesUnsafeSupplier.get();
 		}
 		catch (Exception e) {
 			throw new RuntimeException(e);
 		}
 	}
 
-	protected Map<String, Object> fragmentConfig;
+	protected FragmentConfigurationFieldInstance[]
+		fragmentConfigurationFieldInstances;
 
 	public FragmentField[] getFragmentFields() {
 		return fragmentFields;

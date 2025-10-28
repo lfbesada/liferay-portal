@@ -10,6 +10,8 @@ import com.fasterxml.jackson.annotation.JsonFilter;
 import com.fasterxml.jackson.annotation.JsonGetter;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonProperty;
+import com.fasterxml.jackson.annotation.JsonSubTypes;
+import com.fasterxml.jackson.annotation.JsonTypeInfo;
 import com.fasterxml.jackson.annotation.JsonValue;
 
 import com.liferay.petra.function.UnsafeSupplier;
@@ -40,99 +42,79 @@ import java.util.function.Supplier;
  * @generated
  */
 @Generated("")
-@GraphQLName("Scope")
+@GraphQLName("FragmentConfigurationFieldInstance")
 @io.swagger.v3.oas.annotations.media.Schema(
-	requiredProperties = {"externalReferenceCode", "type"}
+	requiredProperties = {"name", "fragmentConfigurationFieldType"}
 )
 @JsonFilter("Liferay.Vulcan")
-@XmlRootElement(name = "Scope")
-public class Scope implements Serializable {
+@JsonSubTypes(
+	{
+		@JsonSubTypes.Type(
+			name = "Select", value = SelectFragmentConfigurationFieldValue.class
+		)
+	}
+)
+@JsonTypeInfo(
+	include = JsonTypeInfo.As.PROPERTY,
+	property = "fragmentConfigurationFieldType", use = JsonTypeInfo.Id.NAME,
+	visible = true
+)
+@XmlRootElement(name = "FragmentConfigurationFieldInstance")
+public abstract class FragmentConfigurationFieldInstance
+	implements Serializable {
 
-	public static Scope toDTO(String json) {
-		return ObjectMapperUtil.readValue(Scope.class, json);
+	public static FragmentConfigurationFieldInstance toDTO(String json) {
+		return ObjectMapperUtil.readValue(
+			FragmentConfigurationFieldInstance.class, json);
 	}
 
-	public static Scope unsafeToDTO(String json) {
-		return ObjectMapperUtil.unsafeReadValue(Scope.class, json);
+	public static FragmentConfigurationFieldInstance unsafeToDTO(String json) {
+		return ObjectMapperUtil.unsafeReadValue(
+			FragmentConfigurationFieldInstance.class, json);
 	}
 
 	@io.swagger.v3.oas.annotations.media.Schema
-	public String getExternalReferenceCode() {
-		if (_externalReferenceCodeSupplier != null) {
-			externalReferenceCode = _externalReferenceCodeSupplier.get();
-
-			_externalReferenceCodeSupplier = null;
-		}
-
-		return externalReferenceCode;
-	}
-
-	public void setExternalReferenceCode(String externalReferenceCode) {
-		this.externalReferenceCode = externalReferenceCode;
-
-		_externalReferenceCodeSupplier = null;
-	}
-
-	@JsonIgnore
-	public void setExternalReferenceCode(
-		UnsafeSupplier<String, Exception> externalReferenceCodeUnsafeSupplier) {
-
-		_externalReferenceCodeSupplier = () -> {
-			try {
-				return externalReferenceCodeUnsafeSupplier.get();
-			}
-			catch (RuntimeException runtimeException) {
-				throw runtimeException;
-			}
-			catch (Exception exception) {
-				throw new RuntimeException(exception);
-			}
-		};
-	}
-
-	@GraphQLField
-	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	@NotEmpty
-	protected String externalReferenceCode;
-
-	@JsonIgnore
-	private Supplier<String> _externalReferenceCodeSupplier;
-
-	@io.swagger.v3.oas.annotations.media.Schema
-	@JsonGetter("type")
+	@JsonGetter("fragmentConfigurationFieldType")
 	@Valid
-	public Type getType() {
-		if (_typeSupplier != null) {
-			type = _typeSupplier.get();
+	public FragmentConfigurationFieldType getFragmentConfigurationFieldType() {
+		if (_fragmentConfigurationFieldTypeSupplier != null) {
+			fragmentConfigurationFieldType =
+				_fragmentConfigurationFieldTypeSupplier.get();
 
-			_typeSupplier = null;
+			_fragmentConfigurationFieldTypeSupplier = null;
 		}
 
-		return type;
+		return fragmentConfigurationFieldType;
 	}
 
 	@JsonIgnore
-	public String getTypeAsString() {
-		Type type = getType();
+	public String getFragmentConfigurationFieldTypeAsString() {
+		FragmentConfigurationFieldType fragmentConfigurationFieldType =
+			getFragmentConfigurationFieldType();
 
-		if (type == null) {
+		if (fragmentConfigurationFieldType == null) {
 			return null;
 		}
 
-		return type.toString();
+		return fragmentConfigurationFieldType.toString();
 	}
 
-	public void setType(Type type) {
-		this.type = type;
+	public void setFragmentConfigurationFieldType(
+		FragmentConfigurationFieldType fragmentConfigurationFieldType) {
 
-		_typeSupplier = null;
+		this.fragmentConfigurationFieldType = fragmentConfigurationFieldType;
+
+		_fragmentConfigurationFieldTypeSupplier = null;
 	}
 
 	@JsonIgnore
-	public void setType(UnsafeSupplier<Type, Exception> typeUnsafeSupplier) {
-		_typeSupplier = () -> {
+	public void setFragmentConfigurationFieldType(
+		UnsafeSupplier<FragmentConfigurationFieldType, Exception>
+			fragmentConfigurationFieldTypeUnsafeSupplier) {
+
+		_fragmentConfigurationFieldTypeSupplier = () -> {
 			try {
-				return typeUnsafeSupplier.get();
+				return fragmentConfigurationFieldTypeUnsafeSupplier.get();
 			}
 			catch (RuntimeException runtimeException) {
 				throw runtimeException;
@@ -146,10 +128,51 @@ public class Scope implements Serializable {
 	@GraphQLField
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
 	@NotNull
-	protected Type type;
+	protected FragmentConfigurationFieldType fragmentConfigurationFieldType;
 
 	@JsonIgnore
-	private Supplier<Type> _typeSupplier;
+	private Supplier<FragmentConfigurationFieldType>
+		_fragmentConfigurationFieldTypeSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema
+	public String getName() {
+		if (_nameSupplier != null) {
+			name = _nameSupplier.get();
+
+			_nameSupplier = null;
+		}
+
+		return name;
+	}
+
+	public void setName(String name) {
+		this.name = name;
+
+		_nameSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setName(UnsafeSupplier<String, Exception> nameUnsafeSupplier) {
+		_nameSupplier = () -> {
+			try {
+				return nameUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	@NotEmpty
+	protected String name;
+
+	@JsonIgnore
+	private Supplier<String> _nameSupplier;
 
 	@Override
 	public boolean equals(Object object) {
@@ -157,13 +180,15 @@ public class Scope implements Serializable {
 			return true;
 		}
 
-		if (!(object instanceof Scope)) {
+		if (!(object instanceof FragmentConfigurationFieldInstance)) {
 			return false;
 		}
 
-		Scope scope = (Scope)object;
+		FragmentConfigurationFieldInstance fragmentConfigurationFieldInstance =
+			(FragmentConfigurationFieldInstance)object;
 
-		return Objects.equals(toString(), scope.toString());
+		return Objects.equals(
+			toString(), fragmentConfigurationFieldInstance.toString());
 	}
 
 	@Override
@@ -178,34 +203,35 @@ public class Scope implements Serializable {
 
 		sb.append("{");
 
-		String externalReferenceCode = getExternalReferenceCode();
+		FragmentConfigurationFieldType fragmentConfigurationFieldType =
+			getFragmentConfigurationFieldType();
 
-		if (externalReferenceCode != null) {
+		if (fragmentConfigurationFieldType != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"externalReferenceCode\": ");
+			sb.append("\"fragmentConfigurationFieldType\": ");
 
 			sb.append("\"");
 
-			sb.append(_escape(externalReferenceCode));
+			sb.append(fragmentConfigurationFieldType);
 
 			sb.append("\"");
 		}
 
-		Type type = getType();
+		String name = getName();
 
-		if (type != null) {
+		if (name != null) {
 			if (sb.length() > 1) {
 				sb.append(", ");
 			}
 
-			sb.append("\"type\": ");
+			sb.append("\"name\": ");
 
 			sb.append("\"");
 
-			sb.append(type);
+			sb.append(_escape(name));
 
 			sb.append("\"");
 		}
@@ -217,25 +243,29 @@ public class Scope implements Serializable {
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		accessMode = io.swagger.v3.oas.annotations.media.Schema.AccessMode.READ_ONLY,
-		defaultValue = "com.liferay.headless.admin.site.dto.v1_0.Scope",
+		defaultValue = "com.liferay.headless.admin.site.dto.v1_0.FragmentConfigurationFieldInstance",
 		name = "x-class-name"
 	)
 	public String xClassName;
 
-	@GraphQLName("Type")
-	public static enum Type {
+	@GraphQLName("FragmentConfigurationFieldType")
+	public static enum FragmentConfigurationFieldType {
 
-		ASSET_LIBRARY("AssetLibrary"), SITE("Site");
+		SELECT("Select");
 
 		@JsonCreator
-		public static Type create(String value) {
+		public static FragmentConfigurationFieldType create(String value) {
 			if ((value == null) || value.equals("")) {
 				return null;
 			}
 
-			for (Type type : values()) {
-				if (Objects.equals(type.getValue(), value)) {
-					return type;
+			for (FragmentConfigurationFieldType fragmentConfigurationFieldType :
+					values()) {
+
+				if (Objects.equals(
+						fragmentConfigurationFieldType.getValue(), value)) {
+
+					return fragmentConfigurationFieldType;
 				}
 			}
 
@@ -252,7 +282,7 @@ public class Scope implements Serializable {
 			return _value;
 		}
 
-		private Type(String value) {
+		private FragmentConfigurationFieldType(String value) {
 			_value = value;
 		}
 
