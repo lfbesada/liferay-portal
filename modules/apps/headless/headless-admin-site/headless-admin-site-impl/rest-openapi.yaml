@@ -31,6 +31,46 @@ components:
                 justify:
                     enum: [Center, End, None, SpaceAround, SpaceBetween, Start]
                     type: string
+        CategoryConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value:
+                            $ref: "#/components/schemas/ItemExternalReference"
+                            # @review
+                            description:
+                                The value of the configuration field of type category.
+                        value_i18n:
+                            additionalProperties:
+                                $ref: "#/components/schemas/ItemExternalReference"
+                            # @review
+                            description:
+                                The localized value of the configuration field of type category.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type category.
+            type: object
+        CheckboxConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value:
+                            # @review
+                            description:
+                                Whether the configuration field of type checkbox is checked.
+                            type: boolean
+                        value_i18n:
+                            additionalProperties:
+                                type: boolean
+                            # @review
+                            description:
+                                Whether the configuration field of type checkbox is checked.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type checkbox.
+            type: object
         ClassNameReference:
             allOf:
                 -   $ref: "#/components/schemas/CollectionReference"
@@ -72,6 +112,26 @@ components:
                     description:
                         The client extension's external reference code.
                     type: string
+            type: object
+        CollectionConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value:
+                            $ref: "#/components/schemas/CollectionReference"
+                            # @review
+                            description:
+                                The value of the configuration field of type collection.
+                        value_i18n:
+                            additionalProperties:
+                                $ref: "#/components/schemas/CollectionReference"
+                            # @review
+                            description:
+                                The localized value of the configuration field of type collection.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type collection.
             type: object
         CollectionDisplayListStyle:
             # @review
@@ -236,10 +296,65 @@ components:
                     enum: [Collection, CollectionProvider]
                     type: string
             type: object
+        ColorPaletteConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value:
+                            # @review
+                            description:
+                                The value of the configuration field of type color palette.
+                            type: object
+                        value_i18n:
+                            additionalProperties:
+                                type: object
+                            # @review
+                            description:
+                                The localized value of the configuration field of type color palette.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type color palette.
+            type: object
+        ColorPickerConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value:
+                            # @review
+                            description:
+                                The value of the configuration field of type color picker.
+                            type: string
+                        value_i18n:
+                            additionalProperties:
+                                type: string
+                            # @review
+                            description:
+                                The localized value of the configuration field of type color picker.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type color picker.
+            type: object
         ConfigurationFieldValue:
             # @review
             description:
                 The value of a configuration field.
+            discriminator:
+                mapping:
+                    Category: "#/components/schemas/CategoryConfigurationFieldValue"
+                    Checkbox: "#/components/schemas/CheckboxConfigurationFieldValue"
+                    Collection: "#/components/schemas/CollectionConfigurationFieldValue"
+                    ColorPalette: "#/components/schemas/ColorPaletteConfigurationFieldValue"
+                    ColorPicker: "#/components/schemas/ColorPickerConfigurationFieldValue"
+                    Item: "#/components/schemas/ItemConfigurationFieldValue"
+                    Length: "#/components/schemas/LengthConfigurationFieldValue"
+                    NavigationMenu: "#/components/schemas/NavigationMenuConfigurationFieldValue"
+                    Select: "#/components/schemas/SelectConfigurationFieldValue"
+                    Text: "#/components/schemas/TextConfigurationFieldValue"
+                    Url: "#/components/schemas/UrlConfigurationFieldValue"
+                    Video: "#/components/schemas/VideoConfigurationFieldValue"
+                propertyName: type
             properties:
                 type:
                     # @review
@@ -248,17 +363,6 @@ components:
                         length, navigationMenu, select, text, url, video).
                     enum: [Category, Checkbox, Collection, ColorPalette, ColorPicker, Item, Length, NavigationMenu, Select, Text, Url, Video]
                     type: string
-                value:
-                  # @review
-                  description:
-                    The value of a no localized configuration field.
-                  type: string
-                value_i18n:
-                  additionalProperties:
-                    type: string
-                  # @review
-                  description:
-                    The localized value of the configuration field.
             required:
                 -   type
             type: object
@@ -1861,6 +1965,26 @@ components:
                     enum: [Article, Aside, Div, Footer, Header, Nav, Section]
                     type: string
             type: object
+        ItemConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value:
+                            # @review
+                            description:
+                                The value of the configuration field of type item.
+                            type: object
+                        value_i18n:
+                            additionalProperties:
+                                type: object
+                            # @review
+                            description:
+                                The localized value of the configuration field of type item.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type item.
+            type: object
         ItemExternalReference:
             # @review
             description:
@@ -1896,6 +2020,26 @@ components:
                                 The width's type (fixed or fluid).
                             enum: [Fixed, Fluid]
                             type: string
+        LengthConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value:
+                            # @review
+                            description:
+                                The value of the configuration field of type length.
+                            type: string
+                        value_i18n:
+                            additionalProperties:
+                                type: string
+                            # @review
+                            description:
+                                The localized value of the configuration field of type length.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type length.
+            type: object
         ListStyle:
             # @review
             allOf:
@@ -2149,6 +2293,26 @@ components:
                     format: int64
                     readOnly: true
                     type: integer
+        NavigationMenuConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value:
+                            # @review
+                            description:
+                                The value of the configuration field of type navigation menu.
+                            type: object
+                        value_i18n:
+                            additionalProperties:
+                                type: object
+                            # @review
+                            description:
+                                The localized value of the configuration field of type navigation menu.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type navigation menu.
+            type: object
         NavigationMenuItem:
             # @review
             description:
@@ -2842,6 +3006,26 @@ components:
                     description:
                         Represents settings related with the site map.
             type: object
+        SelectConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value:
+                            # @review
+                            description:
+                                The value of the configuration field of type select.
+                            type: string
+                        value_i18n:
+                            additionalProperties:
+                                type: string
+                            # @review
+                            description:
+                                The localized value of the configuration field of type select.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type select.
+            type: object
         Settings:
             # @review
             description:
@@ -3186,6 +3370,26 @@ components:
             description:
                 The collection display's template list style.
             type: object
+        TextConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value:
+                            # @review
+                            description:
+                                The value of the configuration field of type text.
+                            type: string
+                        value_i18n:
+                            additionalProperties:
+                                type: string
+                            # @review
+                            description:
+                                The localized value of the configuration field of type text.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type text.
+            type: object
         URLActionExecutionResult:
             # @review
             description:
@@ -3207,6 +3411,26 @@ components:
                     # @review
                     description:
                         The localized submission of URL type.
+            type: object
+        UrlConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value:
+                            # @review
+                            description:
+                                The value of the configuration field of type url.
+                            type: object
+                        value_i18n:
+                            additionalProperties:
+                                type: object
+                            # @review
+                            description:
+                                The localized value of the configuration field of type url.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type url.
             type: object
         UtilityPage:
             description:
@@ -3328,6 +3552,25 @@ components:
                     # @review
                     description:
                         The utility page's SEO settings.
+            type: object
+        VideoConfigurationFieldValue:
+            allOf:
+                -   $ref: "#/components/schemas/ConfigurationFieldValue"
+                -   properties:
+                        value:
+                            description:
+                                The value of the configuration field of type video.
+                            type: object
+                        value_i18n:
+                            additionalProperties:
+                                type: object
+                            # @review
+                            description:
+                                The localized value of the configuration field of type video.
+                            type: object
+            # @review
+            description:
+                The value of a configuration field of type video.
             type: object
         WidgetInstance:
             # @review
