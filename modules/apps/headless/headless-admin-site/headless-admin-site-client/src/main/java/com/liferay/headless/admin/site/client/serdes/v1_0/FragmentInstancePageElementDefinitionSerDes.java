@@ -5,6 +5,7 @@
 
 package com.liferay.headless.admin.site.client.serdes.v1_0;
 
+import com.liferay.headless.admin.site.client.dto.v1_0.ConfigurationFieldValue;
 import com.liferay.headless.admin.site.client.dto.v1_0.CustomCSSViewport;
 import com.liferay.headless.admin.site.client.dto.v1_0.FragmentField;
 import com.liferay.headless.admin.site.client.dto.v1_0.FragmentInstancePageElementDefinition;
@@ -890,7 +891,8 @@ public class FragmentInstancePageElementDefinitionSerDes {
 			else if (Objects.equals(jsonParserFieldName, "fragmentConfig")) {
 				if (jsonParserFieldValue != null) {
 					fragmentInstancePageElementDefinition.setFragmentConfig(
-						(Map<String, Object>)jsonParserFieldValue);
+						(Map<String, ConfigurationFieldValue>)
+							jsonParserFieldValue);
 				}
 			}
 			else if (Objects.equals(jsonParserFieldName, "fragmentFields")) {

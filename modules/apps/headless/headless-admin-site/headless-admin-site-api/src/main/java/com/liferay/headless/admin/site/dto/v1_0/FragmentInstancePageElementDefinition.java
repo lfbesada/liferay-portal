@@ -385,7 +385,7 @@ public class FragmentInstancePageElementDefinition
 		description = "The configuration values of the fragment instance."
 	)
 	@Valid
-	public Map<String, Object> getFragmentConfig() {
+	public Map<String, ConfigurationFieldValue> getFragmentConfig() {
 		if (_fragmentConfigSupplier != null) {
 			fragmentConfig = _fragmentConfigSupplier.get();
 
@@ -395,7 +395,9 @@ public class FragmentInstancePageElementDefinition
 		return fragmentConfig;
 	}
 
-	public void setFragmentConfig(Map<String, Object> fragmentConfig) {
+	public void setFragmentConfig(
+		Map<String, ConfigurationFieldValue> fragmentConfig) {
+
 		this.fragmentConfig = fragmentConfig;
 
 		_fragmentConfigSupplier = null;
@@ -403,7 +405,7 @@ public class FragmentInstancePageElementDefinition
 
 	@JsonIgnore
 	public void setFragmentConfig(
-		UnsafeSupplier<Map<String, Object>, Exception>
+		UnsafeSupplier<Map<String, ConfigurationFieldValue>, Exception>
 			fragmentConfigUnsafeSupplier) {
 
 		_fragmentConfigSupplier = () -> {
@@ -423,10 +425,11 @@ public class FragmentInstancePageElementDefinition
 		description = "The configuration values of the fragment instance."
 	)
 	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
-	protected Map<String, Object> fragmentConfig;
+	protected Map<String, ConfigurationFieldValue> fragmentConfig;
 
 	@JsonIgnore
-	private Supplier<Map<String, Object>> _fragmentConfigSupplier;
+	private Supplier<Map<String, ConfigurationFieldValue>>
+		_fragmentConfigSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "The fragment field values of the the fragment instance."
@@ -1189,7 +1192,8 @@ public class FragmentInstancePageElementDefinition
 			sb.append("\"");
 		}
 
-		Map<String, Object> fragmentConfig = getFragmentConfig();
+		Map<String, ConfigurationFieldValue> fragmentConfig =
+			getFragmentConfig();
 
 		if (fragmentConfig != null) {
 			if (sb.length() > 1) {
