@@ -643,7 +643,7 @@ public class EditableFragmentEntryProcessorTest {
 			StringUtil.replace(
 				_readJSONFileToString(
 					"action/editable_values_action_mapped_action_on_" +
-						"success_page_with_external_references.json"),
+						"success_page_with_external_references_codes.json"),
 				new String[] {
 					"[$CLASS_NAME_ID$]", "[$CLASS_PK$]", "[$FIELD_ID$]",
 					"[$EXTERNAL_REFERENCE_CODE$]",
