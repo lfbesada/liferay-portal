@@ -81,8 +81,10 @@ import jakarta.ws.rs.core.MultivaluedMap;
 
 import java.io.Serializable;
 
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
@@ -145,6 +147,11 @@ public class SitePageResourceImpl
 			@Override
 			public String getModelClassName() {
 				return Layout.class.getName();
+			}
+
+			@Override
+			public List<String> getNestedFields() {
+				return Arrays.asList("pageSpecifications");
 			}
 
 			@Override
