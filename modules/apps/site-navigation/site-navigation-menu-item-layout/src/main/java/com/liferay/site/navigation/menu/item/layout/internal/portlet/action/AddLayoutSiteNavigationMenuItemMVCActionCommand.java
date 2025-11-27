@@ -11,12 +11,10 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
-import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.portlet.JSONPortletResponseUtil;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
-import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
@@ -123,19 +121,8 @@ public class AddLayoutSiteNavigationMenuItemMVCActionCommand
 								itemJSONObject.getBoolean("privateLayout"))
 						).put(
 							"scopeExternalReferenceCode",
-							() -> {
-								Group group = _groupLocalService.fetchGroup(
-									siteNavigationMenu.getGroupId());
-
-								if ((group == null) ||
-									(group.getGroupId() ==
-										themeDisplay.getScopeGroupId())) {
-
-									return null;
-								}
-
-								return group.getExternalReferenceCode();
-							}
+							itemJSONObject.getString(
+								"scopeExternalReferenceCode")
 						).put(
 							"title", layout.getName(themeDisplay.getLocale())
 						).buildString(),
@@ -237,9 +224,6 @@ public class AddLayoutSiteNavigationMenuItemMVCActionCommand
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		AddLayoutSiteNavigationMenuItemMVCActionCommand.class);
-
-	@Reference
-	private GroupLocalService _groupLocalService;
 
 	@Reference
 	private JSONFactory _jsonFactory;
