@@ -8,17 +8,11 @@ package com.liferay.portal.vulcan.internal.jaxrs.container.request.filter;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.search.filter.Filter;
-import com.liferay.portal.kernel.service.GroupLocalService;
-import com.liferay.portal.kernel.service.ResourceActionLocalService;
-import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
-import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.odata.sort.SortParserProvider;
-import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineExportTaskResourceFactory;
-import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineImportTaskResourceFactory;
 import com.liferay.portal.vulcan.internal.accept.language.AcceptLanguageImpl;
 import com.liferay.portal.vulcan.internal.configuration.util.ConfigurationUtil;
 import com.liferay.portal.vulcan.internal.jaxrs.context.provider.ContextProviderUtil;
@@ -65,33 +59,18 @@ public class ContextContainerRequestFilter
 		ConfigurationAdmin configurationAdmin,
 		ContextDataInjectorBuilderFactory contextDataInjectorBuilderFactory,
 		ExpressionConvert<Filter> expressionConvert,
-		FilterParserProvider filterParserProvider,
-		GroupLocalService groupLocalService, Language language, Portal portal,
-		ResourceActionLocalService resourceActionLocalService,
-		ResourcePermissionLocalService resourcePermissionLocalService,
-		RoleLocalService roleLocalService, Object scopeChecker,
-		SortParserProvider sortParserProvider,
-		VulcanBatchEngineExportTaskResourceFactory
-			vulcanBatchEngineExportTaskResourceFactory,
-		VulcanBatchEngineImportTaskResourceFactory
-			vulcanBatchEngineImportTaskResourceFactory) {
+		FilterParserProvider filterParserProvider, Language language,
+		Portal portal, Object scopeChecker,
+		SortParserProvider sortParserProvider) {
 
 		_configurationAdmin = configurationAdmin;
 		_contextDataInjectorBuilderFactory = contextDataInjectorBuilderFactory;
 		_expressionConvert = expressionConvert;
 		_filterParserProvider = filterParserProvider;
-		_groupLocalService = groupLocalService;
 		_language = language;
 		_portal = portal;
-		_resourceActionLocalService = resourceActionLocalService;
-		_resourcePermissionLocalService = resourcePermissionLocalService;
-		_roleLocalService = roleLocalService;
 		_scopeChecker = scopeChecker;
 		_sortParserProvider = sortParserProvider;
-		_vulcanBatchEngineExportTaskResourceFactory =
-			vulcanBatchEngineExportTaskResourceFactory;
-		_vulcanBatchEngineImportTaskResourceFactory =
-			vulcanBatchEngineImportTaskResourceFactory;
 	}
 
 	@Override
@@ -195,19 +174,11 @@ public class ContextContainerRequestFilter
 				_expressionConvert
 			).filterParserProvider(
 				_filterParserProvider
-			).groupLocalService(
-				_groupLocalService
 			).httpServletRequest(
 				httpServletRequest
 			).httpServletResponse(
 				(HttpServletResponse)message.getContextualProperty(
 					"HTTP.RESPONSE")
-			).resourceActionLocalService(
-				_resourceActionLocalService
-			).resourcePermissionLocalService(
-				_resourcePermissionLocalService
-			).roleLocalService(
-				_roleLocalService
 			).scopeChecker(
 				_scopeChecker
 			).sortParserProvider(
@@ -217,10 +188,6 @@ public class ContextContainerRequestFilter
 					httpServletRequest, new UriInfoImpl(message))
 			).user(
 				_portal.getUser(httpServletRequest)
-			).vulcanBatchEngineExportTaskResource(
-				_vulcanBatchEngineExportTaskResourceFactory.create()
-			).vulcanBatchEngineImportTaskResource(
-				_vulcanBatchEngineImportTaskResourceFactory.create()
 			).build();
 
 		contextDataInjector.inject(instance);
@@ -231,22 +198,12 @@ public class ContextContainerRequestFilter
 		_contextDataInjectorBuilderFactory;
 	private final ExpressionConvert<Filter> _expressionConvert;
 	private final FilterParserProvider _filterParserProvider;
-	private final GroupLocalService _groupLocalService;
 	private final Language _language;
 	private final Portal _portal;
-	private final ResourceActionLocalService _resourceActionLocalService;
-	private final ResourcePermissionLocalService
-		_resourcePermissionLocalService;
-	private final RoleLocalService _roleLocalService;
 	private final Object _scopeChecker;
 	private final SortParserProvider _sortParserProvider;
 
 	@Context
 	private Sse _sse;
-
-	private final VulcanBatchEngineExportTaskResourceFactory
-		_vulcanBatchEngineExportTaskResourceFactory;
-	private final VulcanBatchEngineImportTaskResourceFactory
-		_vulcanBatchEngineImportTaskResourceFactory;
 
 }
