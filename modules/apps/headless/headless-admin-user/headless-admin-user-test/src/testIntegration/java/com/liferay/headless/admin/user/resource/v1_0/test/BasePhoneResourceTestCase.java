@@ -31,11 +31,6 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
-import com.liferay.portal.kernel.service.GroupLocalService;
-import com.liferay.portal.kernel.service.ResourceActionLocalService;
-import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
-import com.liferay.portal.kernel.service.RoleLocalService;
-import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -860,18 +855,10 @@ public abstract class BasePhoneResourceTestCase {
 					}
 
 				}
-			).groupLocalService(
-				_groupLocalService
 			).httpServletRequest(
 				testVulcanCRUDItemDelegate_getHttpServletRequest()
 			).httpServletResponse(
 				new MockHttpServletResponse()
-			).resourceActionLocalService(
-				_resourceActionLocalService
-			).resourcePermissionLocalService(
-				_resourcePermissionLocalService
-			).roleLocalService(
-				_roleLocalService
 			).scopeChecker(
 				_scopeChecker
 			).uriInfo(
@@ -2437,22 +2424,7 @@ public abstract class BasePhoneResourceTestCase {
 		_phoneResource;
 
 	@Inject
-	private GroupLocalService _groupLocalService;
-
-	@Inject
-	private ResourceActionLocalService _resourceActionLocalService;
-
-	@Inject
-	private ResourcePermissionLocalService _resourcePermissionLocalService;
-
-	@Inject
-	private RoleLocalService _roleLocalService;
-
-	@Inject
 	private ScopeChecker _scopeChecker;
-
-	@Inject
-	private UserLocalService _userLocalService;
 
 	@Inject
 	private VulcanCRUDItemDelegateBuilderRegistry
