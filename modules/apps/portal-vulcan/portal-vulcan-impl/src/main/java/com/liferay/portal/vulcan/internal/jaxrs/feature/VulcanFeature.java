@@ -86,7 +86,6 @@ import org.osgi.framework.ServiceReference;
 import org.osgi.service.cm.ConfigurationAdmin;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 import org.osgi.service.jaxrs.whiteboard.JaxrsWhiteboardConstants;
@@ -178,13 +177,11 @@ public class VulcanFeature implements Feature {
 			new EntityExtensionHandlerContextResolver(
 				_extensionProviderRegistry));
 		featureContext.register(new MultipartBodyMessageBodyReader());
-
-		_nestedFieldsWriterInterceptor = new NestedFieldsWriterInterceptor(
-			_bundleContext);
-
 		featureContext.register(
-			_nestedFieldsWriterInterceptor, Priorities.USER - 10);
-
+			new NestedFieldsWriterInterceptor(
+				_contextDataInjectorBuilderFactory, _language, _portal,
+				_getScopeChecker()),
+			Priorities.USER - 10);
 		featureContext.register(
 			new PaginationContextProvider(_paginationProvider, _portal));
 		featureContext.register(
@@ -200,13 +197,6 @@ public class VulcanFeature implements Feature {
 	@Activate
 	protected void activate(BundleContext bundleContext) {
 		_bundleContext = bundleContext;
-	}
-
-	@Deactivate
-	protected void deactivate() {
-		if (_nestedFieldsWriterInterceptor != null) {
-			_nestedFieldsWriterInterceptor.destroy();
-		}
 	}
 
 	private Object _getScopeChecker() {
@@ -249,8 +239,6 @@ public class VulcanFeature implements Feature {
 
 	@Reference
 	private Language _language;
-
-	private NestedFieldsWriterInterceptor _nestedFieldsWriterInterceptor;
 
 	@Reference
 	private PaginationProvider _paginationProvider;
