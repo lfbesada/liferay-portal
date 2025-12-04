@@ -17,7 +17,9 @@ import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.odata.sort.SortParserProvider;
 import com.liferay.portal.vulcan.accept.language.AcceptLanguage;
 import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineExportTaskResource;
+import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineExportTaskResourceFactory;
 import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineImportTaskResource;
+import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineImportTaskResourceFactory;
 import com.liferay.portal.vulcan.jaxrs.context.ContextDataInjector;
 import com.liferay.portal.vulcan.jaxrs.context.ContextDataInjectorBuilder;
 import com.liferay.portal.vulcan.jaxrs.context.ContextDataInjectorBuilderFactory;
@@ -35,6 +37,7 @@ import java.util.Objects;
 import java.util.function.Function;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Carlos Correa
@@ -109,15 +112,6 @@ public class ContextDataInjectorBuilderFactoryImpl
 			}
 
 			@Override
-			public ContextDataInjectorBuilder groupLocalService(
-				GroupLocalService groupLocalService) {
-
-				_groupLocalService = groupLocalService;
-
-				return this;
-			}
-
-			@Override
 			public ContextDataInjectorBuilder httpServletRequest(
 				HttpServletRequest httpServletRequest) {
 
@@ -131,34 +125,6 @@ public class ContextDataInjectorBuilderFactoryImpl
 				HttpServletResponse httpServletResponse) {
 
 				_httpServletResponse = httpServletResponse;
-
-				return this;
-			}
-
-			@Override
-			public ContextDataInjectorBuilder resourceActionLocalService(
-				ResourceActionLocalService resourceActionLocalService) {
-
-				_resourceActionLocalService = resourceActionLocalService;
-
-				return this;
-			}
-
-			@Override
-			public ContextDataInjectorBuilder resourcePermissionLocalService(
-				ResourcePermissionLocalService resourcePermissionLocalService) {
-
-				_resourcePermissionLocalService =
-					resourcePermissionLocalService;
-
-				return this;
-			}
-
-			@Override
-			public ContextDataInjectorBuilder roleLocalService(
-				RoleLocalService roleLocalService) {
-
-				_roleLocalService = roleLocalService;
 
 				return this;
 			}
@@ -191,30 +157,6 @@ public class ContextDataInjectorBuilderFactoryImpl
 			@Override
 			public ContextDataInjectorBuilder user(User user) {
 				_user = user;
-
-				return this;
-			}
-
-			@Override
-			public ContextDataInjectorBuilder
-				vulcanBatchEngineExportTaskResource(
-					VulcanBatchEngineExportTaskResource
-						vulcanBatchEngineExportTaskResource) {
-
-				_vulcanBatchEngineExportTaskResource =
-					vulcanBatchEngineExportTaskResource;
-
-				return this;
-			}
-
-			@Override
-			public ContextDataInjectorBuilder
-				vulcanBatchEngineImportTaskResource(
-					VulcanBatchEngineImportTaskResource
-						vulcanBatchEngineImportTaskResource) {
-
-				_vulcanBatchEngineImportTaskResource =
-					vulcanBatchEngineImportTaskResource;
 
 				return this;
 			}
@@ -274,12 +216,12 @@ public class ContextDataInjectorBuilderFactoryImpl
 				else if (fieldClass.isAssignableFrom(
 							VulcanBatchEngineExportTaskResource.class)) {
 
-					return _vulcanBatchEngineExportTaskResource;
+					return _vulcanBatchEngineExportTaskResourceFactory.create();
 				}
 				else if (fieldClass.isAssignableFrom(
 							VulcanBatchEngineImportTaskResource.class)) {
 
-					return _vulcanBatchEngineImportTaskResource;
+					return _vulcanBatchEngineImportTaskResourceFactory.create();
 				}
 				else if (_fallbackContextValueFunction != null) {
 					return _fallbackContextValueFunction.apply(fieldClass);
@@ -356,23 +298,34 @@ public class ContextDataInjectorBuilderFactoryImpl
 			private ExpressionConvert<?> _expressionConvert;
 			private Function<Class<?>, Object> _fallbackContextValueFunction;
 			private FilterParserProvider _filterParserProvider;
-			private GroupLocalService _groupLocalService;
 			private HttpServletRequest _httpServletRequest;
 			private HttpServletResponse _httpServletResponse;
-			private ResourceActionLocalService _resourceActionLocalService;
-			private ResourcePermissionLocalService
-				_resourcePermissionLocalService;
-			private RoleLocalService _roleLocalService;
 			private Object _scopeChecker;
 			private SortParserProvider _sortParserProvider;
 			private UriInfo _uriInfo;
 			private User _user;
-			private VulcanBatchEngineExportTaskResource
-				_vulcanBatchEngineExportTaskResource;
-			private VulcanBatchEngineImportTaskResource
-				_vulcanBatchEngineImportTaskResource;
 
 		};
 	}
+
+	@Reference
+	private GroupLocalService _groupLocalService;
+
+	@Reference
+	private ResourceActionLocalService _resourceActionLocalService;
+
+	@Reference
+	private ResourcePermissionLocalService _resourcePermissionLocalService;
+
+	@Reference
+	private RoleLocalService _roleLocalService;
+
+	@Reference
+	private VulcanBatchEngineExportTaskResourceFactory
+		_vulcanBatchEngineExportTaskResourceFactory;
+
+	@Reference
+	private VulcanBatchEngineImportTaskResourceFactory
+		_vulcanBatchEngineImportTaskResourceFactory;
 
 }

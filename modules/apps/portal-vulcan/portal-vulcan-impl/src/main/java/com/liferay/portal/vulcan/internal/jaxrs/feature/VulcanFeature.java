@@ -12,15 +12,10 @@ import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.search.filter.Filter;
 import com.liferay.portal.kernel.service.GroupLocalService;
-import com.liferay.portal.kernel.service.ResourceActionLocalService;
-import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
-import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.odata.filter.ExpressionConvert;
 import com.liferay.portal.odata.filter.FilterParserProvider;
 import com.liferay.portal.odata.sort.SortParserProvider;
-import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineExportTaskResourceFactory;
-import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineImportTaskResourceFactory;
 import com.liferay.portal.vulcan.extension.ExtensionProviderRegistry;
 import com.liferay.portal.vulcan.internal.jaxrs.container.request.filter.CTContainerRequestFilter;
 import com.liferay.portal.vulcan.internal.jaxrs.container.request.filter.ContextContainerRequestFilter;
@@ -165,12 +160,8 @@ public class VulcanFeature implements Feature {
 		featureContext.register(
 			new ContextContainerRequestFilter(
 				_configurationAdmin, _contextDataInjectorBuilderFactory,
-				_expressionConvert, _filterParserProvider, _groupLocalService,
-				_language, _portal, _resourceActionLocalService,
-				_resourcePermissionLocalService, _roleLocalService,
-				_getScopeChecker(), _sortParserProvider,
-				_vulcanBatchEngineExportTaskResourceFactory,
-				_vulcanBatchEngineImportTaskResourceFactory));
+				_expressionConvert, _filterParserProvider, _language, _portal,
+				_getScopeChecker(), _sortParserProvider));
 		featureContext.register(
 			new DuplicateExternalReferenceCodeExceptionMapper(_language));
 		featureContext.register(
@@ -247,23 +238,6 @@ public class VulcanFeature implements Feature {
 	private Portal _portal;
 
 	@Reference
-	private ResourceActionLocalService _resourceActionLocalService;
-
-	@Reference
-	private ResourcePermissionLocalService _resourcePermissionLocalService;
-
-	@Reference
-	private RoleLocalService _roleLocalService;
-
-	@Reference
 	private SortParserProvider _sortParserProvider;
-
-	@Reference
-	private VulcanBatchEngineExportTaskResourceFactory
-		_vulcanBatchEngineExportTaskResourceFactory;
-
-	@Reference
-	private VulcanBatchEngineImportTaskResourceFactory
-		_vulcanBatchEngineImportTaskResourceFactory;
 
 }
