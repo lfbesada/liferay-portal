@@ -38,6 +38,7 @@ import com.liferay.headless.admin.site.client.scope.Scope;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -117,27 +118,36 @@ public class FragmentEditableElementTestUtil {
 		fragmentImage.setDescription_i18n(() -> descriptionMap);
 		fragmentImage.setFragmentImageValue(() -> fragmentImageValue);
 		fragmentImage.setFragmentImageViewports(
-			() -> TransformUtil.transformToArray(
-				new TreeSet<>(resolutionMap.entrySet()),
-				entry -> {
-					FragmentImageViewport.Id id =
-						FragmentImageViewport.Id.create(entry.getKey());
+			() -> {
+				FragmentImageViewport[] fragmentImageViewports =
+					TransformUtil.transformToArray(
+						new TreeSet<>(resolutionMap.keySet()),
+						key -> {
+							FragmentImageViewport.Id id =
+								FragmentImageViewport.Id.create(key);
 
-					if (id == null) {
-						return null;
-					}
+							if (id == null) {
+								return null;
+							}
 
-					FragmentImageViewport fragmentImageViewport =
-						new FragmentImageViewport();
+							FragmentImageViewport fragmentImageViewport =
+								new FragmentImageViewport();
 
-					fragmentImageViewport.setId(() -> id);
-					fragmentImageViewport.setResolution(
-						() -> FragmentImageViewport.Resolution.create(
-							entry.getValue()));
+							fragmentImageViewport.setId(() -> id);
+							fragmentImageViewport.setResolution(
+								() -> FragmentImageViewport.Resolution.create(
+									resolutionMap.get(key)));
 
-					return fragmentImageViewport;
-				},
-				FragmentImageViewport.class));
+							return fragmentImageViewport;
+						},
+						FragmentImageViewport.class);
+
+				if (ArrayUtil.isEmpty(fragmentImageViewports)) {
+					return null;
+				}
+
+				return fragmentImageViewports;
+			});
 		fragmentImage.setLazyLoading(() -> lazyLoading);
 
 		return fragmentImage;
