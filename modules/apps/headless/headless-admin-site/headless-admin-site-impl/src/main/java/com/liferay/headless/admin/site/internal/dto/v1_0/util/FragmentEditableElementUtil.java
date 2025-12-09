@@ -127,20 +127,6 @@ public class FragmentEditableElementUtil {
 	}
 
 	private static JSONObject
-			_getBackgroundImageFragmentEditableElementJSONObject(
-				BackgroundImageFragmentEditableElementValue
-					backgroundImageFragmentEditableElementValue,
-				LayoutStructureItemImporterContext
-					layoutStructureItemImporterContext)
-		throws Exception {
-
-		return _toFragmentImageValueJSONObject(
-			backgroundImageFragmentEditableElementValue.
-				getBackgroundFragmentImageValue(),
-			layoutStructureItemImporterContext);
-	}
-
-	private static JSONObject
 		_getBackgroundImageFragmentEntryProcessorJSONObject(
 			FragmentEditableElement[] fragmentEditableElements,
 			LayoutStructureItemImporterContext
@@ -175,10 +161,18 @@ public class FragmentEditableElementUtil {
 			jsonObject.put(
 				fragmentEditableElement.getId(),
 				() -> _getJSONObject(
-					() -> _getBackgroundImageFragmentEditableElementJSONObject(
-						(BackgroundImageFragmentEditableElementValue)
-							fragmentEditableElementValue,
-						layoutStructureItemImporterContext)));
+					() -> {
+						BackgroundImageFragmentEditableElementValue
+							backgroundImageFragmentEditableElementValue =
+								(BackgroundImageFragmentEditableElementValue)
+									fragmentEditableElement.
+										getFragmentEditableElementValue();
+
+						return _toFragmentImageValueJSONObject(
+							backgroundImageFragmentEditableElementValue.
+								getBackgroundFragmentImageValue(),
+							layoutStructureItemImporterContext);
+					}));
 		}
 
 		return jsonObject;
