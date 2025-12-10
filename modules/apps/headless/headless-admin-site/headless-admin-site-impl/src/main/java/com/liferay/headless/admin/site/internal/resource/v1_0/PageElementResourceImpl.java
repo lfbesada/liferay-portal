@@ -366,7 +366,7 @@ public class PageElementResourceImpl extends BasePageElementResourceImpl {
 
 		if (pageElement.getPageElementDefinition() != null) {
 			existingPageElement.setPageElementDefinition(
-				() -> pageElement.getPageElementDefinition());
+				pageElement::getPageElementDefinition);
 		}
 	}
 
