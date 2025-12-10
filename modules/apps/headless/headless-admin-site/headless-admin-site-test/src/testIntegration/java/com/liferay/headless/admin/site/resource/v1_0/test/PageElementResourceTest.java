@@ -3203,6 +3203,9 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 						"tablet", "auto"
 					).build()),
 				"element-image3"),
+			FragmentEditableElementTestUtil.getHTMLFragmentEditableElement(
+				null, FragmentEditableElementValue.Type.RICH_TEXT, null,
+				HTMLFragmentValue.Type.INLINE, "element-rich-text"),
 			FragmentEditableElementTestUtil.getTextFragmentEditableElement(
 				FragmentEditableElementValueFragmentLink.Prefix.EMAIL,
 				_getFragmentLink(
@@ -3289,6 +3292,12 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 						"tablet", "auto"
 					).build()),
 				"element-image3"),
+			FragmentEditableElementTestUtil.getHTMLFragmentEditableElement(
+				FragmentMappedValueItemContextReference.ContextSource.
+					COLLECTION_ITEM,
+				FragmentEditableElementValue.Type.RICH_TEXT,
+				FragmentMappedValueItemReference.Type.CONTEXT_REFERENCE,
+				HTMLFragmentValue.Type.MAPPED, "element-rich-text"),
 			FragmentEditableElementTestUtil.getTextFragmentEditableElement(
 				null, null,
 				FragmentMappedValueItemContextReference.ContextSource.
@@ -3332,6 +3341,12 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 						"tablet", "auto"
 					).build()),
 				"element-image1"),
+			FragmentEditableElementTestUtil.getHTMLFragmentEditableElement(
+				FragmentMappedValueItemContextReference.ContextSource.
+					DISPLAY_PAGE_ITEM,
+				FragmentEditableElementValue.Type.RICH_TEXT,
+				FragmentMappedValueItemReference.Type.CONTEXT_REFERENCE,
+				HTMLFragmentValue.Type.MAPPED, "element-rich-text"),
 			FragmentEditableElementTestUtil.getTextFragmentEditableElement(
 				FragmentEditableElementValueFragmentLink.Prefix.PHONE,
 				_getFragmentLink(
@@ -3346,7 +3361,7 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 			new FragmentEditableElement[0]);
 
 		_testMissingOptionalReference(
-			6,
+			7,
 			() ->
 				_testPutSitePageSpecificationPageExperiencePageElementWithFragmentPageElementWithFragmentEditableElements(
 					FragmentEditableElementTestUtil.
@@ -3403,6 +3418,12 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 									"desktop", "auto"
 								).build()),
 							"element-image2"),
+					FragmentEditableElementTestUtil.
+						getHTMLFragmentEditableElement(
+							null, FragmentEditableElementValue.Type.RICH_TEXT,
+							FragmentMappedValueItemReference.Type.
+								ITEM_EXTERNAL_REFERENCE,
+							HTMLFragmentValue.Type.MAPPED, "element-rich-text"),
 					FragmentEditableElementTestUtil.
 						getTextFragmentEditableElement(
 							null,
