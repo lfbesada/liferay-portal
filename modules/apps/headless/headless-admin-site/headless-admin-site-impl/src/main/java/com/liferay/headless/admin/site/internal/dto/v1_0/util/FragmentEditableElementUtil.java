@@ -301,12 +301,19 @@ public class FragmentEditableElementUtil {
 
 		if (Objects.equals(type, "html")) {
 			return _toHTMLFragmentEditableElementValue(
-				companyId, infoItemServiceRegistry, jsonObject, scopeGroupId);
+				companyId, FragmentEditableElementValue.Type.HTML,
+				infoItemServiceRegistry, jsonObject, scopeGroupId);
 		}
 
 		if (Objects.equals(type, "image")) {
 			return _toImageFragmentEditableElementValue(
 				companyId, infoItemServiceRegistry, jsonObject, scopeGroupId);
+		}
+
+		if (Objects.equals(type, "rich-text")) {
+			return _toHTMLFragmentEditableElementValue(
+				companyId, FragmentEditableElementValue.Type.RICH_TEXT,
+				infoItemServiceRegistry, jsonObject, scopeGroupId);
 		}
 
 		if (Objects.equals(type, "text")) {
@@ -893,7 +900,9 @@ public class FragmentEditableElementUtil {
 
 	private static HTMLFragmentEditableElementValue
 		_toHTMLFragmentEditableElementValue(
-			long companyId, InfoItemServiceRegistry infoItemServiceRegistry,
+			long companyId,
+			FragmentEditableElementValue.Type fragmentEditableElementValueType,
+			InfoItemServiceRegistry infoItemServiceRegistry,
 			JSONObject jsonObject, long scopeGroupId) {
 
 		if (jsonObject == null) {
@@ -913,7 +922,7 @@ public class FragmentEditableElementUtil {
 		htmlFragmentEditableElementValue.setHtmlFragmentValue(
 			() -> htmlFragmentValue);
 		htmlFragmentEditableElementValue.setType(
-			HTMLFragmentEditableElementValue.Type.HTML);
+			() -> fragmentEditableElementValueType);
 
 		return htmlFragmentEditableElementValue;
 	}
