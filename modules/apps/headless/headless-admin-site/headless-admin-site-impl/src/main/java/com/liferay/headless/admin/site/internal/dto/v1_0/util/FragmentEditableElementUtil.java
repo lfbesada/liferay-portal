@@ -207,7 +207,10 @@ public class FragmentEditableElementUtil {
 
 			if (Objects.equals(
 					fragmentEditableElementValue.getType(),
-					FragmentEditableElementValue.Type.HTML)) {
+					FragmentEditableElementValue.Type.HTML) ||
+				Objects.equals(
+					fragmentEditableElementValue.getType(),
+					FragmentEditableElementValue.Type.RICH_TEXT)) {
 
 				jsonObject.put(
 					fragmentEditableElement.getId(),
