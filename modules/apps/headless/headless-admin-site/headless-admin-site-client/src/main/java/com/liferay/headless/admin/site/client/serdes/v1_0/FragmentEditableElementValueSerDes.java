@@ -81,6 +81,12 @@ public class FragmentEditableElementValueSerDes {
 						fragmentEditableElementValue);
 			}
 
+			if (typeString.equals("RichText")) {
+				return HTMLFragmentEditableElementValueSerDes.toJSON(
+					(HTMLFragmentEditableElementValue)
+						fragmentEditableElementValue);
+			}
+
 			if (typeString.equals("Text")) {
 				return TextFragmentEditableElementValueSerDes.toJSON(
 					(TextFragmentEditableElementValue)
@@ -168,6 +174,10 @@ public class FragmentEditableElementValueSerDes {
 
 				if (typeString.equals("Image")) {
 					return ImageFragmentEditableElementValue.toDTO(json);
+				}
+
+				if (typeString.equals("RichText")) {
+					return HTMLFragmentEditableElementValue.toDTO(json);
 				}
 
 				if (typeString.equals("Text")) {
