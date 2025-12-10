@@ -52,6 +52,7 @@ import com.liferay.headless.admin.site.client.dto.v1_0.FormContainerReference;
 import com.liferay.headless.admin.site.client.dto.v1_0.FormStepContainerPageElementDefinition;
 import com.liferay.headless.admin.site.client.dto.v1_0.FormStepPageElementDefinition;
 import com.liferay.headless.admin.site.client.dto.v1_0.FragmentEditableElement;
+import com.liferay.headless.admin.site.client.dto.v1_0.FragmentEditableElementValue;
 import com.liferay.headless.admin.site.client.dto.v1_0.FragmentEditableElementValueFragmentLink;
 import com.liferay.headless.admin.site.client.dto.v1_0.FragmentInlineValue;
 import com.liferay.headless.admin.site.client.dto.v1_0.FragmentInstancePageElementDefinition;
@@ -3140,7 +3141,8 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 						null),
 					"element-background-image2"),
 			FragmentEditableElementTestUtil.getHTMLFragmentEditableElement(
-				null, null, HTMLFragmentValue.Type.INLINE),
+				null, FragmentEditableElementValue.Type.HTML, null,
+				HTMLFragmentValue.Type.INLINE, "element-html"),
 			FragmentEditableElementTestUtil.getImageFragmentEditableElement(
 				FragmentEditableElementTestUtil.getFragmentImage(
 					HashMapBuilder.put(
@@ -3227,8 +3229,9 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 			FragmentEditableElementTestUtil.getHTMLFragmentEditableElement(
 				FragmentMappedValueItemContextReference.ContextSource.
 					COLLECTION_ITEM,
+				FragmentEditableElementValue.Type.HTML,
 				FragmentMappedValueItemReference.Type.CONTEXT_REFERENCE,
-				HTMLFragmentValue.Type.MAPPED),
+				HTMLFragmentValue.Type.MAPPED, "element-html"),
 			FragmentEditableElementTestUtil.getImageFragmentEditableElement(
 				FragmentEditableElementTestUtil.getFragmentImage(
 					HashMapBuilder.put(
@@ -3308,8 +3311,9 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 			FragmentEditableElementTestUtil.getHTMLFragmentEditableElement(
 				FragmentMappedValueItemContextReference.ContextSource.
 					DISPLAY_PAGE_ITEM,
+				FragmentEditableElementValue.Type.HTML,
 				FragmentMappedValueItemReference.Type.CONTEXT_REFERENCE,
-				HTMLFragmentValue.Type.MAPPED),
+				HTMLFragmentValue.Type.MAPPED, "element-html"),
 			FragmentEditableElementTestUtil.getImageFragmentEditableElement(
 				FragmentEditableElementTestUtil.getFragmentImage(
 					HashMapBuilder.put(
@@ -3361,10 +3365,10 @@ public class PageElementResourceTest extends BasePageElementResourceTestCase {
 							"element-background-image2"),
 					FragmentEditableElementTestUtil.
 						getHTMLFragmentEditableElement(
-							null,
+							null, FragmentEditableElementValue.Type.HTML,
 							FragmentMappedValueItemReference.Type.
 								ITEM_EXTERNAL_REFERENCE,
-							HTMLFragmentValue.Type.MAPPED),
+							HTMLFragmentValue.Type.MAPPED, "element-html"),
 					FragmentEditableElementTestUtil.
 						getImageFragmentEditableElement(
 							FragmentEditableElementTestUtil.getFragmentImage(
