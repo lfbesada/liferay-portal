@@ -61,6 +61,9 @@ import java.util.function.Supplier;
 			name = "Image", value = ImageFragmentEditableElementValue.class
 		),
 		@JsonSubTypes.Type(
+			name = "RichText", value = HTMLFragmentEditableElementValue.class
+		),
+		@JsonSubTypes.Type(
 			name = "Text", value = TextFragmentEditableElementValue.class
 		)
 	}
@@ -195,7 +198,7 @@ public abstract class FragmentEditableElementValue implements Serializable {
 	public static enum Type {
 
 		ACTION("Action"), BACKGROUND_IMAGE("BackgroundImage"), HTML("HTML"),
-		IMAGE("Image"), TEXT("Text");
+		IMAGE("Image"), RICH_TEXT("RichText"), TEXT("Text");
 
 		@JsonCreator
 		public static Type create(String value) {
