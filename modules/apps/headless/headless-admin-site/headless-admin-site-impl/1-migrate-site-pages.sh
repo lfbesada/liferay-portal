@@ -30,13 +30,13 @@ PORTAL_URL="${PORTAL_URL:-http://localhost:8080}"
 
 # Pauses the script and waits for the user to press ENTER
 wait_for_user() {
-    read -rp ""
+	read -rp ""
 }
 # Displays the next action header
 next_action() {
-    echo ""
-    echo "--- ${BOLD}NEXT ${BOLD}Action:${RESET}${RESET} $1 ---"
-    echo ""
+	echo ""
+	echo "--- ${BOLD}NEXT ${BOLD}Action:${RESET}${RESET} $1 ---"
+	echo ""
 }
 
 # ---------------------------------------------------------------------
@@ -89,34 +89,34 @@ echo ""
 
 # Temporarily disable tracing mode for the curl command to hide the full JSON output
 PAGES_LIST_JSON=$( { set +x; } 2>/dev/null; \
-    curl -s -X 'GET' \
-    "${PORTAL_URL}${API_PATH}/${ORIGIN_SITE_ERC}/site-pages?pageSize=-1&nestedFields=pageSpecifications" \
-    -H 'X-Liferay-Accept-All-Languages: true' \
-    -u "${AUTH}" )
+	curl -s -X 'GET' \
+	"${PORTAL_URL}${API_PATH}/${ORIGIN_SITE_ERC}/site-pages?pageSize=-1&nestedFields=pageSpecifications" \
+	-H 'X-Liferay-Accept-All-Languages: true' \
+	-u "${AUTH}" )
 
 # Check for successful retrieval and if the 'items' array exists
 if ! echo "$PAGES_LIST_JSON" | jq -e '.items' > /dev/null; then
-    echo "❌ ERROR: Could not retrieve page list or the JSON response is invalid."
-    echo "Full response:"
-    echo "$PAGES_LIST_JSON"
-    exit 1
+	echo "❌ ERROR: Could not retrieve page list or the JSON response is invalid."
+	echo "Full response:"
+	echo "$PAGES_LIST_JSON"
+	exit 1
 fi
 
 echo "✅ EXECUTION COMPLETE: Successfully retrieved pages from ${ORIGIN_SITE_ERC}."
 
 # Shorten the JSON output with ordered fields and '...':'...' syntax in both levels.
 SHORTENED_PAGES_JSON=$(echo "$PAGES_LIST_JSON" | \
-    jq '.items = [.items[] | {
-        externalReferenceCode,
-        name_i18n,
-        pageSpecifications: (.pageSpecifications | map({
-            externalReferenceCode
-        } + if .draftContentPageSpecificationExternalReferenceCode != null then {draftContentPageSpecificationExternalReferenceCode} else {} end + {
-            "...": "..."
-        })),
-        type,
-        "...": "..."
-    }]' )
+	jq '.items = [.items[] | {
+		externalReferenceCode,
+		name_i18n,
+		pageSpecifications: (.pageSpecifications | map({
+			externalReferenceCode
+		} + if .draftContentPageSpecificationExternalReferenceCode != null then {draftContentPageSpecificationExternalReferenceCode} else {} end + {
+			"...": "..."
+		})),
+		type,
+		"...": "..."
+	}]' )
 
 echo "📄 Response overview (JSON shortened):"
 echo "$SHORTENED_PAGES_JSON" | jq '.'
@@ -131,8 +131,8 @@ wait_for_user
 PAGE_ERCS=$(echo "$PAGES_LIST_JSON" | jq -r '.items[] | .externalReferenceCode')
 
 if [ -z "$PAGE_ERCS" ]; then
-    echo "❌ ERROR: No page External Reference Codes found. Exiting."
-    exit 1
+	echo "❌ ERROR: No page External Reference Codes found. Exiting."
+	exit 1
 fi
 
 # ---------------------------------------------------------------------
@@ -150,81 +150,81 @@ echo ""
 
 # Loop through each ERC extracted
 for PAGE_ERC in $PAGE_ERCS; do
-    echo ""
-    echo -e "--- Migrating Page: ${BOLD}${PAGE_ERC}${RESET} ---"
+	echo ""
+	echo -e "--- Migrating Page: ${BOLD}${PAGE_ERC}${RESET} ---"
 
-    # --- 3a & 3b: GET Specific Page Content & Clean JSON Payload (Silent) ---
-    PAGE_BODY_JSON=$(echo "$PAGES_LIST_JSON" | jq -c --arg erc "$PAGE_ERC" '.items[] | select(.externalReferenceCode == $erc)')
+	# --- 3a & 3b: GET Specific Page Content & Clean JSON Payload (Silent) ---
+	PAGE_BODY_JSON=$(echo "$PAGES_LIST_JSON" | jq -c --arg erc "$PAGE_ERC" '.items[] | select(.externalReferenceCode == $erc)')
 
-    if [ -z "$PAGE_BODY_JSON" ] || [ "$PAGE_BODY_JSON" == "null" ]; then
-        echo "   ❌ ERROR: Could not find page content in the initial list for ${PAGE_ERC}."
-        continue
-    fi
+	if [ -z "$PAGE_BODY_JSON" ] || [ "$PAGE_BODY_JSON" == "null" ]; then
+		echo "   ❌ ERROR: Could not find page content in the initial list for ${PAGE_ERC}."
+		continue
+	fi
 
-    CLEANED_BODY=$(echo "$PAGE_BODY_JSON" | \
-        jq 'del(.id, .dateCreated, .dateModified, .creator, .lastModifier, .status, .url, .viewable)' | \
-        jq 'if .type == null then .type = "Content" else . end')
+	CLEANED_BODY=$(echo "$PAGE_BODY_JSON" | \
+		jq 'del(.id, .dateCreated, .dateModified, .creator, .lastModifier, .status, .url, .viewable)' | \
+		jq 'if .type == null then .type = "Content" else . end')
 
-    echo "$CLEANED_BODY" > "$TEMP_BODY_FILE"
+	echo "$CLEANED_BODY" > "$TEMP_BODY_FILE"
 
-    # Determine Page Type and set request method and target URL
-    PAGE_TYPE=$(echo "$CLEANED_BODY" | jq -r '.type')
-    REQUEST_METHOD="PUT"
-    TARGET_URL="${PORTAL_URL}${API_PATH}/${TARGET_SITE_ERC}/site-pages/${PAGE_ERC}?nestedFields=pageSpecifications"
+	# Determine Page Type and set request method and target URL
+	PAGE_TYPE=$(echo "$CLEANED_BODY" | jq -r '.type')
+	REQUEST_METHOD="PUT"
+	TARGET_URL="${PORTAL_URL}${API_PATH}/${TARGET_SITE_ERC}/site-pages/${PAGE_ERC}?nestedFields=pageSpecifications"
 
-#    if [ "$PAGE_TYPE" = "WidgetPage" ]; then
-#        REQUEST_METHOD="POST"
-        # POST uses the base endpoint to create a new page, it doesn't use the page ERC in the URL path.
-#        TARGET_URL="${PORTAL_URL}${API_PATH}/${TARGET_SITE_ERC}/site-pages?nestedFields=pageSpecifications"
-#        echo "   ℹ️  Using POST to create/recreate page."
-#    else
-#        echo "   ℹ️  Using PUT to update page."
-#    fi
+# if [ "$PAGE_TYPE" = "WidgetPage" ]; then
+# REQUEST_METHOD="POST"
+		# POST uses the base endpoint to create a new page, it doesn't use the page ERC in the URL path.
+# TARGET_URL="${PORTAL_URL}${API_PATH}/${TARGET_SITE_ERC}/site-pages?nestedFields=pageSpecifications"
+# echo "   ℹ️  Using POST to create/recreate page."
+# else
+# echo "   ℹ️  Using PUT to update page."
+# fi
 
-    # Display the endpoint that will be invoked for this specific page (in Red)
-    echo -e "   ➡️ Invoking **${REQUEST_METHOD}** to endpoint: ${RED}${BOLD}${TARGET_URL}${RESET}"
+	# Display the endpoint that will be invoked for this specific page (in Red)
+	echo -e "   ➡️ Invoking **${REQUEST_METHOD}** to endpoint: ${RED}${BOLD}${TARGET_URL}${RESET}"
 
-    # Display the detailed payload sample before PUT/POST with ordered fields and '...':'...' syntax in both levels.
-    echo "   📄 Using the following payload (JSON shortened):"
-    echo "$CLEANED_BODY" | jq '{
-        externalReferenceCode,
-        name_i18n,
-        pageSpecifications: (.pageSpecifications | map({
-            externalReferenceCode
-        } + if .draftContentPageSpecificationExternalReferenceCode != null then {draftContentPageSpecificationExternalReferenceCode} else {} end + {
-            "...": "..."
-        })),
-        type,
-        "...": "..."
-    }'
+	# Display the detailed payload sample before PUT/POST with ordered fields and '...':'...' syntax in both levels.
+	echo "   📄 Using the following payload (JSON shortened):"
+	echo "$CLEANED_BODY" | jq '{
+		externalReferenceCode,
+		name_i18n,
+		pageSpecifications: (.pageSpecifications | map({
+			externalReferenceCode
+		} + if .draftContentPageSpecificationExternalReferenceCode != null then {draftContentPageSpecificationExternalReferenceCode} else {} end + {
+			"...": "..."
+		})),
+		type,
+		"...": "..."
+	}'
 
-    # --- 3c: PUT/POST the Page Object to the Target Site ---
+	# --- 3c: PUT/POST the Page Object to the Target Site ---
 
-    PUT_RESPONSE=$({ set +x; } 2>/dev/null; \
-        curl -s -X "${REQUEST_METHOD}" \
-        "${TARGET_URL}" \
-        -d  @"${TEMP_BODY_FILE}" \
-        -H 'Accept-Language: en-US' \
-        -H 'Content-Type: application/json' \
-        -u "${AUTH}" \
-        -w 'SEPARATOR%{http_code}' )
+	PUT_RESPONSE=$({ set +x; } 2>/dev/null; \
+		curl -s -X "${REQUEST_METHOD}" \
+		"${TARGET_URL}" \
+		-d @"${TEMP_BODY_FILE}" \
+		-H 'Accept-Language: en-US' \
+		-H 'Content-Type: application/json' \
+		-u "${AUTH}" \
+		-w 'SEPARATOR%{http_code}' )
 
-    # Disable tracing mode for the rest of the loop
-    { set +x; } 2>/dev/null
+	# Disable tracing mode for the rest of the loop
+	{ set +x; } 2>/dev/null
 
-    RESPONSE_CODE="${PUT_RESPONSE#*SEPARATOR}"
+	RESPONSE_CODE="${PUT_RESPONSE#*SEPARATOR}"
 
-    if [[ "$RESPONSE_CODE" =~ ^2 ]]; then
-        echo "   🎉 SUCCESS: Page ${PAGE_ERC} updated/created on target site (${REQUEST_METHOD} HTTP ${RESPONSE_CODE})."
-    else
-        RESPONSE_BODY="${PUT_RESPONSE%SEPARATOR*}"
-        echo "   🚨 FAILURE: ${REQUEST_METHOD} failed for ${PAGE_ERC} (HTTP ${RESPONSE_CODE})."
-        echo "   Response Body (full error):"
-        echo "$RESPONSE_BODY" | jq '.'
-    fi
+	if [[ "$RESPONSE_CODE" =~ ^2 ]]; then
+		echo "   🎉 SUCCESS: Page ${PAGE_ERC} updated/created on target site (${REQUEST_METHOD} HTTP ${RESPONSE_CODE})."
+	else
+		RESPONSE_BODY="${PUT_RESPONSE%SEPARATOR*}"
+		echo "   🚨 FAILURE: ${REQUEST_METHOD} failed for ${PAGE_ERC} (HTTP ${RESPONSE_CODE})."
+		echo "   Response Body (full error):"
+		echo "$RESPONSE_BODY" | jq '.'
+	fi
 
-    # Pause added at the end of each iteration
-    wait_for_user
+	# Pause added at the end of each iteration
+	wait_for_user
 done
 
 # --- Cleanup (SILENT EXECUTION) ---
