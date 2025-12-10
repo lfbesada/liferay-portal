@@ -154,9 +154,10 @@ public class FragmentEditableElementTestUtil {
 
 	public static FragmentEditableElement getHTMLFragmentEditableElement(
 		FragmentMappedValueItemContextReference.ContextSource contextSource,
+		FragmentEditableElementValue.Type fragmentEditableElementValueType,
 		FragmentMappedValueItemReference.Type
 			fragmentMappedValueItemReferenceType,
-		HTMLFragmentValue.Type htmlFragmentValueType) {
+		HTMLFragmentValue.Type htmlFragmentValueType, String id) {
 
 		FragmentEditableElement fragmentEditableElement =
 			new FragmentEditableElement();
@@ -169,12 +170,12 @@ public class FragmentEditableElementTestUtil {
 				contextSource, fragmentMappedValueItemReferenceType,
 				htmlFragmentValueType));
 		htmlFragmentEditableElementValue.setType(
-			() -> FragmentEditableElementValue.Type.HTML);
+			() -> fragmentEditableElementValueType);
 
 		fragmentEditableElement.setFragmentEditableElementValue(
 			() -> htmlFragmentEditableElementValue);
 
-		fragmentEditableElement.setId(() -> "element-html");
+		fragmentEditableElement.setId(() -> id);
 
 		return fragmentEditableElement;
 	}
