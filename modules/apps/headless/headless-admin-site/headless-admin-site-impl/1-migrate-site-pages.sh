@@ -19,7 +19,8 @@ YELLOW=$'\033[33m' # Color for emphasis in conclusion
 # --- Configuration and Variables ---
 
 # Fixed default values for Origin and Target Site ERCs
-ORIGIN_SITE_ERC="OriginSite"
+ORIGIN_SITE_ERC="L_GUEST"
+#ORIGIN_SITE_ERC="OriginSite"
 TARGET_SITE_ERC="TargetSite"
 
 TEMP_BODY_FILE="page_full_body.json"

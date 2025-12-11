@@ -16,7 +16,7 @@ API_ENDPOINT="${LIFERAY_URL}/o/headless-admin-site/v1.0/sites"
 # Define an array of site definitions in the format: "EXTERNAL_REF_CODE,Site Name"
 # Add more definitions here to create new sites.
 SITE_DEFINITIONS=(
-	"OriginSite,La Maison de Pablo,com.liferay.site.initializer.welcome,site-initializer"
+	# "OriginSite,La Maison de Pablo,com.liferay.site.initializer.welcome,site-initializer"
 	"TargetSite,La Casa de Pablo,,"
 )
 
