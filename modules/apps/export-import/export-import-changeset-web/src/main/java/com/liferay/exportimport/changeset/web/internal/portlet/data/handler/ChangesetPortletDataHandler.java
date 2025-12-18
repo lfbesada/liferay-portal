@@ -334,33 +334,14 @@ public class ChangesetPortletDataHandler extends BasePortletDataHandler {
 	}
 
 	private String _getPortletId(String className) {
-		List<Portlet> dataSiteLevelPortlets = Collections.emptyList();
+		Portlet dataSiteLevelPortlet = _exportImportHelper.getDataSiteLevelPortlet(
+			className, CompanyThreadLocal.getCompanyId(), true);
 
-		try {
-			dataSiteLevelPortlets =
-				_exportImportHelper.getDataSiteLevelPortlets(
-					CompanyThreadLocal.getCompanyId());
-		}
-		catch (Exception exception) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(exception);
-			}
-
+		if (dataSiteLevelPortlet == null) {
 			return null;
 		}
 
-		for (Portlet dataSiteLevelPortlet : dataSiteLevelPortlets) {
-			PortletDataHandler portletDataHandler =
-				dataSiteLevelPortlet.getPortletDataHandlerInstance();
-
-			if (ArrayUtil.contains(
-					portletDataHandler.getClassNames(), className)) {
-
-				return dataSiteLevelPortlet.getRootPortletId();
-			}
-		}
-
-		return null;
+		return dataSiteLevelPortlet.getRootPortletId();
 	}
 
 	private String[] _getPortletResourceNames(

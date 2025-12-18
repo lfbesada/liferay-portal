@@ -348,34 +348,15 @@ public class StagingGroupHelperImpl implements StagingGroupHelper {
 			return true;
 		}
 
-		List<Portlet> dataSiteLevelPortlets = Collections.emptyList();
+		Portlet dataSiteLevelPortlet = _exportImportHelper.getDataSiteLevelPortlet(
+			className, group.getCompanyId(), true);
 
-		try {
-			dataSiteLevelPortlets =
-				_exportImportHelper.getDataSiteLevelPortlets(
-					group.getCompanyId(), true);
-		}
-		catch (Exception exception) {
-			if (_log.isDebugEnabled()) {
-				_log.debug(exception);
-			}
-
+		if (dataSiteLevelPortlet == null) {
 			return true;
 		}
 
-		for (Portlet dataSiteLevelPortlet : dataSiteLevelPortlets) {
-			PortletDataHandler portletDataHandler =
-				dataSiteLevelPortlet.getPortletDataHandlerInstance();
-
-			if (ArrayUtil.contains(
-					portletDataHandler.getClassNames(), className)) {
-
-				return isStagedPortlet(
-					groupId, dataSiteLevelPortlet.getRootPortletId());
-			}
-		}
-
-		return true;
+		return isStagedPortlet(
+			groupId, dataSiteLevelPortlet.getRootPortletId());
 	}
 
 	@Override
