@@ -48,7 +48,6 @@ import com.liferay.portal.model.adapter.util.ModelAdapterUtil;
 
 import jakarta.portlet.PortletPreferences;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 
@@ -334,8 +333,9 @@ public class ChangesetPortletDataHandler extends BasePortletDataHandler {
 	}
 
 	private String _getPortletId(String className) {
-		Portlet dataSiteLevelPortlet = _exportImportHelper.getDataSiteLevelPortlet(
-			className, CompanyThreadLocal.getCompanyId(), true);
+		Portlet dataSiteLevelPortlet =
+			_exportImportHelper.getDataSiteLevelPortlet(
+				className, CompanyThreadLocal.getCompanyId(), true);
 
 		if (dataSiteLevelPortlet == null) {
 			return null;
