@@ -192,7 +192,7 @@ public class ExportImportHelperImpl implements ExportImportHelper {
 				continue;
 			}
 
-			if (portletDataHandler.isDataSiteLevel() ||
+			if (!portletDataHandler.isDataSiteLevel() ||
 				(excludeDataAlwaysStaged &&
 				 portletDataHandler.isDataAlwaysStaged())) {
 
