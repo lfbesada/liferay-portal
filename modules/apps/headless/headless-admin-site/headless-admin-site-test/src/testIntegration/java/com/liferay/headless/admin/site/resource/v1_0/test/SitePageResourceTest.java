@@ -69,6 +69,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -351,6 +352,7 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		_testPutSiteSitePage(serviceContext, SitePage.Type.WIDGET_PAGE);
 
 		_testPutSiteSitePageWithPageElements();
+		_testPutSiteSitePageWithPageExperiences();
 		_testPutSiteSitePageWithPageSpecifications();
 		_testPutSiteSitePageWithPriority();
 		_testPutSiteSitePageWithWidgetPageSettings();
@@ -2172,6 +2174,55 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 			sitePageResource.putSiteSitePage(
 				testGroup.getExternalReferenceCode(),
 				postSitePage.getExternalReferenceCode(), sitePage));
+	}
+
+	private void _testPutSiteSitePageWithPageExperiences() throws Exception {
+		SitePageResource sitePageResource = _getSitePageResource(
+			"pageSpecifications");
+
+		SitePage postSitePage = sitePageResource.postSiteSitePage(
+			testGroup.getExternalReferenceCode(),
+			_getRandomSitePage(SitePage.Type.CONTENT_PAGE));
+
+		SitePage putSitePage = _testPutSiteSitePageWithPageExperiences(
+			postSitePage, sitePageResource);
+
+		_testPutSiteSitePageWithPageExperiences(putSitePage, sitePageResource);
+	}
+
+	private SitePage _testPutSiteSitePageWithPageExperiences(
+			SitePage sitePage, SitePageResource sitePageResource)
+		throws Exception {
+
+		PageSpecification[] pageSpecifications =
+			sitePage.getPageSpecifications();
+
+		ContentPageSpecification contentPageSpecification =
+			(ContentPageSpecification)pageSpecifications[0];
+
+		PageExperience[] pageExperiences = ArrayUtil.append(
+			PageExperiencesTestUtil.getPageExperiences(
+				testCompany.getGroupId(),
+				contentPageSpecification.getExternalReferenceCode(),
+				testGroup.getGroupId()),
+			PageExperiencesTestUtil.getDefaultPageExperience(
+				contentPageSpecification.getPageExperiences()));
+
+		contentPageSpecification.setPageExperiences(pageExperiences);
+
+		SitePage putSitePage = sitePageResource.putSiteSitePage(
+			testGroup.getExternalReferenceCode(),
+			sitePage.getExternalReferenceCode(), sitePage);
+
+		pageSpecifications = putSitePage.getPageSpecifications();
+
+		contentPageSpecification =
+			(ContentPageSpecification)pageSpecifications[0];
+
+		PageExperiencesTestUtil.assertPageExperiences(
+			contentPageSpecification.getPageExperiences(), pageExperiences);
+
+		return putSitePage;
 	}
 
 	private void _testPutSiteSitePageWithPageSpecifications() throws Exception {
