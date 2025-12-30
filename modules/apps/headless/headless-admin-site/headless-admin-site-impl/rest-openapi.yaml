@@ -1466,7 +1466,7 @@ components:
                     Form: "#/components/schemas/FormFragmentInstancePageElementDefinition"
                 propertyName: fragmentType
             required:
-                - fragmentType
+                -   fragmentType
             type: object
         FragmentItemExternalReference:
             allOf:
