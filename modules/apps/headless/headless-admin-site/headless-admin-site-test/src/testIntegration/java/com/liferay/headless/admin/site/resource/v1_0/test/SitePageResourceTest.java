@@ -2181,6 +2181,20 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 				layoutIdFriendlyURL, layout.getFriendlyURL(locale));
 		}
 
+		Layout testGroupLayout = LayoutTestUtil.addTypePortletLayout(testGroup);
+
+		while (testGroupLayout.getLayoutId() < layout.getLayoutId()) {
+			testGroupLayout = LayoutTestUtil.addTypePortletLayout(testGroup);
+		}
+
+		testGroupLayout = _layoutLocalService.fetchLayout(
+			testGroup.getGroupId(), false, layout.getLayoutId());
+
+		Assert.assertNotNull(testGroupLayout);
+		Assert.assertNotEquals(
+			layout.getExternalReferenceCode(),
+			testGroupLayout.getExternalReferenceCode());
+
 		sitePageResource.putSiteSitePage(
 			testGroup.getExternalReferenceCode(),
 			layout.getExternalReferenceCode(),
