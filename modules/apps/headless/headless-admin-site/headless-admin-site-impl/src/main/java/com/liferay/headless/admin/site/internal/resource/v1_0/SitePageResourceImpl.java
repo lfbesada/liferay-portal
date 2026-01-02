@@ -639,10 +639,10 @@ public class SitePageResourceImpl
 			}
 		}
 
-		String changeFrequency = StringPool.BLANK;
-		String sitemapInclude = StringPool.BLANK;
-		String sitemapIncludeChildLayouts = StringPool.BLANK;
-		String sitemapPagePriority = StringPool.BLANK;
+		String changeFrequency = null;
+		String sitemapInclude = null;
+		String sitemapIncludeChildLayouts = null;
+		String sitemapPagePriority = null;
 		SEOSettings seoSettings = pageSettings.getSeoSettings();
 
 		if (seoSettings != null) {
@@ -657,11 +657,19 @@ public class SitePageResourceImpl
 				if (Boolean.FALSE.equals(sitemapSettings.getInclude())) {
 					sitemapInclude = "0";
 				}
+				else if (Boolean.TRUE.equals(sitemapSettings.getInclude())) {
+					sitemapInclude = "1";
+				}
 
 				if (Boolean.FALSE.equals(
 						sitemapSettings.getIncludeChildSitePages())) {
 
 					sitemapIncludeChildLayouts = "false";
+				}
+				else if (Boolean.TRUE.equals(
+							sitemapSettings.getIncludeChildSitePages())) {
+
+					sitemapIncludeChildLayouts = "true";
 				}
 
 				if (sitemapSettings.getPagePriority() != null) {
