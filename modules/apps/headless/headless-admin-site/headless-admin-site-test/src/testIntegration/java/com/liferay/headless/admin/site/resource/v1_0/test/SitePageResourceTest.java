@@ -343,7 +343,7 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 
 	@Override
 	@Test
-	@TestInfo("LPD-74331")
+	@TestInfo({"LPD-74331", "LPD-75450"})
 	public void testPutSiteSitePage() throws Exception {
 		ServiceContext serviceContext =
 			ServiceContextTestUtil.getServiceContext(
@@ -352,6 +352,7 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		_testPutSiteSitePage(serviceContext, SitePage.Type.CONTENT_PAGE);
 		_testPutSiteSitePage(serviceContext, SitePage.Type.WIDGET_PAGE);
 
+		_testPutSiteSitePageWithExportedSitePage();
 		_testPutSiteSitePageWithExportedSitePageWithLayoutIdFriendlyURL();
 		_testPutSiteSitePageWithPageElements();
 		_testPutSiteSitePageWithPageSpecifications();
@@ -2157,6 +2158,20 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 			putSitePage);
 
 		return putSitePage;
+	}
+
+	private void _testPutSiteSitePageWithExportedSitePage() throws Exception {
+		Layout layout = LayoutTestUtil.addTypeContentLayout(irrelevantGroup);
+
+		ContentLayoutTestUtil.publishLayout(layout.fetchDraftLayout(), layout);
+
+		SitePage sitePage = sitePageResource.getSiteSitePage(
+			irrelevantGroup.getExternalReferenceCode(),
+			layout.getExternalReferenceCode());
+
+		_assertSitePage(layout, sitePage);
+
+		_testPutSiteSitePage(sitePage, sitePage);
 	}
 
 	private void _testPutSiteSitePageWithExportedSitePageWithLayoutIdFriendlyURL()
