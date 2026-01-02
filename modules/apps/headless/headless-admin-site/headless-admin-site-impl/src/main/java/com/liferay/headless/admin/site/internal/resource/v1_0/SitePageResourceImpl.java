@@ -629,7 +629,8 @@ public class SitePageResourceImpl
 		if (sitePageNavigationSettings != null) {
 			queryString = GetterUtil.getString(
 				sitePageNavigationSettings.getQueryString());
-			target = sitePageNavigationSettings.getTarget();
+			target = GetterUtil.getString(
+				sitePageNavigationSettings.getTarget());
 
 			if (sitePageNavigationSettings.getTargetType() ==
 					SitePageNavigationSettings.TargetType.NEW_TAB) {
@@ -638,11 +639,10 @@ public class SitePageResourceImpl
 			}
 		}
 
-		SitemapSettings.ChangeFrequency changeFrequency =
-			SitemapSettings.ChangeFrequency.DAILY;
-		String sitemapInclude = "1";
-		String sitemapIncludeChildLayouts = "true";
-		String sitemapPagePriority = "0.0";
+		String changeFrequency = StringPool.BLANK;
+		String sitemapInclude = StringPool.BLANK;
+		String sitemapIncludeChildLayouts = StringPool.BLANK;
+		String sitemapPagePriority = StringPool.BLANK;
 		SEOSettings seoSettings = pageSettings.getSeoSettings();
 
 		if (seoSettings != null) {
@@ -650,7 +650,8 @@ public class SitePageResourceImpl
 
 			if (sitemapSettings != null) {
 				if (sitemapSettings.getChangeFrequency() != null) {
-					changeFrequency = sitemapSettings.getChangeFrequency();
+					changeFrequency = StringUtil.toLowerCase(
+						sitemapSettings.getChangeFrequencyAsString());
 				}
 
 				if (Boolean.FALSE.equals(sitemapSettings.getInclude())) {
@@ -676,8 +677,7 @@ public class SitePageResourceImpl
 			).setProperty(
 				LayoutTypePortletConstants.QUERY_STRING, queryString
 			).setProperty(
-				LayoutTypePortletConstants.SITEMAP_CHANGEFREQ,
-				StringUtil.toLowerCase(changeFrequency.getValue())
+				LayoutTypePortletConstants.SITEMAP_CHANGEFREQ, changeFrequency
 			).setProperty(
 				LayoutTypePortletConstants.SITEMAP_INCLUDE, sitemapInclude
 			).setProperty(
