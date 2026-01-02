@@ -34,7 +34,12 @@ public class OpenGraphSettingsUtil {
 				layout.getGroupId(), layout.isPrivateLayout(),
 				layout.getLayoutId());
 
-		if (layoutSEOEntry == null) {
+		if ((layoutSEOEntry == null) ||
+			(MapUtil.isEmpty(layoutSEOEntry.getOpenGraphDescriptionMap()) &&
+			 (layoutSEOEntry.getOpenGraphImageFileEntryId() == 0) &&
+			 MapUtil.isEmpty(layoutSEOEntry.getOpenGraphImageAltMap()) &&
+			 MapUtil.isEmpty(layoutSEOEntry.getOpenGraphTitleMap()))) {
+
 			return null;
 		}
 
