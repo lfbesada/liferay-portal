@@ -35,7 +35,7 @@ public class OpenGraphSettingsUtil {
 				layout.getLayoutId());
 
 		if (layoutSEOEntry == null) {
-			return new OpenGraphSettings();
+			return null;
 		}
 
 		return new OpenGraphSettings() {

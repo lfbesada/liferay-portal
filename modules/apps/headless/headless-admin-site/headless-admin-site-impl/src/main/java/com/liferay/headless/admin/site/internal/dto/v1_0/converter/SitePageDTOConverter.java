@@ -162,7 +162,7 @@ public class SitePageDTOConverter implements DTOConverter<Layout, SitePage> {
 				layout.getLayoutId());
 
 		if (layoutSEOEntry == null) {
-			return new CustomMetaTag[0];
+			return null;
 		}
 
 		List<LayoutSEOEntryCustomMetaTag> layoutSEOEntryCustomMetaTags =
