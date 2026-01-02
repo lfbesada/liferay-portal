@@ -657,19 +657,11 @@ public class SitePageResourceImpl
 				if (Boolean.FALSE.equals(sitemapSettings.getInclude())) {
 					sitemapInclude = "0";
 				}
-				else if (Boolean.TRUE.equals(sitemapSettings.getInclude())) {
-					sitemapInclude = "1";
-				}
 
 				if (Boolean.FALSE.equals(
 						sitemapSettings.getIncludeChildSitePages())) {
 
 					sitemapIncludeChildLayouts = "false";
-				}
-				else if (Boolean.TRUE.equals(
-							sitemapSettings.getIncludeChildSitePages())) {
-
-					sitemapIncludeChildLayouts = "true";
 				}
 
 				if (sitemapSettings.getPagePriority() != null) {
