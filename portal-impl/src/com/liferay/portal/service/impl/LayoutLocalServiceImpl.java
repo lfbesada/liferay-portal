@@ -478,6 +478,10 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 					"draftLayoutDefaultSegmentsExperienceExternalReference" +
 						"Code"));
 			serviceContext.setAttribute(
+				"defaultSegmentsExperienceUuid",
+				serviceContext.getAttribute(
+					"draftLayoutDefaultSegmentsExperienceUuid"));
+			serviceContext.setAttribute(
 				"layoutSetPrototypeLayoutERC",
 				serviceContext.getAttribute(
 					"draftLayoutLayoutSetPrototypeLayoutERC"));
