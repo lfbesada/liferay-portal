@@ -4,6 +4,14 @@ components:
             # @review
             description:
                 The result of an action execution.
+            discriminator:
+                mapping:
+                    DisplayPage: "#/components/schemas/DisplayPageActionExecutionResult"
+                    None: "#/components/schemas/NoneActionExecutionResult"
+                    Notification: "#/components/schemas/NotificationActionExecutionResult"
+                    SitePage: "#/components/schemas/SitePageActionExecutionResult"
+                    URL: "#/components/schemas/URLActionExecutionResult"
+                propertyName: type
             properties:
                 type:
                     # @review
@@ -12,13 +20,6 @@ components:
                     enum: [DisplayPage, None, Notification, Page, URL]
                     type:
                         string
-                value:
-                    oneOf:
-                        -   $ref: "#/components/schemas/DisplayPageActionExecutionResult"
-                        -   $ref: "#/components/schemas/NoneActionExecutionResult"
-                        -   $ref: "#/components/schemas/NotificationActionExecutionResult"
-                        -   $ref: "#/components/schemas/SitePageActionExecutionResult"
-                        -   $ref: "#/components/schemas/URLActionExecutionResult"
             type: object
         ActionFragmentEditableElementValue:
             allOf:
