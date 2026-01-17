@@ -1,25 +1,5 @@
 components:
     schemas:
-        ActionInteraction:
-            # @review
-            description:
-                The interaction of an action.
-            properties:
-                type:
-                    # @review
-                    description:
-                        The type of interaction.
-                    enum: [DisplayPage, None, Notification, Page, URL]
-                    type:
-                        string
-                value:
-                    oneOf:
-                        -   $ref: "#/components/schemas/DisplayPageActionInteraction"
-                        -   $ref: "#/components/schemas/NoneActionInteraction"
-                        -   $ref: "#/components/schemas/NotificationActionInteraction"
-                        -   $ref: "#/components/schemas/SitePageActionInteraction"
-                        -   $ref: "#/components/schemas/URLActionInteraction"
-            type: object
         ActionFragmentEditableElementValue:
             allOf:
                 -   $ref: "#/components/schemas/FragmentEditableElementValue"
@@ -30,13 +10,13 @@ components:
                                 The fragment editable element's action. Must be mapped to an external value.
                             oneOf:
                                 -   $ref: "#/components/schemas/FragmentMappedValue"
-                        onErrorActionInteraction:
-                            $ref: "#/components/schemas/ActionInteraction"
+                        errorActionInteraction:
+                            $ref: "#/components/schemas/ErrorActionInteraction"
                             # @review
                             description:
                                 The action interaction in case the action fails.
-                        onSuccessActionInteractions:
-                            $ref: "#/components/schemas/ActionInteraction"
+                        successActionInteractions:
+                            $ref: "#/components/schemas/SuccessActionInteraction"
                             # @review
                             description:
                                 The action interaction in case the action succeeds.
@@ -931,6 +911,25 @@ components:
                         The localized message to display when the collection is empty or no results match the applied
                         filters ('No Results Found' by default).
                     type: object
+        ErrorActionInteraction:
+            # @review
+            description:
+                The interaction of a failed action.
+            properties:
+                type:
+                    # @review
+                    description:
+                        The type of interaction.
+                    enum: [None, Notification, Page, URL]
+                    type:
+                        string
+                value:
+                    oneOf:
+                        -   $ref: "#/components/schemas/NoneActionInteraction"
+                        -   $ref: "#/components/schemas/NotificationActionInteraction"
+                        -   $ref: "#/components/schemas/SitePageActionInteraction"
+                        -   $ref: "#/components/schemas/URLActionInteraction"
+            type: object
         FavIcon:
             # @review
             description:
@@ -3745,6 +3744,26 @@ components:
                         The theme id or the themeCSS client extension external reference code this style book is based
                         on.
                     type: string
+            type: object
+        SuccessActionInteraction:
+            # @review
+            description:
+                The interaction of a success action.
+            properties:
+                type:
+                    # @review
+                    description:
+                        The type of interaction.
+                    enum: [DisplayPage, None, Notification, Page, URL]
+                    type:
+                        string
+                value:
+                    oneOf:
+                        -   $ref: "#/components/schemas/DisplayPageActionInteraction"
+                        -   $ref: "#/components/schemas/NoneActionInteraction"
+                        -   $ref: "#/components/schemas/NotificationActionInteraction"
+                        -   $ref: "#/components/schemas/SitePageActionInteraction"
+                        -   $ref: "#/components/schemas/URLActionInteraction"
             type: object
         SuccessFormContainerSubmissionResult:
             # @review
