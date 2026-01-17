@@ -915,6 +915,13 @@ components:
             # @review
             description:
                 The interaction of a failed action.
+            discriminator:
+                mapping:
+                    None: "#/components/schemas/NoneActionInteraction"
+                    Notification: "#/components/schemas/NotificationActionInteraction"
+                    SitePage: "#/components/schemas/SitePageActionInteraction"
+                    URL: "#/components/schemas/URLActionInteraction"
+                propertyName: type
             properties:
                 type:
                     # @review
@@ -923,12 +930,6 @@ components:
                     enum: [None, Notification, Page, URL]
                     type:
                         string
-                value:
-                    oneOf:
-                        -   $ref: "#/components/schemas/NoneActionInteraction"
-                        -   $ref: "#/components/schemas/NotificationActionInteraction"
-                        -   $ref: "#/components/schemas/SitePageActionInteraction"
-                        -   $ref: "#/components/schemas/URLActionInteraction"
             type: object
         FavIcon:
             # @review
@@ -3749,6 +3750,14 @@ components:
             # @review
             description:
                 The interaction of a success action.
+            discriminator:
+                mapping:
+                    DisplayPage: $ "#/components/schemas/DisplayPageActionInteraction"
+                    None: "#/components/schemas/NoneActionInteraction"
+                    Notification: "#/components/schemas/NotificationActionInteraction"
+                    SitePage: "#/components/schemas/SitePageActionInteraction"
+                    URL: "#/components/schemas/URLActionInteraction"
+                propertyName: type
             properties:
                 type:
                     # @review
@@ -3757,13 +3766,6 @@ components:
                     enum: [DisplayPage, None, Notification, Page, URL]
                     type:
                         string
-                value:
-                    oneOf:
-                        -   $ref: "#/components/schemas/DisplayPageActionInteraction"
-                        -   $ref: "#/components/schemas/NoneActionInteraction"
-                        -   $ref: "#/components/schemas/NotificationActionInteraction"
-                        -   $ref: "#/components/schemas/SitePageActionInteraction"
-                        -   $ref: "#/components/schemas/URLActionInteraction"
             type: object
         SuccessFormContainerSubmissionResult:
             # @review
