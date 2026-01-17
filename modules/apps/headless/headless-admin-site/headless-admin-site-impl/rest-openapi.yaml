@@ -1,24 +1,24 @@
 components:
     schemas:
-        ActionExecutionResult:
+        ActionInteraction:
             # @review
             description:
-                The result of an action execution.
+                The interaction of an action.
             properties:
                 type:
                     # @review
                     description:
-                        The type of result.
+                        The type of interaction.
                     enum: [DisplayPage, None, Notification, Page, URL]
                     type:
                         string
                 value:
                     oneOf:
-                        -   $ref: "#/components/schemas/DisplayPageActionExecutionResult"
-                        -   $ref: "#/components/schemas/NoneActionExecutionResult"
-                        -   $ref: "#/components/schemas/NotificationActionExecutionResult"
-                        -   $ref: "#/components/schemas/SitePageActionExecutionResult"
-                        -   $ref: "#/components/schemas/URLActionExecutionResult"
+                        -   $ref: "#/components/schemas/DisplayPageActionInteraction"
+                        -   $ref: "#/components/schemas/NoneActionInteraction"
+                        -   $ref: "#/components/schemas/NotificationActionInteraction"
+                        -   $ref: "#/components/schemas/SitePageActionInteraction"
+                        -   $ref: "#/components/schemas/URLActionInteraction"
             type: object
         ActionFragmentEditableElementValue:
             allOf:
@@ -30,16 +30,16 @@ components:
                                 The fragment editable element's action. Must be mapped to an external value.
                             oneOf:
                                 -   $ref: "#/components/schemas/FragmentMappedValue"
-                        onError:
-                            $ref: "#/components/schemas/ActionExecutionResult"
+                        onErrorActionInteraction:
+                            $ref: "#/components/schemas/ActionInteraction"
                             # @review
                             description:
-                                The action execution result in case the action fails.
-                        onSuccess:
-                            $ref: "#/components/schemas/ActionExecutionResult"
+                                The action interaction in case the action fails.
+                        onSuccessActionInteractions:
+                            $ref: "#/components/schemas/ActionInteraction"
                             # @review
                             description:
-                                The action execution result in case the action succeeds.
+                                The action interaction in case the action succeeds.
                         textFragmentValue:
                             $ref: "#/components/schemas/TextFragmentValue"
                             # @review
@@ -584,7 +584,7 @@ components:
             description:
                 A fragment image value of type direct.
             type: object
-        DisplayPageActionExecutionResult:
+        DisplayPageActionInteraction:
             # @review
             description:
                 The definition of an action execution of type display page.
@@ -2598,7 +2598,7 @@ components:
                     items:
                         $ref: "#/components/schemas/WidgetPageWidgetInstance"
                     type: array
-        NoneActionExecutionResult:
+        NoneActionInteraction:
             # @review
             description:
                 The definition of an action execution result of type none.
@@ -2609,7 +2609,7 @@ components:
                         Whether to reload the page after the action is executed.
                     type: boolean
             type: object
-        NotificationActionExecutionResult:
+        NotificationActionInteraction:
             # @review
             description:
                 The definition of an action execution result of type notification.
@@ -3592,7 +3592,7 @@ components:
                     type: string
                     writeOnly: true
             type: object
-        SitePageActionExecutionResult:
+        SitePageActionInteraction:
             # @review
             description:
                 The definition of an action execution of type page.
@@ -3896,7 +3896,7 @@ components:
                     enum: [Inline, Mapped]
                     type: string
             type: object
-        URLActionExecutionResult:
+        URLActionInteraction:
             # @review
             description:
                 The definition of an action execution result of type URL.
