@@ -402,7 +402,7 @@ public class SitePageResourceImpl
 
 		_validateSitePageLayout(layout);
 
-		if ((sitePage.getType() != null) &&
+		if (!layout.isTypeEmpty() && (sitePage.getType() != null) &&
 			!Objects.equals(
 				layout.getType(),
 				SitePageTypeUtil.toInternalType(sitePage.getType()))) {
