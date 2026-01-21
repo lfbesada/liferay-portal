@@ -29,6 +29,7 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
@@ -41,6 +42,7 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.ScopeUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
@@ -198,6 +200,27 @@ public class DisplayPageInfoItemFieldSetProviderImpl
 		return DisplayPageInfoFieldType.INSTANCE;
 	}
 
+	private String _getExternalUniqueId(
+		String externalReferenceCode, long itemGroupId, long scopeGroupId) {
+
+		String scopeExternalReferenceCode = StringPool.BLANK;
+
+		try {
+			scopeExternalReferenceCode = GetterUtil.getString(
+				ScopeUtil.getItemScopeExternalReferenceCode(
+					itemGroupId, scopeGroupId));
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.error(portalException);
+			}
+		}
+
+		return StringBundler.concat(
+			LayoutPageTemplateEntry.class.getSimpleName(), StringPool.UNDERLINE,
+			externalReferenceCode, "_SERC_", scopeExternalReferenceCode);
+	}
+
 	private List<InfoFieldSetEntry> _getInfoFieldSetEntries(
 		String itemClassName, String infoItemFormVariationKey, String namespace,
 		long scopeGroupId) {
@@ -230,6 +253,10 @@ public class DisplayPageInfoItemFieldSetProviderImpl
 				).labelInfoLocalizedValue(
 					InfoLocalizedValue.singleValue(
 						layoutPageTemplateEntry.getName())
+				).externalUniqueId(
+					_getExternalUniqueId(
+						layoutPageTemplateEntry.getExternalReferenceCode(),
+						layoutPageTemplateEntry.getGroupId(), scopeGroupId)
 				).build());
 		}
 
@@ -274,6 +301,11 @@ public class DisplayPageInfoItemFieldSetProviderImpl
 					layoutPageTemplateEntry.getName()
 				).attribute(
 					URLInfoFieldType.NOFOLLOW, Boolean.TRUE
+				).externalUniqueId(
+					_getExternalUniqueId(
+						layoutPageTemplateEntry.getExternalReferenceCode(),
+						layoutPageTemplateEntry.getGroupId(),
+						themeDisplay.getScopeGroupId())
 				).labelInfoLocalizedValue(
 					InfoLocalizedValue.singleValue(
 						layoutPageTemplateEntry.getName())
