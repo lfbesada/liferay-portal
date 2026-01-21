@@ -39,8 +39,10 @@ import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeCon
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServiceUtil;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryServiceUtil;
+import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalServiceUtil;
 import com.liferay.layout.util.LayoutServiceContextHelperUtil;
 import com.liferay.layout.util.UpdateLayoutModifiedDateThreadLocal;
+import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringBundler;
@@ -82,6 +84,7 @@ import com.liferay.style.book.service.StyleBookEntryLocalServiceUtil;
 
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.Comparator;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -493,6 +496,14 @@ public class LayoutUtil {
 
 		Layout draftLayout = layout.fetchDraftLayout();
 
+		if (draftLayout == null) {
+			layout = _getConvertEmptyLayout(
+				draftContentPageSpecification, layout,
+				publishedContentPageSpecification, serviceContext);
+
+			draftLayout = layout.fetchDraftLayout();
+		}
+
 		if (!Objects.equals(
 				draftLayout.getExternalReferenceCode(),
 				draftContentPageSpecification.getExternalReferenceCode()) ||
@@ -673,6 +684,65 @@ public class LayoutUtil {
 				"portletSetupUseCustomTitle",
 				Boolean.toString(generalConfig.getUseCustomTitle()));
 		}
+	}
+
+	private static Layout _getConvertEmptyLayout(
+			ContentPageSpecification draftContentPageSpecification,
+			Layout layout,
+			ContentPageSpecification publishedContentPageSpecification,
+			ServiceContext serviceContext)
+		throws Exception {
+
+		if (!layout.isTypeEmpty()) {
+			throw new UnsupportedOperationException();
+		}
+
+		serviceContext.setAttribute(
+			"defaultSegmentsExperienceExternalReferenceCode",
+			SegmentsExperienceUtil.
+				getDefaultSegmentsExperienceExternalReferenceCode(
+					draftContentPageSpecification.getPageExperiences()));
+
+		LayoutLocalServiceUtil.addLayout(
+			draftContentPageSpecification.getExternalReferenceCode(),
+			serviceContext.getUserId(), layout.getGroupId(),
+			layout.isPrivateLayout(), layout.getParentLayoutId(),
+			PortalUtil.getClassNameId(Layout.class), layout.getPlid(),
+			layout.getNameMap(), layout.getTitleMap(),
+			layout.getDescriptionMap(), layout.getKeywordsMap(),
+			layout.getRobotsMap(), LayoutConstants.TYPE_CONTENT,
+			layout.getTypeSettings(), true, true, Collections.emptyMap(),
+			layout.getMasterLayoutPageTemplateEntryERC(), serviceContext);
+
+		layout.setType(LayoutConstants.TYPE_CONTENT);
+
+		SegmentsExperience segmentsExperience =
+			SegmentsExperienceLocalServiceUtil.addDefaultSegmentsExperience(
+				SegmentsExperienceUtil.
+					getDefaultSegmentsExperienceExternalReferenceCode(
+						publishedContentPageSpecification.getPageExperiences()),
+				layout.getUserId(), layout.getPlid(), serviceContext);
+
+		LayoutStructure layoutStructure = new LayoutStructure();
+
+		layoutStructure.addRootLayoutStructureItem();
+
+		LayoutPageTemplateStructureLocalServiceUtil.
+			addLayoutPageTemplateStructure(
+				layout.getUserId(), layout.getGroupId(), layout.getPlid(),
+				segmentsExperience.getSegmentsExperienceId(),
+				layoutStructure.toString(), serviceContext);
+
+		return LayoutLocalServiceUtil.updateLayout(
+			layout.getGroupId(), layout.isPrivateLayout(), layout.getLayoutId(),
+			layout.getParentLayoutId(), layout.getNameMap(),
+			layout.getTitleMap(), layout.getDescriptionMap(),
+			layout.getKeywordsMap(), layout.getRobotsMap(),
+			LayoutConstants.TYPE_CONTENT, false, layout.getFriendlyURLMap(),
+			layout.isIconImage(), null, layout.getStyleBookEntryERC(),
+			layout.getFaviconFileEntryERC(),
+			layout.getFaviconFileEntryScopeERC(),
+			layout.getMasterLayoutPageTemplateEntryERC(), serviceContext);
 	}
 
 	private static String _getMasterLayoutPageTemplateEntryERC(
