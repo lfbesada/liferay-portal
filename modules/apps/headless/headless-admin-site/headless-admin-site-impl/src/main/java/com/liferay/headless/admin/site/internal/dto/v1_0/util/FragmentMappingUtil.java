@@ -10,8 +10,12 @@ import com.liferay.headless.admin.site.dto.v1_0.FragmentMappedValueItemContextRe
 import com.liferay.headless.admin.site.dto.v1_0.FragmentMappedValueItemExternalReference;
 import com.liferay.headless.admin.site.dto.v1_0.FragmentMappedValueItemReference;
 import com.liferay.headless.admin.site.dto.v1_0.Mapping;
+import com.liferay.info.exception.NoSuchFormVariationException;
+import com.liferay.info.field.InfoField;
+import com.liferay.info.form.InfoForm;
 import com.liferay.info.item.ERCInfoItemIdentifier;
 import com.liferay.info.item.InfoItemServiceRegistry;
+import com.liferay.info.item.provider.InfoItemFormProvider;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
@@ -322,6 +326,70 @@ public class FragmentMappingUtil {
 		return ItemScopeUtil.getItemScope(
 			companyId, layoutJSONObject.getString("scopeExternalReferenceCode"),
 			scopeGroupId);
+	}
+
+	// To be used on display_page or item mapping
+
+	private static String _toExternalUniqueId(
+		String className, String fieldName, Object infoItem,
+		InfoItemServiceRegistry infoItemServiceRegistry) {
+
+		if (infoItem == null) {
+			return fieldName;
+		}
+
+		InfoItemFormProvider infoItemFormProvider =
+			infoItemServiceRegistry.getFirstInfoItemService(
+				InfoItemFormProvider.class, className);
+
+		if (infoItemFormProvider == null) {
+			return fieldName;
+		}
+
+		InfoForm infoForm = infoItemFormProvider.getInfoForm(infoItem);
+
+		InfoField<?> infoField = infoForm.getInfoField(fieldName);
+
+		if (infoField == null) {
+			return fieldName;
+		}
+
+		return infoField.getExternalUniqueId();
+	}
+
+	// To be used on collection item mapping
+
+	private static String _toExternalUniqueId(
+		String className, String fieldName, String formVariationKey,
+		InfoItemServiceRegistry infoItemServiceRegistry, long scopeGroupId) {
+
+		InfoItemFormProvider<?> infoItemFormProvider =
+			infoItemServiceRegistry.getFirstInfoItemService(
+				InfoItemFormProvider.class, className);
+
+		if (infoItemFormProvider == null) {
+			return fieldName;
+		}
+
+		InfoField<?> infoField = null;
+
+		try {
+			InfoForm infoForm = infoItemFormProvider.getInfoForm(
+				formVariationKey, scopeGroupId);
+
+			infoField = infoForm.getInfoField(fieldName);
+		}
+		catch (NoSuchFormVariationException noSuchFormVariationException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(noSuchFormVariationException);
+			}
+		}
+
+		if (infoField == null) {
+			return fieldName;
+		}
+
+		return infoField.getExternalUniqueId();
 	}
 
 	private static String _toItemClassName(JSONObject jsonObject) {
