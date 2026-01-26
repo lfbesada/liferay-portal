@@ -697,11 +697,13 @@ public class LayoutUtil {
 			throw new UnsupportedOperationException();
 		}
 
+		PageExperience pageExperience =
+			PageExperienceUtil.getDefaultPageExperience(
+				draftContentPageSpecification.getPageExperiences());
+
 		serviceContext.setAttribute(
 			"defaultSegmentsExperienceExternalReferenceCode",
-			SegmentsExperienceUtil.
-				getDefaultSegmentsExperienceExternalReferenceCode(
-					draftContentPageSpecification.getPageExperiences()));
+			pageExperience.getExternalReferenceCode());
 
 		LayoutLocalServiceUtil.addLayout(
 			draftContentPageSpecification.getExternalReferenceCode(),
@@ -716,12 +718,13 @@ public class LayoutUtil {
 
 		layout.setType(LayoutConstants.TYPE_CONTENT);
 
+		pageExperience = PageExperienceUtil.getDefaultPageExperience(
+			publishedContentPageSpecification.getPageExperiences());
+
 		SegmentsExperience segmentsExperience =
 			SegmentsExperienceLocalServiceUtil.addDefaultSegmentsExperience(
-				SegmentsExperienceUtil.
-					getDefaultSegmentsExperienceExternalReferenceCode(
-						publishedContentPageSpecification.getPageExperiences()),
-				layout.getUserId(), layout.getPlid(), serviceContext);
+				pageExperience.getExternalReferenceCode(), layout.getUserId(),
+				layout.getPlid(), serviceContext);
 
 		LayoutStructure layoutStructure = new LayoutStructure();
 
