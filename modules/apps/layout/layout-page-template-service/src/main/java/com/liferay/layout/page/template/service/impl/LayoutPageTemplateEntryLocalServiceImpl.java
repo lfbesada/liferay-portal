@@ -131,10 +131,9 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 			String externalReferenceCode, long userId, long groupId,
 			long layoutPageTemplateCollectionId,
 			String layoutPageTemplateEntryKey, long classNameId,
-			long classTypeId, String classTypeKey, String name, int type,
-			long previewFileEntryId, boolean defaultTemplate,
-			long layoutPrototypeId, long plid, long masterLayoutPlid,
-			int status, ServiceContext serviceContext)
+			String classTypeKey, String name, int type, long previewFileEntryId,
+			boolean defaultTemplate, long layoutPrototypeId, long plid,
+			long masterLayoutPlid, int status, ServiceContext serviceContext)
 		throws PortalException {
 
 		// Layout page template entry
@@ -260,8 +259,8 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 			String externalReferenceCode, long userId, long groupId,
 			long layoutPageTemplateCollectionId,
 			String layoutPageTemplateEntryKey, long classNameId,
-			long classTypeId, String classTypeKey, String name, int type,
-			long masterLayoutPlid, int status, ServiceContext serviceContext)
+			String classTypeKey, String name, int type, long masterLayoutPlid,
+			int status, ServiceContext serviceContext)
 		throws PortalException {
 
 		// Layout page template entry
@@ -272,7 +271,7 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 			addLayoutPageTemplateEntry(
 				externalReferenceCode, userId, groupId,
 				layoutPageTemplateCollectionId, layoutPageTemplateEntryKey,
-				classNameId, classTypeId, classTypeKey, name, type, 0, false, 0,
+				classNameId, classTypeKey, name, type, 0, false, 0,
 				0, masterLayoutPlid, status, serviceContext);
 
 		// Dynamic data mapping structure link
@@ -296,8 +295,8 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 
 		return addLayoutPageTemplateEntry(
 			externalReferenceCode, userId, groupId,
-			layoutPageTemplateCollectionId, layoutPageTemplateEntryKey, 0, 0,
-			null, name, type, 0, false, 0, 0, masterLayoutPlid, status,
+			layoutPageTemplateCollectionId, layoutPageTemplateEntryKey, 0, null,
+			name, type, 0, false, 0, 0, masterLayoutPlid, status,
 			serviceContext);
 	}
 
@@ -341,7 +340,6 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 			addLayoutPageTemplateEntry(
 				null, userId, groupId, layoutPageTemplateCollectionId, null,
 				sourceLayoutPageTemplateEntry.getClassNameId(),
-				sourceLayoutPageTemplateEntry.getClassTypeId(),
 				sourceLayoutPageTemplateEntry.getClassTypeKey(), name,
 				sourceLayoutPageTemplateEntry.getType(), 0, false,
 				sourceLayoutPageTemplateEntry.getLayoutPrototypeId(), 0,
@@ -805,7 +803,7 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 	@Override
 	public LayoutPageTemplateEntry updateLayoutPageTemplateEntry(
 			long userId, long layoutPageTemplateEntryId, long classNameId,
-			long classTypeId, String classTypeKey)
+			String classTypeKey)
 		throws PortalException {
 
 		LayoutPageTemplateEntry layoutPageTemplateEntry =
@@ -1066,7 +1064,7 @@ public class LayoutPageTemplateEntryLocalServiceImpl
 		}
 
 		return addLayoutPageTemplateEntry(
-			null, layoutPrototype.getUserId(), groupId, 0, null, 0, 0, null,
+			null, layoutPrototype.getUserId(), groupId, 0, null, 0, null,
 			nameMap.get(defaultLocale),
 			LayoutPageTemplateEntryTypeConstants.WIDGET_PAGE, 0, false,
 			layoutPrototype.getLayoutPrototypeId(), layout.getPlid(), 0, status,
