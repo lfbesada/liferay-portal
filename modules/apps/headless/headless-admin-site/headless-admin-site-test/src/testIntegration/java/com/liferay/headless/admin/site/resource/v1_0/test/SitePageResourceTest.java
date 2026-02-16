@@ -624,9 +624,8 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 				_getInputFragmentEntryLinkEditableValues(
 					infoField.getUniqueId()),
 				fragmentEntry.getCss(), fragmentEntry.getConfiguration(),
-				fragmentEntry.getExternalReferenceCode(),
-				fragmentEntry.getScopeERC(), fragmentEntry.getHtml(),
-				fragmentEntry.getJs(), draftLayout,
+				fragmentEntry.getExternalReferenceCode(), null,
+				fragmentEntry.getHtml(), fragmentEntry.getJs(), draftLayout,
 				fragmentEntry.getFragmentEntryKey(), fragmentEntry.getType(),
 				parentItemId, position, segmentsExperienceId);
 
@@ -644,9 +643,8 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 
 		ContentLayoutTestUtil.addFragmentEntryLinkToLayout(
 			"{}", fragmentEntry.getCss(), fragmentEntry.getConfiguration(),
-			fragmentEntry.getExternalReferenceCode(),
-			fragmentEntry.getScopeERC(), fragmentEntry.getHtml(),
-			fragmentEntry.getJs(), draftLayout,
+			fragmentEntry.getExternalReferenceCode(), null,
+			fragmentEntry.getHtml(), fragmentEntry.getJs(), draftLayout,
 			fragmentEntry.getFragmentEntryKey(), fragmentEntry.getType(),
 			parentItemId, position, segmentsExperienceId);
 
@@ -682,9 +680,8 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 						editableFragmentEntryProcessorJSONObject
 					).toString(),
 					fragmentEntry.getCss(), fragmentEntry.getConfiguration(),
-					fragmentEntry.getExternalReferenceCode(),
-					fragmentEntry.getScopeERC(), fragmentEntry.getHtml(),
-					fragmentEntry.getJs(), draftLayout,
+					fragmentEntry.getExternalReferenceCode(), null,
+					fragmentEntry.getHtml(), fragmentEntry.getJs(), draftLayout,
 					fragmentEntry.getFragmentEntryKey(),
 					fragmentEntry.getType(), null, 0, segmentsExperienceId);
 			}
