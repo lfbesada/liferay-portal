@@ -646,6 +646,19 @@ public class DisplayPageTemplateResourceImpl
 			layoutPageTemplateEntry);
 	}
 
+	private long _getClassNameId(String contentTypeClassName) {
+		ClassName className = _classNameLocalService.fetchClassName(
+			contentTypeClassName);
+
+		if ((className != null) && (className.getClassNameId() != 0)) {
+			return className.getClassNameId();
+		}
+
+		LogUtil.logOptionalReference(contentTypeClassName);
+
+		return _portal.getClassNameId(contentTypeClassName);
+	}
+
 	private String _getClassTypeKey(
 		ClassSubtypeReference contentTypeReference, long groupId) {
 
@@ -683,20 +696,6 @@ public class DisplayPageTemplateResourceImpl
 		}
 
 		return itemExternalReference.getExternalReferenceCode();
-	}
-
-	private long _getClassNameId(String contentTypeClassName) {
-
-		ClassName className = _classNameLocalService.fetchClassName(
-			contentTypeClassName);
-
-		if ((className != null) && (className.getClassNameId() != 0)) {
-			return className.getClassNameId();
-		}
-
-		LogUtil.logOptionalReference(contentTypeClassName);
-
-		return _portal.getClassNameId(contentTypeClassName);
 	}
 
 	private long _getLayoutPageTemplateCollectionId(
