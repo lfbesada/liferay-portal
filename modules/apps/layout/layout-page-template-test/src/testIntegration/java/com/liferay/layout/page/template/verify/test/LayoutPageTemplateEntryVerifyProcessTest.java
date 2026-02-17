@@ -13,11 +13,13 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.page.template.test.util.DisplayPageTemplateTestUtil;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
+import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -28,8 +30,10 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 
+import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
@@ -46,6 +50,16 @@ public class LayoutPageTemplateEntryVerifyProcessTest
 	@Rule
 	public static final AggregateTestRule aggregateTestRule =
 		new LiferayIntegrationTestRule();
+
+	@BeforeClass
+	public static void setUpClass() throws Exception {
+		_connection = DataAccess.getConnection();
+	}
+
+	@AfterClass
+	public static void tearDownClass() throws Exception {
+		DataAccess.cleanUp(_connection);
+	}
 
 	@Before
 	@Override
@@ -66,25 +80,29 @@ public class LayoutPageTemplateEntryVerifyProcessTest
 				_portal.getClassNameId(JournalArticle.class.getName()), null,
 				true, WorkflowConstants.STATUS_APPROVED);
 
-		layoutPageTemplateEntry.setClassTypeId(ddmStructure.getStructureId());
+		_updateLayoutPageTemplateEntry(
+			ddmStructure.getStructureId(),
+			layoutPageTemplateEntry.getLayoutPageTemplateEntryId());
 
-		layoutPageTemplateEntry =
-			_layoutPageTemplateEntryLocalService.updateLayoutPageTemplateEntry(
-				layoutPageTemplateEntry);
-
-		Assert.assertNull(layoutPageTemplateEntry.getClassTypeKey());
+		Assert.assertEquals(
+			ddmStructure.getStructureId(),
+			_getClassTypeId(
+				layoutPageTemplateEntry.getLayoutPageTemplateEntryId()));
+		Assert.assertTrue(
+			Validator.isNull(
+				_getClassTypeKey(
+					layoutPageTemplateEntry.getLayoutPageTemplateEntryId())));
 
 		doVerify();
 
-		LayoutPageTemplateEntry actualLayoutPageTemplateEntry =
-			_layoutPageTemplateEntryLocalService.getLayoutPageTemplateEntry(
-				layoutPageTemplateEntry.getLayoutPageTemplateEntryId());
-
-		String classTypeKey = _getClassTypeKey(
-			actualLayoutPageTemplateEntry.getLayoutPageTemplateEntryId());
-
-		Assert.assertNotNull(classTypeKey);
-		Assert.assertEquals(ddmStructure.getStructureKey(), classTypeKey);
+		Assert.assertEquals(
+			ddmStructure.getStructureId(),
+			_getClassTypeId(
+				layoutPageTemplateEntry.getLayoutPageTemplateEntryId()));
+		Assert.assertEquals(
+			ddmStructure.getStructureKey(),
+			_getClassTypeKey(
+				layoutPageTemplateEntry.getLayoutPageTemplateEntryId()));
 	}
 
 	@Override
@@ -92,11 +110,29 @@ public class LayoutPageTemplateEntryVerifyProcessTest
 		return _verifyProcess;
 	}
 
+	private long _getClassTypeId(long layoutPageTemplateEntryId)
+		throws Exception {
+
+		try (PreparedStatement preparedStatement = _connection.prepareStatement(
+				"select classTypeId from LayoutPageTemplateEntry where " +
+					"layoutPageTemplateEntryId = ?")) {
+
+			preparedStatement.setLong(1, layoutPageTemplateEntryId);
+
+			try (ResultSet resultSet = preparedStatement.executeQuery()) {
+				if (resultSet.next()) {
+					return resultSet.getLong("classTypeId");
+				}
+			}
+		}
+
+		return 0;
+	}
+
 	private String _getClassTypeKey(long layoutPageTemplateEntryId)
 		throws Exception {
 
-		try (Connection connection = DataAccess.getConnection();
-			PreparedStatement preparedStatement = connection.prepareStatement(
+		try (PreparedStatement preparedStatement = _connection.prepareStatement(
 				"select classTypeKey from LayoutPageTemplateEntry where " +
 					"layoutPageTemplateEntryId = ?")) {
 
@@ -111,6 +147,27 @@ public class LayoutPageTemplateEntryVerifyProcessTest
 
 		return null;
 	}
+
+	private void _updateLayoutPageTemplateEntry(
+			long classTypeId, long layoutPageTemplateEntryId)
+		throws Exception {
+
+		try (PreparedStatement preparedStatement = _connection.prepareStatement(
+				"update LayoutPageTemplateEntry set classTypeId = ?, " +
+					"classTypeKey = ? where layoutPageTemplateEntryId = ?")) {
+
+			preparedStatement.setLong(1, classTypeId);
+			preparedStatement.setString(2, null);
+			preparedStatement.setLong(3, layoutPageTemplateEntryId);
+
+			preparedStatement.executeUpdate();
+		}
+	}
+
+	private static Connection _connection;
+
+	@Inject
+	private EntityCache _entityCache;
 
 	@DeleteAfterTestRun
 	private Group _group;
