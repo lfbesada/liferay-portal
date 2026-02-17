@@ -444,7 +444,7 @@ public class DisplayPageTemplateResourceImpl
 			throw new UnsupportedOperationException();
 		}
 
-		long classNameId = _getContentTypeReferenceClassNameId(
+		long classNameId = _getClassNameId(
 			contentTypeReference);
 		String classTypeKey = _getClassTypeKey(contentTypeReference, groupId);
 
@@ -624,7 +624,7 @@ public class DisplayPageTemplateResourceImpl
 			_layoutPageTemplateEntryService.addLayoutPageTemplateEntry(
 				displayPageTemplate.getExternalReferenceCode(), groupId,
 				layoutPageTemplateCollectionId, displayPageTemplate.getKey(),
-				_getContentTypeReferenceClassNameId(contentTypeReference),
+				_getClassNameId(contentTypeReference),
 				_getClassTypeKey(contentTypeReference, layout.getGroupId()),
 				displayPageTemplate.getName(),
 				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
@@ -686,8 +686,7 @@ public class DisplayPageTemplateResourceImpl
 		return itemExternalReference.getExternalReferenceCode();
 	}
 
-	private long _getContentTypeReferenceClassNameId(
-		ClassSubtypeReference classSubtypeReference) {
+	private long _getClassNameId(ClassSubtypeReference classSubtypeReference) {
 
 		ClassName className = _classNameLocalService.fetchClassName(
 			classSubtypeReference.getClassName());
