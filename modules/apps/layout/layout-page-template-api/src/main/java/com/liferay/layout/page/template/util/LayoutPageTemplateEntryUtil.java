@@ -48,7 +48,7 @@ public class LayoutPageTemplateEntryUtil {
 	public static String getClassTypeKey(
 		long classNameId, long classTypeId, long groupId) {
 
-		if (classTypeId < 0) {
+		if ((classNameId == 0) || (classTypeId < 0)) {
 			return null;
 		}
 
