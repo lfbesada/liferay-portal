@@ -435,17 +435,19 @@ public class DisplayPageTemplateResourceImpl
 					layoutPageTemplateCollectionId);
 		}
 
-		ClassSubtypeReference contentTypeReference =
+		ClassSubtypeReference contentTypeClassSubtypeReference =
 			displayPageTemplate.getContentTypeReference();
 
-		if ((contentTypeReference == null) ||
-			Validator.isNull(contentTypeReference.getClassName())) {
+		if ((contentTypeClassSubtypeReference == null) ||
+			Validator.isNull(contentTypeClassSubtypeReference.getClassName())) {
 
 			throw new UnsupportedOperationException();
 		}
 
-		long classNameId = _getClassNameId(contentTypeReference.getClassName());
-		String classTypeKey = _getClassTypeKey(contentTypeReference, groupId);
+		long classNameId = _getClassNameId(
+			contentTypeClassSubtypeReference.getClassName());
+		String classTypeKey = _getClassTypeKey(
+			contentTypeClassSubtypeReference, groupId);
 
 		if ((classNameId != layoutPageTemplateEntry.getClassNameId()) ||
 			!StringUtil.equals(
@@ -582,11 +584,11 @@ public class DisplayPageTemplateResourceImpl
 			long layoutPageTemplateCollectionId)
 		throws Exception {
 
-		ClassSubtypeReference contentTypeReference =
+		ClassSubtypeReference contentTypeClassSubtypeReference =
 			displayPageTemplate.getContentTypeReference();
 
-		if ((contentTypeReference == null) ||
-			Validator.isNull(contentTypeReference.getClassName())) {
+		if ((contentTypeClassSubtypeReference == null) ||
+			Validator.isNull(contentTypeClassSubtypeReference.getClassName())) {
 
 			throw new UnsupportedOperationException();
 		}
@@ -623,8 +625,10 @@ public class DisplayPageTemplateResourceImpl
 			_layoutPageTemplateEntryService.addLayoutPageTemplateEntry(
 				displayPageTemplate.getExternalReferenceCode(), groupId,
 				layoutPageTemplateCollectionId, displayPageTemplate.getKey(),
-				_getClassNameId(contentTypeReference.getClassName()),
-				_getClassTypeKey(contentTypeReference, layout.getGroupId()),
+				_getClassNameId(
+					contentTypeClassSubtypeReference.getClassName()),
+				_getClassTypeKey(
+					contentTypeClassSubtypeReference, layout.getGroupId()),
 				displayPageTemplate.getName(),
 				LayoutPageTemplateEntryTypeConstants.DISPLAY_PAGE,
 				FileEntryUtil.getPreviewFileEntryId(
@@ -660,10 +664,10 @@ public class DisplayPageTemplateResourceImpl
 	}
 
 	private String _getClassTypeKey(
-		ClassSubtypeReference contentTypeReference, long groupId) {
+		ClassSubtypeReference classSubtypeReference, long groupId) {
 
 		ItemExternalReference itemExternalReference =
-			contentTypeReference.getSubTypeExternalReference();
+			classSubtypeReference.getSubTypeExternalReference();
 
 		if (itemExternalReference == null) {
 			return null;
@@ -672,11 +676,11 @@ public class DisplayPageTemplateResourceImpl
 		InfoItemFormVariationsProvider<?> infoItemFormVariationsProvider =
 			_infoItemServiceRegistry.getFirstInfoItemService(
 				InfoItemFormVariationsProvider.class,
-				contentTypeReference.getClassName());
+				classSubtypeReference.getClassName());
 
 		if (infoItemFormVariationsProvider == null) {
 			LogUtil.logOptionalReference(
-				contentTypeReference.getClassName(),
+				classSubtypeReference.getClassName(),
 				itemExternalReference.getExternalReferenceCode(),
 				itemExternalReference.getScope(), groupId);
 
