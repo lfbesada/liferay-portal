@@ -72,6 +72,8 @@ public class LayoutPageTemplateEntryVerifyProcessTest
 			_layoutPageTemplateEntryLocalService.updateLayoutPageTemplateEntry(
 				layoutPageTemplateEntry);
 
+		Assert.assertNull(layoutPageTemplateEntry.getClassTypeKey());
+
 		doVerify();
 
 		LayoutPageTemplateEntry actualLayoutPageTemplateEntry =
