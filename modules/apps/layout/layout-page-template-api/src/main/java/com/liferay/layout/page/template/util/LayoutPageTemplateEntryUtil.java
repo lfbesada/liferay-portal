@@ -24,17 +24,21 @@ public class LayoutPageTemplateEntryUtil {
 			return 0;
 		}
 
-		if (Validator.isNull(classTypeKey)) {
-			return -1;
-		}
-
 		InfoItemFormVariationsProvider<?> infoItemFormVariationsProvider =
 			InfoItemServiceRegistryUtil.getFirstInfoItemService(
 				InfoItemFormVariationsProvider.class,
 				PortalUtil.getClassName(classNameId));
 
 		if (infoItemFormVariationsProvider == null) {
+			if (Validator.isNull(classTypeKey)) {
+				return 0;
+			}
+
 			return -2;
+		}
+
+		if (Validator.isNull(classTypeKey)) {
+			return -1;
 		}
 
 		InfoItemFormVariation infoItemFormVariation =
