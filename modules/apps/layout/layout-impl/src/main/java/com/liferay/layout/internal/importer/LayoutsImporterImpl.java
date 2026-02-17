@@ -40,9 +40,7 @@ import com.liferay.headless.delivery.dto.v1_0.PageTemplateCollection;
 import com.liferay.headless.delivery.dto.v1_0.Settings;
 import com.liferay.headless.delivery.dto.v1_0.StyleBook;
 import com.liferay.headless.delivery.dto.v1_0.UtilityPageTemplate;
-import com.liferay.info.item.InfoItemFormVariation;
 import com.liferay.info.item.InfoItemServiceRegistry;
-import com.liferay.info.item.provider.InfoItemFormVariationsProvider;
 import com.liferay.info.search.InfoSearchClassMapperRegistry;
 import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
 import com.liferay.layout.importer.LayoutsImportStrategy;
@@ -85,7 +83,6 @@ import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalServ
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
 import com.liferay.layout.page.template.util.CheckUnlockedLayoutThreadLocal;
-import com.liferay.layout.page.template.util.LayoutPageTemplateEntryUtil;
 import com.liferay.layout.util.LayoutServiceContextHelper;
 import com.liferay.layout.util.constants.LayoutStructureConstants;
 import com.liferay.layout.util.structure.FragmentStyledLayoutStructureItem;
@@ -437,7 +434,7 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 
 	private LayoutPageTemplateEntry _addLayoutPageTemplateEntry(
 			long groupId, long layoutPageTemplateCollectionId, long classNameId,
-			long classTypeId, String name, int layoutPageTemplateEntryType)
+			String classTypeKey, String name, int layoutPageTemplateEntryType)
 		throws PortalException {
 
 		if (classNameId == 0) {
@@ -450,9 +447,7 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 
 		return _layoutPageTemplateEntryService.addLayoutPageTemplateEntry(
 			null, groupId, layoutPageTemplateCollectionId, null, classNameId,
-			LayoutPageTemplateEntryUtil.getClassTypeKey(
-				classNameId, classTypeId, groupId),
-			name, 0, WorkflowConstants.STATUS_APPROVED,
+			classTypeKey, name, 0, WorkflowConstants.STATUS_APPROVED,
 			ServiceContextThreadLocal.getServiceContext());
 	}
 
@@ -1573,7 +1568,7 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 	}
 
 	private LayoutPageTemplateEntry _processLayoutPageTemplateEntry(
-			long classNameId, long classTypeId, long groupId,
+			long classNameId, String classTypeKey, long groupId,
 			long layoutPageTemplateCollectionId,
 			List<LayoutsImporterResultEntry> layoutsImporterResultEntries,
 			LayoutsImportStrategy layoutsImportStrategy, String name,
@@ -1604,7 +1599,7 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 			if (layoutPageTemplateEntry == null) {
 				layoutPageTemplateEntry = _addLayoutPageTemplateEntry(
 					groupId, layoutPageTemplateCollectionId, classNameId,
-					classTypeId, name, layoutPageTemplateEntryType);
+					classTypeKey, name, layoutPageTemplateEntryType);
 				added = true;
 			}
 			else if (Objects.equals(
@@ -1613,7 +1608,7 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 
 				layoutPageTemplateEntry = _addLayoutPageTemplateEntry(
 					groupId, layoutPageTemplateCollectionId, classNameId,
-					classTypeId,
+					classTypeKey,
 					_layoutPageTemplateEntryLocalService.
 						getUniqueLayoutPageTemplateEntryName(
 							groupId, layoutPageTemplateCollectionId, name,
@@ -2606,7 +2601,7 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 			PageTemplate pageTemplate = _pageTemplateEntry.getPageTemplate();
 
 			_processLayoutPageTemplateEntry(
-				0, 0, _groupId, _layoutPageTemplateCollectionId,
+				0, null, _groupId, _layoutPageTemplateCollectionId,
 				_layoutsImporterResultEntries, _layoutsImportStrategy,
 				pageTemplate.getName(), _pageTemplateEntry.getPageDefinition(),
 				_preserveItemIds, LayoutPageTemplateEntryTypeConstants.BASIC,
@@ -2651,9 +2646,8 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 			LayoutPageTemplateEntry layoutPageTemplateEntry =
 				_processLayoutPageTemplateEntry(
 					_portal.getClassNameId(contentType.getClassName()),
-					_getClassTypeId(
-						contentType.getClassName(), _displayPageTemplate),
-					_groupId, _layoutPageTemplateCollectionId,
+					_getClassTypeKey(_displayPageTemplate), _groupId,
+					_layoutPageTemplateCollectionId,
 					_layoutsImporterResultEntries, _layoutsImportStrategy,
 					_displayPageTemplate.getName(), _pageDefinition,
 					_preserveItemIds,
@@ -2693,39 +2687,17 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 			_zipPath = zipPath;
 		}
 
-		private long _getClassTypeId(
-			String className, DisplayPageTemplate displayPageTemplate) {
-
-			InfoItemFormVariationsProvider<?> infoItemFormVariationsProvider =
-				_infoItemServiceRegistry.getFirstInfoItemService(
-					InfoItemFormVariationsProvider.class, className);
-
-			if (infoItemFormVariationsProvider == null) {
-				return 0;
-			}
+		private String _getClassTypeKey(
+			DisplayPageTemplate displayPageTemplate) {
 
 			ContentSubtype contentSubtype =
 				displayPageTemplate.getContentSubtype();
 
 			if (contentSubtype == null) {
-				return -1;
+				return null;
 			}
 
-			String subtypeKey = contentSubtype.getSubtypeKey();
-
-			if (Validator.isNull(subtypeKey)) {
-				return GetterUtil.getLong(contentSubtype.getSubtypeId(), -1);
-			}
-
-			InfoItemFormVariation infoItemFormVariation =
-				infoItemFormVariationsProvider.getInfoItemFormVariation(
-					_groupId, subtypeKey, subtypeKey);
-
-			if (infoItemFormVariation != null) {
-				return GetterUtil.getLong(infoItemFormVariation.getKey());
-			}
-
-			return -1;
+			return contentSubtype.getSubtypeKey();
 		}
 
 		private final DisplayPageTemplate _displayPageTemplate;
@@ -2748,7 +2720,7 @@ public class LayoutsImporterImpl implements LayoutsImporter {
 		@Override
 		public Void call() throws Exception {
 			_processLayoutPageTemplateEntry(
-				0, 0, _groupId,
+				0, null, _groupId,
 				LayoutPageTemplateConstants.
 					PARENT_LAYOUT_PAGE_TEMPLATE_COLLECTION_ID_DEFAULT,
 				_layoutsImporterResultEntries, _layoutsImportStrategy, _name,
