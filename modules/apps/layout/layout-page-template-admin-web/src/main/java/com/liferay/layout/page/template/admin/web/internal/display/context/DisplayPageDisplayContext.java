@@ -546,7 +546,7 @@ public class DisplayPageDisplayContext {
 		Long[] classTypeIds = classNameIdsMap.get(
 			layoutPageTemplateEntry.getClassNameId());
 
-		if (((layoutPageTemplateEntry.getClassTypeId() == 0) &&
+		if (((layoutPageTemplateEntry.getClassTypeId() <= 0) &&
 			 ArrayUtil.isEmpty(classTypeIds)) ||
 			ArrayUtil.contains(
 				classTypeIds, layoutPageTemplateEntry.getClassTypeId())) {
