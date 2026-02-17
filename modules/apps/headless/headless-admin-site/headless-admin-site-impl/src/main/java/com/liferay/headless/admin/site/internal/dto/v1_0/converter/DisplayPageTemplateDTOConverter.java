@@ -15,7 +15,6 @@ import com.liferay.headless.admin.site.dto.v1_0.ItemExternalReference;
 import com.liferay.headless.admin.site.dto.v1_0.SitemapSettings;
 import com.liferay.headless.admin.site.internal.dto.v1_0.util.ThumbnailUtil;
 import com.liferay.headless.admin.user.dto.v1_0.Creator;
-import com.liferay.info.item.InfoItemFormVariation;
 import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.item.provider.InfoItemFormVariationsProvider;
 import com.liferay.layout.admin.kernel.model.LayoutTypePortletConstants;
@@ -229,16 +228,17 @@ public class DisplayPageTemplateDTOConverter
 	private ItemExternalReference _getSubtypeItemExternalReference(
 		LayoutPageTemplateEntry layoutPageTemplateEntry) {
 
-		ItemExternalReference itemExternalReference = null;
+		if (Validator.isNull(layoutPageTemplateEntry.getClassTypeKey())) {
+			return null;
+		}
 
-		if (Validator.isNotNull(layoutPageTemplateEntry.getClassTypeKey())) {
-			itemExternalReference = new ItemExternalReference() {
+		ItemExternalReference itemExternalReference =
+			new ItemExternalReference() {
 				{
 					setExternalReferenceCode(
 						layoutPageTemplateEntry::getClassTypeKey);
 				}
 			};
-		}
 
 		InfoItemFormVariationsProvider<?> infoItemFormVariationsProvider =
 			_infoItemServiceRegistry.getFirstInfoItemService(
@@ -249,31 +249,10 @@ public class DisplayPageTemplateDTOConverter
 			return itemExternalReference;
 		}
 
-		if (itemExternalReference != null) {
-			itemExternalReference.setClassName(
-				infoItemFormVariationsProvider::getSubtypeClassName);
+		itemExternalReference.setClassName(
+			infoItemFormVariationsProvider::getSubtypeClassName);
 
-			return itemExternalReference;
-		}
-
-		InfoItemFormVariation infoItemFormVariation =
-			infoItemFormVariationsProvider.getInfoItemFormVariation(
-				layoutPageTemplateEntry.getGroupId(),
-				layoutPageTemplateEntry.getClassTypeKey(),
-				String.valueOf(layoutPageTemplateEntry.getClassTypeId()));
-
-		if (infoItemFormVariation == null) {
-			return itemExternalReference;
-		}
-
-		return new ItemExternalReference() {
-			{
-				setClassName(
-					infoItemFormVariationsProvider::getSubtypeClassName);
-				setExternalReferenceCode(
-					infoItemFormVariation::getExternalReferenceCode);
-			}
-		};
+		return itemExternalReference;
 	}
 
 	@Reference(
