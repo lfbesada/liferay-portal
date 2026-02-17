@@ -55,7 +55,7 @@ public class LayoutPageTemplateEntryUtil {
 		InfoItemFormVariationsProvider<?> infoItemFormVariationsProvider =
 			InfoItemServiceRegistryUtil.getFirstInfoItemService(
 				InfoItemFormVariationsProvider.class,
-				PortalUtil.getClassName(classNameId));
+				PortalUtil.fetchClassName(classNameId));
 
 		if (infoItemFormVariationsProvider == null) {
 			return null;
