@@ -20,6 +20,10 @@ public class LayoutPageTemplateEntryUtil {
 	public static long getClassTypeId(
 		long classNameId, String classTypeKey, long groupId) {
 
+		if (classNameId == 0) {
+			return 0;
+		}
+
 		if (Validator.isNull(classTypeKey)) {
 			return -1;
 		}
