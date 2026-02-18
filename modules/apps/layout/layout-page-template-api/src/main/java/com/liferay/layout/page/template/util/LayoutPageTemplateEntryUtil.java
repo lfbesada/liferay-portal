@@ -29,15 +29,15 @@ public class LayoutPageTemplateEntryUtil {
 				InfoItemFormVariationsProvider.class,
 				PortalUtil.getClassName(classNameId));
 
-		if (infoItemFormVariationsProvider == null) {
-			if (Validator.isNull(classTypeKey)) {
-				return 0;
-			}
+		if (Validator.isNull(classTypeKey) &&
+			(infoItemFormVariationsProvider == null)) {
 
-			return -2;
+			return 0;
 		}
 
-		if (Validator.isNull(classTypeKey)) {
+		if (Validator.isNull(classTypeKey) ||
+			(infoItemFormVariationsProvider == null)) {
+
 			return -1;
 		}
 
@@ -47,7 +47,7 @@ public class LayoutPageTemplateEntryUtil {
 					classTypeKey, groupId);
 
 		if (infoItemFormVariation == null) {
-			return -2;
+			return -1;
 		}
 
 		return GetterUtil.getLong(infoItemFormVariation.getKey());
