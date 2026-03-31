@@ -251,18 +251,16 @@ public class FragmentEntryProcessorRegistryImpl
 		throws PortalException {
 
 		return processFragmentEntryLinkHTML(
-			fragmentEntryLink.getEditableValuesJSONObject(),
-			fragmentEntryLink, fragmentEntryProcessorContext);
-
+			fragmentEntryLink.getEditableValuesJSONObject(), fragmentEntryLink,
+			fragmentEntryProcessorContext);
 	}
 
 	@Override
 	public String processFragmentEntryLinkHTML(
-		JSONObject editableValuesJSONObject,
-		FragmentEntryLink fragmentEntryLink,
-		FragmentEntryProcessorContext fragmentEntryProcessorContext)
-	throws PortalException {
-
+			JSONObject editableValuesJSONObject,
+			FragmentEntryLink fragmentEntryLink,
+			FragmentEntryProcessorContext fragmentEntryProcessorContext)
+		throws PortalException {
 
 		if (fragmentEntryLink.isTypePortlet()) {
 			return _renderWidgetHTML(
@@ -275,7 +273,8 @@ public class FragmentEntryProcessorRegistryImpl
 				_fragmentEntryProcessors) {
 
 			html = fragmentEntryProcessor.processFragmentEntryLinkHTML(
-				editableValuesJSONObject, fragmentEntryLink, fragmentEntryProcessorContext, html);
+				editableValuesJSONObject, fragmentEntryLink,
+				fragmentEntryProcessorContext, html);
 		}
 
 		Document document = _getDocument(html);
@@ -284,7 +283,8 @@ public class FragmentEntryProcessorRegistryImpl
 				_documentFragmentEntryProcessors) {
 
 			documentFragmentEntryProcessor.processFragmentEntryLinkHTML(
-				document, editableValuesJSONObject, fragmentEntryLink, fragmentEntryProcessorContext);
+				document, editableValuesJSONObject, fragmentEntryLink,
+				fragmentEntryProcessorContext);
 		}
 
 		Element bodyElement = document.body();

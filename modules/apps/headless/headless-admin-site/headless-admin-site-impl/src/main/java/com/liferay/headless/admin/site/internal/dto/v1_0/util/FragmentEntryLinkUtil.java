@@ -67,8 +67,6 @@ public class FragmentEntryLinkUtil {
 
 			fragmentEntryLink.setMvccVersion(-1);
 
-			String editableValues = fragmentEntryLink.getEditableValues();
-
 			try {
 				return fragmentEntryProcessorRegistry.
 					processFragmentEntryLinkHTML(
@@ -89,7 +87,6 @@ public class FragmentEntryLinkUtil {
 			}
 			finally {
 				fragmentEntryLink.setMvccVersion(mvccVersion);
-				fragmentEntryLink.setEditableValues(editableValues);
 			}
 		}
 	}
