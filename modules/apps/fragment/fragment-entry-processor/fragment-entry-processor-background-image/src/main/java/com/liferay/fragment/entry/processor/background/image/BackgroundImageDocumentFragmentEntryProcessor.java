@@ -54,17 +54,16 @@ public class BackgroundImageDocumentFragmentEntryProcessor
 
 	@Override
 	public void processFragmentEntryLinkHTML(
-			FragmentEntryLink fragmentEntryLink, Document document,
+			Document document, JSONObject editableValuesJSONObject,
+			FragmentEntryLink fragmentEntryLink,
 			FragmentEntryProcessorContext fragmentEntryProcessorContext)
 		throws PortalException {
 
-		JSONObject jsonObject = fragmentEntryLink.getEditableValuesJSONObject();
-
-		JSONObject editableValuesJSONObject = jsonObject.getJSONObject(
+		JSONObject jsonObject = editableValuesJSONObject.getJSONObject(
 			FragmentEntryProcessorConstants.
 				KEY_BACKGROUND_IMAGE_FRAGMENT_ENTRY_PROCESSOR);
 
-		if (editableValuesJSONObject == null) {
+		if (jsonObject == null) {
 			return;
 		}
 
@@ -77,12 +76,11 @@ public class BackgroundImageDocumentFragmentEntryProcessor
 
 			String id = element.attr("data-lfr-background-image-id");
 
-			if (!editableValuesJSONObject.has(id)) {
+			if (!jsonObject.has(id)) {
 				continue;
 			}
 
-			JSONObject editableValueJSONObject =
-				editableValuesJSONObject.getJSONObject(id);
+			JSONObject editableValueJSONObject = jsonObject.getJSONObject(id);
 
 			String value = StringPool.BLANK;
 
@@ -179,6 +177,17 @@ public class BackgroundImageDocumentFragmentEntryProcessor
 					_infoItemServiceRegistry);
 			}
 		}
+	}
+
+	@Override
+	public void processFragmentEntryLinkHTML(
+			FragmentEntryLink fragmentEntryLink, Document document,
+			FragmentEntryProcessorContext fragmentEntryProcessorContext)
+		throws PortalException {
+
+		processFragmentEntryLinkHTML(
+			document, fragmentEntryLink.getEditableValuesJSONObject(),
+			fragmentEntryLink, fragmentEntryProcessorContext);
 	}
 
 	private long _getGroupId(
