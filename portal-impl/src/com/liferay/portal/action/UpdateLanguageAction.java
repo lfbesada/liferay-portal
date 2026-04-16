@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
+import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.struts.Action;
@@ -201,8 +202,17 @@ public class UpdateLanguageAction implements Action {
 				continue;
 			}
 
+			String mappingPath =
+				StringPool.SLASH + friendlyURLMapper.getMapping();
+
 			int mappingIndex = layoutURL.indexOf(
-				StringPool.SLASH + friendlyURLMapper.getMapping());
+				mappingPath + StringPool.SLASH);
+
+			if ((mappingIndex == -1) &&
+				StringUtil.endsWith(layoutURL, mappingPath)) {
+
+				mappingIndex = layoutURL.length() - mappingPath.length();
+			}
 
 			if (mappingIndex != -1) {
 				mappingPart = layoutURL.substring(mappingIndex);
