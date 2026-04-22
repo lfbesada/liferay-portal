@@ -102,6 +102,11 @@ public class LayoutUtilityPageEntryLocalServiceImpl
 		layoutUtilityPageEntry.setUserId(user.getUserId());
 		layoutUtilityPageEntry.setUserName(user.getFullName());
 
+		layoutUtilityPageEntry.setCreateDate(
+			serviceContext.getCreateDate(new Date()));
+		layoutUtilityPageEntry.setModifiedDate(
+			serviceContext.getModifiedDate(new Date()));
+
 		if (plid == 0) {
 			Layout layout = _addLayout(
 				layoutUtilityPageEntry.getExternalReferenceCode() + "-layout",
