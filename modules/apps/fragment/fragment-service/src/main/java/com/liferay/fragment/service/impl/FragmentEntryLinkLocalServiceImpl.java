@@ -27,6 +27,7 @@ import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.sql.dsl.DSLFunctionFactoryUtil;
 import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
 import com.liferay.petra.sql.dsl.expression.Predicate;
+import com.liferay.petra.sql.dsl.query.DSLQuery;
 import com.liferay.petra.sql.dsl.query.FromStep;
 import com.liferay.petra.sql.dsl.query.GroupByStep;
 import com.liferay.petra.sql.dsl.query.LimitStep;
@@ -858,20 +859,7 @@ public class FragmentEntryLinkLocalServiceImpl
 		Predicate predicate = _getFragmentEntryLinksByFragmentEntryPredicate(
 			fragmentEntry, scopeGroupId
 		).and(
-			FragmentEntryLinkTable.INSTANCE.plid.notIn(
-				DSLQueryFactoryUtil.select(
-					LayoutTable.INSTANCE.plid
-				).from(
-					LayoutTable.INSTANCE
-				).innerJoinON(
-					LayoutPageTemplateEntryTable.INSTANCE,
-					LayoutTable.INSTANCE.plid.eq(
-						LayoutPageTemplateEntryTable.INSTANCE.plid
-					).or(
-						LayoutTable.INSTANCE.classPK.eq(
-							LayoutPageTemplateEntryTable.INSTANCE.plid)
-					)
-				))
+			FragmentEntryLinkTable.INSTANCE.plid.notIn(_getPlidsDSLQuery(null))
 		);
 
 		if (maxCreateDatePredicate) {
@@ -897,22 +885,9 @@ public class FragmentEntryLinkLocalServiceImpl
 			fragmentEntry, scopeGroupId
 		).and(
 			FragmentEntryLinkTable.INSTANCE.plid.in(
-				DSLQueryFactoryUtil.select(
-					LayoutTable.INSTANCE.plid
-				).from(
-					LayoutTable.INSTANCE
-				).innerJoinON(
-					LayoutPageTemplateEntryTable.INSTANCE,
-					LayoutTable.INSTANCE.plid.eq(
-						LayoutPageTemplateEntryTable.INSTANCE.plid
-					).or(
-						LayoutTable.INSTANCE.classPK.eq(
-							LayoutPageTemplateEntryTable.INSTANCE.plid)
-					)
-				).where(
+				_getPlidsDSLQuery(
 					LayoutPageTemplateEntryTable.INSTANCE.type.eq(
-						layoutPageTemplateType)
-				))
+						layoutPageTemplateType)))
 		);
 
 		if (maxCreateDatePredicate) {
@@ -969,6 +944,24 @@ public class FragmentEntryLinkLocalServiceImpl
 			return orderByStep.orderBy(
 				FragmentEntryLinkTable.INSTANCE, orderByComparator);
 		};
+	}
+
+	private DSLQuery _getPlidsDSLQuery(Predicate predicate) {
+		return DSLQueryFactoryUtil.select(
+			LayoutTable.INSTANCE.plid
+		).from(
+			LayoutTable.INSTANCE
+		).innerJoinON(
+			LayoutPageTemplateEntryTable.INSTANCE,
+			LayoutTable.INSTANCE.plid.eq(
+				LayoutPageTemplateEntryTable.INSTANCE.plid
+			).or(
+				LayoutTable.INSTANCE.classPK.eq(
+					LayoutPageTemplateEntryTable.INSTANCE.plid)
+			)
+		).where(
+			predicate
+		);
 	}
 
 	private String _getProcessedHTML(
