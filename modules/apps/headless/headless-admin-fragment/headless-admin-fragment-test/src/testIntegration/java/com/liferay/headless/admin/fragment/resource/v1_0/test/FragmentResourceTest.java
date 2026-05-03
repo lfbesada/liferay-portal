@@ -22,13 +22,17 @@ import com.liferay.headless.admin.fragment.client.problem.Problem;
 import com.liferay.petra.function.UnsafeFunction;
 import com.liferay.petra.function.UnsafeRunnable;
 import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.portal.kernel.json.JSONFactory;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
+import com.liferay.portal.kernel.test.util.HTTPTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
+import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
@@ -134,6 +138,7 @@ public class FragmentResourceTest extends BaseFragmentResourceTestCase {
 
 		_testPostSiteFragmentApproved();
 		_testPostSiteFragmentApprovedAndDraft();
+		_testPostSiteFragmentBatch();
 		_testPostSiteFragmentDraft();
 		_testPostSiteFragmentDuplicateKeyProblemException();
 		_testPostSiteFragmentEmpty();
@@ -537,6 +542,34 @@ public class FragmentResourceTest extends BaseFragmentResourceTestCase {
 
 	private void _testPostSiteFragmentApprovedAndDraft() throws Exception {
 		_testPostFragmentApprovedAndDraft(this::_postSiteFragment);
+	}
+
+	private void _testPostSiteFragmentBatch() throws Exception {
+		Fragment fragment = randomFragment();
+
+		fragment.setFragmentSet(
+			_randomFragmentSet(_fragmentCollection.getExternalReferenceCode()));
+
+		waitForFinish(
+			"COMPLETED",
+			HTTPTestUtil.invokeToJSONObject(
+				JSONUtil.put(
+					_jsonFactory.createJSONObject(fragment.toString())
+				).toString(),
+				"headless-admin-fragment/v1.0/sites/" +
+					testGroup.getExternalReferenceCode() + "/fragments/batch",
+				Http.Method.POST));
+
+		FragmentEntry fragmentEntry =
+			_fragmentEntryLocalService.
+				fetchFragmentEntryByExternalReferenceCode(
+					fragment.getExternalReferenceCode(),
+					testGroup.getGroupId());
+
+		Assert.assertNotNull(fragmentEntry);
+		Assert.assertEquals(
+			_fragmentCollection.getFragmentCollectionId(),
+			fragmentEntry.getFragmentCollectionId());
 	}
 
 	private void _testPostSiteFragmentDraft() throws Exception {
@@ -1240,6 +1273,9 @@ public class FragmentResourceTest extends BaseFragmentResourceTestCase {
 
 	@Inject
 	private FragmentEntryLocalService _fragmentEntryLocalService;
+
+	@Inject
+	private JSONFactory _jsonFactory;
 
 	@Inject
 	private Language _language;
