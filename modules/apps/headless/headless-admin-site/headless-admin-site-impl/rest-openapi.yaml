@@ -3038,6 +3038,59 @@ components:
                         -   WidgetPageSpecification
                     type: string
             type: object
+        PageSpecificationVersion:
+            description:
+                A versioned snapshot of a site page, captured at a point in time. Stores the full page specification so
+                that the page can be previewed or restored to that state.
+            properties:
+                creator:
+                    $ref: ../../headless-admin-user/headless-admin-user-impl/rest-openapi.yaml#Creator
+                    description:
+                        The user who created this version. It is not returned by default. It can be embedded via
+                        nestedFields.
+                dateCreated:
+                    description:
+                        The date and time the version was created.
+                    format: date-time
+                    type: string
+                dateModified:
+                    description:
+                        The date and time the version was last modified.
+                    format: date-time
+                    type: string
+                externalReferenceCode:
+                    description:
+                        The version's external reference code, unique per site.
+                    type: string
+                name:
+                    description:
+                        Optional custom name for the version.
+                    type: string
+                pageSpecification:
+                    $ref: "#/components/schemas/PageSpecification"
+                    description:
+                        The full page specification stored in this version. It is not returned by default. It can be
+                        embedded via nestedFields. Ignored on create — the server sources the specification from the
+                        current draft of the site page.
+                status:
+                    description:
+                        The status of the version. Reflects the lifecycle of the underlying page at the moment the
+                        snapshot was taken.
+                    enum:
+                        -   Approved
+                        -   Draft
+                    type: string
+                statusDate:
+                    description:
+                        The date and time the version's status was set.
+                    format: date-time
+                    type: string
+                version:
+                    description:
+                        The monotonically increasing version number of the snapshot.
+                    format: int32
+                    type: integer
+            type: object
         PageTemplate:
             discriminator:
                 mapping:
