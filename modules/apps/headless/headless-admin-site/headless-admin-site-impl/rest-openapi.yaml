@@ -3674,6 +3674,14 @@ components:
                     # @review
                     description:
                         Settings of the page, such as SEO or OpenGraph.
+                pageSpecificationVersions:
+                    description:
+                        The page's content versioning history. Each entry is a snapshot of the page specification,
+                        captured by the user or generated automatically on publish. Only applies to content pages. This
+                        field is not returned by default. It can be requested via nestedFields.
+                    items:
+                        $ref: "#/components/schemas/PageSpecificationVersion"
+                    type: array
                 pageSpecifications:
                     # @review
                     description:
