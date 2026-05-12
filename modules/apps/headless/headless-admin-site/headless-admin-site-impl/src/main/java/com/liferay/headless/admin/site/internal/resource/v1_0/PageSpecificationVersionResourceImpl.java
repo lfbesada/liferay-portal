@@ -5,19 +5,131 @@
 
 package com.liferay.headless.admin.site.internal.resource.v1_0;
 
+import com.liferay.headless.admin.site.dto.v1_0.PageSpecificationVersion;
+import com.liferay.headless.admin.site.dto.v1_0.SitePage;
+import com.liferay.headless.admin.site.internal.dto.v1_0.util.DTOConverterContextUtil;
 import com.liferay.headless.admin.site.resource.v1_0.PageSpecificationVersionResource;
+import com.liferay.headless.common.spi.util.GroupUtil;
+import com.liferay.layout.content.versioning.model.LayoutContentVersion;
+import com.liferay.layout.content.versioning.service.LayoutContentVersionService;
+import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.service.LayoutService;
+import com.liferay.portal.vulcan.dto.converter.DTOConverter;
+import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
+import com.liferay.portal.vulcan.fields.NestedField;
+import com.liferay.portal.vulcan.fields.NestedFieldId;
+import com.liferay.portal.vulcan.pagination.Page;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 import org.osgi.service.component.annotations.ServiceScope;
 
 /**
- * @author Rubén Pulido
+ * @author Lourdes Fernández Besada
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/page-specification-version.properties",
-	scope = ServiceScope.PROTOTYPE,
+	property = "nested.field.support=true", scope = ServiceScope.PROTOTYPE,
 	service = PageSpecificationVersionResource.class
 )
 public class PageSpecificationVersionResourceImpl
 	extends BasePageSpecificationVersionResourceImpl {
+
+	@Override
+	public PageSpecificationVersion getSiteSitePagePageSpecificationVersion(
+			String siteExternalReferenceCode,
+			String sitePageExternalReferenceCode,
+			String pageSpecificationVersionExternalReferenceCode)
+		throws Exception {
+
+		return _toPageSpecificationVersion(
+			_getLayoutContentVersion(
+				siteExternalReferenceCode,
+				pageSpecificationVersionExternalReferenceCode));
+	}
+
+	@NestedField(
+		parentClass = SitePage.class, value = "pageSpecificationVersions"
+	)
+	@Override
+	public Page<PageSpecificationVersion>
+			getSiteSitePagePageSpecificationVersionsPage(
+				String siteExternalReferenceCode,
+				@NestedFieldId(value = "externalReferenceCode") String
+					sitePageExternalReferenceCode)
+		throws Exception {
+
+		Layout layout = _getPublishedLayout(
+			siteExternalReferenceCode, sitePageExternalReferenceCode);
+
+		Layout draftLayout = _getDraftLayout(layout);
+
+		return Page.of(
+			transform(
+				_layoutContentVersionService.getLayoutContentVersions(
+					draftLayout.getPlid()),
+				this::_toPageSpecificationVersion));
+	}
+
+	private Layout _getDraftLayout(Layout layout) {
+		Layout draftLayout = layout.fetchDraftLayout();
+
+		if (draftLayout == null) {
+			throw new IllegalStateException(
+				"Site page has no draft layout for plid " + layout.getPlid());
+		}
+
+		return draftLayout;
+	}
+
+	private LayoutContentVersion _getLayoutContentVersion(
+			String siteExternalReferenceCode, String externalReferenceCode)
+		throws Exception {
+
+		return _layoutContentVersionService.
+			getLayoutContentVersionByExternalReferenceCode(
+				externalReferenceCode,
+				GroupUtil.getStagingAwareGroupId(
+					contextCompany.getCompanyId(), siteExternalReferenceCode));
+	}
+
+	private Layout _getPublishedLayout(
+			String siteExternalReferenceCode,
+			String sitePageExternalReferenceCode)
+		throws Exception {
+
+		return _layoutService.getLayoutByExternalReferenceCode(
+			sitePageExternalReferenceCode,
+			GroupUtil.getStagingAwareGroupId(
+				contextCompany.getCompanyId(), siteExternalReferenceCode));
+	}
+
+	private PageSpecificationVersion _toPageSpecificationVersion(
+			LayoutContentVersion layoutContentVersion)
+		throws Exception {
+
+		return _pageSpecificationVersionDTOConverter.toDTO(
+			DTOConverterContextUtil.getDTOConverterContext(
+				contextAcceptLanguage, _dtoConverterRegistry,
+				contextHttpServletRequest,
+				layoutContentVersion.getLayoutContentVersionId(),
+				contextUriInfo, contextUser),
+			layoutContentVersion);
+	}
+
+	@Reference
+	private DTOConverterRegistry _dtoConverterRegistry;
+
+	@Reference
+	private LayoutContentVersionService _layoutContentVersionService;
+
+	@Reference
+	private LayoutService _layoutService;
+
+	@Reference(
+		target = "(component.name=com.liferay.headless.admin.site.internal.dto.v1_0.converter.PageSpecificationVersionDTOConverter)"
+	)
+	private DTOConverter<LayoutContentVersion, PageSpecificationVersion>
+		_pageSpecificationVersionDTOConverter;
+
 }
