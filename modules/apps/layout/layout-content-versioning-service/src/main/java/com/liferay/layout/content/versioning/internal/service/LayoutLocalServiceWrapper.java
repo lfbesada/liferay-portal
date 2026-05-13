@@ -11,9 +11,12 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.utility.page.model.LayoutUtilityPageEntry;
 import com.liferay.layout.utility.page.service.LayoutUtilityPageEntryLocalService;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
 import com.liferay.portal.kernel.service.ServiceWrapper;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -43,9 +46,9 @@ public class LayoutLocalServiceWrapper
 		Layout sourceLayout, Layout targetLayout) {
 
 		try {
-			long targetPlid = targetLayout.getPlid();
-
-			if ((sourceLayout.getClassPK() != targetPlid) ||
+			if (!FeatureFlagManagerUtil.isEnabled(
+					sourceLayout.getCompanyId(), "LPD-10622") ||
+				(sourceLayout.getClassPK() != targetLayout.getPlid()) ||
 				!targetLayout.isTypeContent()) {
 
 				return;
@@ -53,7 +56,7 @@ public class LayoutLocalServiceWrapper
 
 			LayoutPageTemplateEntry layoutPageTemplateEntry =
 				_layoutPageTemplateEntryLocalService.
-					fetchLayoutPageTemplateEntryByPlid(targetPlid);
+					fetchLayoutPageTemplateEntryByPlid(targetLayout.getPlid());
 
 			if (layoutPageTemplateEntry != null) {
 				return;
@@ -61,17 +64,27 @@ public class LayoutLocalServiceWrapper
 
 			LayoutUtilityPageEntry layoutUtilityPageEntry =
 				_layoutUtilityPageEntryLocalService.
-					fetchLayoutUtilityPageEntryByPlid(targetPlid);
+					fetchLayoutUtilityPageEntryByPlid(targetLayout.getPlid());
 
 			if (layoutUtilityPageEntry != null) {
 				return;
+			}
+
+			ServiceContext serviceContext =
+				ServiceContextThreadLocal.getServiceContext();
+
+			if (serviceContext == null) {
+				serviceContext = new ServiceContext();
+
+				serviceContext.setCompanyId(sourceLayout.getCompanyId());
+				serviceContext.setUserId(sourceLayout.getUserId());
 			}
 
 			_layoutContentVersionLocalService.addLayoutContentVersion(
 				null, sourceLayout.getUserId(), sourceLayout.getPlid(),
 				targetLayout.getName(LocaleUtil.getSiteDefault()),
 				_layoutContentVersionDataProvider.getLayoutContentVersionData(
-					sourceLayout),
+					sourceLayout, serviceContext),
 				WorkflowConstants.STATUS_APPROVED, true);
 		}
 		catch (Exception exception) {
