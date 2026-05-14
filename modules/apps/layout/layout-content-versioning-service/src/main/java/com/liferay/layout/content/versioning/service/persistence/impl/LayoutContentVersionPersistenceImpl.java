@@ -1408,4 +1408,4 @@ public class LayoutContentVersionPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-106654869
+// LIFERAY-SERVICE-BUILDER-HASH:415365673
