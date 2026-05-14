@@ -68,6 +68,11 @@ public class LayoutContentVersionLocalServiceImpl
 
 		int version = _generateVersion(plid);
 
+		if (externalReferenceCode == null) {
+			externalReferenceCode =
+				layout.getExternalReferenceCode() + "_v_" + version;
+		}
+
 		layoutContentVersion.setExternalReferenceCode(externalReferenceCode);
 
 		layoutContentVersion.setGroupId(layout.getGroupId());
