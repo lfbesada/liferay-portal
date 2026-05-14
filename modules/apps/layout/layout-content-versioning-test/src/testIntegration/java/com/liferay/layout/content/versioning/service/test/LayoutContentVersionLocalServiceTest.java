@@ -85,6 +85,22 @@ public class LayoutContentVersionLocalServiceTest {
 	}
 
 	@Test
+	public void testAddLayoutContentVersionDerivesExternalReferenceCodeWhenNull()
+		throws Exception {
+
+		LayoutContentVersion layoutContentVersion =
+			_layoutContentVersionLocalService.addLayoutContentVersion(
+				null, TestPropsValues.getUserId(), _draftLayout.getPlid(),
+				RandomTestUtil.randomString(), RandomTestUtil.randomString(),
+				WorkflowConstants.STATUS_DRAFT, false);
+
+		Assert.assertEquals(
+			_draftLayout.getExternalReferenceCode() + "_v_" +
+				layoutContentVersion.getVersion(),
+			layoutContentVersion.getExternalReferenceCode());
+	}
+
+	@Test
 	public void testAddLayoutContentVersionForcesNewRowWhenSkipIfUnchangedIsFalse()
 		throws Exception {
 
