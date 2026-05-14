@@ -5,6 +5,7 @@
 
 package com.liferay.layout.content.versioning.service.impl;
 
+import com.liferay.layout.content.versioning.exception.RequiredLayoutContentVersionException;
 import com.liferay.layout.content.versioning.model.LayoutContentVersion;
 import com.liferay.layout.content.versioning.service.base.LayoutContentVersionLocalServiceBaseImpl;
 import com.liferay.portal.aop.AopService;
@@ -19,6 +20,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.Date;
 import java.util.List;
@@ -43,7 +45,11 @@ public class LayoutContentVersionLocalServiceImpl
 
 		Layout layout = _layoutLocalService.getLayout(plid);
 
-		_checkFeatureFlag(layout);
+		_checkFeatureFlag(layout.getCompanyId());
+
+		if (!layout.isDraftLayout()) {
+			throw new UnsupportedOperationException();
+		}
 
 		String dataHash = DigesterUtil.digestHex(
 			"SHA-256", GetterUtil.getString(data));
@@ -59,12 +65,10 @@ public class LayoutContentVersionLocalServiceImpl
 			}
 		}
 
-		User user = _userLocalService.getUser(userId);
-
-		long layoutContentVersionId = counterLocalService.increment();
-
 		LayoutContentVersion layoutContentVersion =
-			layoutContentVersionPersistence.create(layoutContentVersionId);
+			layoutContentVersionPersistence.create(
+				counterLocalService.increment(
+					LayoutContentVersion.class.getName()));
 
 		int version = _generateVersion(plid);
 
@@ -78,6 +82,9 @@ public class LayoutContentVersionLocalServiceImpl
 		layoutContentVersion.setGroupId(layout.getGroupId());
 		layoutContentVersion.setCompanyId(layout.getCompanyId());
 		layoutContentVersion.setUserId(userId);
+
+		User user = _userLocalService.getUser(userId);
+
 		layoutContentVersion.setUserName(user.getFullName());
 
 		Date date = new Date();
@@ -116,8 +123,29 @@ public class LayoutContentVersionLocalServiceImpl
 			layoutContentVersionPersistence.findByPrimaryKey(
 				layoutContentVersionId);
 
-		_checkFeatureFlag(
-			_layoutLocalService.getLayout(layoutContentVersion.getPlid()));
+		_checkFeatureFlag(layoutContentVersion.getCompanyId());
+
+		if (layoutContentVersion.getStatus() ==
+				WorkflowConstants.STATUS_APPROVED) {
+
+			List<LayoutContentVersion> approvedLayoutContentVersions =
+				layoutContentVersionPersistence.findByP_S(
+					layoutContentVersion.getPlid(),
+					WorkflowConstants.STATUS_APPROVED);
+
+			for (LayoutContentVersion approvedLayoutContentVersion :
+					approvedLayoutContentVersions) {
+
+				if (approvedLayoutContentVersion.getVersion() >
+						layoutContentVersion.getVersion()) {
+
+					return layoutContentVersionPersistence.remove(
+						layoutContentVersionId);
+				}
+			}
+
+			throw new RequiredLayoutContentVersionException();
+		}
 
 		return layoutContentVersionPersistence.remove(layoutContentVersionId);
 	}
@@ -125,7 +153,9 @@ public class LayoutContentVersionLocalServiceImpl
 	public List<LayoutContentVersion> getLayoutContentVersions(long plid)
 		throws PortalException {
 
-		_checkFeatureFlag(_layoutLocalService.getLayout(plid));
+		Layout layout = _layoutLocalService.getLayout(plid);
+
+		_checkFeatureFlag(layout.getCompanyId());
 
 		return layoutContentVersionPersistence.findByPlid(plid);
 	}
@@ -138,8 +168,7 @@ public class LayoutContentVersionLocalServiceImpl
 			layoutContentVersionPersistence.findByPrimaryKey(
 				layoutContentVersionId);
 
-		_checkFeatureFlag(
-			_layoutLocalService.getLayout(layoutContentVersion.getPlid()));
+		_checkFeatureFlag(layoutContentVersion.getCompanyId());
 
 		layoutContentVersion.setModifiedDate(new Date());
 		layoutContentVersion.setNameMap(
@@ -150,10 +179,8 @@ public class LayoutContentVersionLocalServiceImpl
 		return layoutContentVersionPersistence.update(layoutContentVersion);
 	}
 
-	private void _checkFeatureFlag(Layout layout) {
-		if (!FeatureFlagManagerUtil.isEnabled(
-				layout.getCompanyId(), "LPD-10622")) {
-
+	private void _checkFeatureFlag(long companyId) {
+		if (!FeatureFlagManagerUtil.isEnabled(companyId, "LPD-10622")) {
 			throw new UnsupportedOperationException();
 		}
 	}
