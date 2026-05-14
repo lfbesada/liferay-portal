@@ -5,10 +5,18 @@
 
 package com.liferay.layout.content.versioning.service.impl;
 
+import com.liferay.layout.content.versioning.model.LayoutContentVersion;
 import com.liferay.layout.content.versioning.service.base.LayoutContentVersionServiceBaseImpl;
 import com.liferay.portal.aop.AopService;
+import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
+
+import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Lourdes Fernández Besada
@@ -22,4 +30,95 @@ import org.osgi.service.component.annotations.Component;
 )
 public class LayoutContentVersionServiceImpl
 	extends LayoutContentVersionServiceBaseImpl {
+
+	public LayoutContentVersion addLayoutContentVersion(
+			String externalReferenceCode, long plid, String name, String data,
+			int status, boolean skipIfUnchanged)
+		throws PortalException {
+
+		_layoutModelResourcePermission.check(
+			getPermissionChecker(), plid, ActionKeys.UPDATE);
+
+		return layoutContentVersionLocalService.addLayoutContentVersion(
+			externalReferenceCode, getUserId(), plid, name, data, status,
+			skipIfUnchanged);
+	}
+
+	public LayoutContentVersion deleteLayoutContentVersion(
+			long layoutContentVersionId)
+		throws PortalException {
+
+		LayoutContentVersion layoutContentVersion =
+			layoutContentVersionLocalService.getLayoutContentVersion(
+				layoutContentVersionId);
+
+		_layoutModelResourcePermission.check(
+			getPermissionChecker(), layoutContentVersion.getPlid(),
+			ActionKeys.UPDATE);
+
+		return layoutContentVersionLocalService.deleteLayoutContentVersion(
+			layoutContentVersionId);
+	}
+
+	public LayoutContentVersion getLayoutContentVersion(
+			long layoutContentVersionId)
+		throws PortalException {
+
+		LayoutContentVersion layoutContentVersion =
+			layoutContentVersionLocalService.getLayoutContentVersion(
+				layoutContentVersionId);
+
+		_layoutModelResourcePermission.check(
+			getPermissionChecker(), layoutContentVersion.getPlid(),
+			ActionKeys.UPDATE);
+
+		return layoutContentVersion;
+	}
+
+	public LayoutContentVersion getLayoutContentVersionByExternalReferenceCode(
+			String externalReferenceCode, long groupId)
+		throws PortalException {
+
+		LayoutContentVersion layoutContentVersion =
+			layoutContentVersionLocalService.
+				getLayoutContentVersionByExternalReferenceCode(
+					externalReferenceCode, groupId);
+
+		_layoutModelResourcePermission.check(
+			getPermissionChecker(), layoutContentVersion.getPlid(),
+			ActionKeys.UPDATE);
+
+		return layoutContentVersion;
+	}
+
+	public List<LayoutContentVersion> getLayoutContentVersions(long plid)
+		throws PortalException {
+
+		_layoutModelResourcePermission.check(
+			getPermissionChecker(), plid, ActionKeys.UPDATE);
+
+		return layoutContentVersionLocalService.getLayoutContentVersions(plid);
+	}
+
+	public LayoutContentVersion updateLayoutContentVersion(
+			long layoutContentVersionId, String name)
+		throws PortalException {
+
+		LayoutContentVersion layoutContentVersion =
+			layoutContentVersionLocalService.getLayoutContentVersion(
+				layoutContentVersionId);
+
+		_layoutModelResourcePermission.check(
+			getPermissionChecker(), layoutContentVersion.getPlid(),
+			ActionKeys.UPDATE);
+
+		return layoutContentVersionLocalService.updateLayoutContentVersion(
+			layoutContentVersionId, name);
+	}
+
+	@Reference(
+		target = "(model.class.name=com.liferay.portal.kernel.model.Layout)"
+	)
+	private ModelResourcePermission<Layout> _layoutModelResourcePermission;
+
 }
