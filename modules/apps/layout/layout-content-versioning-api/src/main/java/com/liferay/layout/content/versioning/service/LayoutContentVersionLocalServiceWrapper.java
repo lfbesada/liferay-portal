@@ -49,6 +49,18 @@ public class LayoutContentVersionLocalServiceWrapper
 			layoutContentVersion);
 	}
 
+	@Override
+	public com.liferay.layout.content.versioning.model.LayoutContentVersion
+			addLayoutContentVersion(
+				String externalReferenceCode, long userId, long plid,
+				String name, String data, int status, boolean skipIfUnchanged)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _layoutContentVersionLocalService.addLayoutContentVersion(
+			externalReferenceCode, userId, plid, name, data, status,
+			skipIfUnchanged);
+	}
+
 	/**
 	 * Creates a new layout content version with the primary key. Does not add the layout content version to the database.
 	 *
@@ -311,6 +323,15 @@ public class LayoutContentVersionLocalServiceWrapper
 			start, end);
 	}
 
+	@Override
+	public java.util.List
+		<com.liferay.layout.content.versioning.model.LayoutContentVersion>
+				getLayoutContentVersions(long plid)
+			throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _layoutContentVersionLocalService.getLayoutContentVersions(plid);
+	}
+
 	/**
 	 * Returns the number of layout content versions.
 	 *
@@ -365,6 +386,15 @@ public class LayoutContentVersionLocalServiceWrapper
 	}
 
 	@Override
+	public com.liferay.layout.content.versioning.model.LayoutContentVersion
+			updateLayoutContentVersion(long layoutContentVersionId, String name)
+		throws com.liferay.portal.kernel.exception.PortalException {
+
+		return _layoutContentVersionLocalService.updateLayoutContentVersion(
+			layoutContentVersionId, name);
+	}
+
+	@Override
 	public BasePersistence<?> getBasePersistence() {
 		return _layoutContentVersionLocalService.getBasePersistence();
 	}
@@ -384,4 +414,4 @@ public class LayoutContentVersionLocalServiceWrapper
 	private LayoutContentVersionLocalService _layoutContentVersionLocalService;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:752846465
+// LIFERAY-SERVICE-BUILDER-HASH:-753652101

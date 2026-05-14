@@ -53,6 +53,16 @@ public class LayoutContentVersionLocalServiceUtil {
 		return getService().addLayoutContentVersion(layoutContentVersion);
 	}
 
+	public static LayoutContentVersion addLayoutContentVersion(
+			String externalReferenceCode, long userId, long plid, String name,
+			String data, int status, boolean skipIfUnchanged)
+		throws PortalException {
+
+		return getService().addLayoutContentVersion(
+			externalReferenceCode, userId, plid, name, data, status,
+			skipIfUnchanged);
+	}
+
 	/**
 	 * Creates a new layout content version with the primary key. Does not add the layout content version to the database.
 	 *
@@ -271,6 +281,12 @@ public class LayoutContentVersionLocalServiceUtil {
 		return getService().getLayoutContentVersions(start, end);
 	}
 
+	public static List<LayoutContentVersion> getLayoutContentVersions(long plid)
+		throws PortalException {
+
+		return getService().getLayoutContentVersions(plid);
+	}
+
 	/**
 	 * Returns the number of layout content versions.
 	 *
@@ -314,6 +330,14 @@ public class LayoutContentVersionLocalServiceUtil {
 		return getService().updateLayoutContentVersion(layoutContentVersion);
 	}
 
+	public static LayoutContentVersion updateLayoutContentVersion(
+			long layoutContentVersionId, String name)
+		throws PortalException {
+
+		return getService().updateLayoutContentVersion(
+			layoutContentVersionId, name);
+	}
+
 	public static LayoutContentVersionLocalService getService() {
 		return _serviceSnapshot.get();
 	}
@@ -324,4 +348,4 @@ public class LayoutContentVersionLocalServiceUtil {
 			LayoutContentVersionLocalService.class);
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1208027189
+// LIFERAY-SERVICE-BUILDER-HASH:-152132636

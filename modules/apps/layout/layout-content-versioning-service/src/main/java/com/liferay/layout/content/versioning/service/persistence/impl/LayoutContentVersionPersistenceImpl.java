@@ -18,7 +18,6 @@ import com.liferay.portal.kernel.configuration.Configuration;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
 import com.liferay.portal.kernel.dao.orm.FinderCache;
 import com.liferay.portal.kernel.dao.orm.FinderPath;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.dao.orm.SessionFactory;
 import com.liferay.portal.kernel.exception.SystemException;
@@ -90,68 +89,15 @@ public class LayoutContentVersionPersistenceImpl
 	public static final String FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION =
 		FINDER_CLASS_NAME_ENTITY + ".List2";
 
-	private FinderPath _finderPathWithPaginationFindByPlid;
-	private FinderPath _finderPathWithoutPaginationFindByPlid;
-	private FinderPath _finderPathCountByPlid;
-	private CollectionPersistenceFinder<LayoutContentVersion>
-		_collectionPersistenceFinderByPlid;
-
-	/**
-	 * Returns all the layout content versions where plid = &#63;.
-	 *
-	 * @param plid the plid
-	 * @return the matching layout content versions
-	 */
-	@Override
-	public List<LayoutContentVersion> findByPlid(long plid) {
-		return findByPlid(plid, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the layout content versions where plid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutContentVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param plid the plid
-	 * @param start the lower bound of the range of layout content versions
-	 * @param end the upper bound of the range of layout content versions (not inclusive)
-	 * @return the range of matching layout content versions
-	 */
-	@Override
-	public List<LayoutContentVersion> findByPlid(
-		long plid, int start, int end) {
-
-		return findByPlid(plid, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<LayoutContentVersion, NoSuchLayoutContentVersionException>
+			_collectionPersistenceFinderByPlid;
 
 	/**
 	 * Returns an ordered range of all the layout content versions where plid = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutContentVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param plid the plid
-	 * @param start the lower bound of the range of layout content versions
-	 * @param end the upper bound of the range of layout content versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching layout content versions
-	 */
-	@Override
-	public List<LayoutContentVersion> findByPlid(
-		long plid, int start, int end,
-		OrderByComparator<LayoutContentVersion> orderByComparator) {
-
-		return findByPlid(plid, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the layout content versions where plid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutContentVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutContentVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param plid the plid
@@ -186,16 +132,8 @@ public class LayoutContentVersionPersistenceImpl
 			OrderByComparator<LayoutContentVersion> orderByComparator)
 		throws NoSuchLayoutContentVersionException {
 
-		LayoutContentVersion layoutContentVersion = fetchByPlid_First(
-			plid, orderByComparator);
-
-		if (layoutContentVersion != null) {
-			return layoutContentVersion;
-		}
-
-		throw new NoSuchLayoutContentVersionException(
-			_collectionPersistenceFinderByPlid.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {plid}));
+		return _collectionPersistenceFinderByPlid.findFirst(
+			finderCache, new Object[] {plid}, orderByComparator);
 	}
 
 	/**
@@ -236,75 +174,15 @@ public class LayoutContentVersionPersistenceImpl
 			finderCache, new Object[] {plid});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_DH;
-	private FinderPath _finderPathWithoutPaginationFindByG_DH;
-	private FinderPath _finderPathCountByG_DH;
-	private CollectionPersistenceFinder<LayoutContentVersion>
-		_collectionPersistenceFinderByG_DH;
-
-	/**
-	 * Returns all the layout content versions where groupId = &#63; and dataHash = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param dataHash the data hash
-	 * @return the matching layout content versions
-	 */
-	@Override
-	public List<LayoutContentVersion> findByG_DH(
-		long groupId, String dataHash) {
-
-		return findByG_DH(
-			groupId, dataHash, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the layout content versions where groupId = &#63; and dataHash = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutContentVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param dataHash the data hash
-	 * @param start the lower bound of the range of layout content versions
-	 * @param end the upper bound of the range of layout content versions (not inclusive)
-	 * @return the range of matching layout content versions
-	 */
-	@Override
-	public List<LayoutContentVersion> findByG_DH(
-		long groupId, String dataHash, int start, int end) {
-
-		return findByG_DH(groupId, dataHash, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<LayoutContentVersion, NoSuchLayoutContentVersionException>
+			_collectionPersistenceFinderByG_DH;
 
 	/**
 	 * Returns an ordered range of all the layout content versions where groupId = &#63; and dataHash = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutContentVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param dataHash the data hash
-	 * @param start the lower bound of the range of layout content versions
-	 * @param end the upper bound of the range of layout content versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching layout content versions
-	 */
-	@Override
-	public List<LayoutContentVersion> findByG_DH(
-		long groupId, String dataHash, int start, int end,
-		OrderByComparator<LayoutContentVersion> orderByComparator) {
-
-		return findByG_DH(
-			groupId, dataHash, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the layout content versions where groupId = &#63; and dataHash = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutContentVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutContentVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -341,16 +219,8 @@ public class LayoutContentVersionPersistenceImpl
 			OrderByComparator<LayoutContentVersion> orderByComparator)
 		throws NoSuchLayoutContentVersionException {
 
-		LayoutContentVersion layoutContentVersion = fetchByG_DH_First(
-			groupId, dataHash, orderByComparator);
-
-		if (layoutContentVersion != null) {
-			return layoutContentVersion;
-		}
-
-		throw new NoSuchLayoutContentVersionException(
-			_collectionPersistenceFinderByG_DH.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, dataHash}));
+		return _collectionPersistenceFinderByG_DH.findFirst(
+			finderCache, new Object[] {groupId, dataHash}, orderByComparator);
 	}
 
 	/**
@@ -395,72 +265,15 @@ public class LayoutContentVersionPersistenceImpl
 			finderCache, new Object[] {groupId, dataHash});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByG_S;
-	private FinderPath _finderPathWithoutPaginationFindByG_S;
-	private FinderPath _finderPathCountByG_S;
-	private CollectionPersistenceFinder<LayoutContentVersion>
-		_collectionPersistenceFinderByG_S;
-
-	/**
-	 * Returns all the layout content versions where groupId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param status the status
-	 * @return the matching layout content versions
-	 */
-	@Override
-	public List<LayoutContentVersion> findByG_S(long groupId, int status) {
-		return findByG_S(
-			groupId, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the layout content versions where groupId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutContentVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param status the status
-	 * @param start the lower bound of the range of layout content versions
-	 * @param end the upper bound of the range of layout content versions (not inclusive)
-	 * @return the range of matching layout content versions
-	 */
-	@Override
-	public List<LayoutContentVersion> findByG_S(
-		long groupId, int status, int start, int end) {
-
-		return findByG_S(groupId, status, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<LayoutContentVersion, NoSuchLayoutContentVersionException>
+			_collectionPersistenceFinderByG_S;
 
 	/**
 	 * Returns an ordered range of all the layout content versions where groupId = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutContentVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param status the status
-	 * @param start the lower bound of the range of layout content versions
-	 * @param end the upper bound of the range of layout content versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching layout content versions
-	 */
-	@Override
-	public List<LayoutContentVersion> findByG_S(
-		long groupId, int status, int start, int end,
-		OrderByComparator<LayoutContentVersion> orderByComparator) {
-
-		return findByG_S(groupId, status, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the layout content versions where groupId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutContentVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutContentVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param groupId the group ID
@@ -497,16 +310,8 @@ public class LayoutContentVersionPersistenceImpl
 			OrderByComparator<LayoutContentVersion> orderByComparator)
 		throws NoSuchLayoutContentVersionException {
 
-		LayoutContentVersion layoutContentVersion = fetchByG_S_First(
-			groupId, status, orderByComparator);
-
-		if (layoutContentVersion != null) {
-			return layoutContentVersion;
-		}
-
-		throw new NoSuchLayoutContentVersionException(
-			_collectionPersistenceFinderByG_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {groupId, status}));
+		return _collectionPersistenceFinderByG_S.findFirst(
+			finderCache, new Object[] {groupId, status}, orderByComparator);
 	}
 
 	/**
@@ -551,9 +356,9 @@ public class LayoutContentVersionPersistenceImpl
 			finderCache, new Object[] {groupId, status});
 	}
 
-	private FinderPath _finderPathFetchByP_V;
-	private UniquePersistenceFinder<LayoutContentVersion>
-		_uniquePersistenceFinderByP_V;
+	private UniquePersistenceFinder
+		<LayoutContentVersion, NoSuchLayoutContentVersionException>
+			_uniquePersistenceFinderByP_V;
 
 	/**
 	 * Returns the layout content version where plid = &#63; and version = &#63; or throws a <code>NoSuchLayoutContentVersionException</code> if it could not be found.
@@ -567,33 +372,8 @@ public class LayoutContentVersionPersistenceImpl
 	public LayoutContentVersion findByP_V(long plid, int version)
 		throws NoSuchLayoutContentVersionException {
 
-		LayoutContentVersion layoutContentVersion = fetchByP_V(plid, version);
-
-		if (layoutContentVersion == null) {
-			String message =
-				_uniquePersistenceFinderByP_V.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY, new Object[] {plid, version});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchLayoutContentVersionException(message);
-		}
-
-		return layoutContentVersion;
-	}
-
-	/**
-	 * Returns the layout content version where plid = &#63; and version = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param plid the plid
-	 * @param version the version
-	 * @return the matching layout content version, or <code>null</code> if a matching layout content version could not be found
-	 */
-	@Override
-	public LayoutContentVersion fetchByP_V(long plid, int version) {
-		return fetchByP_V(plid, version, true);
+		return _uniquePersistenceFinderByP_V.find(
+			finderCache, new Object[] {plid, version});
 	}
 
 	/**
@@ -641,72 +421,15 @@ public class LayoutContentVersionPersistenceImpl
 			finderCache, new Object[] {plid, version});
 	}
 
-	private FinderPath _finderPathWithPaginationFindByP_S;
-	private FinderPath _finderPathWithoutPaginationFindByP_S;
-	private FinderPath _finderPathCountByP_S;
-	private CollectionPersistenceFinder<LayoutContentVersion>
-		_collectionPersistenceFinderByP_S;
-
-	/**
-	 * Returns all the layout content versions where plid = &#63; and status = &#63;.
-	 *
-	 * @param plid the plid
-	 * @param status the status
-	 * @return the matching layout content versions
-	 */
-	@Override
-	public List<LayoutContentVersion> findByP_S(long plid, int status) {
-		return findByP_S(
-			plid, status, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null);
-	}
-
-	/**
-	 * Returns a range of all the layout content versions where plid = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutContentVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param plid the plid
-	 * @param status the status
-	 * @param start the lower bound of the range of layout content versions
-	 * @param end the upper bound of the range of layout content versions (not inclusive)
-	 * @return the range of matching layout content versions
-	 */
-	@Override
-	public List<LayoutContentVersion> findByP_S(
-		long plid, int status, int start, int end) {
-
-		return findByP_S(plid, status, start, end, null);
-	}
+	private CollectionPersistenceFinder
+		<LayoutContentVersion, NoSuchLayoutContentVersionException>
+			_collectionPersistenceFinderByP_S;
 
 	/**
 	 * Returns an ordered range of all the layout content versions where plid = &#63; and status = &#63;.
 	 *
 	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutContentVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param plid the plid
-	 * @param status the status
-	 * @param start the lower bound of the range of layout content versions
-	 * @param end the upper bound of the range of layout content versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching layout content versions
-	 */
-	@Override
-	public List<LayoutContentVersion> findByP_S(
-		long plid, int status, int start, int end,
-		OrderByComparator<LayoutContentVersion> orderByComparator) {
-
-		return findByP_S(plid, status, start, end, orderByComparator, true);
-	}
-
-	/**
-	 * Returns an ordered range of all the layout content versions where plid = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutContentVersionModelImpl</code>.
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>LayoutContentVersionModelImpl</code>.
 	 * </p>
 	 *
 	 * @param plid the plid
@@ -743,16 +466,8 @@ public class LayoutContentVersionPersistenceImpl
 			OrderByComparator<LayoutContentVersion> orderByComparator)
 		throws NoSuchLayoutContentVersionException {
 
-		LayoutContentVersion layoutContentVersion = fetchByP_S_First(
-			plid, status, orderByComparator);
-
-		if (layoutContentVersion != null) {
-			return layoutContentVersion;
-		}
-
-		throw new NoSuchLayoutContentVersionException(
-			_collectionPersistenceFinderByP_S.buildNoSuchKeyMessage(
-				_NO_SUCH_ENTITY_WITH_KEY, new Object[] {plid, status}));
+		return _collectionPersistenceFinderByP_S.findFirst(
+			finderCache, new Object[] {plid, status}, orderByComparator);
 	}
 
 	/**
@@ -797,9 +512,9 @@ public class LayoutContentVersionPersistenceImpl
 			finderCache, new Object[] {plid, status});
 	}
 
-	private FinderPath _finderPathFetchByERC_G;
-	private UniquePersistenceFinder<LayoutContentVersion>
-		_uniquePersistenceFinderByERC_G;
+	private UniquePersistenceFinder
+		<LayoutContentVersion, NoSuchLayoutContentVersionException>
+			_uniquePersistenceFinderByERC_G;
 
 	/**
 	 * Returns the layout content version where externalReferenceCode = &#63; and groupId = &#63; or throws a <code>NoSuchLayoutContentVersionException</code> if it could not be found.
@@ -814,37 +529,8 @@ public class LayoutContentVersionPersistenceImpl
 			String externalReferenceCode, long groupId)
 		throws NoSuchLayoutContentVersionException {
 
-		LayoutContentVersion layoutContentVersion = fetchByERC_G(
-			externalReferenceCode, groupId);
-
-		if (layoutContentVersion == null) {
-			String message =
-				_uniquePersistenceFinderByERC_G.buildNoSuchKeyMessage(
-					_NO_SUCH_ENTITY_WITH_KEY,
-					new Object[] {externalReferenceCode, groupId});
-
-			if (_log.isDebugEnabled()) {
-				_log.debug(message);
-			}
-
-			throw new NoSuchLayoutContentVersionException(message);
-		}
-
-		return layoutContentVersion;
-	}
-
-	/**
-	 * Returns the layout content version where externalReferenceCode = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param externalReferenceCode the external reference code
-	 * @param groupId the group ID
-	 * @return the matching layout content version, or <code>null</code> if a matching layout content version could not be found
-	 */
-	@Override
-	public LayoutContentVersion fetchByERC_G(
-		String externalReferenceCode, long groupId) {
-
-		return fetchByERC_G(externalReferenceCode, groupId, true);
+		return _uniquePersistenceFinderByERC_G.find(
+			finderCache, new Object[] {externalReferenceCode, groupId});
 	}
 
 	/**
@@ -1179,25 +865,23 @@ public class LayoutContentVersionPersistenceImpl
 	 */
 	@Activate
 	public void activate() {
-		_finderPathWithPaginationFindByPlid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByPlid",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), OrderByComparator.class.getName()
-			},
-			new String[] {"plid"}, true);
-
-		_finderPathWithoutPaginationFindByPlid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByPlid",
-			new String[] {Long.class.getName()}, new String[] {"plid"}, true);
-
-		_finderPathCountByPlid = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByPlid",
-			new String[] {Long.class.getName()}, new String[] {"plid"}, false);
-
 		_collectionPersistenceFinderByPlid = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByPlid,
-			_finderPathWithoutPaginationFindByPlid, _finderPathCountByPlid,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByPlid",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), OrderByComparator.class.getName()
+				},
+				new String[] {"plid"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByPlid",
+				new String[] {Long.class.getName()}, new String[] {"plid"},
+				true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByPlid",
+				new String[] {Long.class.getName()}, new String[] {"plid"},
+				false),
 			_SQL_SELECT_LAYOUTCONTENTVERSION_WHERE,
 			_SQL_COUNT_LAYOUTCONTENTVERSION_WHERE,
 			LayoutContentVersionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
@@ -1206,28 +890,24 @@ public class LayoutContentVersionPersistenceImpl
 				"layoutContentVersion.", "plid", FinderColumn.Type.LONG, "=",
 				true, true, LayoutContentVersion::getPlid));
 
-		_finderPathWithPaginationFindByG_DH = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_DH",
-			new String[] {
-				Long.class.getName(), String.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "dataHash"}, true);
-
-		_finderPathWithoutPaginationFindByG_DH = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_DH",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "dataHash"}, 0, 2, true, null);
-
-		_finderPathCountByG_DH = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_DH",
-			new String[] {Long.class.getName(), String.class.getName()},
-			new String[] {"groupId", "dataHash"}, 0, 2, false, null);
-
 		_collectionPersistenceFinderByG_DH = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_DH,
-			_finderPathWithoutPaginationFindByG_DH, _finderPathCountByG_DH,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_DH",
+				new String[] {
+					Long.class.getName(), String.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "dataHash"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_DH",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"groupId", "dataHash"}, 0, 2, true, null),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_DH",
+				new String[] {Long.class.getName(), String.class.getName()},
+				new String[] {"groupId", "dataHash"}, 0, 2, false, null),
 			_SQL_SELECT_LAYOUTCONTENTVERSION_WHERE,
 			_SQL_COUNT_LAYOUTCONTENTVERSION_WHERE,
 			LayoutContentVersionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
@@ -1239,28 +919,24 @@ public class LayoutContentVersionPersistenceImpl
 				"layoutContentVersion.", "dataHash", FinderColumn.Type.STRING,
 				"=", true, true, LayoutContentVersion::getDataHash));
 
-		_finderPathWithPaginationFindByG_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_S",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"groupId", "status"}, true);
-
-		_finderPathWithoutPaginationFindByG_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"groupId", "status"}, true);
-
-		_finderPathCountByG_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"groupId", "status"}, false);
-
 		_collectionPersistenceFinderByG_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByG_S,
-			_finderPathWithoutPaginationFindByG_S, _finderPathCountByG_S,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByG_S",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"groupId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByG_S",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"groupId", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByG_S",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"groupId", "status"}, false),
 			_SQL_SELECT_LAYOUTCONTENTVERSION_WHERE,
 			_SQL_COUNT_LAYOUTCONTENTVERSION_WHERE,
 			LayoutContentVersionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
@@ -1272,15 +948,15 @@ public class LayoutContentVersionPersistenceImpl
 				"layoutContentVersion.", "status", FinderColumn.Type.INTEGER,
 				"=", true, true, LayoutContentVersion::getStatus));
 
-		_finderPathFetchByP_V = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByP_V",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"plid", "version"}, 0, 0, false,
-			LayoutContentVersion::getPlid, LayoutContentVersion::getVersion);
-
 		_uniquePersistenceFinderByP_V = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByP_V, _SQL_SELECT_LAYOUTCONTENTVERSION_WHERE,
-			"",
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByP_V",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"plid", "version"}, 0, 0, false,
+				LayoutContentVersion::getPlid,
+				LayoutContentVersion::getVersion),
+			_SQL_SELECT_LAYOUTCONTENTVERSION_WHERE, "",
 			new FinderColumn<>(
 				"layoutContentVersion.", "plid", FinderColumn.Type.LONG, "=",
 				true, true, LayoutContentVersion::getPlid),
@@ -1288,28 +964,24 @@ public class LayoutContentVersionPersistenceImpl
 				"layoutContentVersion.", "version", FinderColumn.Type.INTEGER,
 				"=", true, true, LayoutContentVersion::getVersion));
 
-		_finderPathWithPaginationFindByP_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByP_S",
-			new String[] {
-				Long.class.getName(), Integer.class.getName(),
-				Integer.class.getName(), Integer.class.getName(),
-				OrderByComparator.class.getName()
-			},
-			new String[] {"plid", "status"}, true);
-
-		_finderPathWithoutPaginationFindByP_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByP_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"plid", "status"}, true);
-
-		_finderPathCountByP_S = new FinderPath(
-			FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByP_S",
-			new String[] {Long.class.getName(), Integer.class.getName()},
-			new String[] {"plid", "status"}, false);
-
 		_collectionPersistenceFinderByP_S = new CollectionPersistenceFinder<>(
-			this, _finderPathWithPaginationFindByP_S,
-			_finderPathWithoutPaginationFindByP_S, _finderPathCountByP_S,
+			this,
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByP_S",
+				new String[] {
+					Long.class.getName(), Integer.class.getName(),
+					Integer.class.getName(), Integer.class.getName(),
+					OrderByComparator.class.getName()
+				},
+				new String[] {"plid", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByP_S",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"plid", "status"}, true),
+			new FinderPath(
+				FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByP_S",
+				new String[] {Long.class.getName(), Integer.class.getName()},
+				new String[] {"plid", "status"}, false),
 			_SQL_SELECT_LAYOUTCONTENTVERSION_WHERE,
 			_SQL_COUNT_LAYOUTCONTENTVERSION_WHERE,
 			LayoutContentVersionModelImpl.ORDER_BY_JPQL, _ENTITY_ALIAS_PREFIX,
@@ -1321,15 +993,15 @@ public class LayoutContentVersionPersistenceImpl
 				"layoutContentVersion.", "status", FinderColumn.Type.INTEGER,
 				"=", true, true, LayoutContentVersion::getStatus));
 
-		_finderPathFetchByERC_G = createUniqueFinderPath(
-			FINDER_CLASS_NAME_ENTITY, "fetchByERC_G",
-			new String[] {String.class.getName(), Long.class.getName()},
-			new String[] {"externalReferenceCode", "groupId"}, 0, 1, false,
-			convertNullFunction(LayoutContentVersion::getExternalReferenceCode),
-			LayoutContentVersion::getGroupId);
-
 		_uniquePersistenceFinderByERC_G = new UniquePersistenceFinder<>(
-			this, _finderPathFetchByERC_G,
+			this,
+			createUniqueFinderPath(
+				FINDER_CLASS_NAME_ENTITY, "fetchByERC_G",
+				new String[] {String.class.getName(), Long.class.getName()},
+				new String[] {"externalReferenceCode", "groupId"}, 0, 1, false,
+				convertNullFunction(
+					LayoutContentVersion::getExternalReferenceCode),
+				LayoutContentVersion::getGroupId),
 			_SQL_SELECT_LAYOUTCONTENTVERSION_WHERE, "",
 			new FinderColumn<>(
 				"layoutContentVersion.", "externalReferenceCode",
@@ -1408,4 +1080,4 @@ public class LayoutContentVersionPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-106654869
+// LIFERAY-SERVICE-BUILDER-HASH:-1559174958

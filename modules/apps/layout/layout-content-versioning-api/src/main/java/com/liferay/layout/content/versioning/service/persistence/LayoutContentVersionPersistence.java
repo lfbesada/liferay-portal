@@ -33,47 +33,6 @@ public interface LayoutContentVersionPersistence
 	 */
 
 	/**
-	 * Returns all the layout content versions where plid = &#63;.
-	 *
-	 * @param plid the plid
-	 * @return the matching layout content versions
-	 */
-	public java.util.List<LayoutContentVersion> findByPlid(long plid);
-
-	/**
-	 * Returns a range of all the layout content versions where plid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.content.versioning.model.impl.LayoutContentVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param plid the plid
-	 * @param start the lower bound of the range of layout content versions
-	 * @param end the upper bound of the range of layout content versions (not inclusive)
-	 * @return the range of matching layout content versions
-	 */
-	public java.util.List<LayoutContentVersion> findByPlid(
-		long plid, int start, int end);
-
-	/**
-	 * Returns an ordered range of all the layout content versions where plid = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.content.versioning.model.impl.LayoutContentVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param plid the plid
-	 * @param start the lower bound of the range of layout content versions
-	 * @param end the upper bound of the range of layout content versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching layout content versions
-	 */
-	public java.util.List<LayoutContentVersion> findByPlid(
-		long plid, int start, int end,
-		com.liferay.portal.kernel.util.OrderByComparator<LayoutContentVersion>
-			orderByComparator);
-
-	/**
 	 * Returns an ordered range of all the layout content versions where plid = &#63;.
 	 *
 	 * <p>
@@ -133,51 +92,6 @@ public interface LayoutContentVersionPersistence
 	 * @return the number of matching layout content versions
 	 */
 	public int countByPlid(long plid);
-
-	/**
-	 * Returns all the layout content versions where groupId = &#63; and dataHash = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param dataHash the data hash
-	 * @return the matching layout content versions
-	 */
-	public java.util.List<LayoutContentVersion> findByG_DH(
-		long groupId, String dataHash);
-
-	/**
-	 * Returns a range of all the layout content versions where groupId = &#63; and dataHash = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.content.versioning.model.impl.LayoutContentVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param dataHash the data hash
-	 * @param start the lower bound of the range of layout content versions
-	 * @param end the upper bound of the range of layout content versions (not inclusive)
-	 * @return the range of matching layout content versions
-	 */
-	public java.util.List<LayoutContentVersion> findByG_DH(
-		long groupId, String dataHash, int start, int end);
-
-	/**
-	 * Returns an ordered range of all the layout content versions where groupId = &#63; and dataHash = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.content.versioning.model.impl.LayoutContentVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param dataHash the data hash
-	 * @param start the lower bound of the range of layout content versions
-	 * @param end the upper bound of the range of layout content versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching layout content versions
-	 */
-	public java.util.List<LayoutContentVersion> findByG_DH(
-		long groupId, String dataHash, int start, int end,
-		com.liferay.portal.kernel.util.OrderByComparator<LayoutContentVersion>
-			orderByComparator);
 
 	/**
 	 * Returns an ordered range of all the layout content versions where groupId = &#63; and dataHash = &#63;.
@@ -244,51 +158,6 @@ public interface LayoutContentVersionPersistence
 	 * @return the number of matching layout content versions
 	 */
 	public int countByG_DH(long groupId, String dataHash);
-
-	/**
-	 * Returns all the layout content versions where groupId = &#63; and status = &#63;.
-	 *
-	 * @param groupId the group ID
-	 * @param status the status
-	 * @return the matching layout content versions
-	 */
-	public java.util.List<LayoutContentVersion> findByG_S(
-		long groupId, int status);
-
-	/**
-	 * Returns a range of all the layout content versions where groupId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.content.versioning.model.impl.LayoutContentVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param status the status
-	 * @param start the lower bound of the range of layout content versions
-	 * @param end the upper bound of the range of layout content versions (not inclusive)
-	 * @return the range of matching layout content versions
-	 */
-	public java.util.List<LayoutContentVersion> findByG_S(
-		long groupId, int status, int start, int end);
-
-	/**
-	 * Returns an ordered range of all the layout content versions where groupId = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.content.versioning.model.impl.LayoutContentVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param groupId the group ID
-	 * @param status the status
-	 * @param start the lower bound of the range of layout content versions
-	 * @param end the upper bound of the range of layout content versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching layout content versions
-	 */
-	public java.util.List<LayoutContentVersion> findByG_S(
-		long groupId, int status, int start, int end,
-		com.liferay.portal.kernel.util.OrderByComparator<LayoutContentVersion>
-			orderByComparator);
 
 	/**
 	 * Returns an ordered range of all the layout content versions where groupId = &#63; and status = &#63;.
@@ -368,15 +237,6 @@ public interface LayoutContentVersionPersistence
 		throws NoSuchLayoutContentVersionException;
 
 	/**
-	 * Returns the layout content version where plid = &#63; and version = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param plid the plid
-	 * @param version the version
-	 * @return the matching layout content version, or <code>null</code> if a matching layout content version could not be found
-	 */
-	public LayoutContentVersion fetchByP_V(long plid, int version);
-
-	/**
 	 * Returns the layout content version where plid = &#63; and version = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
 	 *
 	 * @param plid the plid
@@ -405,51 +265,6 @@ public interface LayoutContentVersionPersistence
 	 * @return the number of matching layout content versions
 	 */
 	public int countByP_V(long plid, int version);
-
-	/**
-	 * Returns all the layout content versions where plid = &#63; and status = &#63;.
-	 *
-	 * @param plid the plid
-	 * @param status the status
-	 * @return the matching layout content versions
-	 */
-	public java.util.List<LayoutContentVersion> findByP_S(
-		long plid, int status);
-
-	/**
-	 * Returns a range of all the layout content versions where plid = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.content.versioning.model.impl.LayoutContentVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param plid the plid
-	 * @param status the status
-	 * @param start the lower bound of the range of layout content versions
-	 * @param end the upper bound of the range of layout content versions (not inclusive)
-	 * @return the range of matching layout content versions
-	 */
-	public java.util.List<LayoutContentVersion> findByP_S(
-		long plid, int status, int start, int end);
-
-	/**
-	 * Returns an ordered range of all the layout content versions where plid = &#63; and status = &#63;.
-	 *
-	 * <p>
-	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.content.versioning.model.impl.LayoutContentVersionModelImpl</code>.
-	 * </p>
-	 *
-	 * @param plid the plid
-	 * @param status the status
-	 * @param start the lower bound of the range of layout content versions
-	 * @param end the upper bound of the range of layout content versions (not inclusive)
-	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
-	 * @return the ordered range of matching layout content versions
-	 */
-	public java.util.List<LayoutContentVersion> findByP_S(
-		long plid, int status, int start, int end,
-		com.liferay.portal.kernel.util.OrderByComparator<LayoutContentVersion>
-			orderByComparator);
 
 	/**
 	 * Returns an ordered range of all the layout content versions where plid = &#63; and status = &#63;.
@@ -530,16 +345,6 @@ public interface LayoutContentVersionPersistence
 		throws NoSuchLayoutContentVersionException;
 
 	/**
-	 * Returns the layout content version where externalReferenceCode = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
-	 *
-	 * @param externalReferenceCode the external reference code
-	 * @param groupId the group ID
-	 * @return the matching layout content version, or <code>null</code> if a matching layout content version could not be found
-	 */
-	public LayoutContentVersion fetchByERC_G(
-		String externalReferenceCode, long groupId);
-
-	/**
 	 * Returns the layout content version where externalReferenceCode = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found, optionally using the finder cache.
 	 *
 	 * @param externalReferenceCode the external reference code
@@ -609,5 +414,251 @@ public interface LayoutContentVersionPersistence
 	 */
 	public LayoutContentVersion fetchByPrimaryKey(long layoutContentVersionId);
 
+	/**
+	 * Returns the layout content version where plid = &#63; and version = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
+	 *
+	 * @param plid the plid
+	 * @param version the version
+	 * @return the matching layout content version, or <code>null</code> if a matching layout content version could not be found
+	 */
+	public default LayoutContentVersion fetchByP_V(long plid, int version) {
+		return fetchByP_V(plid, version, true);
+	}
+
+	/**
+	 * Returns the layout content version where externalReferenceCode = &#63; and groupId = &#63; or returns <code>null</code> if it could not be found. Uses the finder cache.
+	 *
+	 * @param externalReferenceCode the external reference code
+	 * @param groupId the group ID
+	 * @return the matching layout content version, or <code>null</code> if a matching layout content version could not be found
+	 */
+	public default LayoutContentVersion fetchByERC_G(
+		String externalReferenceCode, long groupId) {
+
+		return fetchByERC_G(externalReferenceCode, groupId, true);
+	}
+
+	/**
+	 * Returns all the layout content versions where plid = &#63;.
+	 *
+	 * @param plid the plid
+	 * @return the matching layout content versions
+	 */
+	public default java.util.List<LayoutContentVersion> findByPlid(long plid) {
+		return findByPlid(
+			plid, com.liferay.portal.kernel.dao.orm.QueryUtil.ALL_POS,
+			com.liferay.portal.kernel.dao.orm.QueryUtil.ALL_POS, null, true);
+	}
+
+	/**
+	 * Returns a range of all the layout content versions where plid = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.content.versioning.model.impl.LayoutContentVersionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param plid the plid
+	 * @param start the lower bound of the range of layout content versions
+	 * @param end the upper bound of the range of layout content versions (not inclusive)
+	 * @return the range of matching layout content versions
+	 */
+	public default java.util.List<LayoutContentVersion> findByPlid(
+		long plid, int start, int end) {
+
+		return findByPlid(plid, start, end, null, true);
+	}
+
+	/**
+	 * Returns an ordered range of all the layout content versions where plid = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.content.versioning.model.impl.LayoutContentVersionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param plid the plid
+	 * @param start the lower bound of the range of layout content versions
+	 * @param end the upper bound of the range of layout content versions (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching layout content versions
+	 */
+	public default java.util.List<LayoutContentVersion> findByPlid(
+		long plid, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<LayoutContentVersion>
+			orderByComparator) {
+
+		return findByPlid(plid, start, end, orderByComparator, true);
+	}
+
+	/**
+	 * Returns all the layout content versions where groupId = &#63; and dataHash = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param dataHash the data hash
+	 * @return the matching layout content versions
+	 */
+	public default java.util.List<LayoutContentVersion> findByG_DH(
+		long groupId, String dataHash) {
+
+		return findByG_DH(
+			groupId, dataHash,
+			com.liferay.portal.kernel.dao.orm.QueryUtil.ALL_POS,
+			com.liferay.portal.kernel.dao.orm.QueryUtil.ALL_POS, null, true);
+	}
+
+	/**
+	 * Returns a range of all the layout content versions where groupId = &#63; and dataHash = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.content.versioning.model.impl.LayoutContentVersionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param dataHash the data hash
+	 * @param start the lower bound of the range of layout content versions
+	 * @param end the upper bound of the range of layout content versions (not inclusive)
+	 * @return the range of matching layout content versions
+	 */
+	public default java.util.List<LayoutContentVersion> findByG_DH(
+		long groupId, String dataHash, int start, int end) {
+
+		return findByG_DH(groupId, dataHash, start, end, null, true);
+	}
+
+	/**
+	 * Returns an ordered range of all the layout content versions where groupId = &#63; and dataHash = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.content.versioning.model.impl.LayoutContentVersionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param dataHash the data hash
+	 * @param start the lower bound of the range of layout content versions
+	 * @param end the upper bound of the range of layout content versions (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching layout content versions
+	 */
+	public default java.util.List<LayoutContentVersion> findByG_DH(
+		long groupId, String dataHash, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<LayoutContentVersion>
+			orderByComparator) {
+
+		return findByG_DH(
+			groupId, dataHash, start, end, orderByComparator, true);
+	}
+
+	/**
+	 * Returns all the layout content versions where groupId = &#63; and status = &#63;.
+	 *
+	 * @param groupId the group ID
+	 * @param status the status
+	 * @return the matching layout content versions
+	 */
+	public default java.util.List<LayoutContentVersion> findByG_S(
+		long groupId, int status) {
+
+		return findByG_S(
+			groupId, status,
+			com.liferay.portal.kernel.dao.orm.QueryUtil.ALL_POS,
+			com.liferay.portal.kernel.dao.orm.QueryUtil.ALL_POS, null, true);
+	}
+
+	/**
+	 * Returns a range of all the layout content versions where groupId = &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.content.versioning.model.impl.LayoutContentVersionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param status the status
+	 * @param start the lower bound of the range of layout content versions
+	 * @param end the upper bound of the range of layout content versions (not inclusive)
+	 * @return the range of matching layout content versions
+	 */
+	public default java.util.List<LayoutContentVersion> findByG_S(
+		long groupId, int status, int start, int end) {
+
+		return findByG_S(groupId, status, start, end, null, true);
+	}
+
+	/**
+	 * Returns an ordered range of all the layout content versions where groupId = &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.content.versioning.model.impl.LayoutContentVersionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param groupId the group ID
+	 * @param status the status
+	 * @param start the lower bound of the range of layout content versions
+	 * @param end the upper bound of the range of layout content versions (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching layout content versions
+	 */
+	public default java.util.List<LayoutContentVersion> findByG_S(
+		long groupId, int status, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<LayoutContentVersion>
+			orderByComparator) {
+
+		return findByG_S(groupId, status, start, end, orderByComparator, true);
+	}
+
+	/**
+	 * Returns all the layout content versions where plid = &#63; and status = &#63;.
+	 *
+	 * @param plid the plid
+	 * @param status the status
+	 * @return the matching layout content versions
+	 */
+	public default java.util.List<LayoutContentVersion> findByP_S(
+		long plid, int status) {
+
+		return findByP_S(
+			plid, status, com.liferay.portal.kernel.dao.orm.QueryUtil.ALL_POS,
+			com.liferay.portal.kernel.dao.orm.QueryUtil.ALL_POS, null, true);
+	}
+
+	/**
+	 * Returns a range of all the layout content versions where plid = &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.content.versioning.model.impl.LayoutContentVersionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param plid the plid
+	 * @param status the status
+	 * @param start the lower bound of the range of layout content versions
+	 * @param end the upper bound of the range of layout content versions (not inclusive)
+	 * @return the range of matching layout content versions
+	 */
+	public default java.util.List<LayoutContentVersion> findByP_S(
+		long plid, int status, int start, int end) {
+
+		return findByP_S(plid, status, start, end, null, true);
+	}
+
+	/**
+	 * Returns an ordered range of all the layout content versions where plid = &#63; and status = &#63;.
+	 *
+	 * <p>
+	 * Useful when paginating results. Returns a maximum of <code>end - start</code> instances. <code>start</code> and <code>end</code> are not primary keys, they are indexes in the result set. Thus, <code>0</code> refers to the first result in the set. Setting both <code>start</code> and <code>end</code> to <code>com.liferay.portal.kernel.dao.orm.QueryUtil#ALL_POS</code> will return the full result set. If <code>orderByComparator</code> is specified, then the query will include the given ORDER BY logic. If <code>orderByComparator</code> is absent, then the query will include the default ORDER BY logic from <code>com.liferay.layout.content.versioning.model.impl.LayoutContentVersionModelImpl</code>.
+	 * </p>
+	 *
+	 * @param plid the plid
+	 * @param status the status
+	 * @param start the lower bound of the range of layout content versions
+	 * @param end the upper bound of the range of layout content versions (not inclusive)
+	 * @param orderByComparator the comparator to order the results by (optionally <code>null</code>)
+	 * @return the ordered range of matching layout content versions
+	 */
+	public default java.util.List<LayoutContentVersion> findByP_S(
+		long plid, int status, int start, int end,
+		com.liferay.portal.kernel.util.OrderByComparator<LayoutContentVersion>
+			orderByComparator) {
+
+		return findByP_S(plid, status, start, end, orderByComparator, true);
+	}
+
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-880051017
+// LIFERAY-SERVICE-BUILDER-HASH:-411119946
