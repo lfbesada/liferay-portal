@@ -6,9 +6,12 @@
 package com.liferay.layout.content.versioning.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.layout.content.versioning.exception.RequiredLayoutContentVersionException;
 import com.liferay.layout.content.versioning.model.LayoutContentVersion;
 import com.liferay.layout.content.versioning.service.LayoutContentVersionLocalService;
 import com.liferay.layout.test.util.LayoutTestUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -18,12 +21,9 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.FeatureFlag;
-import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
-
-import java.util.List;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -35,7 +35,7 @@ import org.junit.runner.RunWith;
 /**
  * @author Lourdes Fernández Besada
  */
-@FeatureFlags(featureFlags = @FeatureFlag("LPD-10622"))
+@FeatureFlag("LPD-10622")
 @RunWith(Arquillian.class)
 public class LayoutContentVersionLocalServiceTest {
 
@@ -82,10 +82,69 @@ public class LayoutContentVersionLocalServiceTest {
 		Assert.assertEquals(
 			WorkflowConstants.STATUS_APPROVED,
 			approvedLayoutContentVersion.getStatus());
+
+		_testAddLayoutContentVersionWithNullExternalReferenceCode();
+		_testAddLayoutContentVersionWithSkipIfUnchanged();
 	}
 
 	@Test
-	public void testAddLayoutContentVersionDerivesExternalReferenceCodeWhenNull()
+	public void testDeleteLayoutContentVersion() throws Exception {
+		LayoutContentVersion approvedLayoutContentVersion =
+			_layoutContentVersionLocalService.addLayoutContentVersion(
+				RandomTestUtil.randomString(), TestPropsValues.getUserId(),
+				_draftLayout.getPlid(), RandomTestUtil.randomString(),
+				RandomTestUtil.randomString(),
+				WorkflowConstants.STATUS_APPROVED, false);
+
+		LayoutContentVersion latestApprovedLayoutContentVersion =
+			_layoutContentVersionLocalService.addLayoutContentVersion(
+				RandomTestUtil.randomString(), TestPropsValues.getUserId(),
+				_draftLayout.getPlid(), RandomTestUtil.randomString(),
+				RandomTestUtil.randomString(),
+				WorkflowConstants.STATUS_APPROVED, false);
+
+		LayoutContentVersion draftLayoutContentVersion =
+			_layoutContentVersionLocalService.addLayoutContentVersion(
+				RandomTestUtil.randomString(), TestPropsValues.getUserId(),
+				_draftLayout.getPlid(), RandomTestUtil.randomString(),
+				RandomTestUtil.randomString(), WorkflowConstants.STATUS_DRAFT,
+				false);
+
+		_layoutContentVersionLocalService.deleteLayoutContentVersion(
+			approvedLayoutContentVersion.getLayoutContentVersionId());
+
+		Assert.assertNull(
+			_layoutContentVersionLocalService.fetchLayoutContentVersion(
+				approvedLayoutContentVersion.getLayoutContentVersionId()));
+
+		try {
+			_layoutContentVersionLocalService.deleteLayoutContentVersion(
+				latestApprovedLayoutContentVersion.getLayoutContentVersionId());
+
+			Assert.fail();
+		}
+		catch (RequiredLayoutContentVersionException
+					requiredLayoutContentVersionException) {
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(requiredLayoutContentVersionException);
+			}
+		}
+
+		Assert.assertNotNull(
+			_layoutContentVersionLocalService.fetchLayoutContentVersion(
+				latestApprovedLayoutContentVersion.
+					getLayoutContentVersionId()));
+
+		_layoutContentVersionLocalService.deleteLayoutContentVersion(
+			draftLayoutContentVersion.getLayoutContentVersionId());
+
+		Assert.assertNull(
+			_layoutContentVersionLocalService.fetchLayoutContentVersion(
+				draftLayoutContentVersion.getLayoutContentVersionId()));
+	}
+
+	private void _testAddLayoutContentVersionWithNullExternalReferenceCode()
 		throws Exception {
 
 		LayoutContentVersion layoutContentVersion =
@@ -100,70 +159,46 @@ public class LayoutContentVersionLocalServiceTest {
 			layoutContentVersion.getExternalReferenceCode());
 	}
 
-	@Test
-	public void testAddLayoutContentVersionForcesNewRowWhenSkipIfUnchangedIsFalse()
+	private void _testAddLayoutContentVersionWithSkipIfUnchanged()
 		throws Exception {
 
 		String data = RandomTestUtil.randomString();
 
-		LayoutContentVersion firstLayoutContentVersion =
+		LayoutContentVersion layoutContentVersion1 =
 			_layoutContentVersionLocalService.addLayoutContentVersion(
 				RandomTestUtil.randomString(), TestPropsValues.getUserId(),
 				_draftLayout.getPlid(), RandomTestUtil.randomString(), data,
 				WorkflowConstants.STATUS_DRAFT, false);
-		LayoutContentVersion secondLayoutContentVersion =
+		LayoutContentVersion layoutContentVersion2 =
 			_layoutContentVersionLocalService.addLayoutContentVersion(
 				RandomTestUtil.randomString(), TestPropsValues.getUserId(),
 				_draftLayout.getPlid(), RandomTestUtil.randomString(), data,
 				WorkflowConstants.STATUS_DRAFT, false);
 
 		Assert.assertNotEquals(
-			firstLayoutContentVersion.getLayoutContentVersionId(),
-			secondLayoutContentVersion.getLayoutContentVersionId());
-	}
+			layoutContentVersion1.getLayoutContentVersionId(),
+			layoutContentVersion2.getLayoutContentVersionId());
 
-	@Test
-	public void testAddLayoutContentVersionSkipsIdenticalHashWhenSkipIfUnchanged()
-		throws Exception {
+		data = RandomTestUtil.randomString();
 
-		String data = RandomTestUtil.randomString();
-
-		LayoutContentVersion firstLayoutContentVersion =
+		layoutContentVersion1 =
 			_layoutContentVersionLocalService.addLayoutContentVersion(
 				RandomTestUtil.randomString(), TestPropsValues.getUserId(),
 				_draftLayout.getPlid(), RandomTestUtil.randomString(), data,
 				WorkflowConstants.STATUS_APPROVED, true);
-		LayoutContentVersion secondLayoutContentVersion =
+		layoutContentVersion2 =
 			_layoutContentVersionLocalService.addLayoutContentVersion(
 				RandomTestUtil.randomString(), TestPropsValues.getUserId(),
 				_draftLayout.getPlid(), RandomTestUtil.randomString(), data,
 				WorkflowConstants.STATUS_APPROVED, true);
 
 		Assert.assertEquals(
-			firstLayoutContentVersion.getLayoutContentVersionId(),
-			secondLayoutContentVersion.getLayoutContentVersionId());
+			layoutContentVersion1.getLayoutContentVersionId(),
+			layoutContentVersion2.getLayoutContentVersionId());
 	}
 
-	@Test
-	public void testGetLayoutContentVersions() throws Exception {
-		_layoutContentVersionLocalService.addLayoutContentVersion(
-			RandomTestUtil.randomString(), TestPropsValues.getUserId(),
-			_draftLayout.getPlid(), RandomTestUtil.randomString(),
-			RandomTestUtil.randomString(), WorkflowConstants.STATUS_DRAFT,
-			false);
-		_layoutContentVersionLocalService.addLayoutContentVersion(
-			RandomTestUtil.randomString(), TestPropsValues.getUserId(),
-			_draftLayout.getPlid(), RandomTestUtil.randomString(),
-			RandomTestUtil.randomString(), WorkflowConstants.STATUS_DRAFT,
-			false);
-
-		List<LayoutContentVersion> layoutContentVersions =
-			_layoutContentVersionLocalService.getLayoutContentVersions(
-				_draftLayout.getPlid());
-
-		Assert.assertEquals(
-			layoutContentVersions.toString(), 2, layoutContentVersions.size());
-	}
+	private static final Log _log = LogFactoryUtil.getLog(
+		LayoutContentVersionLocalServiceTest.class);
 
 	private Layout _draftLayout;
 
