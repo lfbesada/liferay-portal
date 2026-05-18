@@ -8,12 +8,12 @@ package com.liferay.headless.admin.site.internal.resource.v1_0;
 import com.liferay.headless.admin.site.dto.v1_0.PageSpecificationVersion;
 import com.liferay.headless.admin.site.dto.v1_0.SitePage;
 import com.liferay.headless.admin.site.internal.dto.v1_0.util.DTOConverterContextUtil;
+import com.liferay.headless.admin.site.internal.util.SitePageUtil;
 import com.liferay.headless.admin.site.resource.v1_0.PageSpecificationVersionResource;
 import com.liferay.headless.common.spi.util.GroupUtil;
 import com.liferay.layout.content.versioning.model.LayoutContentVersion;
 import com.liferay.layout.content.versioning.service.LayoutContentVersionService;
 import com.liferay.portal.kernel.model.Layout;
-import com.liferay.portal.kernel.service.LayoutService;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
 import com.liferay.portal.vulcan.fields.NestedField;
@@ -42,6 +42,9 @@ public class PageSpecificationVersionResourceImpl
 			String pageSpecificationVersionExternalReferenceCode)
 		throws Exception {
 
+		_getLayout(
+			false, siteExternalReferenceCode, sitePageExternalReferenceCode);
+
 		return _toPageSpecificationVersion(
 			_getLayoutContentVersion(
 				siteExternalReferenceCode,
@@ -59,10 +62,10 @@ public class PageSpecificationVersionResourceImpl
 					sitePageExternalReferenceCode)
 		throws Exception {
 
-		Layout layout = _getPublishedLayout(
-			siteExternalReferenceCode, sitePageExternalReferenceCode);
+		Layout layout = _getLayout(
+			true, siteExternalReferenceCode, sitePageExternalReferenceCode);
 
-		Layout draftLayout = _getDraftLayout(layout);
+		Layout draftLayout = layout.fetchDraftLayout();
 
 		return Page.of(
 			transform(
@@ -71,15 +74,23 @@ public class PageSpecificationVersionResourceImpl
 				this::_toPageSpecificationVersion));
 	}
 
-	private Layout _getDraftLayout(Layout layout) {
-		Layout draftLayout = layout.fetchDraftLayout();
+	private Layout _getLayout(
+			boolean allowLiveGroup, String siteExternalReferenceCode,
+			String sitePageExternalReferenceCode)
+		throws Exception {
 
-		if (draftLayout == null) {
-			throw new IllegalStateException(
-				"Site page has no draft layout for plid " + layout.getPlid());
+		Layout layout = SitePageUtil.getSitePageLayout(
+			GroupUtil.getGroupId(
+				false, allowLiveGroup, contextCompany.getCompanyId(),
+				siteExternalReferenceCode),
+			sitePageExternalReferenceCode);
+
+		if (!layout.isTypeContent()) {
+			throw new IllegalArgumentException(
+				"The page must be a content page");
 		}
 
-		return draftLayout;
+		return layout;
 	}
 
 	private LayoutContentVersion _getLayoutContentVersion(
@@ -91,17 +102,6 @@ public class PageSpecificationVersionResourceImpl
 				externalReferenceCode,
 				GroupUtil.getStagingAwareGroupId(
 					contextCompany.getCompanyId(), siteExternalReferenceCode));
-	}
-
-	private Layout _getPublishedLayout(
-			String siteExternalReferenceCode,
-			String sitePageExternalReferenceCode)
-		throws Exception {
-
-		return _layoutService.getLayoutByExternalReferenceCode(
-			sitePageExternalReferenceCode,
-			GroupUtil.getStagingAwareGroupId(
-				contextCompany.getCompanyId(), siteExternalReferenceCode));
 	}
 
 	private PageSpecificationVersion _toPageSpecificationVersion(
@@ -122,9 +122,6 @@ public class PageSpecificationVersionResourceImpl
 
 	@Reference
 	private LayoutContentVersionService _layoutContentVersionService;
-
-	@Reference
-	private LayoutService _layoutService;
 
 	@Reference(
 		target = "(component.name=com.liferay.headless.admin.site.internal.dto.v1_0.converter.PageSpecificationVersionDTOConverter)"
