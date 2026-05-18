@@ -13,6 +13,7 @@ import com.liferay.headless.admin.site.resource.v1_0.PageSpecificationVersionRes
 import com.liferay.headless.common.spi.util.GroupUtil;
 import com.liferay.layout.content.versioning.model.LayoutContentVersion;
 import com.liferay.layout.content.versioning.service.LayoutContentVersionService;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
@@ -42,13 +43,13 @@ public class PageSpecificationVersionResourceImpl
 			String pageSpecificationVersionExternalReferenceCode)
 		throws Exception {
 
-		_getLayout(
-			false, siteExternalReferenceCode, sitePageExternalReferenceCode);
+		_checkFeatureFlag();
 
 		return _toPageSpecificationVersion(
 			_getLayoutContentVersion(
-				siteExternalReferenceCode,
-				pageSpecificationVersionExternalReferenceCode));
+				pageSpecificationVersionExternalReferenceCode,
+				_getLayout(
+					siteExternalReferenceCode, sitePageExternalReferenceCode)));
 	}
 
 	@NestedField(
@@ -62,8 +63,10 @@ public class PageSpecificationVersionResourceImpl
 					sitePageExternalReferenceCode)
 		throws Exception {
 
+		_checkFeatureFlag();
+
 		Layout layout = _getLayout(
-			true, siteExternalReferenceCode, sitePageExternalReferenceCode);
+			siteExternalReferenceCode, sitePageExternalReferenceCode);
 
 		Layout draftLayout = layout.fetchDraftLayout();
 
@@ -74,14 +77,22 @@ public class PageSpecificationVersionResourceImpl
 				this::_toPageSpecificationVersion));
 	}
 
+	private void _checkFeatureFlag() {
+		if (!FeatureFlagManagerUtil.isEnabled(
+				contextCompany.getCompanyId(), "LPD-10622")) {
+
+			throw new UnsupportedOperationException();
+		}
+	}
+
 	private Layout _getLayout(
-			boolean allowLiveGroup, String siteExternalReferenceCode,
+			String siteExternalReferenceCode,
 			String sitePageExternalReferenceCode)
 		throws Exception {
 
 		Layout layout = SitePageUtil.getSitePageLayout(
 			GroupUtil.getGroupId(
-				false, allowLiveGroup, contextCompany.getCompanyId(),
+				false, true, contextCompany.getCompanyId(),
 				siteExternalReferenceCode),
 			sitePageExternalReferenceCode);
 
@@ -94,14 +105,22 @@ public class PageSpecificationVersionResourceImpl
 	}
 
 	private LayoutContentVersion _getLayoutContentVersion(
-			String siteExternalReferenceCode, String externalReferenceCode)
+			String externalReferenceCode, Layout layout)
 		throws Exception {
 
-		return _layoutContentVersionService.
-			getLayoutContentVersionByExternalReferenceCode(
-				externalReferenceCode,
-				GroupUtil.getStagingAwareGroupId(
-					contextCompany.getCompanyId(), siteExternalReferenceCode));
+		Layout draftLayout = layout.fetchDraftLayout();
+
+		LayoutContentVersion layoutContentVersion =
+			_layoutContentVersionService.
+				getLayoutContentVersionByExternalReferenceCode(
+					externalReferenceCode, draftLayout.getGroupId());
+
+		if (layoutContentVersion.getPlid() != draftLayout.getPlid()) {
+			throw new IllegalArgumentException(
+				"Page specification version must match the site page");
+		}
+
+		return layoutContentVersion;
 	}
 
 	private PageSpecificationVersion _toPageSpecificationVersion(
