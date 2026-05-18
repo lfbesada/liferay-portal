@@ -1220,6 +1220,48 @@ components:
             description:
                 The page element definition of a form fragment instance.
             type: object
+        FormRelationshipPageElementDefinition:
+            allOf:
+                -   $ref: "#/components/schemas/PageElementDefinition"
+                -   properties:
+                        buttonLabel:
+                            $ref: "#/components/schemas/FragmentInlineValue"
+                            # @review
+                            description:
+                                The localized button label.
+                        contentType:
+                            # @review
+                            description:
+                                The form relationship's content type.
+                            type: string
+                        cssClasses:
+                            # @review
+                            description:
+                                A list of CSS classes that are applied to the form relationship page element.
+                            items:
+                                type: string
+                            type: array
+                        fragmentViewports:
+                            # @review
+                            description:
+                                A list of fragment viewports of a form relationship page element.
+                            items:
+                                $ref: "#/components/schemas/FragmentViewport"
+                            type: array
+                        name:
+                            # @review
+                            description:
+                                The custom name of a form relationship page element.
+                            type: string
+                        repeatable:
+                            # @review
+                            description:
+                                Whether the form relationship can be repeated.
+                            type: boolean
+            # @review
+            description:
+                The page element definition of a form relationship.
+            type: object
         FormStepContainerPageElementDefinition:
             allOf:
                 -   $ref: "#/components/schemas/PageElementDefinition"
@@ -2788,6 +2830,7 @@ components:
                     DropZone: "#/components/schemas/DropZonePageElementDefinition"
                     FormContainer: "#/components/schemas/FormContainerPageElementDefinition"
                     FormFragment: "#/components/schemas/FormFragmentInstancePageElementDefinition"
+                    FormRelationship: "#/components/schemas/FormRelationshipPageElementDefinition"
                     FormStep: "#/components/schemas/FormStepPageElementDefinition"
                     FormStepContainer: "#/components/schemas/FormStepContainerPageElementDefinition"
                     FragmentDropZone: "#/components/schemas/FragmentDropZonePageElementDefinition"
@@ -2800,8 +2843,8 @@ components:
                     # @review
                     description:
                         The page element definition's type (basic fragment, collection display, collection item,
-                        container, drop zone, form container, form fragment, form step, form step container, fragment
-                        drop zone, grid,  module or widget).
+                        container, drop zone, form container, form fragment, form relationship, form step, form step
+                        container, fragment drop zone, grid,  module or widget).
                     enum:
                         -   BasicFragment
                         -   CollectionDisplay
@@ -2810,6 +2853,7 @@ components:
                         -   DropZone
                         -   FormContainer
                         -   FormFragment
+                        -   FormRelationship
                         -   FormStep
                         -   FormStepContainer
                         -   FragmentDropZone
