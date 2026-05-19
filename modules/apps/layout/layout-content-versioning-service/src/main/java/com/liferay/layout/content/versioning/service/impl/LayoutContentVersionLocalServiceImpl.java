@@ -9,6 +9,7 @@ import com.liferay.layout.content.versioning.exception.RequiredLayoutContentVers
 import com.liferay.layout.content.versioning.exception.UnsupportedLayoutLayoutContentVersionException;
 import com.liferay.layout.content.versioning.model.LayoutContentVersion;
 import com.liferay.layout.content.versioning.service.base.LayoutContentVersionLocalServiceBaseImpl;
+import com.liferay.layout.content.versioning.util.comparator.LayoutContentVersionVersionComparator;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.portal.aop.AopService;
@@ -190,7 +191,15 @@ public class LayoutContentVersionLocalServiceImpl
 	}
 
 	private int _generateVersion(long plid) {
-		return layoutContentVersionPersistence.countByPlid(plid) + 1;
+		LayoutContentVersion layoutContentVersion =
+			layoutContentVersionPersistence.fetchByPlid_First(
+				plid, LayoutContentVersionVersionComparator.getInstance(false));
+
+		if (layoutContentVersion == null) {
+			return 1;
+		}
+
+		return layoutContentVersion.getVersion() + 1;
 	}
 
 	private void _validateLayout(Layout layout) throws PortalException {
