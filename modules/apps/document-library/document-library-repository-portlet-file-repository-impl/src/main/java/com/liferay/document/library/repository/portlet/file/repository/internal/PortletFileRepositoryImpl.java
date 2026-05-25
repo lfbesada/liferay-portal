@@ -813,24 +813,20 @@ public class PortletFileRepositoryImpl implements PortletFileRepository {
 			mimeType = MimeTypesUtil.getContentType(file, fileName);
 		}
 
-		boolean dlAppHelperEnabled = DLAppHelperThreadLocal.isEnabled();
+		String finalMimeType = mimeType;
 
-		try {
-			DLAppHelperThreadLocal.setEnabled(false);
+		return _run(
+			() -> {
+				LocalRepository localRepository =
+					_repositoryProvider.getLocalRepository(
+						fileEntry.getRepositoryId());
 
-			LocalRepository localRepository =
-				_repositoryProvider.getLocalRepository(
-					fileEntry.getRepositoryId());
-
-			return localRepository.updateFileEntry(
-				userId, fileEntryId, fileName, mimeType, fileEntry.getTitle(),
-				null, fileEntry.getDescription(), null,
-				DLVersionNumberIncrease.NONE, file, null, null, null,
-				serviceContext);
-		}
-		finally {
-			DLAppHelperThreadLocal.setEnabled(dlAppHelperEnabled);
-		}
+				return localRepository.updateFileEntry(
+					userId, fileEntryId, fileName, finalMimeType,
+					fileEntry.getTitle(), null, fileEntry.getDescription(),
+					null, DLVersionNumberIncrease.NONE, file, null, null, null,
+					serviceContext);
+			});
 	}
 
 	@Override
