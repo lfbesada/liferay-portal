@@ -555,6 +555,57 @@ public class SitePage implements Serializable {
 	private Supplier<PageSettings> _pageSettingsSupplier;
 
 	@io.swagger.v3.oas.annotations.media.Schema(
+		description = "The page's content versioning history. Each entry is a snapshot of the page specification, captured by the user or generated automatically on publish. Only applies to content pages. This field is not returned by default. It can be requested via nestedFields."
+	)
+	@Valid
+	public PageSpecificationVersion[] getPageSpecificationVersions() {
+		if (_pageSpecificationVersionsSupplier != null) {
+			pageSpecificationVersions =
+				_pageSpecificationVersionsSupplier.get();
+
+			_pageSpecificationVersionsSupplier = null;
+		}
+
+		return pageSpecificationVersions;
+	}
+
+	public void setPageSpecificationVersions(
+		PageSpecificationVersion[] pageSpecificationVersions) {
+
+		this.pageSpecificationVersions = pageSpecificationVersions;
+
+		_pageSpecificationVersionsSupplier = null;
+	}
+
+	@JsonIgnore
+	public void setPageSpecificationVersions(
+		UnsafeSupplier<PageSpecificationVersion[], Exception>
+			pageSpecificationVersionsUnsafeSupplier) {
+
+		_pageSpecificationVersionsSupplier = () -> {
+			try {
+				return pageSpecificationVersionsUnsafeSupplier.get();
+			}
+			catch (RuntimeException runtimeException) {
+				throw runtimeException;
+			}
+			catch (Exception exception) {
+				throw new RuntimeException(exception);
+			}
+		};
+	}
+
+	@GraphQLField(
+		description = "The page's content versioning history. Each entry is a snapshot of the page specification, captured by the user or generated automatically on publish. Only applies to content pages. This field is not returned by default. It can be requested via nestedFields."
+	)
+	@JsonProperty(access = JsonProperty.Access.READ_WRITE)
+	protected PageSpecificationVersion[] pageSpecificationVersions;
+
+	@JsonIgnore
+	private Supplier<PageSpecificationVersion[]>
+		_pageSpecificationVersionsSupplier;
+
+	@io.swagger.v3.oas.annotations.media.Schema(
 		description = "The page's specifications. A page of type content will contain 1 page specifications for its draft layout and 1 page specifications for its published layout. A page of type widget contains only 1 page specification for its published layout. This field is not returned by default. It can be requested via nestedFields."
 	)
 	@Valid
@@ -1106,6 +1157,29 @@ public class SitePage implements Serializable {
 			sb.append(String.valueOf(pageSettings));
 		}
 
+		PageSpecificationVersion[] pageSpecificationVersions =
+			getPageSpecificationVersions();
+
+		if (pageSpecificationVersions != null) {
+			if (sb.length() > 1) {
+				sb.append(", ");
+			}
+
+			sb.append("\"pageSpecificationVersions\": ");
+
+			sb.append("[");
+
+			for (int i = 0; i < pageSpecificationVersions.length; i++) {
+				sb.append(String.valueOf(pageSpecificationVersions[i]));
+
+				if ((i + 1) < pageSpecificationVersions.length) {
+					sb.append(", ");
+				}
+			}
+
+			sb.append("]");
+		}
+
 		PageSpecification[] pageSpecifications = getPageSpecifications();
 
 		if (pageSpecifications != null) {
@@ -1414,4 +1488,4 @@ public class SitePage implements Serializable {
 	private Map<String, Serializable> _extendedProperties;
 
 }
-// LIFERAY-REST-BUILDER-HASH:1874935738
+// LIFERAY-REST-BUILDER-HASH:-861738017
