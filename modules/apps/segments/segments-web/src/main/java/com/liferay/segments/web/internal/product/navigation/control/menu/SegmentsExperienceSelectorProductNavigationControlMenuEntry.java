@@ -14,6 +14,7 @@ import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.LayoutTypeController;
 import com.liferay.portal.kernel.model.LayoutTypePortlet;
 import com.liferay.portal.kernel.model.impl.VirtualLayout;
@@ -118,7 +119,9 @@ public class SegmentsExperienceSelectorProductNavigationControlMenuEntry
 		String mode = ParamUtil.getString(
 			httpServletRequest, "p_l_mode", Constants.VIEW);
 
-		if (Objects.equals(mode, Constants.EDIT)) {
+		if (Objects.equals(mode, Constants.EDIT) ||
+			Objects.equals(mode, LayoutConstants.LAYOUT_MODE_VERSIONING)) {
+
 			return false;
 		}
 
