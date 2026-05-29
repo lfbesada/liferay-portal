@@ -14,6 +14,7 @@ import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.LayoutLocalService;
@@ -185,7 +186,8 @@ public class ManageLayoutProductNavigationControlMenuEntry
 			httpServletRequest, "p_l_mode", Constants.VIEW);
 
 		if ((layout.isTypeAssetDisplay() || layout.isTypeContent()) &&
-			Objects.equals(mode, Constants.EDIT)) {
+			(Objects.equals(mode, Constants.EDIT) ||
+			 Objects.equals(mode, LayoutConstants.LAYOUT_MODE_VERSIONING))) {
 
 			return false;
 		}
