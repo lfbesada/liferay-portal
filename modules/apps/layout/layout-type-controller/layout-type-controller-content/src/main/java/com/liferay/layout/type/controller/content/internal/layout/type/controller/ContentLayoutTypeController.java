@@ -169,6 +169,25 @@ public class ContentLayoutTypeController extends BaseLayoutTypeControllerImpl {
 				redirect = _layoutLockManager.getLockedLayoutURL(
 					httpServletRequest);
 			}
+
+			String segmentsExperienceERC = ParamUtil.getString(
+				httpServletRequest, "segmentsExperienceERC");
+
+			if (Validator.isNotNull(segmentsExperienceERC)) {
+				SegmentsExperience segmentsExperience =
+					_segmentsExperienceLocalService.
+						fetchSegmentsExperienceByExternalReferenceCode(
+							segmentsExperienceERC, layout.getGroupId());
+
+				if (segmentsExperience != null) {
+					httpServletRequest.setAttribute(
+						"segmentsExperienceId",
+						segmentsExperience.getSegmentsExperienceId());
+				}
+			}
+
+			// TODO Honor languageId deeplink param.
+
 		}
 
 		if (!layout.isPublished()) {
