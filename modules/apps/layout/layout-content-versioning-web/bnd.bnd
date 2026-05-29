@@ -1,0 +1,4 @@
+Bundle-Name: Liferay Layout Content Versioning Web
+Bundle-SymbolicName: com.liferay.layout.content.versioning.web
+Bundle-Version: 1.0.0
+Web-ContextPath: /layout-content-versioning-web
