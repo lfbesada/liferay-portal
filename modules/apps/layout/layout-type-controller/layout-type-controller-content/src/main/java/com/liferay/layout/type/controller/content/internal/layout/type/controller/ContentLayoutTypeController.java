@@ -182,6 +182,9 @@ public class ContentLayoutTypeController extends BaseLayoutTypeControllerImpl {
 		if (layoutMode.equals(Constants.EDIT)) {
 			page = _EDIT_LAYOUT_PAGE;
 		}
+		else if (layoutMode.equals(LayoutConstants.LAYOUT_MODE_VERSIONING)) {
+			page = _VERSIONING_LAYOUT_PAGE;
+		}
 
 		RequestDispatcher requestDispatcher =
 			TransferHeadersHelperUtil.getTransferHeadersRequestDispatcher(
@@ -433,6 +436,9 @@ public class ContentLayoutTypeController extends BaseLayoutTypeControllerImpl {
 	private static final String _URL =
 		"${liferay:mainPath}/portal/layout?p_l_id=${liferay:plid}" +
 			"&p_v_l_s_g_id=${liferay:pvlsgid}";
+
+	private static final String _VERSIONING_LAYOUT_PAGE =
+		"/layout/versioning_layout/content.jsp";
 
 	private static final String _VIEW_PAGE = "/layout/view/content.jsp";
 
