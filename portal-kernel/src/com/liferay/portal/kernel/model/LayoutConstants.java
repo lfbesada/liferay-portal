@@ -20,6 +20,8 @@ public class LayoutConstants {
 
 	public static final int FRIENDLY_URL_MAX_LENGTH = 255;
 
+	public static final String LAYOUT_MODE_VERSIONING = "versioning";
+
 	public static final String NAME_CONTROL_PANEL_DEFAULT = "Control Panel";
 
 	public static final String TYPE_ASSET_DISPLAY = "asset_display";
