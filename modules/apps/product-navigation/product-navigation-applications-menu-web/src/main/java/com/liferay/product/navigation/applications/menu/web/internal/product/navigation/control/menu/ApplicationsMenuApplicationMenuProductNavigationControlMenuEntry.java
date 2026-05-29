@@ -8,6 +8,7 @@ package com.liferay.product.navigation.applications.menu.web.internal.product.na
 import com.liferay.application.list.PanelAppRegistry;
 import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ParamUtil;
@@ -48,7 +49,9 @@ public class ApplicationsMenuApplicationMenuProductNavigationControlMenuEntry
 		String layoutMode = ParamUtil.getString(
 			httpServletRequest, "p_l_mode", Constants.VIEW);
 
-		if (layoutMode.equals(Constants.EDIT)) {
+		if (layoutMode.equals(Constants.EDIT) ||
+			layoutMode.equals(LayoutConstants.LAYOUT_MODE_VERSIONING)) {
+
 			return false;
 		}
 
