@@ -48,6 +48,7 @@ import com.liferay.headless.admin.site.client.dto.v1_0.PageExperience;
 import com.liferay.headless.admin.site.client.dto.v1_0.PageSetPageSettings;
 import com.liferay.headless.admin.site.client.dto.v1_0.PageSettings;
 import com.liferay.headless.admin.site.client.dto.v1_0.PageSpecification;
+import com.liferay.headless.admin.site.client.dto.v1_0.PageSpecificationVersion;
 import com.liferay.headless.admin.site.client.dto.v1_0.ParentTaxonomyCategory;
 import com.liferay.headless.admin.site.client.dto.v1_0.ParentTaxonomyVocabulary;
 import com.liferay.headless.admin.site.client.dto.v1_0.SEOSettings;
@@ -76,6 +77,8 @@ import com.liferay.info.field.type.InfoFieldType;
 import com.liferay.info.form.InfoForm;
 import com.liferay.info.item.InfoItemServiceRegistry;
 import com.liferay.info.item.provider.InfoItemFormProvider;
+import com.liferay.layout.content.versioning.model.LayoutContentVersion;
+import com.liferay.layout.content.versioning.service.LayoutContentVersionLocalService;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.provider.LayoutStructureProvider;
 import com.liferay.layout.test.util.ContentLayoutTestUtil;
@@ -150,6 +153,7 @@ import com.liferay.portal.test.log.LogCapture;
 import com.liferay.portal.test.log.LogEntry;
 import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.FeatureFlag;
+import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -183,7 +187,9 @@ import org.springframework.mock.web.MockHttpServletRequest;
 /**
  * @author Rubén Pulido
  */
-@FeatureFlag("LPD-35443")
+@FeatureFlags(
+	featureFlags = {@FeatureFlag("LPD-10622"), @FeatureFlag("LPD-35443")}
+)
 @RunWith(Arquillian.class)
 public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 
@@ -961,6 +967,11 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 
 		PageSpecificationsTestUtil.assertPageSpecifications(
 			layout, sitePage.getPageSpecifications());
+
+		if (layout.isTypeContent()) {
+			_assertPageSpecificationVersions(
+				layout, sitePage.getPageSpecificationVersions());
+		}
 	}
 
 	private void _assertPageElements(
@@ -1006,6 +1017,43 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 		PageSpecificationsTestUtil.assertPageSpecifications(
 			draftContentPageSpecification, publishedContentPageSpecification,
 			sitePage.getPageSpecifications(), layout, status);
+	}
+
+	private void _assertPageSpecificationVersions(
+			Layout layout, PageSpecificationVersion[] pageSpecificationVersions)
+		throws Exception {
+
+		Layout draftLayout = layout.fetchDraftLayout();
+
+		List<LayoutContentVersion> layoutContentVersions =
+			_layoutContentVersionLocalService.getLayoutContentVersions(
+				draftLayout.getPlid());
+
+		Assert.assertEquals(
+			Arrays.toString(pageSpecificationVersions),
+			layoutContentVersions.size(), pageSpecificationVersions.length);
+
+		for (int i = 0; i < layoutContentVersions.size(); i++) {
+			PageSpecificationVersion pageSpecificationVersion =
+				pageSpecificationVersions[i];
+
+			PageSpecification pageSpecification =
+				pageSpecificationVersion.getPageSpecification();
+
+			Assert.assertEquals(
+				draftLayout.getExternalReferenceCode(),
+				pageSpecification.getExternalReferenceCode());
+
+			LayoutContentVersion layoutContentVersion =
+				layoutContentVersions.get(i);
+
+			Assert.assertEquals(
+				layoutContentVersion.getExternalReferenceCode(),
+				pageSpecificationVersion.getExternalReferenceCode());
+			Assert.assertEquals(
+				layoutContentVersion.getVersion(),
+				GetterUtil.getInteger(pageSpecificationVersion.getVersion()));
+		}
 	}
 
 	private void _assertParentAndPriority(
@@ -2009,8 +2057,14 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 	private void _testGetSiteSitePageWithNestedFields(SitePage sitePage)
 		throws Exception {
 
-		SitePageResource sitePageResource = _getSitePageResource(
-			"friendlyUrlHistory,pageSpecifications");
+		String nestedFields = "friendlyUrlHistory,pageSpecifications";
+
+		if (Objects.equals(sitePage.getType(), SitePage.Type.CONTENT_PAGE)) {
+			nestedFields =
+				nestedFields + ",pageSpecificationVersions.pageSpecification";
+		}
+
+		SitePageResource sitePageResource = _getSitePageResource(nestedFields);
 
 		_assertNestedFields(
 			sitePageResource.getSiteSitePage(
@@ -4173,6 +4227,9 @@ public class SitePageResourceTest extends BaseSitePageResourceTestCase {
 
 	@Inject
 	private Language _language;
+
+	@Inject
+	private LayoutContentVersionLocalService _layoutContentVersionLocalService;
 
 	@Inject
 	private LayoutLocalService _layoutLocalService;
