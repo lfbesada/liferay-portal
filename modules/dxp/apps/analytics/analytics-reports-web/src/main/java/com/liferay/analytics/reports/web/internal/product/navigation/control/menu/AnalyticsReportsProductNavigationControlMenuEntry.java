@@ -31,6 +31,7 @@ import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.PortletPreferencesTable;
 import com.liferay.portal.kernel.portlet.PortletURLFactory;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
@@ -39,9 +40,11 @@ import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ResourceBundleUtil;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -71,6 +74,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
+import java.util.Objects;
 import java.util.ResourceBundle;
 import java.util.Set;
 
@@ -184,6 +188,13 @@ public class AnalyticsReportsProductNavigationControlMenuEntry
 	@Override
 	public boolean isShow(HttpServletRequest httpServletRequest)
 		throws PortalException {
+
+		String mode = ParamUtil.getString(
+			httpServletRequest, "p_l_mode", Constants.VIEW);
+
+		if (Objects.equals(mode, LayoutConstants.LAYOUT_MODE_VERSIONING)) {
+			return false;
+		}
 
 		InfoItemReference infoItemReference = _getInfoItemReference(
 			httpServletRequest);
