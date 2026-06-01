@@ -67,6 +67,11 @@ public interface LayoutContentVersionLocalService
 	public LayoutContentVersion addLayoutContentVersion(
 		LayoutContentVersion layoutContentVersion);
 
+	public LayoutContentVersion addLayoutContentVersion(
+			String externalReferenceCode, long userId, long plid, String name,
+			String data, int status, boolean skipIfUnchanged)
+		throws PortalException;
+
 	/**
 	 * Creates a new layout content version with the primary key. Does not add the layout content version to the database.
 	 *
@@ -239,6 +244,10 @@ public interface LayoutContentVersionLocalService
 	public List<LayoutContentVersion> getLayoutContentVersions(
 		int start, int end);
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<LayoutContentVersion> getLayoutContentVersions(long plid)
+		throws PortalException;
+
 	/**
 	 * Returns the number of layout content versions.
 	 *
@@ -276,5 +285,9 @@ public interface LayoutContentVersionLocalService
 	public LayoutContentVersion updateLayoutContentVersion(
 		LayoutContentVersion layoutContentVersion);
 
+	public LayoutContentVersion updateLayoutContentVersion(
+			long layoutContentVersionId, String name)
+		throws PortalException;
+
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-757360519
+// LIFERAY-SERVICE-BUILDER-HASH:323791712
