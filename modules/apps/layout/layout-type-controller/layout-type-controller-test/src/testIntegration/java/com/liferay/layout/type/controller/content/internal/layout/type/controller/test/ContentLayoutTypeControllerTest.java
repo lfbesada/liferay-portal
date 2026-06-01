@@ -62,6 +62,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -409,6 +410,19 @@ public class ContentLayoutTypeControllerTest {
 				_log.debug(principalException);
 			}
 		}
+	}
+
+	@FeatureFlag("LPD-10622")
+	@Test
+	@TestInfo("LPD-90027")
+	public void testContentLayoutTypeControllerWithHistoryMode()
+		throws Exception {
+
+		Assert.assertFalse(
+			_layoutTypeController.includeLayoutContent(
+				_getMockHttpServletRequest(
+					Constants.HISTORY, TestPropsValues.getUser()),
+				new MockHttpServletResponse(), _layout));
 	}
 
 	@Test
