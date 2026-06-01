@@ -6,8 +6,11 @@
 package com.liferay.layout.content.versioning.service.impl;
 
 import com.liferay.layout.content.versioning.exception.RequiredLayoutContentVersionException;
+import com.liferay.layout.content.versioning.exception.UnsupportedLayoutLayoutContentVersionException;
 import com.liferay.layout.content.versioning.model.LayoutContentVersion;
 import com.liferay.layout.content.versioning.service.base.LayoutContentVersionLocalServiceBaseImpl;
+import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
+import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
@@ -46,6 +49,8 @@ public class LayoutContentVersionLocalServiceImpl
 		Layout layout = _layoutLocalService.getLayout(plid);
 
 		FeatureFlagManagerUtil.checkEnabled(layout.getCompanyId(), "LPD-10622");
+
+		_validateLayout(layout);
 
 		String dataHash = DigesterUtil.digestHex(
 			"SHA-256", GetterUtil.getString(data));
@@ -124,6 +129,9 @@ public class LayoutContentVersionLocalServiceImpl
 		FeatureFlagManagerUtil.checkEnabled(
 			layoutContentVersion.getCompanyId(), "LPD-10622");
 
+		_validateLayout(
+			_layoutLocalService.getLayout(layoutContentVersion.getPlid()));
+
 		if (layoutContentVersion.getStatus() ==
 				WorkflowConstants.STATUS_APPROVED) {
 
@@ -169,6 +177,9 @@ public class LayoutContentVersionLocalServiceImpl
 		FeatureFlagManagerUtil.checkEnabled(
 			layoutContentVersion.getCompanyId(), "LPD-10622");
 
+		_validateLayout(
+			_layoutLocalService.getLayout(layoutContentVersion.getPlid()));
+
 		layoutContentVersion.setModifiedDate(new Date());
 		layoutContentVersion.setNameMap(
 			HashMapBuilder.put(
@@ -182,10 +193,30 @@ public class LayoutContentVersionLocalServiceImpl
 		return layoutContentVersionPersistence.countByPlid(plid) + 1;
 	}
 
+	private void _validateLayout(Layout layout) throws PortalException {
+		if (!layout.isDraftLayout() || layout.isTypeAssetDisplay() ||
+			layout.isTypeUtility()) {
+
+			throw new UnsupportedLayoutLayoutContentVersionException();
+		}
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			_layoutPageTemplateEntryLocalService.
+				fetchLayoutPageTemplateEntryByPlid(layout.getPlid());
+
+		if (layoutPageTemplateEntry != null) {
+			throw new UnsupportedLayoutLayoutContentVersionException();
+		}
+	}
+
 	private static final String _SPEC_SCHEMA_VERSION = "v1.0";
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
+
+	@Reference
+	private LayoutPageTemplateEntryLocalService
+		_layoutPageTemplateEntryLocalService;
 
 	@Reference
 	private UserLocalService _userLocalService;
