@@ -5,6 +5,7 @@
 
 package com.liferay.layout.content.versioning.service.impl;
 
+import com.liferay.layout.content.versioning.exception.RequiredLayoutContentVersionException;
 import com.liferay.layout.content.versioning.model.LayoutContentVersion;
 import com.liferay.layout.content.versioning.service.base.LayoutContentVersionLocalServiceBaseImpl;
 import com.liferay.portal.aop.AopService;
@@ -19,6 +20,7 @@ import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.util.Date;
 import java.util.List;
@@ -59,12 +61,10 @@ public class LayoutContentVersionLocalServiceImpl
 			}
 		}
 
-		User user = _userLocalService.getUser(userId);
-
-		long layoutContentVersionId = counterLocalService.increment();
-
 		LayoutContentVersion layoutContentVersion =
-			layoutContentVersionPersistence.create(layoutContentVersionId);
+			layoutContentVersionPersistence.create(
+				counterLocalService.increment(
+					LayoutContentVersion.class.getName()));
 
 		int version = _generateVersion(plid);
 
@@ -78,6 +78,9 @@ public class LayoutContentVersionLocalServiceImpl
 		layoutContentVersion.setGroupId(layout.getGroupId());
 		layoutContentVersion.setCompanyId(layout.getCompanyId());
 		layoutContentVersion.setUserId(userId);
+
+		User user = _userLocalService.getUser(userId);
+
 		layoutContentVersion.setUserName(user.getFullName());
 
 		Date date = new Date();
@@ -120,6 +123,28 @@ public class LayoutContentVersionLocalServiceImpl
 
 		FeatureFlagManagerUtil.checkEnabled(
 			layoutContentVersion.getCompanyId(), "LPD-10622");
+
+		if (layoutContentVersion.getStatus() ==
+				WorkflowConstants.STATUS_APPROVED) {
+
+			List<LayoutContentVersion> approvedLayoutContentVersions =
+				layoutContentVersionPersistence.findByP_S(
+					layoutContentVersion.getPlid(),
+					WorkflowConstants.STATUS_APPROVED);
+
+			for (LayoutContentVersion approvedLayoutContentVersion :
+					approvedLayoutContentVersions) {
+
+				if (approvedLayoutContentVersion.getVersion() >
+						layoutContentVersion.getVersion()) {
+
+					return layoutContentVersionPersistence.remove(
+						layoutContentVersionId);
+				}
+			}
+
+			throw new RequiredLayoutContentVersionException();
+		}
 
 		return layoutContentVersionPersistence.remove(layoutContentVersionId);
 	}
