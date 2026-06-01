@@ -6,11 +6,23 @@
 package com.liferay.layout.content.versioning.web.internal.portlet;
 
 import com.liferay.layout.content.versioning.web.internal.constants.LayoutContentVersioningPortletKeys;
+import com.liferay.layout.content.versioning.web.internal.constants.LayoutContentVersioningWebKeys;
+import com.liferay.layout.content.versioning.web.internal.display.context.LayoutContentVersioningDisplayContext;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCPortlet;
+import com.liferay.portal.kernel.service.LayoutLocalService;
+import com.liferay.portal.kernel.util.Portal;
 
 import jakarta.portlet.Portlet;
+import jakarta.portlet.PortletException;
+import jakarta.portlet.RenderRequest;
+import jakarta.portlet.RenderResponse;
+
+import jakarta.servlet.http.HttpServletRequest;
+
+import java.io.IOException;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Lourdes Fernández Besada
@@ -35,4 +47,40 @@ import org.osgi.service.component.annotations.Component;
 	service = Portlet.class
 )
 public class LayoutContentVersioningPortlet extends MVCPortlet {
+
+	@Override
+	protected void doDispatch(
+			RenderRequest renderRequest, RenderResponse renderResponse)
+		throws IOException, PortletException {
+
+		HttpServletRequest httpServletRequest = _portal.getHttpServletRequest(
+			renderRequest);
+
+		LayoutContentVersioningDisplayContext
+			layoutContentVersioningDisplayContext =
+				(LayoutContentVersioningDisplayContext)
+					httpServletRequest.getAttribute(
+						LayoutContentVersioningWebKeys.
+							LAYOUT_CONTENT_VERSIONING_DISPLAY_CONTEXT);
+
+		if (layoutContentVersioningDisplayContext == null) {
+			layoutContentVersioningDisplayContext =
+				new LayoutContentVersioningDisplayContext(
+					httpServletRequest, _layoutLocalService);
+
+			httpServletRequest.setAttribute(
+				LayoutContentVersioningWebKeys.
+					LAYOUT_CONTENT_VERSIONING_DISPLAY_CONTEXT,
+				layoutContentVersioningDisplayContext);
+		}
+
+		super.doDispatch(renderRequest, renderResponse);
+	}
+
+	@Reference
+	private LayoutLocalService _layoutLocalService;
+
+	@Reference
+	private Portal _portal;
+
 }
