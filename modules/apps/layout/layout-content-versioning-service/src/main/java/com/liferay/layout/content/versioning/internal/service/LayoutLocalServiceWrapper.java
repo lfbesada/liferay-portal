@@ -11,6 +11,7 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.utility.page.model.LayoutUtilityPageEntry;
 import com.liferay.layout.utility.page.service.LayoutUtilityPageEntryLocalService;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
@@ -44,7 +45,9 @@ public class LayoutLocalServiceWrapper
 		Layout sourceLayout, Layout targetLayout) {
 
 		try {
-			if ((sourceLayout.getClassPK() != targetLayout.getPlid()) ||
+			if (!FeatureFlagManagerUtil.isEnabled(
+					sourceLayout.getCompanyId(), "LPD-10622") ||
+				(sourceLayout.getClassPK() != targetLayout.getPlid()) ||
 				!targetLayout.isTypeContent()) {
 
 				return;
