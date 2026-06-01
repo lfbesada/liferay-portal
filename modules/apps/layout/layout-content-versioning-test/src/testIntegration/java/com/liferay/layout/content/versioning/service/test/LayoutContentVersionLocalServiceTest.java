@@ -7,9 +7,16 @@ package com.liferay.layout.content.versioning.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.layout.content.versioning.exception.RequiredLayoutContentVersionException;
+import com.liferay.layout.content.versioning.exception.UnsupportedLayoutLayoutContentVersionException;
 import com.liferay.layout.content.versioning.model.LayoutContentVersion;
 import com.liferay.layout.content.versioning.service.LayoutContentVersionLocalService;
+import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
+import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
+import com.liferay.layout.page.template.test.util.DisplayPageTemplateTestUtil;
+import com.liferay.layout.page.template.test.util.LayoutPageTemplateTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
+import com.liferay.layout.utility.page.model.LayoutUtilityPageEntry;
+import com.liferay.layout.utility.page.service.LayoutUtilityPageEntryLocalService;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
@@ -18,6 +25,7 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -89,6 +97,7 @@ public class LayoutContentVersionLocalServiceTest {
 		_testAddLayoutContentVersionWithNullExternalReferenceCode();
 		_testAddLayoutContentVersionWithNullName();
 		_testAddLayoutContentVersionWithSkipIfUnchanged();
+		_testAddLayoutContentVersionWithUnsupportedLayout();
 	}
 
 	@Test
@@ -234,6 +243,65 @@ public class LayoutContentVersionLocalServiceTest {
 			fourthLayoutContentVersion.getLayoutContentVersionId());
 	}
 
+	private void _testAddLayoutContentVersionWithUnsupportedLayout()
+		throws Exception {
+
+		_testAddLayoutContentVersionWithUnsupportedLayout(
+			_draftLayout.getClassPK());
+
+		Layout widgetLayout = LayoutTestUtil.addTypePortletLayout(_group);
+
+		_testAddLayoutContentVersionWithUnsupportedLayout(
+			widgetLayout.getPlid());
+
+		LayoutPageTemplateEntry displayPageLayoutPageTemplateEntry =
+			DisplayPageTemplateTestUtil.addDisplayPageTemplate(
+				_group.getGroupId());
+
+		_testAddLayoutContentVersionWithUnsupportedLayout(
+			displayPageLayoutPageTemplateEntry.getPlid());
+
+		LayoutPageTemplateEntry masterLayoutPageTemplateEntry =
+			LayoutPageTemplateTestUtil.addLayoutPageTemplateEntry(
+				_group.getGroupId(),
+				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT,
+				WorkflowConstants.STATUS_APPROVED);
+
+		_testAddLayoutContentVersionWithUnsupportedLayout(
+			masterLayoutPageTemplateEntry.getPlid());
+
+		LayoutUtilityPageEntry layoutUtilityPageEntry =
+			_layoutUtilityPageEntryLocalService.addLayoutUtilityPageEntry(
+				null, TestPropsValues.getUserId(), _group.getGroupId(), 0, 0,
+				false, RandomTestUtil.randomString(),
+				RandomTestUtil.randomString(), null,
+				ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
+
+		_testAddLayoutContentVersionWithUnsupportedLayout(
+			layoutUtilityPageEntry.getPlid());
+	}
+
+	private void _testAddLayoutContentVersionWithUnsupportedLayout(long plid)
+		throws Exception {
+
+		try {
+			_layoutContentVersionLocalService.addLayoutContentVersion(
+				RandomTestUtil.randomString(), TestPropsValues.getUserId(),
+				plid, RandomTestUtil.randomString(),
+				RandomTestUtil.randomString(), WorkflowConstants.STATUS_DRAFT,
+				false);
+
+			Assert.fail();
+		}
+		catch (UnsupportedLayoutLayoutContentVersionException
+					unsupportedLayoutLayoutContentVersionException) {
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(unsupportedLayoutLayoutContentVersionException);
+			}
+		}
+	}
+
 	private static final Log _log = LogFactoryUtil.getLog(
 		LayoutContentVersionLocalServiceTest.class);
 
@@ -244,5 +312,9 @@ public class LayoutContentVersionLocalServiceTest {
 
 	@Inject
 	private LayoutContentVersionLocalService _layoutContentVersionLocalService;
+
+	@Inject
+	private LayoutUtilityPageEntryLocalService
+		_layoutUtilityPageEntryLocalService;
 
 }
