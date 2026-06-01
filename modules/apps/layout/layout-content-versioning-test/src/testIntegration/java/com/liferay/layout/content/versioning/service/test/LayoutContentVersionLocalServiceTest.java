@@ -6,9 +6,12 @@
 package com.liferay.layout.content.versioning.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.layout.content.versioning.exception.RequiredLayoutContentVersionException;
 import com.liferay.layout.content.versioning.model.LayoutContentVersion;
 import com.liferay.layout.content.versioning.service.LayoutContentVersionLocalService;
 import com.liferay.layout.test.util.LayoutTestUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
@@ -86,6 +89,63 @@ public class LayoutContentVersionLocalServiceTest {
 		_testAddLayoutContentVersionWithNullExternalReferenceCode();
 		_testAddLayoutContentVersionWithNullName();
 		_testAddLayoutContentVersionWithSkipIfUnchanged();
+	}
+
+	@Test
+	public void testDeleteLayoutContentVersion() throws Exception {
+		LayoutContentVersion approvedLayoutContentVersion =
+			_layoutContentVersionLocalService.addLayoutContentVersion(
+				RandomTestUtil.randomString(), TestPropsValues.getUserId(),
+				_draftLayout.getPlid(), RandomTestUtil.randomString(),
+				RandomTestUtil.randomString(),
+				WorkflowConstants.STATUS_APPROVED, false);
+
+		LayoutContentVersion latestApprovedLayoutContentVersion =
+			_layoutContentVersionLocalService.addLayoutContentVersion(
+				RandomTestUtil.randomString(), TestPropsValues.getUserId(),
+				_draftLayout.getPlid(), RandomTestUtil.randomString(),
+				RandomTestUtil.randomString(),
+				WorkflowConstants.STATUS_APPROVED, false);
+
+		LayoutContentVersion draftLayoutContentVersion =
+			_layoutContentVersionLocalService.addLayoutContentVersion(
+				RandomTestUtil.randomString(), TestPropsValues.getUserId(),
+				_draftLayout.getPlid(), RandomTestUtil.randomString(),
+				RandomTestUtil.randomString(), WorkflowConstants.STATUS_DRAFT,
+				false);
+
+		_layoutContentVersionLocalService.deleteLayoutContentVersion(
+			approvedLayoutContentVersion.getLayoutContentVersionId());
+
+		Assert.assertNull(
+			_layoutContentVersionLocalService.fetchLayoutContentVersion(
+				approvedLayoutContentVersion.getLayoutContentVersionId()));
+
+		try {
+			_layoutContentVersionLocalService.deleteLayoutContentVersion(
+				latestApprovedLayoutContentVersion.getLayoutContentVersionId());
+
+			Assert.fail();
+		}
+		catch (RequiredLayoutContentVersionException
+					requiredLayoutContentVersionException) {
+
+			if (_log.isDebugEnabled()) {
+				_log.debug(requiredLayoutContentVersionException);
+			}
+		}
+
+		Assert.assertNotNull(
+			_layoutContentVersionLocalService.fetchLayoutContentVersion(
+				latestApprovedLayoutContentVersion.
+					getLayoutContentVersionId()));
+
+		_layoutContentVersionLocalService.deleteLayoutContentVersion(
+			draftLayoutContentVersion.getLayoutContentVersionId());
+
+		Assert.assertNull(
+			_layoutContentVersionLocalService.fetchLayoutContentVersion(
+				draftLayoutContentVersion.getLayoutContentVersionId()));
 	}
 
 	@Test
@@ -173,6 +233,9 @@ public class LayoutContentVersionLocalServiceTest {
 			thirdLayoutContentVersion.getLayoutContentVersionId(),
 			fourthLayoutContentVersion.getLayoutContentVersionId());
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		LayoutContentVersionLocalServiceTest.class);
 
 	private Layout _draftLayout;
 
