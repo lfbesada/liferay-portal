@@ -82,6 +82,7 @@ public class LayoutContentVersionLocalServiceTest {
 			WorkflowConstants.STATUS_APPROVED,
 			approvedLayoutContentVersion.getStatus());
 
+		_testAddLayoutContentVersionWithNullExternalReferenceCode();
 		_testAddLayoutContentVersionWithSkipIfUnchanged();
 	}
 
@@ -104,6 +105,21 @@ public class LayoutContentVersionLocalServiceTest {
 
 		Assert.assertEquals(
 			layoutContentVersions.toString(), 2, layoutContentVersions.size());
+	}
+
+	private void _testAddLayoutContentVersionWithNullExternalReferenceCode()
+		throws Exception {
+
+		LayoutContentVersion layoutContentVersion =
+			_layoutContentVersionLocalService.addLayoutContentVersion(
+				null, TestPropsValues.getUserId(), _draftLayout.getPlid(),
+				RandomTestUtil.randomString(), RandomTestUtil.randomString(),
+				WorkflowConstants.STATUS_DRAFT, false);
+
+		Assert.assertEquals(
+			_draftLayout.getExternalReferenceCode() + "_v_" +
+				layoutContentVersion.getVersion(),
+			layoutContentVersion.getExternalReferenceCode());
 	}
 
 	private void _testAddLayoutContentVersionWithSkipIfUnchanged()
