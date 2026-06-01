@@ -9,6 +9,11 @@
 
 <%@ taglib uri="http://liferay.com/tld/theme" prefix="liferay-theme" %>
 
+<%@ page import="com.liferay.layout.content.versioning.web.internal.constants.LayoutContentVersioningWebKeys" %><%@
+page import="com.liferay.layout.content.versioning.web.internal.display.context.LayoutContentVersioningDisplayContext" %>
+
+<%@ page import="java.util.Map" %>
+
 <liferay-theme:defineObjects />
 
 <portlet:defineObjects />
