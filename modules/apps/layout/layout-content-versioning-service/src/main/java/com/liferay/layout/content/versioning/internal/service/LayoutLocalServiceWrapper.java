@@ -7,6 +7,10 @@ package com.liferay.layout.content.versioning.internal.service;
 
 import com.liferay.layout.content.versioning.provider.LayoutContentVersionDataProvider;
 import com.liferay.layout.content.versioning.service.LayoutContentVersionLocalService;
+import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
+import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
+import com.liferay.layout.utility.page.model.LayoutUtilityPageEntry;
+import com.liferay.layout.utility.page.service.LayoutUtilityPageEntryLocalService;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Layout;
@@ -40,6 +44,28 @@ public class LayoutLocalServiceWrapper
 		Layout sourceLayout, Layout targetLayout) {
 
 		try {
+			if ((sourceLayout.getClassPK() != targetLayout.getPlid()) ||
+				!targetLayout.isTypeContent()) {
+
+				return;
+			}
+
+			LayoutPageTemplateEntry layoutPageTemplateEntry =
+				_layoutPageTemplateEntryLocalService.
+					fetchLayoutPageTemplateEntryByPlid(targetLayout.getPlid());
+
+			if (layoutPageTemplateEntry != null) {
+				return;
+			}
+
+			LayoutUtilityPageEntry layoutUtilityPageEntry =
+				_layoutUtilityPageEntryLocalService.
+					fetchLayoutUtilityPageEntryByPlid(targetLayout.getPlid());
+
+			if (layoutUtilityPageEntry != null) {
+				return;
+			}
+
 			ServiceContext serviceContext =
 				ServiceContextThreadLocal.getServiceContext();
 
@@ -72,5 +98,13 @@ public class LayoutLocalServiceWrapper
 
 	@Reference
 	private LayoutContentVersionLocalService _layoutContentVersionLocalService;
+
+	@Reference
+	private LayoutPageTemplateEntryLocalService
+		_layoutPageTemplateEntryLocalService;
+
+	@Reference
+	private LayoutUtilityPageEntryLocalService
+		_layoutUtilityPageEntryLocalService;
 
 }
