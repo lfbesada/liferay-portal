@@ -127,20 +127,19 @@ public class LayoutContentVersionLocalServiceImpl
 		if (layoutContentVersion.getStatus() ==
 				WorkflowConstants.STATUS_APPROVED) {
 
-			List<LayoutContentVersion> approvedLayoutContentVersions =
-				layoutContentVersionPersistence.findByP_S(
+			LayoutContentVersion latestApprovedLayoutContentVersion =
+				layoutContentVersionPersistence.fetchByP_S_First(
 					layoutContentVersion.getPlid(),
-					WorkflowConstants.STATUS_APPROVED);
+					WorkflowConstants.STATUS_APPROVED,
+					LayoutContentVersionVersionComparator.getInstance(false));
 
-			for (LayoutContentVersion approvedLayoutContentVersion :
-					approvedLayoutContentVersions) {
+			if ((latestApprovedLayoutContentVersion == null) ||
+				(layoutContentVersion.getLayoutContentVersionId() !=
+					latestApprovedLayoutContentVersion.
+						getLayoutContentVersionId())) {
 
-				if (approvedLayoutContentVersion.getVersion() >
-						layoutContentVersion.getVersion()) {
-
-					return layoutContentVersionPersistence.remove(
-						layoutContentVersionId);
-				}
+				return layoutContentVersionPersistence.remove(
+					layoutContentVersionId);
 			}
 
 			throw new RequiredLayoutContentVersionException();
