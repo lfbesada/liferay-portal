@@ -88,12 +88,14 @@ public class LayoutContentVersionLocalServiceImpl
 		layoutContentVersion.setPlid(plid);
 		layoutContentVersion.setVersion(version);
 
-		if (Validator.isNotNull(name)) {
-			layoutContentVersion.setNameMap(
-				HashMapBuilder.put(
-					LocaleUtil.getSiteDefault(), name
-				).build());
+		if (Validator.isNull(name)) {
+			name = layout.getName(LocaleUtil.getSiteDefault());
 		}
+
+		layoutContentVersion.setNameMap(
+			HashMapBuilder.put(
+				LocaleUtil.getSiteDefault(), name
+			).build());
 
 		layoutContentVersion.setStatus(status);
 		layoutContentVersion.setStatusByUserId(userId);
