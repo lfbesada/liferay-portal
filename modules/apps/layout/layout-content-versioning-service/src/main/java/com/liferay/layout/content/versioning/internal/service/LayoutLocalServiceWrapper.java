@@ -41,6 +41,15 @@ public class LayoutLocalServiceWrapper
 		return layout;
 	}
 
+	// Forces this component to activate after the layout-service module's
+	// LayoutLocalServiceWrapper so it registers later and lands outer in
+	// the ServiceBag chain.
+
+	@Reference(
+		target = "(component.name=com.liferay.layout.internal.service.LayoutLocalServiceWrapper)"
+	)
+	protected ServiceWrapper<?> layoutLocalServiceWrapper;
+
 	private void _addLayoutContentVersion(
 		Layout sourceLayout, Layout targetLayout) {
 
