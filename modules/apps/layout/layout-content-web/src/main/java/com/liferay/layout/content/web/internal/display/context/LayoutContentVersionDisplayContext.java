@@ -5,13 +5,16 @@
 
 package com.liferay.layout.content.web.internal.display.context;
 
+import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.WebKeys;
 
 import jakarta.servlet.http.HttpServletRequest;
 
-import java.util.Collections;
 import java.util.Map;
 
 /**
@@ -29,8 +32,27 @@ public class LayoutContentVersionDisplayContext {
 			WebKeys.THEME_DISPLAY);
 	}
 
-	public Map<String, Object> getContext() {
-		return Collections.emptyMap();
+	public Map<String, Object> getContext() throws Exception {
+		return HashMapBuilder.<String, Object>put(
+			"config",
+			HashMapBuilder.<String, Object>put(
+				"pageSpecificationVersionsURL",
+				_getPageSpecificationVersionsURL()
+			).build()
+		).build();
+	}
+
+	private String _getPageSpecificationVersionsURL() throws Exception {
+		Layout draftLayout = _themeDisplay.getLayout();
+
+		Layout layout = _layoutLocalService.getLayout(draftLayout.getClassPK());
+
+		Group group = _themeDisplay.getScopeGroup();
+
+		return StringBundler.concat(
+			"/o/headless-admin-site/v1.0/sites/",
+			group.getExternalReferenceCode(), "/site-pages/",
+			layout.getExternalReferenceCode(), "/page-specification-versions");
 	}
 
 	private final LayoutLocalService _layoutLocalService;
