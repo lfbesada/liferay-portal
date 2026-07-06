@@ -5,6 +5,9 @@
 
 package com.liferay.headless.common.spi.util;
 
+import com.liferay.depot.constants.DepotConstants;
+import com.liferay.depot.model.DepotEntry;
+import com.liferay.depot.service.DepotEntryLocalServiceUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
@@ -13,6 +16,29 @@ import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
  * @author Lourdes Fernández Besada
  */
 public class GroupUtil {
+
+	public static long getDepotGroupId(
+			long companyId, String externalReferenceCode)
+		throws Exception {
+
+		Group group = GroupLocalServiceUtil.getGroupByExternalReferenceCode(
+			externalReferenceCode, companyId);
+
+		if (!group.isDepot()) {
+			throw new UnsupportedOperationException();
+		}
+
+		DepotEntry depotEntry = DepotEntryLocalServiceUtil.fetchGroupDepotEntry(
+			group.getGroupId());
+
+		if ((depotEntry == null) ||
+			(depotEntry.getType() != DepotConstants.TYPE_DESIGN_LIBRARY)) {
+
+			throw new UnsupportedOperationException();
+		}
+
+		return group.getGroupId();
+	}
 
 	public static long getGroupId(
 			boolean allowCompanyGroup, boolean allowLiveGroup, long companyId,
