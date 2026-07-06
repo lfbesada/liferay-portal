@@ -6,6 +6,7 @@
 package com.liferay.headless.admin.fragment.internal.dto.v1_0.converter;
 
 import com.liferay.fragment.model.FragmentCollection;
+import com.liferay.fragment.service.FragmentCollectionLocalService;
 import com.liferay.headless.admin.fragment.dto.v1_0.FragmentSet;
 import com.liferay.headless.admin.user.dto.v1_0.Creator;
 import com.liferay.portal.kernel.model.User;
@@ -32,6 +33,16 @@ public class FragmentSetDTOConverter
 	}
 
 	@Override
+	public FragmentSet toDTO(DTOConverterContext dtoConverterContext)
+		throws Exception {
+
+		return toDTO(
+			dtoConverterContext,
+			_fragmentCollectionLocalService.getFragmentCollection(
+				(Long)dtoConverterContext.getId()));
+	}
+
+	@Override
 	public FragmentSet toDTO(
 			DTOConverterContext dtoConverterContext,
 			FragmentCollection fragmentCollection)
@@ -52,6 +63,7 @@ public class FragmentSetDTOConverter
 							{
 								setExternalReferenceCode(
 									user::getExternalReferenceCode);
+								setName(user::getFullName);
 							}
 						};
 					});
@@ -66,6 +78,9 @@ public class FragmentSetDTOConverter
 			}
 		};
 	}
+
+	@Reference
+	private FragmentCollectionLocalService _fragmentCollectionLocalService;
 
 	@Reference
 	private UserLocalService _userLocalService;
