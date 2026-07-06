@@ -222,31 +222,25 @@ public class LayoutsAdminManagementToolbarDisplayContext
 	@Override
 	public String getSortingOrder() {
 		if (_layoutsAdminDisplayContext.isFirstColumn() ||
-			Objects.equals(getOrderByCol(), "relevance")) {
+			Objects.equals(getOrderByCol(), "relevance") ||
+			!_layoutsAdminDisplayContext.isSearch()) {
 
 			return null;
 		}
 
-		if (_layoutsAdminDisplayContext.isSearch()) {
-			return super.getSortingOrder();
-		}
-
-		return null;
+		return super.getSortingOrder();
 	}
 
 	@Override
 	public String getSortingURL() {
 		if (_layoutsAdminDisplayContext.isFirstColumn() ||
-			Objects.equals(getOrderByCol(), "relevance")) {
+			Objects.equals(getOrderByCol(), "relevance") ||
+			!_layoutsAdminDisplayContext.isSearch()) {
 
 			return null;
 		}
 
-		if (_layoutsAdminDisplayContext.isSearch()) {
-			return super.getSortingURL();
-		}
-
-		return null;
+		return super.getSortingURL();
 	}
 
 	@Override
@@ -292,15 +286,13 @@ public class LayoutsAdminManagementToolbarDisplayContext
 
 	@Override
 	protected String[] getOrderByKeys() {
-		if (_layoutsAdminDisplayContext.isFirstColumn()) {
+		if (_layoutsAdminDisplayContext.isFirstColumn() ||
+			!_layoutsAdminDisplayContext.isSearch()) {
+
 			return null;
 		}
 
-		if (_layoutsAdminDisplayContext.isSearch()) {
-			return new String[] {"create-date", "relevance"};
-		}
-
-		return null;
+		return new String[] {"create-date", "relevance"};
 	}
 
 	private String _getLabel(boolean privateLayout) {
