@@ -13,6 +13,9 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.util.ISO8601DateFormat;
 
+import com.liferay.depot.constants.DepotConstants;
+import com.liferay.depot.model.DepotEntry;
+import com.liferay.depot.service.DepotEntryLocalServiceUtil;
 import com.liferay.headless.admin.fragment.client.dto.v1_0.FragmentSet;
 import com.liferay.headless.admin.fragment.client.http.HttpInvoker;
 import com.liferay.headless.admin.fragment.client.pagination.Page;
@@ -30,8 +33,10 @@ import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
+import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
+import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FastDateFormatFactoryUtil;
@@ -101,6 +106,29 @@ public abstract class BaseFragmentSetResourceTestCase {
 		testCompany = CompanyLocalServiceUtil.getCompany(
 			testGroup.getCompanyId());
 
+		irrelevantDepotEntry = DepotEntryLocalServiceUtil.addDepotEntry(
+			Collections.singletonMap(
+				LocaleUtil.getDefault(), RandomTestUtil.randomString()),
+			null, DepotConstants.TYPE_ASSET_LIBRARY,
+			new ServiceContext() {
+				{
+					setCompanyId(testCompany.getCompanyId());
+					setUserId(TestPropsValues.getUserId());
+				}
+			});
+		irrelevantDepotEntryGroup = irrelevantDepotEntry.getGroup();
+		testDepotEntry = DepotEntryLocalServiceUtil.addDepotEntry(
+			Collections.singletonMap(
+				LocaleUtil.getDefault(), RandomTestUtil.randomString()),
+			null, DepotConstants.TYPE_ASSET_LIBRARY,
+			new ServiceContext() {
+				{
+					setCompanyId(testCompany.getCompanyId());
+					setUserId(TestPropsValues.getUserId());
+				}
+			});
+		testDepotEntryGroup = testDepotEntry.getGroup();
+
 		_fragmentSetResource.setContextCompany(testCompany);
 
 		_testCompanyAdminUser = UserTestUtil.getAdminUser(
@@ -131,6 +159,9 @@ public abstract class BaseFragmentSetResourceTestCase {
 
 	@After
 	public void tearDown() throws Exception {
+		DepotEntryLocalServiceUtil.deleteDepotEntry(irrelevantDepotEntry);
+		DepotEntryLocalServiceUtil.deleteDepotEntry(testDepotEntry);
+
 		GroupTestUtil.deleteGroup(irrelevantGroup);
 		GroupTestUtil.deleteGroup(testGroup);
 	}
@@ -203,6 +234,44 @@ public abstract class BaseFragmentSetResourceTestCase {
 	}
 
 	@Test
+	public void testDeleteAssetLibraryFragmentSet() throws Exception {
+		@SuppressWarnings("PMD.UnusedLocalVariable")
+		FragmentSet fragmentSet =
+			testDeleteAssetLibraryFragmentSet_addFragmentSet();
+
+		assertHttpResponseStatusCode(
+			204,
+			fragmentSetResource.deleteAssetLibraryFragmentSetHttpResponse(
+				testDeleteAssetLibraryFragmentSet_getAssetLibraryExternalReferenceCode(),
+				fragmentSet.getExternalReferenceCode()));
+
+		assertHttpResponseStatusCode(
+			404,
+			fragmentSetResource.getAssetLibraryFragmentSetHttpResponse(
+				testDeleteAssetLibraryFragmentSet_getAssetLibraryExternalReferenceCode(),
+				fragmentSet.getExternalReferenceCode()));
+		assertHttpResponseStatusCode(
+			404,
+			fragmentSetResource.getAssetLibraryFragmentSetHttpResponse(
+				testDeleteAssetLibraryFragmentSet_getAssetLibraryExternalReferenceCode(),
+				"-"));
+	}
+
+	protected FragmentSet testDeleteAssetLibraryFragmentSet_addFragmentSet()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected String
+			testDeleteAssetLibraryFragmentSet_getAssetLibraryExternalReferenceCode()
+		throws Exception {
+
+		return testDepotEntryGroup.getExternalReferenceCode();
+	}
+
+	@Test
 	public void testDeleteSiteFragmentSet() throws Exception {
 		@SuppressWarnings("PMD.UnusedLocalVariable")
 		FragmentSet fragmentSet = testDeleteSiteFragmentSet_addFragmentSet();
@@ -235,6 +304,34 @@ public abstract class BaseFragmentSetResourceTestCase {
 		throws Exception {
 
 		return testGroup.getExternalReferenceCode();
+	}
+
+	@Test
+	public void testGetAssetLibraryFragmentSet() throws Exception {
+		FragmentSet postFragmentSet =
+			testGetAssetLibraryFragmentSet_addFragmentSet();
+
+		FragmentSet getFragmentSet =
+			fragmentSetResource.getAssetLibraryFragmentSet(
+				testGetAssetLibraryFragmentSet_getAssetLibraryExternalReferenceCode(),
+				postFragmentSet.getExternalReferenceCode());
+
+		assertEquals(postFragmentSet, getFragmentSet);
+		assertValid(getFragmentSet);
+	}
+
+	protected FragmentSet testGetAssetLibraryFragmentSet_addFragmentSet()
+		throws Exception {
+
+		throw new UnsupportedOperationException(
+			"This method needs to be implemented");
+	}
+
+	protected String
+			testGetAssetLibraryFragmentSet_getAssetLibraryExternalReferenceCode()
+		throws Exception {
+
+		return testDepotEntryGroup.getExternalReferenceCode();
 	}
 
 	@Test
@@ -598,7 +695,20 @@ public abstract class BaseFragmentSetResourceTestCase {
 	@Test
 	public void testBatchEngineDeleteImportTask() throws Exception {
 		FragmentSet fragmentSet1 =
-			testBatchEngineDeleteImportTask_addSiteFragmentSet();
+			testBatchEngineDeleteImportTask_addAssetLibraryFragmentSet();
+
+		testBatchEngineDeleteImportTask_deleteFragmentSet(
+			200, fragmentSet1.getExternalReferenceCode(),
+			"assetLibraryExternalReferenceCode",
+			testDepotEntryGroup.getExternalReferenceCode());
+
+		assertHttpResponseStatusCode(
+			404,
+			fragmentSetResource.getAssetLibraryFragmentSetHttpResponse(
+				testBatchEngineDeleteImportTask_getAssetLibraryExternalReferenceCode(),
+				fragmentSet1.getExternalReferenceCode()));
+
+		fragmentSet1 = testBatchEngineDeleteImportTask_addSiteFragmentSet();
 
 		testBatchEngineDeleteImportTask_deleteFragmentSet(
 			200, fragmentSet1.getExternalReferenceCode(),
@@ -609,6 +719,13 @@ public abstract class BaseFragmentSetResourceTestCase {
 			fragmentSetResource.getSiteFragmentSetHttpResponse(
 				testBatchEngineDeleteImportTask_getSiteExternalReferenceCode(),
 				fragmentSet1.getExternalReferenceCode()));
+	}
+
+	protected FragmentSet
+			testBatchEngineDeleteImportTask_addAssetLibraryFragmentSet()
+		throws Exception {
+
+		return testDeleteAssetLibraryFragmentSet_addFragmentSet();
 	}
 
 	protected FragmentSet testBatchEngineDeleteImportTask_addSiteFragmentSet()
@@ -648,6 +765,13 @@ public abstract class BaseFragmentSetResourceTestCase {
 				"COMPLETED",
 				JSONFactoryUtil.createJSONObject(httpResponse.getContent()));
 		}
+	}
+
+	protected String
+			testBatchEngineDeleteImportTask_getAssetLibraryExternalReferenceCode()
+		throws Exception {
+
+		return testDepotEntryGroup.getExternalReferenceCode();
 	}
 
 	protected String
@@ -1454,6 +1578,10 @@ public abstract class BaseFragmentSetResourceTestCase {
 	protected ImportTaskResource importTaskResource;
 	protected com.liferay.portal.kernel.model.Group irrelevantGroup;
 	protected com.liferay.portal.kernel.model.Company testCompany;
+	protected DepotEntry irrelevantDepotEntry;
+	protected com.liferay.portal.kernel.model.Group irrelevantDepotEntryGroup;
+	protected DepotEntry testDepotEntry;
+	protected com.liferay.portal.kernel.model.Group testDepotEntryGroup;
 	protected com.liferay.portal.kernel.model.Group testGroup;
 
 	protected static class BeanTestUtil {
@@ -1662,4 +1790,4 @@ public abstract class BaseFragmentSetResourceTestCase {
 			_fragmentSetResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:570800732
+// LIFERAY-REST-BUILDER-HASH:1975031819

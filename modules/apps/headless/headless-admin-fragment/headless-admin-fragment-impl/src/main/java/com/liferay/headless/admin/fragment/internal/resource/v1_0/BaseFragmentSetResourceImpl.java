@@ -72,6 +72,47 @@ public abstract class BaseFragmentSetResourceImpl
 	/**
 	 * Invoke this method with the command line:
 	 *
+	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-admin-fragment/v1.0/asset-libraries/{assetLibraryExternalReferenceCode}/fragment-sets/{fragmentSetExternalReferenceCode}'  -u 'test@liferay.com:test'
+	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Deletes a specific fragment set of an asset library."
+	)
+	@io.swagger.v3.oas.annotations.Parameters(
+		value = {
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
+				name = "assetLibraryExternalReferenceCode"
+			),
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
+				name = "fragmentSetExternalReferenceCode"
+			)
+		}
+	)
+	@io.swagger.v3.oas.annotations.tags.Tags(
+		value = {@io.swagger.v3.oas.annotations.tags.Tag(name = "FragmentSet")}
+	)
+	@jakarta.ws.rs.DELETE
+	@jakarta.ws.rs.Path(
+		"/asset-libraries/{assetLibraryExternalReferenceCode}/fragment-sets/{fragmentSetExternalReferenceCode}"
+	)
+	@jakarta.ws.rs.Produces({"application/json", "application/xml"})
+	@Override
+	public void deleteAssetLibraryFragmentSet(
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@jakarta.validation.constraints.NotNull
+			@jakarta.ws.rs.PathParam("assetLibraryExternalReferenceCode")
+			String assetLibraryExternalReferenceCode,
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@jakarta.validation.constraints.NotNull
+			@jakarta.ws.rs.PathParam("fragmentSetExternalReferenceCode")
+			String fragmentSetExternalReferenceCode)
+		throws Exception {
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
 	 * curl -X 'DELETE' 'http://localhost:8080/o/headless-admin-fragment/v1.0/sites/{siteExternalReferenceCode}/fragment-sets/{fragmentSetExternalReferenceCode}'  -u 'test@liferay.com:test'
 	 */
 	@io.swagger.v3.oas.annotations.Operation(
@@ -108,6 +149,57 @@ public abstract class BaseFragmentSetResourceImpl
 			@jakarta.ws.rs.PathParam("fragmentSetExternalReferenceCode")
 			String fragmentSetExternalReferenceCode)
 		throws Exception {
+	}
+
+	/**
+	 * Invoke this method with the command line:
+	 *
+	 * curl -X 'GET' 'http://localhost:8080/o/headless-admin-fragment/v1.0/asset-libraries/{assetLibraryExternalReferenceCode}/fragment-sets/{fragmentSetExternalReferenceCode}'  -u 'test@liferay.com:test'
+	 */
+	@io.swagger.v3.oas.annotations.Operation(
+		description = "Retrieves a specific fragment set of an asset library."
+	)
+	@io.swagger.v3.oas.annotations.Parameters(
+		value = {
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
+				name = "assetLibraryExternalReferenceCode"
+			),
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.PATH,
+				name = "fragmentSetExternalReferenceCode"
+			),
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
+				name = "fields"
+			),
+			@io.swagger.v3.oas.annotations.Parameter(
+				in = io.swagger.v3.oas.annotations.enums.ParameterIn.QUERY,
+				name = "restrictFields"
+			)
+		}
+	)
+	@io.swagger.v3.oas.annotations.tags.Tags(
+		value = {@io.swagger.v3.oas.annotations.tags.Tag(name = "FragmentSet")}
+	)
+	@jakarta.ws.rs.GET
+	@jakarta.ws.rs.Path(
+		"/asset-libraries/{assetLibraryExternalReferenceCode}/fragment-sets/{fragmentSetExternalReferenceCode}"
+	)
+	@jakarta.ws.rs.Produces({"application/json", "application/xml"})
+	@Override
+	public FragmentSet getAssetLibraryFragmentSet(
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@jakarta.validation.constraints.NotNull
+			@jakarta.ws.rs.PathParam("assetLibraryExternalReferenceCode")
+			String assetLibraryExternalReferenceCode,
+			@io.swagger.v3.oas.annotations.Parameter(hidden = true)
+			@jakarta.validation.constraints.NotNull
+			@jakarta.ws.rs.PathParam("fragmentSetExternalReferenceCode")
+			String fragmentSetExternalReferenceCode)
+		throws Exception {
+
+		return new FragmentSet();
 	}
 
 	/**
@@ -514,7 +606,17 @@ public abstract class BaseFragmentSetResourceImpl
 
 		UnsafeFunction<FragmentSet, FragmentSet, Exception>
 			fragmentSetUnsafeFunction = fragmentSet -> {
-				if (parameters.containsKey("siteExternalReferenceCode")) {
+				if (parameters.containsKey(
+						"assetLibraryExternalReferenceCode")) {
+
+					deleteAssetLibraryFragmentSet(
+						(String)parameters.get(
+							"assetLibraryExternalReferenceCode"),
+						fragmentSet.getExternalReferenceCode());
+
+					return fragmentSet;
+				}
+				else if (parameters.containsKey("siteExternalReferenceCode")) {
 					deleteSiteFragmentSet(
 						(String)parameters.get("siteExternalReferenceCode"),
 						fragmentSet.getExternalReferenceCode());
@@ -1186,4 +1288,4 @@ public abstract class BaseFragmentSetResourceImpl
 		LogFactoryUtil.getLog(BaseFragmentSetResourceImpl.class);
 
 }
-// LIFERAY-REST-BUILDER-HASH:-52687682
+// LIFERAY-REST-BUILDER-HASH:2049825387

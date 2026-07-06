@@ -46,8 +46,18 @@ import org.osgi.annotation.versioning.ProviderType;
 @ProviderType
 public interface FragmentSetResource {
 
+	public void deleteAssetLibraryFragmentSet(
+			String assetLibraryExternalReferenceCode,
+			String fragmentSetExternalReferenceCode)
+		throws Exception;
+
 	public void deleteSiteFragmentSet(
 			String siteExternalReferenceCode,
+			String fragmentSetExternalReferenceCode)
+		throws Exception;
+
+	public FragmentSet getAssetLibraryFragmentSet(
+			String assetLibraryExternalReferenceCode,
 			String fragmentSetExternalReferenceCode)
 		throws Exception;
 
@@ -177,4 +187,4 @@ public interface FragmentSetResource {
 	}
 
 }
-// LIFERAY-REST-BUILDER-HASH:696716228
+// LIFERAY-REST-BUILDER-HASH:750235875
