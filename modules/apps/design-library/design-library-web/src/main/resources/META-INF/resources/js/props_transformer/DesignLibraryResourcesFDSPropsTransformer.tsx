@@ -4,7 +4,9 @@
  */
 
 import {IFrontendDataSetProps} from '@liferay/frontend-data-set-web';
+import {FragmentSetModal} from '@liferay/layout-js-components-web';
 import {openModal} from 'frontend-js-components-web';
+import {fetch, navigate} from 'frontend-js-web';
 import React from 'react';
 import {AddStyleBookModalContent} from 'style-book-web';
 
@@ -16,14 +18,25 @@ import {
 	createSetItemComponentProps,
 } from './cell_renderers';
 
+const FRAGMENT_COLLECTION_ENTRY_CLASS_NAME =
+	'com.liferay.fragment.model.FragmentCollection';
+
+type FragmentCollection = {fragmentCollectionId: number; name: string};
+
 type FrontendTokenDefinitionProvider = {
 	name: string;
 	themeId: string;
 };
 
 interface DesignLibraryResourcesAdditionalProps {
+	addFragmentCollectionURL?: string;
+	addFragmentEntryURL?: string;
 	addStyleBookEntryURL?: string;
+	canAddFragment: boolean;
+	canAddFragmentCollection: boolean;
 	canAddStyleBook: boolean;
+	fragmentCollections?: Array<FragmentCollection>;
+	fragmentNamespace?: string;
 	frontendTokenDefinitionProviders?: Array<FrontendTokenDefinitionProvider>;
 	styleBookNamespace?: string;
 }
@@ -34,32 +47,93 @@ export default function DesignLibraryResourcesFDSPropsTransformer(
 	}
 ): IFrontendDataSetProps {
 	const {
+		addFragmentCollectionURL,
+		addFragmentEntryURL,
 		addStyleBookEntryURL,
+		canAddFragment = false,
+		canAddFragmentCollection = false,
 		canAddStyleBook = false,
+		fragmentCollections = [],
+		fragmentNamespace = '',
 		frontendTokenDefinitionProviders = [],
 		styleBookNamespace = '',
 	} = props.additionalProps ?? {};
 
-	const creationMenu =
-		canAddStyleBook && addStyleBookEntryURL
-			? {
-					primaryItems: [
-						{
-							label: Liferay.Language.get('new-style-book'),
-							onClick: () =>
-								openModal({
-									contentComponent: ({closeModal}) =>
-										AddStyleBookModalContent({
-											addStyleBookEntryURL,
-											closeModal,
-											frontendTokenDefinitionProviders,
-											namespace: styleBookNamespace,
-										}),
-								}),
-						},
-					],
-				}
-			: undefined;
+	const primaryItems: Array<{label: string; onClick: () => void}> = [];
+
+	if (canAddStyleBook && addStyleBookEntryURL) {
+		primaryItems.push({
+			label: Liferay.Language.get('new-style-book'),
+			onClick: () =>
+				openModal({
+					contentComponent: ({closeModal}) =>
+						AddStyleBookModalContent({
+							addStyleBookEntryURL,
+							closeModal,
+							frontendTokenDefinitionProviders,
+							namespace: styleBookNamespace,
+						}),
+				}),
+		});
+	}
+
+	if (canAddFragment && addFragmentEntryURL && addFragmentCollectionURL) {
+		primaryItems.push({
+			label: Liferay.Language.get('new-fragment'),
+			onClick: () =>
+				openModal({
+					contentComponent: () => (
+						<FragmentSetModal
+							addFragmentCollectionURL={addFragmentCollectionURL}
+							fragmentCollections={fragmentCollections}
+							onSubmitFragmentCollection={(
+								fragmentCollectionId: number,
+								fragmentName?: string
+							) => {
+								const formData = new FormData();
+
+								formData.append(
+									`${fragmentNamespace}fragmentCollectionId`,
+									String(fragmentCollectionId)
+								);
+								formData.append(
+									`${fragmentNamespace}name`,
+									fragmentName ?? ''
+								);
+
+								fetch(addFragmentEntryURL, {
+									body: formData,
+									method: 'POST',
+								}).then(() => navigate(location.href));
+							}}
+							portletNamespace={fragmentNamespace}
+							showFragmentNameInput
+						/>
+					),
+				}),
+		});
+	}
+
+	if (canAddFragmentCollection && addFragmentCollectionURL) {
+		primaryItems.push({
+			label: Liferay.Language.get('new-fragment-set'),
+			onClick: () =>
+				openModal({
+					contentComponent: () => (
+						<FragmentSetModal
+							addFragmentCollectionURL={addFragmentCollectionURL}
+							fragmentCollections={[]}
+							onSubmitFragmentCollection={() =>
+								navigate(location.href)
+							}
+							portletNamespace={fragmentNamespace}
+						/>
+					),
+				}),
+		});
+	}
+
+	const creationMenu = primaryItems.length ? {primaryItems} : undefined;
 
 	return {
 		...props,
@@ -67,13 +141,27 @@ export default function DesignLibraryResourcesFDSPropsTransformer(
 		customRenderers: {
 			tableCell: [
 				{
-					component: (props) => (
-						<LinkRenderer
-							{...props}
-							stickerClassName="design-library-fds-sticker-stylebook"
-							symbol="book"
-						/>
-					),
+					component: (rendererProps: any) => {
+						const isFragmentCollection =
+							rendererProps?.itemData?.entryClassName ===
+							FRAGMENT_COLLECTION_ENTRY_CLASS_NAME;
+
+						return (
+							<LinkRenderer
+								{...rendererProps}
+								stickerClassName={
+									isFragmentCollection
+										? 'design-library-fds-sticker-fragment-set'
+										: 'design-library-fds-sticker-stylebook'
+								}
+								symbol={
+									isFragmentCollection
+										? 'puzzle-piece'
+										: 'book'
+								}
+							/>
+						);
+					},
 					name: TableCellContentType.DESIGN_LIBRARY_LINK,
 					type: 'internal',
 				},
@@ -83,8 +171,13 @@ export default function DesignLibraryResourcesFDSPropsTransformer(
 					type: 'internal',
 				},
 				{
-					component: () => (
-						<span>{Liferay.Language.get('style-book')}</span>
+					component: ({itemData}: any) => (
+						<span>
+							{itemData?.entryClassName ===
+							FRAGMENT_COLLECTION_ENTRY_CLASS_NAME
+								? Liferay.Language.get('fragment-set')
+								: Liferay.Language.get('style-book')}
+						</span>
 					),
 					name: TableCellContentType.RESOURCE_TYPE,
 					type: 'internal',
