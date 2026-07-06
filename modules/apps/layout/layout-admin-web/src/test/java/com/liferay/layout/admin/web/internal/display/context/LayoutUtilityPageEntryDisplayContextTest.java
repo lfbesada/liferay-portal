@@ -42,13 +42,6 @@ public class LayoutUtilityPageEntryDisplayContextTest {
 
 	@Before
 	public void setUp() {
-		_layoutUtilityPageEntryServiceUtilMockedStatic = Mockito.mockStatic(
-			LayoutUtilityPageEntryServiceUtil.class);
-
-		_layoutUtilityPageEntryViewRendererRegistryUtilMockedStatic =
-			Mockito.mockStatic(
-				LayoutUtilityPageEntryViewRendererRegistryUtil.class);
-
 		_layoutUtilityPageEntryViewRendererRegistryUtilMockedStatic.when(
 			LayoutUtilityPageEntryViewRendererRegistryUtil::
 				getLayoutUtilityPageEntryViewRenderers
@@ -90,8 +83,9 @@ public class LayoutUtilityPageEntryDisplayContextTest {
 		_testGetLayoutUtilityPageEntrySearchContainerWithoutOrderByComparator();
 	}
 
-	private OrderByComparator<LayoutUtilityPageEntry> _getSearchContainerOrderByComparator(
-		String orderByCol, String orderByType) {
+	private OrderByComparator<LayoutUtilityPageEntry>
+		_getSearchContainerOrderByComparator(
+			String orderByCol, String orderByType) {
 
 		MockLiferayPortletRenderRequest mockLiferayPortletRenderRequest =
 			new MockLiferayPortletRenderRequest();
@@ -150,12 +144,16 @@ public class LayoutUtilityPageEntryDisplayContextTest {
 
 	private void _testGetLayoutUtilityPageEntrySearchContainerWithoutOrderByComparator() {
 		Assert.assertNull(
-			_getSearchContainerOrderByComparator(RandomTestUtil.randomString(), "asc"));
+			_getSearchContainerOrderByComparator(
+				RandomTestUtil.randomString(), "asc"));
 	}
 
-	private MockedStatic<LayoutUtilityPageEntryServiceUtil>
-		_layoutUtilityPageEntryServiceUtilMockedStatic;
-	private MockedStatic<LayoutUtilityPageEntryViewRendererRegistryUtil>
-		_layoutUtilityPageEntryViewRendererRegistryUtilMockedStatic;
+	private final MockedStatic<LayoutUtilityPageEntryServiceUtil>
+		_layoutUtilityPageEntryServiceUtilMockedStatic = Mockito.mockStatic(
+			LayoutUtilityPageEntryServiceUtil.class);
+	private final MockedStatic<LayoutUtilityPageEntryViewRendererRegistryUtil>
+		_layoutUtilityPageEntryViewRendererRegistryUtilMockedStatic =
+			Mockito.mockStatic(
+				LayoutUtilityPageEntryViewRendererRegistryUtil.class);
 
 }

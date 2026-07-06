@@ -176,7 +176,7 @@ public class LayoutsAdminManagementToolbarDisplayContextTest {
 			layoutsAdminManagementToolbarDisplayContext.getSortingURL());
 	}
 
-	private static final MockedStatic<PortletURLUtil>
-		_portletURLUtilMockedStatic = Mockito.mockStatic(PortletURLUtil.class);
+	private final MockedStatic<PortletURLUtil> _portletURLUtilMockedStatic =
+		Mockito.mockStatic(PortletURLUtil.class);
 
 }
