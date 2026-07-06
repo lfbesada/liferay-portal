@@ -343,6 +343,25 @@ public class FragmentDisplayContext {
 			_httpServletRequest, "fragmentCollectionId",
 			_getDefaultFragmentCollectionId());
 
+		if (_fragmentCollectionId > 0) {
+			return _fragmentCollectionId;
+		}
+
+		String externalReferenceCode = ParamUtil.getString(
+			_httpServletRequest, "fragmentCollectionExternalReferenceCode");
+
+		if (Validator.isNotNull(externalReferenceCode)) {
+			FragmentCollection fragmentCollection =
+				FragmentCollectionLocalServiceUtil.
+					fetchFragmentCollectionByExternalReferenceCode(
+						externalReferenceCode, _themeDisplay.getScopeGroupId());
+
+			if (fragmentCollection != null) {
+				_fragmentCollectionId =
+					fragmentCollection.getFragmentCollectionId();
+			}
+		}
+
 		return _fragmentCollectionId;
 	}
 
@@ -788,6 +807,11 @@ public class FragmentDisplayContext {
 		}
 
 		return _updatePermission;
+	}
+
+	public boolean isHideCollectionsPanel() {
+		return ParamUtil.getBoolean(
+			_httpServletRequest, "hideCollectionsPanel");
 	}
 
 	public boolean isLocked(FragmentCollection fragmentCollection) {
