@@ -38,6 +38,31 @@ ImportDisplayContext importDisplayContext = new ImportDisplayContext(request, re
 
 <liferay-ui:success key="fragmentEntryCopied" message="the-fragment-was-copied-successfully" />
 
+<c:if test="<%= fragmentDisplayContext.isHideCollectionsPanel() %>">
+
+	<%
+	String hideCollectionsPanelBackURL = ParamUtil.getString(request, "backURL");
+
+	portletDisplay.setShowBackIcon(true);
+	portletDisplay.setURLBack(hideCollectionsPanelBackURL);
+
+	renderResponse.setTitle(fragmentDisplayContext.getFragmentCollectionName());
+	%>
+
+	<nav aria-label="<%= LanguageUtil.get(request, "breadcrumb") %>">
+		<ol class="breadcrumb px-4 py-3">
+			<li class="breadcrumb-item">
+				<a href="<%= HtmlUtil.escapeAttribute(hideCollectionsPanelBackURL) %>">
+					<%= HtmlUtil.escape(fragmentDisplayContext.getGroupName(themeDisplay.getScopeGroupId())) %>
+				</a>
+			</li>
+			<li aria-current="page" class="active breadcrumb-item">
+				<%= HtmlUtil.escape(fragmentDisplayContext.getFragmentCollectionName()) %>
+			</li>
+		</ol>
+	</nav>
+</c:if>
+
 <clay:container-fluid
 	cssClass="container-view"
 	size="xxxl"
