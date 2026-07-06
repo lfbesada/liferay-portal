@@ -132,6 +132,13 @@ public class LayoutUtilityPageEntryDisplayContextTest {
 		Assert.assertEquals(
 			"LayoutUtilityPageEntry.createDate ASC",
 			orderByComparator.getOrderBy());
+
+		orderByComparator = _getSearchContainerOrderByComparator(
+			"create-date", "desc");
+
+		Assert.assertEquals(
+			"LayoutUtilityPageEntry.createDate DESC",
+			orderByComparator.getOrderBy());
 	}
 
 	private void _testGetLayoutUtilityPageEntrySearchContainerOrderByName() {
