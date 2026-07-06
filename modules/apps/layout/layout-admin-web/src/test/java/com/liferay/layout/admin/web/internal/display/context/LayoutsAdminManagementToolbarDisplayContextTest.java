@@ -65,6 +65,23 @@ public class LayoutsAdminManagementToolbarDisplayContextTest {
 
 	@Test
 	@TestInfo("LPD-96674")
+	public void testGetOrderByKeys() throws Exception {
+		_testGetOrderByKeysWhenFirstColumn();
+		_testGetOrderByKeysWhenNotSearching();
+		_testGetOrderByKeysWhenSearching();
+	}
+
+	@Test
+	@TestInfo("LPD-96674")
+	public void testGetSortingOrder() throws Exception {
+		_testGetSortingOrderWhenNotSearching();
+		_testGetSortingOrderWhenOrderByRelevance();
+		_testGetSortingOrderWhenSearching();
+		_testGetSortingOrderWhenSearchingFirstColumn();
+	}
+
+	@Test
+	@TestInfo("LPD-96674")
 	public void testGetSortingURL() throws Exception {
 		_testGetSortingURLWhenNotSearching();
 		_testGetSortingURLWhenOrderByRelevance();
@@ -74,14 +91,15 @@ public class LayoutsAdminManagementToolbarDisplayContextTest {
 
 	private LayoutsAdminManagementToolbarDisplayContext
 			_createLayoutsAdminManagementToolbarDisplayContext(
-				boolean firstColumn, String orderByCol, boolean search)
+				boolean firstColumn, String orderByCol, String orderByType,
+				boolean search)
 		throws Exception {
 
 		LayoutsAdminDisplayContext layoutsAdminDisplayContext = Mockito.mock(
 			LayoutsAdminDisplayContext.class);
 
 		SearchContainer<Layout> searchContainer = _createSearchContainer(
-			orderByCol);
+			orderByCol, orderByType);
 
 		Mockito.when(
 			layoutsAdminDisplayContext.getLayoutsSearchContainer()
@@ -108,7 +126,9 @@ public class LayoutsAdminManagementToolbarDisplayContextTest {
 			layoutsAdminDisplayContext);
 	}
 
-	private SearchContainer<Layout> _createSearchContainer(String orderByCol) {
+	private SearchContainer<Layout> _createSearchContainer(
+		String orderByCol, String orderByType) {
+
 		SearchContainer<Layout> searchContainer =
 			(SearchContainer<Layout>)Mockito.mock(SearchContainer.class);
 
@@ -125,6 +145,12 @@ public class LayoutsAdminManagementToolbarDisplayContextTest {
 		);
 
 		Mockito.when(
+			searchContainer.getOrderByType()
+		).thenReturn(
+			orderByType
+		);
+
+		Mockito.when(
 			searchContainer.getOrderByTypeParam()
 		).thenReturn(
 			RandomTestUtil.randomString()
@@ -133,11 +159,91 @@ public class LayoutsAdminManagementToolbarDisplayContextTest {
 		return searchContainer;
 	}
 
+	private void _testGetOrderByKeysWhenFirstColumn() throws Exception {
+		LayoutsAdminManagementToolbarDisplayContext
+			layoutsAdminManagementToolbarDisplayContext =
+				_createLayoutsAdminManagementToolbarDisplayContext(
+					true, RandomTestUtil.randomString(),
+					RandomTestUtil.randomString(), true);
+
+		Assert.assertNull(
+			layoutsAdminManagementToolbarDisplayContext.getOrderByKeys());
+	}
+
+	private void _testGetOrderByKeysWhenNotSearching() throws Exception {
+		LayoutsAdminManagementToolbarDisplayContext
+			layoutsAdminManagementToolbarDisplayContext =
+				_createLayoutsAdminManagementToolbarDisplayContext(
+					false, RandomTestUtil.randomString(),
+					RandomTestUtil.randomString(), false);
+
+		Assert.assertNull(
+			layoutsAdminManagementToolbarDisplayContext.getOrderByKeys());
+	}
+
+	private void _testGetOrderByKeysWhenSearching() throws Exception {
+		LayoutsAdminManagementToolbarDisplayContext
+			layoutsAdminManagementToolbarDisplayContext =
+				_createLayoutsAdminManagementToolbarDisplayContext(
+					false, RandomTestUtil.randomString(),
+					RandomTestUtil.randomString(), true);
+
+		Assert.assertArrayEquals(
+			new String[] {"create-date", "relevance"},
+			layoutsAdminManagementToolbarDisplayContext.getOrderByKeys());
+	}
+
+	private void _testGetSortingOrderWhenNotSearching() throws Exception {
+		LayoutsAdminManagementToolbarDisplayContext
+			layoutsAdminManagementToolbarDisplayContext =
+				_createLayoutsAdminManagementToolbarDisplayContext(
+					false, RandomTestUtil.randomString(),
+					RandomTestUtil.randomString(), false);
+
+		Assert.assertNull(
+			layoutsAdminManagementToolbarDisplayContext.getSortingOrder());
+	}
+
+	private void _testGetSortingOrderWhenOrderByRelevance() throws Exception {
+		LayoutsAdminManagementToolbarDisplayContext
+			layoutsAdminManagementToolbarDisplayContext =
+				_createLayoutsAdminManagementToolbarDisplayContext(
+					false, "relevance", RandomTestUtil.randomString(), true);
+
+		Assert.assertNull(
+			layoutsAdminManagementToolbarDisplayContext.getSortingOrder());
+	}
+
+	private void _testGetSortingOrderWhenSearching() throws Exception {
+		LayoutsAdminManagementToolbarDisplayContext
+			layoutsAdminManagementToolbarDisplayContext =
+				_createLayoutsAdminManagementToolbarDisplayContext(
+					false, RandomTestUtil.randomString(), "desc", true);
+
+		Assert.assertEquals(
+			"desc",
+			layoutsAdminManagementToolbarDisplayContext.getSortingOrder());
+	}
+
+	private void _testGetSortingOrderWhenSearchingFirstColumn()
+		throws Exception {
+
+		LayoutsAdminManagementToolbarDisplayContext
+			layoutsAdminManagementToolbarDisplayContext =
+				_createLayoutsAdminManagementToolbarDisplayContext(
+					true, RandomTestUtil.randomString(),
+					RandomTestUtil.randomString(), true);
+
+		Assert.assertNull(
+			layoutsAdminManagementToolbarDisplayContext.getSortingOrder());
+	}
+
 	private void _testGetSortingURLWhenNotSearching() throws Exception {
 		LayoutsAdminManagementToolbarDisplayContext
 			layoutsAdminManagementToolbarDisplayContext =
 				_createLayoutsAdminManagementToolbarDisplayContext(
-					false, RandomTestUtil.randomString(), false);
+					false, RandomTestUtil.randomString(),
+					RandomTestUtil.randomString(), false);
 
 		Assert.assertNull(
 			layoutsAdminManagementToolbarDisplayContext.getSortingURL());
@@ -147,7 +253,7 @@ public class LayoutsAdminManagementToolbarDisplayContextTest {
 		LayoutsAdminManagementToolbarDisplayContext
 			layoutsAdminManagementToolbarDisplayContext =
 				_createLayoutsAdminManagementToolbarDisplayContext(
-					false, "relevance", true);
+					false, "relevance", RandomTestUtil.randomString(), true);
 
 		Assert.assertNull(
 			layoutsAdminManagementToolbarDisplayContext.getSortingURL());
@@ -157,7 +263,7 @@ public class LayoutsAdminManagementToolbarDisplayContextTest {
 		LayoutsAdminManagementToolbarDisplayContext
 			layoutsAdminManagementToolbarDisplayContext =
 				_createLayoutsAdminManagementToolbarDisplayContext(
-					false, "create-date", true);
+					false, "create-date", RandomTestUtil.randomString(), true);
 
 		String sortingURL =
 			layoutsAdminManagementToolbarDisplayContext.getSortingURL();
@@ -170,7 +276,8 @@ public class LayoutsAdminManagementToolbarDisplayContextTest {
 		LayoutsAdminManagementToolbarDisplayContext
 			layoutsAdminManagementToolbarDisplayContext =
 				_createLayoutsAdminManagementToolbarDisplayContext(
-					true, RandomTestUtil.randomString(), true);
+					true, RandomTestUtil.randomString(),
+					RandomTestUtil.randomString(), true);
 
 		Assert.assertNull(
 			layoutsAdminManagementToolbarDisplayContext.getSortingURL());
