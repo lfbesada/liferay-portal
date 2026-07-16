@@ -40,7 +40,10 @@ export {ACTION_ITEM_TARGETS} from './utils/actionItems/constants';
 export {default as filterItemActions} from './utils/actionItems/filterItemActions';
 export {default as findAction} from './utils/actionItems/findAction';
 
-export {replaceTokens} from './utils/actionItems/formatActionURL';
+export {
+	default as formatActionURL,
+	replaceTokens,
+} from './utils/actionItems/formatActionURL';
 export {readConfigFromURL} from './utils/configInURL';
 
 export {getConfigParamName, serializeFDSConfig} from './utils/configInURL';
