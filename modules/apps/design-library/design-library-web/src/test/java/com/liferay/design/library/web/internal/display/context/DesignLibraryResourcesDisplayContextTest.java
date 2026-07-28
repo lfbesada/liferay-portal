@@ -28,12 +28,14 @@ import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.service.permission.GroupPermissionUtil;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
+import com.liferay.portal.kernel.test.TestInfo;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
+import com.liferay.style.book.constants.StyleBookActionKeys;
 import com.liferay.style.book.constants.StyleBookPortletKeys;
 import com.liferay.style.book.model.StyleBookEntry;
 
@@ -82,12 +84,10 @@ public class DesignLibraryResourcesDisplayContextTest {
 
 	@Test
 	public void testGetAPIURL() throws Exception {
-		long designLibraryEntryId = RandomTestUtil.randomLong();
-
-		DepotEntry depotEntry = _mockDepotEntry(designLibraryEntryId);
+		DepotEntry depotEntry = _mockDepotEntry();
 
 		String url = _designLibraryResourcesDisplayContext.getAPIURL(
-			designLibraryEntryId);
+			depotEntry.getDepotEntryId());
 
 		Assert.assertTrue(
 			url,
@@ -171,15 +171,13 @@ public class DesignLibraryResourcesDisplayContextTest {
 
 	@Test
 	public void testGetFDSActionDropdownItems() throws Exception {
-		long designLibraryEntryId = RandomTestUtil.randomLong();
-
-		_mockDepotEntry(designLibraryEntryId);
+		DepotEntry depotEntry = _mockDepotEntry();
 
 		_setUpPortletURLMocks();
 
 		List<FDSActionDropdownItem> fdsActionDropdownItems =
 			_designLibraryResourcesDisplayContext.getFDSActionDropdownItems(
-				designLibraryEntryId);
+				depotEntry.getDepotEntryId());
 
 		_assertFDSActionDropdownItem(
 			FragmentCollection.class.getName(), "view", "link",
@@ -206,14 +204,23 @@ public class DesignLibraryResourcesDisplayContextTest {
 	public void testGetFDSAdditionalProps() throws Exception {
 		_setUpPortletURLMocks();
 
-		long designLibraryEntryId = RandomTestUtil.randomLong();
-
-		DepotEntry depotEntry = _mockDepotEntry(designLibraryEntryId);
+		DepotEntry depotEntry = _mockDepotEntry();
 
 		_assertFDSAdditionalProps(
-			designLibraryEntryId, depotEntry.getGroupId(), false);
+			depotEntry.getDepotEntryId(), depotEntry.getGroupId(), false);
 		_assertFDSAdditionalProps(
-			designLibraryEntryId, depotEntry.getGroupId(), true);
+			depotEntry.getDepotEntryId(), depotEntry.getGroupId(), true);
+	}
+
+	@Test
+	@TestInfo("LPD-96528")
+	public void testHasContentAccess() throws Exception {
+		DepotEntry depotEntry = _mockDepotEntry();
+
+		_testHasContentAccess(depotEntry, false, false, false);
+		_testHasContentAccess(depotEntry, true, false, true);
+		_testHasContentAccess(depotEntry, true, true, false);
+		_testHasContentAccess(depotEntry, true, true, true);
 	}
 
 	private void _assertFDSActionDropdownItem(
@@ -411,10 +418,14 @@ public class DesignLibraryResourcesDisplayContextTest {
 		}
 	}
 
-	private DepotEntry _mockDepotEntry(long designLibraryEntryId)
-		throws Exception {
-
+	private DepotEntry _mockDepotEntry() throws Exception {
 		DepotEntry depotEntry = Mockito.mock(DepotEntry.class);
+
+		Mockito.when(
+			depotEntry.getDepotEntryId()
+		).thenReturn(
+			RandomTestUtil.randomLong()
+		);
 
 		Mockito.when(
 			depotEntry.getGroup()
@@ -437,7 +448,8 @@ public class DesignLibraryResourcesDisplayContextTest {
 		);
 
 		_depotEntryLocalServiceUtilMockedStatic.when(
-			() -> DepotEntryLocalServiceUtil.getDepotEntry(designLibraryEntryId)
+			() -> DepotEntryLocalServiceUtil.getDepotEntry(
+				depotEntry.getDepotEntryId())
 		).thenReturn(
 			depotEntry
 		);
@@ -481,7 +493,7 @@ public class DesignLibraryResourcesDisplayContextTest {
 
 				@Override
 				public PortletResourcePermission get() {
-					return null;
+					return _styleBookPortletResourcePermission;
 				}
 
 			});
@@ -542,6 +554,34 @@ public class DesignLibraryResourcesDisplayContextTest {
 		);
 	}
 
+	private void _testHasContentAccess(
+			DepotEntry depotEntry, boolean expected,
+			boolean manageFragmentEntriesPermission,
+			boolean manageStyleBookEntriesPermission)
+		throws Exception {
+
+		Mockito.when(
+			_fragmentPortletResourcePermission.contains(
+				_permissionChecker, depotEntry.getGroupId(),
+				FragmentActionKeys.MANAGE_FRAGMENT_ENTRIES)
+		).thenReturn(
+			manageFragmentEntriesPermission
+		);
+
+		Mockito.when(
+			_styleBookPortletResourcePermission.contains(
+				_permissionChecker, depotEntry.getGroupId(),
+				StyleBookActionKeys.MANAGE_STYLE_BOOK_ENTRIES)
+		).thenReturn(
+			manageStyleBookEntriesPermission
+		);
+
+		Assert.assertEquals(
+			expected,
+			_designLibraryResourcesDisplayContext.hasContentAccess(
+				depotEntry.getDepotEntryId()));
+	}
+
 	private static final long _DEPOT_ENTRY_ID = 12345;
 
 	private final MockedStatic<DepotEntryLocalServiceUtil>
@@ -564,6 +604,9 @@ public class DesignLibraryResourcesDisplayContextTest {
 		PermissionChecker.class);
 	private final MockedStatic<PortalUtil> _portalUtilMockedStatic =
 		Mockito.mockStatic(PortalUtil.class);
+	private final PortletResourcePermission
+		_styleBookPortletResourcePermission = Mockito.mock(
+			PortletResourcePermission.class);
 	private final ThemeDisplay _themeDisplay = Mockito.mock(ThemeDisplay.class);
 
 }
