@@ -109,8 +109,14 @@ public class LayoutContentVersionDisplayContextTest {
 			(Map<String, Object>)config.get("availableLanguages"), _locale,
 			_siteDefaultLocale);
 
-		_assertCurrentVersion(
-			(Map<String, Object>)config.get("currentVersion"));
+		Map<String, Object> currentVersion = (Map<String, Object>)config.get(
+			"currentVersion");
+
+		Assert.assertEquals(
+			_draftLayout.getName(_locale), currentVersion.get("name"));
+		Assert.assertEquals(
+			_draftLayout.isApproved() ? "approved" : "draft",
+			currentVersion.get("status"));
 
 		List<Map<String, Object>> availableSegmentsExperiences =
 			(List<Map<String, Object>>)config.get(
@@ -150,14 +156,6 @@ public class LayoutContentVersionDisplayContextTest {
 				LocaleUtil.toW3cLanguageId(locale),
 				languageMap.get("w3cLanguageId"));
 		}
-	}
-
-	private void _assertCurrentVersion(Map<String, Object> currentVersion) {
-		Assert.assertEquals(
-			_draftLayout.getName(_locale), currentVersion.get("name"));
-		Assert.assertEquals(
-			_draftLayout.isApproved() ? "approved" : "draft",
-			currentVersion.get("status"));
 	}
 
 	private void _assertSegmentsExperience(
