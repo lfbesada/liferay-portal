@@ -7,6 +7,7 @@ package com.liferay.headless.admin.site.internal.resource.v1_0;
 
 import com.liferay.headless.admin.site.dto.v1_0.PageSpecificationVersion;
 import com.liferay.headless.admin.site.dto.v1_0.SitePage;
+import com.liferay.headless.admin.site.internal.dto.v1_0.util.DTOConverterContextUtil;
 import com.liferay.headless.admin.site.internal.resource.v1_0.util.LayoutContentVersionActionUtil;
 import com.liferay.headless.admin.site.internal.util.EnabledUtil;
 import com.liferay.headless.admin.site.internal.util.SitePageUtil;
@@ -20,10 +21,11 @@ import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermi
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DTOConverterRegistry;
-import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.fields.NestedField;
 import com.liferay.portal.vulcan.fields.NestedFieldId;
 import com.liferay.portal.vulcan.pagination.Page;
+
+import java.util.Collections;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -172,16 +174,16 @@ public class PageSpecificationVersionResourceImpl
 		}
 
 		return _pageSpecificationVersionDTOConverter.toDTO(
-			new DefaultDTOConverterContext(
-				contextAcceptLanguage.isAcceptAllLanguages(),
+			DTOConverterContextUtil.getDTOConverterContext(
+				contextAcceptLanguage,
 				LayoutContentVersionActionUtil.getActions(
 					contextScopeChecker, deletable, layoutContentVersion,
 					_layoutModelResourcePermission, siteExternalReferenceCode,
 					sitePageExternalReferenceCode, contextUriInfo),
-				_dtoConverterRegistry, contextHttpServletRequest,
+				Collections.emptyMap(), _dtoConverterRegistry,
+				contextHttpServletRequest,
 				layoutContentVersion.getLayoutContentVersionId(),
-				contextAcceptLanguage.getPreferredLocale(), contextUriInfo,
-				contextUser),
+				contextUriInfo, contextUser),
 			layoutContentVersion);
 	}
 
