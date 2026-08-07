@@ -58,6 +58,13 @@ public class LayoutContentVersionActionUtil {
 				layoutModelResourcePermission,
 				"getSiteSitePagePageSpecificationVersion", templateParameterMap,
 				uriInfo)
+		).put(
+			"restore",
+			_addAction(
+				contextScopeChecker, layoutContentVersion,
+				layoutModelResourcePermission,
+				"postSiteSitePagePageSpecificationVersionRestore",
+				templateParameterMap, uriInfo)
 		).build();
 	}
 
