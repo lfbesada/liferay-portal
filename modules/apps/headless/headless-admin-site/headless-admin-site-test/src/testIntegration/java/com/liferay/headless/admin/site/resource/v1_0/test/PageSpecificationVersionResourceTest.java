@@ -304,6 +304,16 @@ public class PageSpecificationVersionResourceTest
 				firstPageSpecificationVersion.getExternalReferenceCode()),
 			"get");
 
+		_assertActionHref(
+			firstActions,
+			StringBundler.concat(
+				"/sites/", testGroup.getExternalReferenceCode(), "/site-pages/",
+				_testGroupLayout.getExternalReferenceCode(),
+				"/page-specification-versions/",
+				firstPageSpecificationVersion.getExternalReferenceCode(),
+				"/restore"),
+			"restore");
+
 		PageSpecificationVersion secondPageSpecificationVersion =
 			_addPageSpecificationVersion();
 
@@ -322,6 +332,16 @@ public class PageSpecificationVersionResourceTest
 				"/page-specification-versions/",
 				firstPageSpecificationVersion.getExternalReferenceCode()),
 			"delete", "get");
+
+		_assertActionHref(
+			firstPageSpecificationVersion.getActions(),
+			StringBundler.concat(
+				"/sites/", testGroup.getExternalReferenceCode(), "/site-pages/",
+				_testGroupLayout.getExternalReferenceCode(),
+				"/page-specification-versions/",
+				firstPageSpecificationVersion.getExternalReferenceCode(),
+				"/restore"),
+			"restore");
 
 		secondPageSpecificationVersion =
 			pageSpecificationVersionResource.
@@ -343,6 +363,16 @@ public class PageSpecificationVersionResourceTest
 				"/page-specification-versions/",
 				secondPageSpecificationVersion.getExternalReferenceCode()),
 			"get");
+
+		_assertActionHref(
+			secondActions,
+			StringBundler.concat(
+				"/sites/", testGroup.getExternalReferenceCode(), "/site-pages/",
+				_testGroupLayout.getExternalReferenceCode(),
+				"/page-specification-versions/",
+				secondPageSpecificationVersion.getExternalReferenceCode(),
+				"/restore"),
+			"restore");
 	}
 
 	private void _testGetSiteSitePagePageSpecificationVersionMismatchedSitePage()
