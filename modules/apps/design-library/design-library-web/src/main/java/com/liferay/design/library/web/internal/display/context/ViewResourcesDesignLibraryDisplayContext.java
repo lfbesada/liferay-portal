@@ -59,20 +59,42 @@ public class ViewResourcesDesignLibraryDisplayContext
 	}
 
 	public String getAPIURL() {
+		List<DesignLibraryResourceTypeContributor>
+			designLibraryResourceTypeContributors =
+				_getViewableDesignLibraryResourceTypeContributors();
+
 		Set<String> entryClassNames = new LinkedHashSet<>();
+		List<String> typeExpressions = new ArrayList<>();
 
 		for (DesignLibraryResourceTypeContributor
 				designLibraryResourceTypeContributor :
-					_getViewableDesignLibraryResourceTypeContributors()) {
+					designLibraryResourceTypeContributors) {
 
-			entryClassNames.add(
-				designLibraryResourceTypeContributor.getEntryClassName());
+			String entryClassName =
+				designLibraryResourceTypeContributor.getEntryClassName();
+
+			entryClassNames.add(entryClassName);
+
+			String type = designLibraryResourceTypeContributor.getType();
+
+			if (type == null) {
+				typeExpressions.add(
+					StringBundler.concat(
+						"entryClassName eq '", entryClassName, "'"));
+			}
+			else {
+				typeExpressions.add(
+					StringBundler.concat(
+						"(entryClassName eq '", entryClassName,
+						"' and type eq '", type, "')"));
+			}
 		}
 
 		return StringBundler.concat(
 			"/o/search/v1.0/search?emptySearch=true&entryClassNames=",
 			StringUtil.merge(entryClassNames, StringPool.COMMA),
-			"&filter=groupIds/any(g:g eq ", depotEntry.getGroupId(), ")",
+			"&filter=groupIds/any(g:g eq ", depotEntry.getGroupId(), ") and (",
+			StringUtil.merge(typeExpressions, " or "), ")",
 			"&nestedFields=embedded");
 	}
 
