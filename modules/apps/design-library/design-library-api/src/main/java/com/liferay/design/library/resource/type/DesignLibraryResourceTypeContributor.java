@@ -12,6 +12,7 @@ import com.liferay.portal.kernel.security.permission.PermissionChecker;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -46,45 +47,48 @@ public interface DesignLibraryResourceTypeContributor {
 	public String getColor();
 
 	/**
-	 * Returns the ES import declaration for the JavaScript factory that
-	 * produces this type's creation menu items, such as
-	 * <code>"{getFooCreationItems} from foo-web"</code>, or <code>null</code>
-	 * when the type cannot be created.
+	 * Returns the creation menu items this type contributes to the Design
+	 * Library Admin, or an empty list when the type cannot be created. Only
+	 * called when {@link #hasAddPermission} grants the current user.
 	 *
 	 * <p>
-	 * Name the module as it is written in an import statement and export the
-	 * factory from the module's own <code>js/index.js</code>. The Design
-	 * Library Admin resolves the declaration to an absolute URL before
-	 * serializing it, because the browser loads it through a dynamic import at
-	 * runtime and a bare name only resolves for modules that publish an import
-	 * map entry, which web modules do not.
-	 * </p>
-	 *
-	 * <p>
-	 * The factory receives {@link #getCreationItemsProps} and returns an array
-	 * of <code>{label, onClick}</code> items, so one type may contribute
-	 * several entries to the menu. Fragments contribute three this way.
+	 * The Design Library Admin opens each item's URL as a modal, so point it
+	 * at a portlet render endpoint that renders the type's creation form. Use
+	 * <code>backURL</code> as the redirect target of the form's action so the
+	 * user returns to the Design Library after submitting.
 	 * </p>
 	 */
-	public String getCreationItemsModule();
-
-	/**
-	 * Returns the properties passed to the factory named by {@link
-	 * #getCreationItemsModule}, such as the URLs and portlet namespace its
-	 * modal needs.
-	 *
-	 * <p>
-	 * Only called when that method returns a module and {@link
-	 * #hasAddPermission} grants the current user. Every value must be
-	 * JSON-serializable, because the map is serialized into the page. Use
-	 * <code>backURL</code> as the redirect so the user returns to the Design
-	 * Library after creating an entry.
-	 * </p>
-	 */
-	public Map<String, Object> getCreationItemsProps(
+	public default List<DesignLibraryResourceCreationItem> getCreationItems(
 			HttpServletRequest httpServletRequest, DepotEntry depotEntry,
 			String backURL)
-		throws PortalException;
+		throws PortalException {
+
+		return Collections.emptyList();
+	}
+
+	/**
+	 * @deprecated Superseded by {@link #getCreationItems}, which declares the
+	 *             creation menu items directly on the server. This method will
+	 *             be removed once both existing contributors migrate.
+	 */
+	@Deprecated
+	public default String getCreationItemsModule() {
+		return null;
+	}
+
+	/**
+	 * @deprecated Superseded by {@link #getCreationItems}, which declares the
+	 *             creation menu items directly on the server. This method will
+	 *             be removed once both existing contributors migrate.
+	 */
+	@Deprecated
+	public default Map<String, Object> getCreationItemsProps(
+			HttpServletRequest httpServletRequest, DepotEntry depotEntry,
+			String backURL)
+		throws PortalException {
+
+		return Collections.emptyMap();
+	}
 
 	/**
 	 * Returns the id of the action the row title links to, such as

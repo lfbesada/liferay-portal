@@ -4,6 +4,7 @@
  */
 
 import {IFrontendDataSetProps} from '@liferay/frontend-data-set-web';
+import {openModal} from 'frontend-js-web';
 import React from 'react';
 
 import {TableCellContentType} from '../constants';
@@ -24,8 +25,17 @@ export default function DesignLibraryAssetsFDSPropsTransformer(
 	const resourceTypes: DesignLibraryResourceType[] =
 		props.additionalProps?.resourceTypes || [];
 
+	const primaryItems = resourceTypes.flatMap(
+		(resourceType) =>
+			resourceType.creationItems?.map(({label, url}) => ({
+				label,
+				onClick: () => openModal({url}),
+			})) ?? []
+	);
+
 	return {
 		...props,
+		creationMenu: primaryItems.length ? {primaryItems} : undefined,
 		customRenderers: {
 			tableCell: [
 				{
