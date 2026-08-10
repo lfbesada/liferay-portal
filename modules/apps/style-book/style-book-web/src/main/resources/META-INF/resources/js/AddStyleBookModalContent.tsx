@@ -22,6 +22,7 @@ interface AddStyleBookModalProps {
 	closeModal: () => void;
 	frontendTokenDefinitionProviders?: Array<FrontendTokenDefinitionProvider>;
 	namespace: string;
+	onSuccess?: (redirectURL: string, closeModal: () => void) => void;
 }
 
 const AddStyleBookModalContent = ({
@@ -29,6 +30,7 @@ const AddStyleBookModalContent = ({
 	closeModal,
 	frontendTokenDefinitionProviders = [],
 	namespace,
+	onSuccess,
 }: AddStyleBookModalProps) => {
 	const [errorMessage, setErrorMessage] = useState<string>('');
 	const [loading, setLoading] = useState(false);
@@ -74,9 +76,14 @@ const AddStyleBookModalContent = ({
 					setLoading(false);
 				}
 				else if (redirectURL) {
-					navigate(redirectURL, {
-						beforeScreenFlip: closeModal,
-					});
+					if (onSuccess) {
+						onSuccess(redirectURL, closeModal);
+					}
+					else {
+						navigate(redirectURL, {
+							beforeScreenFlip: closeModal,
+						});
+					}
 				}
 			})
 			.catch((error) => {

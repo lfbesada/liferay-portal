@@ -4,9 +4,9 @@
  */
 
 export {default as AddStyleBookModalContent} from './AddStyleBookModalContent';
+export {default as DesignLibraryAddStyleBookForm} from './DesignLibraryAddStyleBookForm';
 export {default as StyleBookEditorBreadcrumb} from './StyleBookEditorBreadcrumb';
 export {default as StyleBookManagementToolbarPropsTransformer} from './StyleBookManagementToolbarPropsTransformer';
 export {default as StylebookEntryActionDropdownPropsTransformer} from './StylebookEntryActionDropdownPropsTransformer';
 export {default as FragmentCollectionPreview} from './fragment-collection-preview/FragmentCollectionPreview';
-export {default as getStyleBookCreationItems} from './getStyleBookCreationItems';
 export {default as StyleBookEditor} from './style-book-editor/StyleBookEditor';
