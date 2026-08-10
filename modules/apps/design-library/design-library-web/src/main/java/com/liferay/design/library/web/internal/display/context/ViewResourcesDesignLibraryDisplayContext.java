@@ -11,7 +11,6 @@ import com.liferay.design.library.resource.type.DesignLibraryResourceTypeContrib
 import com.liferay.design.library.web.internal.constants.DesignLibraryAdminFDSNames;
 import com.liferay.exportimport.constants.ExportImportPortletKeys;
 import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
-import com.liferay.frontend.js.loader.modules.extender.esm.ESImportUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -25,12 +24,10 @@ import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
-import com.liferay.portal.kernel.servlet.taglib.aui.ESImport;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.url.builder.AbsolutePortalURLBuilderFactory;
 
 import jakarta.portlet.PortletRequest;
 
@@ -187,22 +184,6 @@ public class ViewResourcesDesignLibraryDisplayContext
 						"creationItems",
 						_toCreationItemMaps(
 							designLibraryResourceCreationItems));
-				}
-				else {
-					String creationItemsModule = _resolveESImport(
-						designLibraryResourceTypeContributor.
-							getCreationItemsModule());
-
-					if (creationItemsModule != null) {
-						resourceType.put(
-							"creationItemsModule", creationItemsModule);
-						resourceType.put(
-							"creationItemsProps",
-							designLibraryResourceTypeContributor.
-								getCreationItemsProps(
-									httpServletRequest, depotEntry,
-									viewResourcesURL));
-					}
 				}
 			}
 
@@ -440,31 +421,6 @@ public class ViewResourcesDesignLibraryDisplayContext
 		return maps;
 	}
 
-	private String _resolveESImport(String module) {
-		if (module == null) {
-			return null;
-		}
-
-		AbsolutePortalURLBuilderFactory absolutePortalURLBuilderFactory =
-			_absolutePortalURLBuilderFactorySnapshot.get();
-
-		if (absolutePortalURLBuilderFactory == null) {
-			return null;
-		}
-
-		ESImport esImport = ESImportUtil.getESImport(
-			absolutePortalURLBuilderFactory.getAbsolutePortalURLBuilder(
-				httpServletRequest),
-			module);
-
-		return StringBundler.concat(
-			"{", esImport.getSymbol(), "} from ", esImport.getModule());
-	}
-
-	private static final Snapshot<AbsolutePortalURLBuilderFactory>
-		_absolutePortalURLBuilderFactorySnapshot = new Snapshot<>(
-			ViewResourcesDesignLibraryDisplayContext.class,
-			AbsolutePortalURLBuilderFactory.class);
 	private static final Snapshot<DesignLibraryResourceTypeContributorRegistry>
 		_designLibraryResourceTypeContributorRegistrySnapshot = new Snapshot<>(
 			ViewResourcesDesignLibraryDisplayContext.class,

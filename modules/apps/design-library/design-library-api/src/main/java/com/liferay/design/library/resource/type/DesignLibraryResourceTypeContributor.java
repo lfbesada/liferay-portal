@@ -15,7 +15,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Contributes a resource type to the Design Library Admin. Register one
@@ -64,30 +63,6 @@ public interface DesignLibraryResourceTypeContributor {
 		throws PortalException {
 
 		return Collections.emptyList();
-	}
-
-	/**
-	 * @deprecated Superseded by {@link #getCreationItems}, which declares the
-	 *             creation menu items directly on the server. This method will
-	 *             be removed once both existing contributors migrate.
-	 */
-	@Deprecated
-	public default String getCreationItemsModule() {
-		return null;
-	}
-
-	/**
-	 * @deprecated Superseded by {@link #getCreationItems}, which declares the
-	 *             creation menu items directly on the server. This method will
-	 *             be removed once both existing contributors migrate.
-	 */
-	@Deprecated
-	public default Map<String, Object> getCreationItemsProps(
-			HttpServletRequest httpServletRequest, DepotEntry depotEntry,
-			String backURL)
-		throws PortalException {
-
-		return Collections.emptyMap();
 	}
 
 	/**

@@ -13,7 +13,6 @@ export {default as DesignLibraryAssetsFDSPropsTransformer} from './props_transfo
 export {default as DesignLibraryConnectedSitesFDSPropsTransformer} from './props_transformer/DesignLibraryConnectedSitesFDSPropsTransformer';
 export {default as DesignLibraryMembersFDSPropsTransformer} from './props_transformer/DesignLibraryMembersFDSPropsTransformer';
 export type {
-	DesignLibraryCreationItem,
-	DesignLibraryCreationItemsFactory,
+	DesignLibraryResourceCreationItem,
 	DesignLibraryResourceType,
 } from './types';
