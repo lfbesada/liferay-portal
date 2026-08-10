@@ -4,6 +4,7 @@
  */
 
 export {default as ContributedFragmentEntryDropdownPropsTransformer} from './ContributedFragmentEntryDropdownPropsTransformer';
+export {default as DesignLibraryAddFragmentForm} from './DesignLibraryAddFragmentForm';
 export {default as FormFragmentsConfiguration} from './FormFragmentsConfiguration';
 export {default as FragmentCollectionDropdownPropsTransformer} from './FragmentCollectionDropdownPropsTransformer';
 export {default as FragmentCollectionViewButtonPropsTransformer} from './FragmentCollectionViewButtonPropsTransformer';
@@ -16,4 +17,3 @@ export {default as ImportFragments} from './ImportFragments';
 export {default as ViewContributedFragmentEntriesManagementToolbarPropsTransformer} from './ViewContributedFragmentEntriesManagementToolbarPropsTransformer';
 export {default as ViewFragmentEntriesManagementToolbarPropsTransformer} from './ViewFragmentEntriesManagementToolbarPropsTransformer';
 export {default as FragmentEditor} from './fragment-editor/FragmentEditor';
-export {default as getFragmentCreationItems} from './getFragmentCreationItems';

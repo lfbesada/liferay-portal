@@ -6,25 +6,19 @@
 package com.liferay.fragment.web.internal.design.library;
 
 import com.liferay.depot.model.DepotEntry;
+import com.liferay.design.library.resource.type.DesignLibraryResourceCreationItem;
 import com.liferay.design.library.resource.type.DesignLibraryResourceTypeContributor;
 import com.liferay.fragment.constants.FragmentActionKeys;
 import com.liferay.fragment.constants.FragmentConstants;
 import com.liferay.fragment.constants.FragmentPortletKeys;
 import com.liferay.fragment.model.FragmentCollection;
-import com.liferay.fragment.service.FragmentCollectionLocalService;
 import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.json.JSONArray;
-import com.liferay.portal.kernel.json.JSONFactory;
-import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.portlet.LiferayPortletURL;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
-import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 
@@ -34,7 +28,6 @@ import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -55,65 +48,23 @@ public class FragmentDesignLibraryResourceTypeContributor
 	}
 
 	@Override
-	public String getCreationItemsModule() {
-		return "{getFragmentCreationItems} from fragment-web";
-	}
-
-	@Override
-	public Map<String, Object> getCreationItemsProps(
+	public List<DesignLibraryResourceCreationItem> getCreationItems(
 			HttpServletRequest httpServletRequest, DepotEntry depotEntry,
 			String backURL)
 		throws PortalException {
 
-		JSONArray fragmentCollectionsJSONArray = _jsonFactory.createJSONArray();
-
-		Group depotGroup = depotEntry.getGroup();
-
-		for (FragmentCollection fragmentCollection :
-				_fragmentCollectionLocalService.getFragmentCollections(
-					depotGroup.getGroupId(), QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS)) {
-
-			fragmentCollectionsJSONArray.put(
-				JSONUtil.put(
-					"fragmentCollectionId",
-					fragmentCollection.getFragmentCollectionId()
-				).put(
-					"name", fragmentCollection.getName()
-				));
-		}
-
-		LiferayPortletURL addFragmentCollectionPortletURL =
-			(LiferayPortletURL)PortalUtil.getControlPanelPortletURL(
-				httpServletRequest, depotGroup, FragmentPortletKeys.FRAGMENT, 0,
-				0, PortletRequest.RESOURCE_PHASE);
-
-		addFragmentCollectionPortletURL.setResourceID(
-			"/fragment/add_fragment_collection");
-
-		return HashMapBuilder.<String, Object>put(
-			"addFragmentCollectionURL",
-			addFragmentCollectionPortletURL.toString()
-		).put(
-			"addFragmentEntryURL",
-			PortletURLBuilder.create(
-				PortalUtil.getControlPanelPortletURL(
-					httpServletRequest, depotGroup,
-					FragmentPortletKeys.FRAGMENT, 0, 0,
-					PortletRequest.ACTION_PHASE)
-			).setActionName(
-				"/fragment/add_fragment_entry"
-			).setRedirect(
-				backURL
-			).setParameter(
-				"type", FragmentConstants.TYPE_COMPONENT
-			).buildString()
-		).put(
-			"fragmentCollections", fragmentCollectionsJSONArray
-		).put(
-			"namespace",
-			PortalUtil.getPortletNamespace(FragmentPortletKeys.FRAGMENT)
-		).build();
+		return ListUtil.fromArray(
+			_newCreationItem(
+				httpServletRequest, depotEntry, backURL, "add-basic-fragment",
+				"new-basic-fragment", "fragment",
+				FragmentConstants.TYPE_COMPONENT),
+			_newCreationItem(
+				httpServletRequest, depotEntry, backURL, "add-form-fragment",
+				"new-form-fragment", "fragment",
+				FragmentConstants.TYPE_INPUT),
+			_newCreationItem(
+				httpServletRequest, depotEntry, backURL, "add-fragment-set",
+				"new-fragment-set", "set", 0));
 	}
 
 	@Override
@@ -202,11 +153,29 @@ public class FragmentDesignLibraryResourceTypeContributor
 		return hasAddPermission(permissionChecker, depotEntry);
 	}
 
-	@Reference
-	private FragmentCollectionLocalService _fragmentCollectionLocalService;
+	private DesignLibraryResourceCreationItem _newCreationItem(
+			HttpServletRequest httpServletRequest, DepotEntry depotEntry,
+			String backURL, String id, String languageKey, String mode,
+			int fragmentType)
+		throws PortalException {
 
-	@Reference
-	private JSONFactory _jsonFactory;
+		return new DesignLibraryResourceCreationItem(
+			id, LanguageUtil.get(httpServletRequest, languageKey),
+			PortletURLBuilder.create(
+				PortalUtil.getControlPanelPortletURL(
+					httpServletRequest, depotEntry.getGroup(),
+					FragmentPortletKeys.FRAGMENT, 0, 0,
+					PortletRequest.RENDER_PHASE)
+			).setMVCRenderCommandName(
+				"/fragment/design_library/add_fragment_entry"
+			).setParameter(
+				"backURL", backURL
+			).setParameter(
+				"fragmentType", fragmentType
+			).setParameter(
+				"mode", mode
+			).buildString());
+	}
 
 	@Reference(
 		target = "(resource.name=" + FragmentConstants.RESOURCE_NAME + ")"
