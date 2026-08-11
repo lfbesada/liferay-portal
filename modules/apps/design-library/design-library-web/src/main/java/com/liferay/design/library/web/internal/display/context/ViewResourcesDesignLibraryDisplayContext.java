@@ -166,22 +166,6 @@ public class ViewResourcesDesignLibraryDisplayContext
 						_toCreationItemMaps(
 							designLibraryResourceCreationItems));
 				}
-				else {
-					String creationItemsModule = _resolveESImport(
-						designLibraryResourceTypeContributor.
-							getCreationItemsModule());
-
-					if (creationItemsModule != null) {
-						resourceType.put(
-							"creationItemsModule", creationItemsModule);
-						resourceType.put(
-							"creationItemsProps",
-							designLibraryResourceTypeContributor.
-								getCreationItemsProps(
-									httpServletRequest, depotEntry,
-									viewResourcesURL));
-					}
-				}
 			}
 
 			resourceTypes.add(resourceType);

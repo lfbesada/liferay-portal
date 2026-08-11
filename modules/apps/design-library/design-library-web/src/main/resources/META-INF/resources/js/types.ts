@@ -8,12 +8,6 @@ export interface ActionItem {
 	href?: string;
 }
 
-export type DesignLibraryCreationItem = {label: string; onClick: () => void};
-
-export type DesignLibraryCreationItemsFactory = (
-	props: Record<string, any>
-) => DesignLibraryCreationItem[];
-
 export type DesignLibraryResourceCreationItem = {
 	id: string;
 	label: string;
@@ -24,8 +18,6 @@ export type DesignLibraryResourceCreationItem = {
 export interface DesignLibraryResourceType {
 	color: string;
 	creationItems?: DesignLibraryResourceCreationItem[];
-	creationItemsModule?: string;
-	creationItemsProps?: Record<string, any>;
 	defaultActionId: string;
 	entryClassName: string;
 	key: string;

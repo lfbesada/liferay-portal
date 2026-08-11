@@ -79,68 +79,6 @@ public class FragmentDesignLibraryResourceTypeContributor
 	}
 
 	@Override
-	public String getCreationItemsModule() {
-		return "{getFragmentCreationItems} from fragment-web";
-	}
-
-	@Override
-	public Map<String, Object> getCreationItemsProps(
-			HttpServletRequest httpServletRequest, DepotEntry depotEntry,
-			String backURL)
-		throws PortalException {
-
-		JSONArray fragmentCollectionsJSONArray = _jsonFactory.createJSONArray();
-
-		Group depotGroup = depotEntry.getGroup();
-
-		for (FragmentCollection fragmentCollection :
-				_fragmentCollectionLocalService.getFragmentCollections(
-					depotGroup.getGroupId(), QueryUtil.ALL_POS,
-					QueryUtil.ALL_POS)) {
-
-			fragmentCollectionsJSONArray.put(
-				JSONUtil.put(
-					"fragmentCollectionId",
-					fragmentCollection.getFragmentCollectionId()
-				).put(
-					"name", fragmentCollection.getName()
-				));
-		}
-
-		LiferayPortletURL addFragmentCollectionPortletURL =
-			(LiferayPortletURL)PortalUtil.getControlPanelPortletURL(
-				httpServletRequest, depotGroup, FragmentPortletKeys.FRAGMENT, 0,
-				0, PortletRequest.RESOURCE_PHASE);
-
-		addFragmentCollectionPortletURL.setResourceID(
-			"/fragment/add_fragment_collection");
-
-		return HashMapBuilder.<String, Object>put(
-			"addFragmentCollectionURL",
-			addFragmentCollectionPortletURL.toString()
-		).put(
-			"addFragmentEntryURL",
-			PortletURLBuilder.create(
-				PortalUtil.getControlPanelPortletURL(
-					httpServletRequest, depotGroup,
-					FragmentPortletKeys.FRAGMENT, 0, 0,
-					PortletRequest.ACTION_PHASE)
-			).setActionName(
-				"/fragment/add_fragment_entry"
-			).setRedirect(
-				backURL
-			).setParameter(
-				"type", FragmentConstants.TYPE_COMPONENT
-			).buildString()
-		).put(
-			"fragmentCollections", fragmentCollectionsJSONArray
-		).put(
-			"namespace",
-			PortalUtil.getPortletNamespace(FragmentPortletKeys.FRAGMENT)
-		).build();
-	}
-
-	@Override
 	public String getDefaultActionId() {
 		return "view";
 	}

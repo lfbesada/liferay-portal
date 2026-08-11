@@ -6,83 +6,26 @@
 import ClayButton from '@clayui/button';
 import {ClayDropDownWithItems} from '@clayui/drop-down';
 import ClayIcon from '@clayui/icon';
-import {loadModule} from 'frontend-js-web';
-import React, {useEffect, useMemo, useState} from 'react';
+import React from 'react';
 
 import openCreationModal from './openCreationModal';
-import {
-	DesignLibraryCreationItem,
-	DesignLibraryCreationItemsFactory,
-	DesignLibraryResourceType,
-} from './types';
+import {DesignLibraryResourceType} from './types';
 
 export default function DesignLibraryAssetsSectionHeader({
 	resourceTypes = [],
 }: {
 	resourceTypes?: DesignLibraryResourceType[];
 }) {
-	const declaredCreationItems = useMemo<DesignLibraryCreationItem[]>(
-		() =>
-			resourceTypes.flatMap(
-				(resourceType) =>
-					resourceType.creationItems?.map(
-						(designLibraryResourceCreationItem) => ({
-							label: designLibraryResourceCreationItem.label,
-							onClick: () =>
-								openCreationModal(
-									designLibraryResourceCreationItem
-								),
-						})
-					) ?? []
-			),
-		[resourceTypes]
+	const creationItems = resourceTypes.flatMap(
+		(resourceType) =>
+			resourceType.creationItems?.map(
+				(designLibraryResourceCreationItem) => ({
+					label: designLibraryResourceCreationItem.label,
+					onClick: () =>
+						openCreationModal(designLibraryResourceCreationItem),
+				})
+			) ?? []
 	);
-
-	const [loadedCreationItems, setLoadedCreationItems] = useState<
-		DesignLibraryCreationItem[]
-	>([]);
-
-	useEffect(() => {
-		let cancelled = false;
-
-		Promise.all(
-			resourceTypes
-				.filter(
-					(resourceType) =>
-						!resourceType.creationItems?.length &&
-						resourceType.creationItemsModule
-				)
-				.map((resourceType) =>
-					loadModule(resourceType.creationItemsModule as string)
-						.then(
-							(
-								getCreationItems: DesignLibraryCreationItemsFactory
-							) =>
-								getCreationItems(
-									resourceType.creationItemsProps || {}
-								)
-						)
-						.catch((error: Error) => {
-							console.error(
-								`Unable to load creation items for ${resourceType.key}`,
-								error
-							);
-
-							return [] as DesignLibraryCreationItem[];
-						})
-				)
-		).then((items) => {
-			if (!cancelled) {
-				setLoadedCreationItems(items.flat());
-			}
-		});
-
-		return () => {
-			cancelled = true;
-		};
-	}, [resourceTypes]);
-
-	const creationItems = [...declaredCreationItems, ...loadedCreationItems];
 
 	return (
 		<div className="align-items-center d-flex justify-content-between mb-3">

@@ -15,7 +15,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
-import java.util.Map;
 
 /**
  * Contributes a resource type to the Design Library Admin. Register one
@@ -63,47 +62,6 @@ public interface DesignLibraryResourceTypeContributor {
 
 		return Collections.emptyList();
 	}
-
-	/**
-	 * Returns the ES import declaration for the JavaScript factory that
-	 * produces this type's creation menu items, such as
-	 * <code>"{getFooCreationItems} from foo-web"</code>, or <code>null</code>
-	 * when the type cannot be created.
-	 *
-	 * <p>
-	 * Name the module as it is written in an import statement and export the
-	 * factory from the module's own <code>js/index.js</code>. The Design
-	 * Library Admin resolves the declaration to an absolute URL before
-	 * serializing it, because the browser loads it through a dynamic import at
-	 * runtime and a bare name only resolves for modules that publish an import
-	 * map entry, which web modules do not.
-	 * </p>
-	 *
-	 * <p>
-	 * The factory receives {@link #getCreationItemsProps} and returns an array
-	 * of <code>{label, onClick}</code> items, so one type may contribute
-	 * several entries to the menu. Fragments contribute three this way.
-	 * </p>
-	 */
-	public String getCreationItemsModule();
-
-	/**
-	 * Returns the properties passed to the factory named by {@link
-	 * #getCreationItemsModule}, such as the URLs and portlet namespace its
-	 * modal needs.
-	 *
-	 * <p>
-	 * Only called when that method returns a module and {@link
-	 * #hasAddPermission} grants the current user. Every value must be
-	 * JSON-serializable, because the map is serialized into the page. Use
-	 * <code>backURL</code> as the redirect so the user returns to the Design
-	 * Library after creating an entry.
-	 * </p>
-	 */
-	public Map<String, Object> getCreationItemsProps(
-			HttpServletRequest httpServletRequest, DepotEntry depotEntry,
-			String backURL)
-		throws PortalException;
 
 	/**
 	 * Returns the id of the action the row title links to, such as

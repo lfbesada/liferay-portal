@@ -79,29 +79,6 @@ public class StyleBookDesignLibraryResourceTypeContributor
 	}
 
 	@Override
-	public String getCreationItemsModule() {
-		return "{getStyleBookCreationItems} from style-book-web";
-	}
-
-	@Override
-	public Map<String, Object> getCreationItemsProps(
-			HttpServletRequest httpServletRequest, DepotEntry depotEntry,
-			String backURL)
-		throws PortalException {
-
-		return HashMapBuilder.<String, Object>put(
-			"addStyleBookEntryURL",
-			_getAddStyleBookEntryURL(httpServletRequest, depotEntry, backURL)
-		).put(
-			"frontendTokenDefinitionProviders",
-			_getFrontendTokenDefinitionProviders(httpServletRequest)
-		).put(
-			"namespace",
-			PortalUtil.getPortletNamespace(StyleBookPortletKeys.STYLE_BOOK)
-		).build();
-	}
-
-	@Override
 	public String getDefaultActionId() {
 		return "edit";
 	}
