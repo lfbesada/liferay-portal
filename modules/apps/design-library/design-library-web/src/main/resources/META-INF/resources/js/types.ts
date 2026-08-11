@@ -14,8 +14,16 @@ export type DesignLibraryCreationItemsFactory = (
 	props: Record<string, any>
 ) => DesignLibraryCreationItem[];
 
+export type DesignLibraryResourceCreationItem = {
+	id: string;
+	label: string;
+	module: string;
+	moduleProps: Record<string, unknown>;
+};
+
 export interface DesignLibraryResourceType {
 	color: string;
+	creationItems?: DesignLibraryResourceCreationItem[];
 	creationItemsModule?: string;
 	creationItemsProps?: Record<string, any>;
 	defaultActionId: string;

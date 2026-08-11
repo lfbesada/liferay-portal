@@ -5,6 +5,7 @@
 
 package com.liferay.design.library.web.internal.display.context;
 
+import com.liferay.design.library.resource.type.DesignLibraryResourceCreationItem;
 import com.liferay.design.library.resource.type.DesignLibraryResourceTypeContributor;
 import com.liferay.design.library.resource.type.DesignLibraryResourceTypeContributorRegistry;
 import com.liferay.design.library.web.internal.constants.DesignLibraryAdminFDSNames;
@@ -151,18 +152,36 @@ public class ViewResourcesDesignLibraryDisplayContext
 					"type", designLibraryResourceTypeContributor.getType()
 				).build();
 
-			String creationItemsModule = _resolveESImport(
-				designLibraryResourceTypeContributor.getCreationItemsModule());
-
-			if ((creationItemsModule != null) &&
-				designLibraryResourceTypeContributor.hasAddPermission(
+			if (designLibraryResourceTypeContributor.hasAddPermission(
 					permissionChecker, depotEntry)) {
 
-				resourceType.put("creationItemsModule", creationItemsModule);
-				resourceType.put(
-					"creationItemsProps",
-					designLibraryResourceTypeContributor.getCreationItemsProps(
-						httpServletRequest, depotEntry, viewResourcesURL));
+				List<DesignLibraryResourceCreationItem>
+					designLibraryResourceCreationItems =
+						designLibraryResourceTypeContributor.getCreationItems(
+							httpServletRequest, depotEntry, viewResourcesURL);
+
+				if (!designLibraryResourceCreationItems.isEmpty()) {
+					resourceType.put(
+						"creationItems",
+						_toCreationItemMaps(
+							designLibraryResourceCreationItems));
+				}
+				else {
+					String creationItemsModule = _resolveESImport(
+						designLibraryResourceTypeContributor.
+							getCreationItemsModule());
+
+					if (creationItemsModule != null) {
+						resourceType.put(
+							"creationItemsModule", creationItemsModule);
+						resourceType.put(
+							"creationItemsProps",
+							designLibraryResourceTypeContributor.
+								getCreationItemsProps(
+									httpServletRequest, depotEntry,
+									viewResourcesURL));
+					}
+				}
 			}
 
 			resourceTypes.add(resourceType);
@@ -395,6 +414,34 @@ public class ViewResourcesDesignLibraryDisplayContext
 
 		return StringBundler.concat(
 			"{", esImport.getSymbol(), "} from ", esImport.getModule());
+	}
+
+	private List<Map<String, Object>> _toCreationItemMaps(
+		List<DesignLibraryResourceCreationItem>
+			designLibraryResourceCreationItems) {
+
+		List<Map<String, Object>> maps = new ArrayList<>();
+
+		for (DesignLibraryResourceCreationItem
+				designLibraryResourceCreationItem :
+					designLibraryResourceCreationItems) {
+
+			maps.add(
+				HashMapBuilder.<String, Object>put(
+					"id", designLibraryResourceCreationItem.getId()
+				).put(
+					"label", designLibraryResourceCreationItem.getLabel()
+				).put(
+					"module",
+					_resolveESImport(
+						designLibraryResourceCreationItem.getModule())
+				).put(
+					"moduleProps",
+					designLibraryResourceCreationItem.getModuleProps()
+				).build());
+		}
+
+		return maps;
 	}
 
 	private static final Snapshot<AbsolutePortalURLBuilderFactory>

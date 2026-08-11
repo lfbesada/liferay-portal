@@ -12,6 +12,7 @@ import com.liferay.portal.kernel.security.permission.PermissionChecker;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -39,6 +40,29 @@ public interface DesignLibraryResourceTypeContributor {
 	 * only the palette name without the CSS <code>--</code> prefix.
 	 */
 	public String getColor();
+
+	/**
+	 * Returns the creation menu items this type contributes to the Design
+	 * Library Admin, or an empty list when the type cannot be created. Only
+	 * called when {@link #hasAddPermission} grants the current user.
+	 *
+	 * <p>
+	 * Each item names the React module that renders its modal and the props
+	 * to pass. The Design Library Admin resolves the ES import declaration to
+	 * an absolute URL and opens the modal on click via
+	 * <code>openModal({contentComponent})</code>, injecting <code>closeModal
+	 * </code> at open time. Use <code>backURL</code> when building URLs the
+	 * modal needs, so that the user returns to the Design Library after
+	 * submitting.
+	 * </p>
+	 */
+	public default List<DesignLibraryResourceCreationItem> getCreationItems(
+			HttpServletRequest httpServletRequest, DepotEntry depotEntry,
+			String backURL)
+		throws PortalException {
+
+		return Collections.emptyList();
+	}
 
 	/**
 	 * Returns the ES import declaration for the JavaScript factory that

@@ -7,8 +7,9 @@ import ClayButton from '@clayui/button';
 import {ClayDropDownWithItems} from '@clayui/drop-down';
 import ClayIcon from '@clayui/icon';
 import {loadModule} from 'frontend-js-web';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useMemo, useState} from 'react';
 
+import openCreationModal from './openCreationModal';
 import {
 	DesignLibraryCreationItem,
 	DesignLibraryCreationItemsFactory,
@@ -20,7 +21,24 @@ export default function DesignLibraryAssetsSectionHeader({
 }: {
 	resourceTypes?: DesignLibraryResourceType[];
 }) {
-	const [creationItems, setCreationItems] = useState<
+	const declaredCreationItems = useMemo<DesignLibraryCreationItem[]>(
+		() =>
+			resourceTypes.flatMap(
+				(resourceType) =>
+					resourceType.creationItems?.map(
+						(designLibraryResourceCreationItem) => ({
+							label: designLibraryResourceCreationItem.label,
+							onClick: () =>
+								openCreationModal(
+									designLibraryResourceCreationItem
+								),
+						})
+					) ?? []
+			),
+		[resourceTypes]
+	);
+
+	const [loadedCreationItems, setLoadedCreationItems] = useState<
 		DesignLibraryCreationItem[]
 	>([]);
 
@@ -29,7 +47,11 @@ export default function DesignLibraryAssetsSectionHeader({
 
 		Promise.all(
 			resourceTypes
-				.filter((resourceType) => resourceType.creationItemsModule)
+				.filter(
+					(resourceType) =>
+						!resourceType.creationItems?.length &&
+						resourceType.creationItemsModule
+				)
 				.map((resourceType) =>
 					loadModule(resourceType.creationItemsModule as string)
 						.then(
@@ -51,7 +73,7 @@ export default function DesignLibraryAssetsSectionHeader({
 				)
 		).then((items) => {
 			if (!cancelled) {
-				setCreationItems(items.flat());
+				setLoadedCreationItems(items.flat());
 			}
 		});
 
@@ -59,6 +81,8 @@ export default function DesignLibraryAssetsSectionHeader({
 			cancelled = true;
 		};
 	}, [resourceTypes]);
+
+	const creationItems = [...declaredCreationItems, ...loadedCreationItems];
 
 	return (
 		<div className="align-items-center d-flex justify-content-between mb-3">
