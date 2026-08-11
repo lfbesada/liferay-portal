@@ -6,6 +6,7 @@
 package com.liferay.style.book.web.internal.design.library;
 
 import com.liferay.depot.model.DepotEntry;
+import com.liferay.design.library.resource.type.DesignLibraryResourceCreationItem;
 import com.liferay.design.library.resource.type.DesignLibraryResourceTypeContributor;
 import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -29,6 +30,7 @@ import jakarta.portlet.PortletRequest;
 
 import jakarta.servlet.http.HttpServletRequest;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -49,6 +51,31 @@ public class StyleBookDesignLibraryResourceTypeContributor
 	@Override
 	public String getColor() {
 		return "purple";
+	}
+
+	@Override
+	public List<DesignLibraryResourceCreationItem> getCreationItems(
+			HttpServletRequest httpServletRequest, DepotEntry depotEntry,
+			String backURL)
+		throws PortalException {
+
+		return Collections.singletonList(
+			new DesignLibraryResourceCreationItem(
+				"add-style-book",
+				LanguageUtil.get(httpServletRequest, "new-style-book"),
+				"{AddStyleBookModalContent} from style-book-web",
+				HashMapBuilder.<String, Object>put(
+					"addStyleBookEntryURL",
+					_getAddStyleBookEntryURL(
+						httpServletRequest, depotEntry, backURL)
+				).put(
+					"frontendTokenDefinitionProviders",
+					_getFrontendTokenDefinitionProviders(httpServletRequest)
+				).put(
+					"namespace",
+					PortalUtil.getPortletNamespace(
+						StyleBookPortletKeys.STYLE_BOOK)
+				).build()));
 	}
 
 	@Override
