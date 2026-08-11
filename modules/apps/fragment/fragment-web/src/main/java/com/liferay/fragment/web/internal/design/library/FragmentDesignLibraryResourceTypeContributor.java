@@ -6,6 +6,7 @@
 package com.liferay.fragment.web.internal.design.library;
 
 import com.liferay.depot.model.DepotEntry;
+import com.liferay.design.library.resource.type.DesignLibraryResourceCreationItem;
 import com.liferay.design.library.resource.type.DesignLibraryResourceTypeContributor;
 import com.liferay.fragment.constants.FragmentActionKeys;
 import com.liferay.fragment.constants.FragmentConstants;
@@ -52,6 +53,29 @@ public class FragmentDesignLibraryResourceTypeContributor
 	@Override
 	public String getColor() {
 		return "pink";
+	}
+
+	@Override
+	public List<DesignLibraryResourceCreationItem> getCreationItems(
+			HttpServletRequest httpServletRequest, DepotEntry depotEntry,
+			String backURL)
+		throws PortalException {
+
+		Group depotGroup = depotEntry.getGroup();
+
+		Map<String, Object> baseModuleProps = _getBaseModuleProps(
+			httpServletRequest, depotGroup, backURL);
+
+		return ListUtil.fromArray(
+			_newCreationItem(
+				httpServletRequest, "add-basic-fragment", "new-basic-fragment",
+				"fragment", FragmentConstants.TYPE_COMPONENT, baseModuleProps),
+			_newCreationItem(
+				httpServletRequest, "add-form-fragment", "new-form-fragment",
+				"fragment", FragmentConstants.TYPE_INPUT, baseModuleProps),
+			_newCreationItem(
+				httpServletRequest, "add-fragment-set", "new-fragment-set",
+				"set", 0, baseModuleProps));
 	}
 
 	@Override
@@ -200,6 +224,77 @@ public class FragmentDesignLibraryResourceTypeContributor
 		PermissionChecker permissionChecker, DepotEntry depotEntry) {
 
 		return hasAddPermission(permissionChecker, depotEntry);
+	}
+
+	private Map<String, Object> _getBaseModuleProps(
+		HttpServletRequest httpServletRequest, Group depotGroup,
+		String backURL) {
+
+		LiferayPortletURL addFragmentCollectionPortletURL =
+			(LiferayPortletURL)PortalUtil.getControlPanelPortletURL(
+				httpServletRequest, depotGroup, FragmentPortletKeys.FRAGMENT, 0,
+				0, PortletRequest.RESOURCE_PHASE);
+
+		addFragmentCollectionPortletURL.setResourceID(
+			"/fragment/add_fragment_collection");
+
+		return HashMapBuilder.<String, Object>put(
+			"addFragmentCollectionURL",
+			addFragmentCollectionPortletURL.toString()
+		).put(
+			"addFragmentEntryURL",
+			PortletURLBuilder.create(
+				PortalUtil.getControlPanelPortletURL(
+					httpServletRequest, depotGroup,
+					FragmentPortletKeys.FRAGMENT, 0, 0,
+					PortletRequest.ACTION_PHASE)
+			).setActionName(
+				"/fragment/add_fragment_entry"
+			).setRedirect(
+				backURL
+			).buildString()
+		).put(
+			"fragmentCollections", _getFragmentCollectionsJSONArray(depotGroup)
+		).put(
+			"namespace",
+			PortalUtil.getPortletNamespace(FragmentPortletKeys.FRAGMENT)
+		).build();
+	}
+
+	private JSONArray _getFragmentCollectionsJSONArray(Group depotGroup) {
+		JSONArray jsonArray = _jsonFactory.createJSONArray();
+
+		for (FragmentCollection fragmentCollection :
+				_fragmentCollectionLocalService.getFragmentCollections(
+					depotGroup.getGroupId(), QueryUtil.ALL_POS,
+					QueryUtil.ALL_POS)) {
+
+			jsonArray.put(
+				JSONUtil.put(
+					"fragmentCollectionId",
+					fragmentCollection.getFragmentCollectionId()
+				).put(
+					"name", fragmentCollection.getName()
+				));
+		}
+
+		return jsonArray;
+	}
+
+	private DesignLibraryResourceCreationItem _newCreationItem(
+		HttpServletRequest httpServletRequest, String id, String languageKey,
+		String mode, int fragmentType, Map<String, Object> baseModuleProps) {
+
+		return new DesignLibraryResourceCreationItem(
+			id, LanguageUtil.get(httpServletRequest, languageKey),
+			"{DesignLibraryAddFragmentEntry} from fragment-web",
+			HashMapBuilder.<String, Object>putAll(
+				baseModuleProps
+			).put(
+				"fragmentType", fragmentType
+			).put(
+				"mode", mode
+			).build());
 	}
 
 	@Reference

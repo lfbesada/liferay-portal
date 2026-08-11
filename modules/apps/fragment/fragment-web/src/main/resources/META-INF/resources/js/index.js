@@ -4,6 +4,7 @@
  */
 
 export {default as ContributedFragmentEntryDropdownPropsTransformer} from './ContributedFragmentEntryDropdownPropsTransformer';
+export {default as DesignLibraryAddFragmentEntry} from './DesignLibraryAddFragmentEntry';
 export {default as FormFragmentsConfiguration} from './FormFragmentsConfiguration';
 export {default as FragmentCollectionDropdownPropsTransformer} from './FragmentCollectionDropdownPropsTransformer';
 export {default as FragmentCollectionViewButtonPropsTransformer} from './FragmentCollectionViewButtonPropsTransformer';
