@@ -51,7 +51,7 @@ public class FragmentDesignLibraryResourceTypeContributor
 
 	@Override
 	public String getColor() {
-		return "--pink";
+		return "pink";
 	}
 
 	@Override

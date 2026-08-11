@@ -48,7 +48,7 @@ public class StyleBookDesignLibraryResourceTypeContributor
 
 	@Override
 	public String getColor() {
-		return "--purple";
+		return "purple";
 	}
 
 	@Override

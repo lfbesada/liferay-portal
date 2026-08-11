@@ -46,10 +46,10 @@ export default function DesignLibraryAssetsFDSPropsTransformer(
 								stickerClassName="design-library-fds-sticker"
 								stickerStyle={
 									{
-										'--design-library-sticker-color': `var(${
+										'--design-library-sticker-color': `var(--${
 											resourceType
 												? resourceType.color
-												: '--secondary'
+												: 'secondary'
 										})`,
 									} as React.CSSProperties
 								}

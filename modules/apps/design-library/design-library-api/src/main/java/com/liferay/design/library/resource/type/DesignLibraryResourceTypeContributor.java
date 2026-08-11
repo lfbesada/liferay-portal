@@ -34,14 +34,9 @@ public interface DesignLibraryResourceTypeContributor {
 
 	/**
 	 * Returns the name of the Clay palette custom property used to tint this
-	 * type's sticker, such as <code>"--purple"</code>.
-	 *
-	 * <p>
-	 * The Design Library Admin assigns the value to a CSS custom property on
-	 * the sticker, so a new type needs no stylesheet change. Return the name of
-	 * an existing palette property rather than a literal color, to keep the
-	 * palette controlled.
-	 * </p>
+	 * type's sticker, such as <code>"purple"</code>. The Design Library Admin
+	 * composes the CSS reference via <code>var(--${color})</code>, so return
+	 * only the palette name without the CSS <code>--</code> prefix.
 	 */
 	public String getColor();
 
