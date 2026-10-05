@@ -48,8 +48,17 @@ public interface ItemSelectorViewDescriptor<T> {
 
 	public ItemSelectorReturnType getItemSelectorReturnType();
 
+	/**
+	 * @deprecated As of Cavanaugh (7.4.x), replaced by {@link
+	 *             #getKeyPropertyName()}
+	 */
+	@Deprecated
 	public default String getKeyProperty() {
 		return "primaryKeyObj";
+	}
+
+	public default String getKeyPropertyName() {
+		return getKeyProperty();
 	}
 
 	public default String[] getOrderByKeys() {
