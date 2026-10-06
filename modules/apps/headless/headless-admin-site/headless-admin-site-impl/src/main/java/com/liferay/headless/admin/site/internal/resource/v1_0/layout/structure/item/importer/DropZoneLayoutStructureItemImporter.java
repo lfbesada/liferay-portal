@@ -85,15 +85,12 @@ public class DropZoneLayoutStructureItemImporter
 				dropZonePageElementDefinition,
 				layoutStructureItemImporterContext);
 
-		if (fragmentEntryReferences != null) {
-			dropZoneLayoutStructureItem.setFragmentEntriesJSONArray(
-				_toFragmentEntriesJSONArray(fragmentEntryReferences));
-			dropZoneLayoutStructureItem.setFragmentEntryKeys(
-				_toFragmentEntryKeys(fragmentEntryReferences));
+		if (fragmentEntryReferences == null) {
+			dropZoneLayoutStructureItem.setFragmentEntriesJSONArray(null);
 		}
 		else {
-			dropZoneLayoutStructureItem.setFragmentEntriesJSONArray(null);
-			dropZoneLayoutStructureItem.setFragmentEntryKeys(null);
+			dropZoneLayoutStructureItem.setFragmentEntriesJSONArray(
+				_toFragmentEntriesJSONArray(fragmentEntryReferences));
 		}
 
 		return dropZoneLayoutStructureItem;
@@ -136,15 +133,12 @@ public class DropZoneLayoutStructureItemImporter
 				fragmentEntryReferences) {
 
 			if (Validator.isNotNull(
-					fragmentEntryReference.getFragmentEntryKey())) {
+					fragmentEntryReference.getFragmentEntryERC())) {
 
 				jsonArray.put(
 					JSONUtil.put(
 						"fragmentEntryERC",
 						fragmentEntryReference.getFragmentEntryERC()
-					).put(
-						"fragmentEntryKey",
-						fragmentEntryReference.getFragmentEntryKey()
 					).put(
 						"fragmentEntryScopeERC",
 						fragmentEntryReference.getFragmentEntryScopeERC()
@@ -161,30 +155,6 @@ public class DropZoneLayoutStructureItemImporter
 		}
 
 		return jsonArray;
-	}
-
-	private List<String> _toFragmentEntryKeys(
-		List<FragmentEntryReference> fragmentEntryReferences) {
-
-		List<String> fragmentEntryKeys = new ArrayList<>();
-
-		for (FragmentEntryReference fragmentEntryReference :
-				fragmentEntryReferences) {
-
-			if (Validator.isNotNull(
-					fragmentEntryReference.getFragmentEntryKey())) {
-
-				fragmentEntryKeys.add(
-					fragmentEntryReference.getFragmentEntryKey());
-			}
-			else if (Validator.isNotNull(
-						fragmentEntryReference.getRendererKey())) {
-
-				fragmentEntryKeys.add(fragmentEntryReference.getRendererKey());
-			}
-		}
-
-		return fragmentEntryKeys;
 	}
 
 }
