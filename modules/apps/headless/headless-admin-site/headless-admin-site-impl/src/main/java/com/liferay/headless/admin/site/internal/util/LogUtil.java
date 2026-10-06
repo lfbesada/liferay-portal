@@ -6,6 +6,7 @@
 package com.liferay.headless.admin.site.internal.util;
 
 import com.liferay.exportimport.kernel.empty.model.EmptyModelManagerUtil;
+import com.liferay.exportimport.kernel.staging.MergeLayoutPrototypesThreadLocal;
 import com.liferay.headless.admin.site.dto.v1_0.ItemExternalReference;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
@@ -21,7 +22,9 @@ public class LogUtil {
 	public static void logOptionalReference(
 		Class<?> modelClass, String modelExternalReferenceCode, long scopeId) {
 
-		if (_log.isWarnEnabled()) {
+		if (_log.isWarnEnabled() &&
+			!MergeLayoutPrototypesThreadLocal.isInProgress()) {
+
 			StringBundler sb = new StringBundler(6);
 
 			sb.append("Optional reference generated for missing ");
@@ -48,7 +51,9 @@ public class LogUtil {
 	}
 
 	public static void logOptionalReference(String className) {
-		if (_log.isWarnEnabled()) {
+		if (_log.isWarnEnabled() &&
+			!MergeLayoutPrototypesThreadLocal.isInProgress()) {
+
 			StringBundler sb = new StringBundler(2);
 
 			sb.append("Optional reference generated for missing class name ");
@@ -64,7 +69,9 @@ public class LogUtil {
 		String className, String externalReferenceCode, Scope scope,
 		long scopeId) {
 
-		if (_log.isWarnEnabled()) {
+		if (_log.isWarnEnabled() &&
+			!MergeLayoutPrototypesThreadLocal.isInProgress()) {
+
 			StringBundler sb = new StringBundler(7);
 
 			sb.append("Optional reference generated for missing entity with ");
