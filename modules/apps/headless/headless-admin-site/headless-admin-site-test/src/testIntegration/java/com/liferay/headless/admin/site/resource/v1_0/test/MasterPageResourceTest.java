@@ -23,6 +23,7 @@ import com.liferay.headless.admin.site.client.pagination.Page;
 import com.liferay.headless.admin.site.client.problem.Problem;
 import com.liferay.headless.admin.site.client.resource.v1_0.MasterPageResource;
 import com.liferay.headless.admin.site.resource.v1_0.test.util.AssetTestUtil;
+import com.liferay.headless.admin.site.resource.v1_0.test.util.ConfigurationTemporarySwapperUtil;
 import com.liferay.headless.admin.site.resource.v1_0.test.util.FileEntryTestUtil;
 import com.liferay.headless.admin.site.resource.v1_0.test.util.LayoutPageTemplateEntryTestUtil;
 import com.liferay.headless.admin.site.resource.v1_0.test.util.PageElementsTestUtil;
@@ -54,6 +55,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
+import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
@@ -61,6 +63,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.search.test.util.IdempotentRetryAssert;
+import com.liferay.portal.security.configuration.URLFetchSecurityCompanyConfiguration;
 import com.liferay.portal.test.log.LogCapture;
 import com.liferay.portal.test.log.LogEntry;
 import com.liferay.portal.test.log.LoggerTestUtil;
@@ -883,8 +886,13 @@ public class MasterPageResourceTest extends BaseMasterPageResourceTestCase {
 
 		MasterPageResource masterPageResource = _getMasterPageResource();
 
-		MasterPage postMasterPage = masterPageResource.postSiteMasterPage(
-			testGroup.getExternalReferenceCode(), masterPage);
+		MasterPage postMasterPage = ConfigurationTemporarySwapperUtil.swap(
+			URLFetchSecurityCompanyConfiguration.class.getName(),
+			HashMapDictionaryBuilder.<String, Object>put(
+				"urlLocalNetworkAccessEnabled", true
+			).build(),
+			() -> masterPageResource.postSiteMasterPage(
+				testGroup.getExternalReferenceCode(), masterPage));
 
 		if (expectedExternalReferenceCode == null) {
 			ThumbnailURLReference postThumbnailURLReference =
@@ -909,9 +917,14 @@ public class MasterPageResourceTest extends BaseMasterPageResourceTestCase {
 
 		MasterPageResource masterPageResource = _getMasterPageResource();
 
-		MasterPage putMasterPage = masterPageResource.putSiteMasterPage(
-			testGroup.getExternalReferenceCode(),
-			masterPage.getExternalReferenceCode(), masterPage);
+		MasterPage putMasterPage = ConfigurationTemporarySwapperUtil.swap(
+			URLFetchSecurityCompanyConfiguration.class.getName(),
+			HashMapDictionaryBuilder.<String, Object>put(
+				"urlLocalNetworkAccessEnabled", true
+			).build(),
+			() -> masterPageResource.putSiteMasterPage(
+				testGroup.getExternalReferenceCode(),
+				masterPage.getExternalReferenceCode(), masterPage));
 
 		if (expectedExternalReferenceCode == null) {
 			ThumbnailURLReference putThumbnailURLReference =

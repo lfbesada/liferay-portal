@@ -29,6 +29,7 @@ import com.liferay.headless.admin.site.client.pagination.Page;
 import com.liferay.headless.admin.site.client.problem.Problem;
 import com.liferay.headless.admin.site.client.resource.v1_0.PageTemplateResource;
 import com.liferay.headless.admin.site.resource.v1_0.test.util.AssetTestUtil;
+import com.liferay.headless.admin.site.resource.v1_0.test.util.ConfigurationTemporarySwapperUtil;
 import com.liferay.headless.admin.site.resource.v1_0.test.util.FileEntryTestUtil;
 import com.liferay.headless.admin.site.resource.v1_0.test.util.LayoutPageTemplateEntryTestUtil;
 import com.liferay.headless.admin.site.resource.v1_0.test.util.PageSpecificationsTestUtil;
@@ -70,6 +71,7 @@ import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsUtil;
@@ -78,6 +80,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.search.test.util.IdempotentRetryAssert;
+import com.liferay.portal.security.configuration.URLFetchSecurityCompanyConfiguration;
 import com.liferay.portal.test.log.LogCapture;
 import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.FeatureFlag;
@@ -1169,9 +1172,13 @@ public class PageTemplateResourceTest extends BasePageTemplateResourceTestCase {
 
 		PageTemplateResource pageTemplateResource = _getPageTemplateResource();
 
-		PageTemplate postPageTemplate =
-			pageTemplateResource.postSitePageTemplate(
-				testGroup.getExternalReferenceCode(), pageTemplate);
+		PageTemplate postPageTemplate = ConfigurationTemporarySwapperUtil.swap(
+			URLFetchSecurityCompanyConfiguration.class.getName(),
+			HashMapDictionaryBuilder.<String, Object>put(
+				"urlLocalNetworkAccessEnabled", true
+			).build(),
+			() -> pageTemplateResource.postSitePageTemplate(
+				testGroup.getExternalReferenceCode(), pageTemplate));
 
 		if (expectedExternalReferenceCode == null) {
 			ThumbnailURLReference postThumbnailURLReference =
@@ -1210,9 +1217,14 @@ public class PageTemplateResourceTest extends BasePageTemplateResourceTestCase {
 
 		PageTemplateResource pageTemplateResource = _getPageTemplateResource();
 
-		PageTemplate putPageTemplate = pageTemplateResource.putSitePageTemplate(
-			testGroup.getExternalReferenceCode(),
-			pageTemplate.getExternalReferenceCode(), pageTemplate);
+		PageTemplate putPageTemplate = ConfigurationTemporarySwapperUtil.swap(
+			URLFetchSecurityCompanyConfiguration.class.getName(),
+			HashMapDictionaryBuilder.<String, Object>put(
+				"urlLocalNetworkAccessEnabled", true
+			).build(),
+			() -> pageTemplateResource.putSitePageTemplate(
+				testGroup.getExternalReferenceCode(),
+				pageTemplate.getExternalReferenceCode(), pageTemplate));
 
 		if (expectedExternalReferenceCode == null) {
 			ThumbnailURLReference putThumbnailURLReference =
@@ -1319,34 +1331,6 @@ public class PageTemplateResourceTest extends BasePageTemplateResourceTestCase {
 		assertValid(getPageTemplate);
 	}
 
-	private void _testGetSitePageTemplateWithNestedFields(
-			PageTemplate pageTemplate)
-		throws Exception {
-
-		PageTemplateResource pageTemplateResource = _getPageTemplateResource();
-
-		PageTemplate postPageTemplate =
-			pageTemplateResource.postSitePageTemplate(
-				testGroup.getExternalReferenceCode(), pageTemplate);
-
-		PageTemplate getPageTemplate = pageTemplateResource.getSitePageTemplate(
-			testGroup.getExternalReferenceCode(),
-			postPageTemplate.getExternalReferenceCode());
-
-		assertEquals(postPageTemplate, getPageTemplate);
-		assertValid(getPageTemplate);
-
-		LayoutPageTemplateEntry layoutPageTemplateEntry =
-			_layoutPageTemplateEntryLocalService.
-				getLayoutPageTemplateEntryByExternalReferenceCode(
-					getPageTemplate.getExternalReferenceCode(),
-					testGroup.getGroupId());
-
-		PageSpecificationsTestUtil.assertPageSpecifications(
-			_layoutLocalService.getLayout(layoutPageTemplateEntry.getPlid()),
-			getPageTemplate.getPageSpecifications());
-	}
-
 	private void _testGetSitePageTemplatesPageWithThumbnailAsNestedField()
 		throws Exception {
 
@@ -1399,6 +1383,34 @@ public class PageTemplateResourceTest extends BasePageTemplateResourceTestCase {
 				Assert.assertNull(pageTemplate.getThumbnailURLReference());
 			}
 		}
+	}
+
+	private void _testGetSitePageTemplateWithNestedFields(
+			PageTemplate pageTemplate)
+		throws Exception {
+
+		PageTemplateResource pageTemplateResource = _getPageTemplateResource();
+
+		PageTemplate postPageTemplate =
+			pageTemplateResource.postSitePageTemplate(
+				testGroup.getExternalReferenceCode(), pageTemplate);
+
+		PageTemplate getPageTemplate = pageTemplateResource.getSitePageTemplate(
+			testGroup.getExternalReferenceCode(),
+			postPageTemplate.getExternalReferenceCode());
+
+		assertEquals(postPageTemplate, getPageTemplate);
+		assertValid(getPageTemplate);
+
+		LayoutPageTemplateEntry layoutPageTemplateEntry =
+			_layoutPageTemplateEntryLocalService.
+				getLayoutPageTemplateEntryByExternalReferenceCode(
+					getPageTemplate.getExternalReferenceCode(),
+					testGroup.getGroupId());
+
+		PageSpecificationsTestUtil.assertPageSpecifications(
+			_layoutLocalService.getLayout(layoutPageTemplateEntry.getPlid()),
+			getPageTemplate.getPageSpecifications());
 	}
 
 	private void _testPatchSitePageTemplate(

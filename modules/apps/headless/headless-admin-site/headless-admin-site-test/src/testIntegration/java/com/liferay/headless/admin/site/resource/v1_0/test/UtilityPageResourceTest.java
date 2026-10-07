@@ -16,6 +16,7 @@ import com.liferay.headless.admin.site.client.dto.v1_0.UtilityPageSettings;
 import com.liferay.headless.admin.site.client.pagination.Page;
 import com.liferay.headless.admin.site.client.problem.Problem;
 import com.liferay.headless.admin.site.client.resource.v1_0.UtilityPageResource;
+import com.liferay.headless.admin.site.resource.v1_0.test.util.ConfigurationTemporarySwapperUtil;
 import com.liferay.headless.admin.site.resource.v1_0.test.util.FileEntryTestUtil;
 import com.liferay.headless.admin.site.resource.v1_0.test.util.LayoutUtilityPageEntryTestUtil;
 import com.liferay.headless.admin.site.resource.v1_0.test.util.PageSpecificationsTestUtil;
@@ -46,12 +47,14 @@ import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.DateFormatFactoryUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.search.test.util.IdempotentRetryAssert;
+import com.liferay.portal.security.configuration.URLFetchSecurityCompanyConfiguration;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -734,8 +737,13 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 
 		UtilityPageResource utilityPageResource = _getUtilityPageResource();
 
-		UtilityPage postUtilityPage = utilityPageResource.postSiteUtilityPage(
-			testGroup.getExternalReferenceCode(), utilityPage);
+		UtilityPage postUtilityPage = ConfigurationTemporarySwapperUtil.swap(
+			URLFetchSecurityCompanyConfiguration.class.getName(),
+			HashMapDictionaryBuilder.<String, Object>put(
+				"urlLocalNetworkAccessEnabled", true
+			).build(),
+			() -> utilityPageResource.postSiteUtilityPage(
+				testGroup.getExternalReferenceCode(), utilityPage));
 
 		if (expectedExternalReferenceCode == null) {
 			ThumbnailURLReference postThumbnailURLReference =
@@ -761,9 +769,14 @@ public class UtilityPageResourceTest extends BaseUtilityPageResourceTestCase {
 
 		UtilityPageResource utilityPageResource = _getUtilityPageResource();
 
-		UtilityPage putUtilityPage = utilityPageResource.putSiteUtilityPage(
-			testGroup.getExternalReferenceCode(),
-			utilityPage.getExternalReferenceCode(), utilityPage);
+		UtilityPage putUtilityPage = ConfigurationTemporarySwapperUtil.swap(
+			URLFetchSecurityCompanyConfiguration.class.getName(),
+			HashMapDictionaryBuilder.<String, Object>put(
+				"urlLocalNetworkAccessEnabled", true
+			).build(),
+			() -> utilityPageResource.putSiteUtilityPage(
+				testGroup.getExternalReferenceCode(),
+				utilityPage.getExternalReferenceCode(), utilityPage));
 
 		if (expectedExternalReferenceCode == null) {
 			ThumbnailURLReference putThumbnailURLReference =
