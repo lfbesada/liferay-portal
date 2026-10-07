@@ -8,8 +8,15 @@ package com.liferay.headless.admin.site.dto.v1_0.util;
 import com.liferay.exportimport.attachment.ExportImportAttachmentManagerUtil;
 import com.liferay.petra.io.StreamUtil;
 import com.liferay.petra.string.StringBundler;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.HttpUtil;
+import com.liferay.portal.kernel.util.InetAddressUtil;
+import com.liferay.portal.kernel.util.Validator;
+import com.liferay.portal.security.configuration.URLFetchSecurityCompanyConfiguration;
 
 import java.io.InputStream;
 
@@ -31,6 +38,15 @@ public class URLUtil {
 		if (Objects.equals(protocol, Http.HTTP) ||
 			Objects.equals(protocol, Http.HTTPS)) {
 
+			String host = url.getHost();
+
+			if (!_isAllowedHost(host)) {
+				throw new UnsupportedOperationException(
+					StringBundler.concat(
+						"Unable to download file from ", urlString,
+						" because of restricted host ", host));
+			}
+
 			return HttpUtil.URLtoByteArray(url.toString());
 		}
 
@@ -47,5 +63,37 @@ public class URLUtil {
 				"Unable to download file from ", urlString,
 				" because of unsupported protocol ", protocol));
 	}
+
+	private static boolean _isAllowedHost(String host) {
+		if (Validator.isNull(host)) {
+			return false;
+		}
+
+		try {
+			URLFetchSecurityCompanyConfiguration
+				urlFetchSecurityCompanyConfiguration =
+					ConfigurationProviderUtil.getCompanyConfiguration(
+						URLFetchSecurityCompanyConfiguration.class,
+						CompanyThreadLocal.getCompanyId());
+
+			if (urlFetchSecurityCompanyConfiguration.
+					urlLocalNetworkAccessEnabled()) {
+
+				return true;
+			}
+
+			return !InetAddressUtil.isLocalInetAddress(
+				InetAddressUtil.getInetAddressByName(host));
+		}
+		catch (Exception exception) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(exception);
+			}
+		}
+
+		return false;
+	}
+
+	private static final Log _log = LogFactoryUtil.getLog(URLUtil.class);
 
 }
