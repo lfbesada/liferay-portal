@@ -495,6 +495,30 @@ public class PageTemplateResourceTest extends BasePageTemplateResourceTestCase {
 		_testPostSitePageTemplateSetPageTemplate();
 	}
 
+	@Test
+	@TestInfo("LPD-107149")
+	public void testPostSitePageTemplateWithThumbnailURLReferenceURLBlockedInternalHost()
+		throws Exception {
+
+		PageTemplate pageTemplate = randomPageTemplate();
+
+		ThumbnailURLReference thumbnailURLReference =
+			new ThumbnailURLReference();
+
+		thumbnailURLReference.setExternalReferenceCode(
+			RandomTestUtil.randomString());
+		thumbnailURLReference.setUrl(_thumbnail1URL);
+
+		pageTemplate.setThumbnailURLReference(thumbnailURLReference);
+
+		PageTemplateResource pageTemplateResource = _getPageTemplateResource();
+
+		Assert.assertThrows(
+			Problem.ProblemException.class,
+			() -> pageTemplateResource.postSitePageTemplate(
+				testGroup.getExternalReferenceCode(), pageTemplate));
+	}
+
 	@Override
 	@Test
 	@TestInfo("LPD-92443")
