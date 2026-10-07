@@ -22,6 +22,7 @@ import java.io.InputStream;
 
 import java.net.URL;
 import java.net.URLConnection;
+import java.net.UnknownHostException;
 
 import java.util.Objects;
 
@@ -84,6 +85,13 @@ public class URLUtil {
 
 			return !InetAddressUtil.isLocalInetAddress(
 				InetAddressUtil.getInetAddressByName(host));
+		}
+		catch (UnknownHostException unknownHostException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(unknownHostException);
+			}
+
+			return true;
 		}
 		catch (Exception exception) {
 			if (_log.isDebugEnabled()) {
