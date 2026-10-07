@@ -126,8 +126,7 @@ public class InfoFieldItemSelectorViewDescriptorTest {
 			Assert.assertEquals(
 				infoField.getUniqueId(),
 				BeanPropertiesUtil.getObjectSilent(
-					infoField,
-					itemSelectorViewDescriptor.getKeyProperty()));
+					infoField, itemSelectorViewDescriptor.getKeyProperty()));
 		}
 	}
 
