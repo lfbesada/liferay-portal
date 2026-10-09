@@ -123,15 +123,14 @@ public class FreeMarkerFragmentEntryProcessor
 
 		UnsyncStringWriter unsyncStringWriter = new UnsyncStringWriter();
 
-		String content = "[#ftl] " + html;
-
-		if (fragmentEntryProcessorContext.isDisablePortletRender()) {
-			content = "[#ftl] " + _DISABLE_RUNTIME_PORTLET_FTL + html;
-		}
-
 		Template template = TemplateManagerUtil.getTemplate(
 			TemplateConstants.LANG_TYPE_FTL,
-			new StringTemplateResource("template_id", content), true);
+			new StringTemplateResource(
+				"template_id",
+				_getTemplateContent(
+					fragmentEntryProcessorContext.isDisablePortletRender(),
+					html)),
+			true);
 
 		template.put(TemplateConstants.WRITER, unsyncStringWriter);
 
@@ -273,9 +272,16 @@ public class FreeMarkerFragmentEntryProcessor
 		return message;
 	}
 
-	private static final String _DISABLE_RUNTIME_PORTLET_FTL =
-		"[#macro __noop args...][/#macro][#global liferay_portlet = " +
-			"liferay_portlet + {\"runtime\": __noop}]";
+	private String _getTemplateContent(
+		boolean disablePortletRender, String html) {
+
+		if (!disablePortletRender) {
+			return "[#ftl] " + html;
+		}
+
+		return "[#ftl] [#macro __noop args...][/#macro][#global " +
+			"liferay_portlet = liferay_portlet + {\"runtime\": __noop}]" + html;
+	}
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		FreeMarkerFragmentEntryProcessor.class);
