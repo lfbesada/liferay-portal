@@ -12,6 +12,7 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.utility.page.model.LayoutUtilityPageEntry;
 import com.liferay.layout.utility.page.service.LayoutUtilityPageEntryLocalService;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.change.tracking.CTCollectionThreadLocal;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -36,10 +37,23 @@ public class LayoutContentVersionCreatorImpl
 	public void createLayoutContentVersion(Layout layout) {
 		try {
 			if (!CTCollectionThreadLocal.isProductionMode() ||
-				!FeatureFlagManagerUtil.isEnabled(
-					layout.getCompanyId(), "LPD-10622") ||
 				!InitialRequestSyncUtil.isSynced() || !layout.isDraftLayout() ||
 				!layout.isTypeContent()) {
+
+				return;
+			}
+
+			if (!FeatureFlagManagerUtil.isEnabled(
+					layout.getCompanyId(), "LPD-10622")) {
+
+				if (_log.isDebugEnabled()) {
+					_log.debug(
+						StringBundler.concat(
+							"Skipping the layout content version for plid ",
+							layout.getPlid(),
+							" because layout content versioning is not ",
+							"enabled"));
+				}
 
 				return;
 			}
