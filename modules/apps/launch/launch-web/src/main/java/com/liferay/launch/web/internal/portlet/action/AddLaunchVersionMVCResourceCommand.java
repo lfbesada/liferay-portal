@@ -73,7 +73,7 @@ public class AddLaunchVersionMVCResourceCommand extends BaseMVCResourceCommand {
 			resourceRequest, "baseClassVersion");
 
 		LaunchEntryType.Version version = launchEntryType.addVersion(
-			classPK, baseClassVersion);
+			classPK, baseClassVersion, launchSetId);
 
 		JSONPortletResponseUtil.writeJSON(
 			resourceRequest, resourceResponse,

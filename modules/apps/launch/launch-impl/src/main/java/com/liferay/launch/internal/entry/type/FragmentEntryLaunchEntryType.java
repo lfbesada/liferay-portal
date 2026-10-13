@@ -110,7 +110,8 @@ public class FragmentEntryLaunchEntryType implements LaunchEntryType {
 	}
 
 	@Override
-	public Version addVersion(long classPK, String classVersion)
+	public Version addVersion(
+			long classPK, String classVersion, long launchSetId)
 		throws PortalException {
 
 		FragmentEntry fragmentEntry =

@@ -110,7 +110,7 @@ public class LayoutLaunchEntryType implements LaunchEntryType {
 	}
 
 	@Override
-	public Version addVersion(long classPK, String classVersion)
+	public Version addVersion(long classPK, String classVersion, long launchSetId)
 		throws PortalException {
 
 		Layout layout = _layoutLocalService.getLayout(classPK);
