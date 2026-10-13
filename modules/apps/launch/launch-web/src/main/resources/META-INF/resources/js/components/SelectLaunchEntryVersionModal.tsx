@@ -12,19 +12,31 @@ import {LaunchEntryVersion} from '../api/launches';
 import WorkflowStatusLabel from './WorkflowStatusLabel';
 
 interface Props {
+	baseClassVersion?: string;
 	launchEntryVersions: LaunchEntryVersion[];
 	onClose: () => void;
 	onSelect: (classVersion: string) => void;
 }
 
 export default function SelectLaunchEntryVersionModal({
+	baseClassVersion,
 	launchEntryVersions,
 	onClose: onCloseModal,
 	onSelect,
 }: Props) {
-	const [classVersion, setClassVersion] = useState(
-		launchEntryVersions[0]?.classVersion ?? ''
-	);
+	const [classVersion, setClassVersion] = useState(() => {
+		if (
+			baseClassVersion &&
+			launchEntryVersions.some(
+				(launchEntryVersion) =>
+					launchEntryVersion.classVersion === baseClassVersion
+			)
+		) {
+			return baseClassVersion;
+		}
+
+		return launchEntryVersions[0]?.classVersion ?? '';
+	});
 
 	const {observer, onClose} = useModal({onClose: onCloseModal});
 

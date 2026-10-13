@@ -53,6 +53,7 @@ export default function LaunchEntryBaseVersionCell({
 		})
 			.then((launchEntryVersions) =>
 				openSelectLaunchEntryVersionModal({
+					baseClassVersion: itemData.baseClassVersion,
 					launchEntryVersions: launchEntryVersions.filter(
 						(launchEntryVersion) =>
 							launchEntryVersion.classVersion !==

@@ -10,9 +10,11 @@ import {LaunchEntryVersion} from '../api/launches';
 import SelectLaunchEntryVersionModal from '../components/SelectLaunchEntryVersionModal';
 
 export default function openSelectLaunchEntryVersionModal({
+	baseClassVersion,
 	launchEntryVersions,
 	onSelect,
 }: {
+	baseClassVersion?: string;
 	launchEntryVersions: LaunchEntryVersion[];
 	onSelect: (classVersion: string) => void;
 }) {
@@ -22,6 +24,7 @@ export default function openSelectLaunchEntryVersionModal({
 
 	const root = render(
 		<SelectLaunchEntryVersionModal
+			baseClassVersion={baseClassVersion}
 			launchEntryVersions={launchEntryVersions}
 			onClose={() => {
 				root?.unmount();
