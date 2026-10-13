@@ -80,14 +80,16 @@ public class LayoutContentVersionModelListenerTest {
 		LaunchEntryType.Version publishedVersion =
 			launchEntryType.fetchPublishedVersion(classPK);
 
+		long launchSetId = RandomTestUtil.randomLong();
+
 		LaunchEntryType.Version version1 = launchEntryType.addVersion(
-			classPK, publishedVersion.getClassVersion());
+			classPK, publishedVersion.getClassVersion(), launchSetId);
 
 		LaunchEntryType.Version publishedVersion1 =
 			launchEntryType.publishVersion(classPK, version1.getClassVersion());
 
 		LaunchEntryType.Version version2 = launchEntryType.addVersion(
-			classPK, publishedVersion1.getClassVersion());
+			classPK, publishedVersion1.getClassVersion(), launchSetId);
 
 		launchEntryType.publishVersion(classPK, version2.getClassVersion());
 
