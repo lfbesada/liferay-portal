@@ -138,6 +138,12 @@ public class LayoutWorkflowHandler extends BaseWorkflowHandler<Layout> {
 
 		Layout draftLayout = layout.fetchDraftLayout();
 
+		if (draftLayout.getLaunchSetId() > 0) {
+			return _layoutLocalService.updateStatus(
+				userId, draftLayout.getPlid(),
+				WorkflowConstants.STATUS_READY_TO_PUBLISH, serviceContext1);
+		}
+
 		UnicodeProperties typeSettingsUnicodeProperties =
 			draftLayout.getTypeSettingsProperties();
 
