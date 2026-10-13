@@ -178,11 +178,13 @@ public class LayoutLaunchEntryType implements LaunchEntryType {
 
 		Layout layout = _layoutLocalService.getLayout(classPK);
 
-		versions.add(_toVersion(layout));
+		if (layout.isPublished()) {
+			versions.add(_toVersion(layout));
+		}
 
 		Layout draftLayout = layout.fetchDraftLayout();
 
-		if (draftLayout != null) {
+		if ((draftLayout != null) && draftLayout.isDraft()) {
 			versions.add(_toVersion(draftLayout));
 		}
 
