@@ -111,10 +111,15 @@ public class LayoutLaunchEntryType implements LaunchEntryType {
 			baseLayout = layout;
 		}
 
-		return _toVersion(
-			_copyLayoutContent(
-				baseLayout,
-				_addLaunchDraftLayout(layout, baseLayout, launchSetId)));
+		Layout launchDraftLayout = _layoutLocalService.fetchDraftLayout(
+			classPK, launchSetId);
+
+		if (launchDraftLayout == null) {
+			launchDraftLayout = _addLaunchDraftLayout(
+				layout, baseLayout, launchSetId);
+		}
+
+		return _toVersion(_copyLayoutContent(baseLayout, launchDraftLayout));
 	}
 
 	@Override
