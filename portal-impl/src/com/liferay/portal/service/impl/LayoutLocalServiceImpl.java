@@ -41,7 +41,6 @@ import com.liferay.portal.kernel.exception.SitemapChangeFrequencyException;
 import com.liferay.portal.kernel.exception.SitemapIncludeException;
 import com.liferay.portal.kernel.exception.SitemapPagePriorityException;
 import com.liferay.portal.kernel.exception.SystemException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.lazy.referencing.LazyReferencingThreadLocal;
 import com.liferay.portal.kernel.lock.LockManagerUtil;
@@ -1210,24 +1209,7 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 
 	@Override
 	public Layout fetchDraftLayout(long plid) {
-		if (plid <= 0) {
-			return null;
-		}
-
-		List<Layout> layouts = ListUtil.filter(
-			layoutPersistence.findByC_C(
-				_classNameLocalService.getClassNameId(Layout.class), plid),
-			layout -> !_isLaunchDraft(layout));
-
-		if (layouts.isEmpty()) {
-			return null;
-		}
-
-		if ((layouts.size() > 1) && _log.isWarnEnabled()) {
-			_log.warn("More than one draft layout uses layout ID " + plid);
-		}
-
-		return layouts.get(layouts.size() - 1);
+		return fetchDraftLayout(plid, 0);
 	}
 
 	@Override
@@ -1277,13 +1259,9 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		}
 
 		for (Layout draftLayout :
-				layoutPersistence.findByC_C(
-					_classNameLocalService.getClassNameId(Layout.class),
-					plids)) {
-
-			if (_isLaunchDraft(draftLayout)) {
-				continue;
-			}
+				layoutPersistence.findByC_C_L(
+					_classNameLocalService.getClassNameId(Layout.class), plids,
+					0)) {
 
 			draftLayouts.put(
 				layoutsMap.get(draftLayout.getClassPK()), draftLayout);
@@ -4585,19 +4563,6 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 		}
 
 		return layouts;
-	}
-
-	private boolean _isLaunchDraft(Layout layout) {
-		if (!FeatureFlagManagerUtil.isEnabled(
-				layout.getCompanyId(), "LPD-72278")) {
-
-			return false;
-		}
-
-		String externalReferenceCode = layout.getExternalReferenceCode();
-
-		return externalReferenceCode.contains(
-			LayoutConstants.EXTERNAL_REFERENCE_CODE_INFIX_LAUNCH_DRAFT);
 	}
 
 	private boolean _mergeLayout(Layout layout, Object... arguments)
