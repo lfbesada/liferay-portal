@@ -70,7 +70,7 @@ public class LayoutLaunchEntryType implements LaunchEntryType {
 
 		if (!layout.isTypeContent() || layout.isDraftLayout()) {
 			throw new PortalException(
-				"The page must be a published content page");
+				"The layout must be the public layout of a content page");
 		}
 
 		Layout launchDraftLayout = _fetchLayout(classPK, classVersion);
