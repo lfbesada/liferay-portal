@@ -149,11 +149,8 @@ public class LayoutLocalServiceWrapper
 			false, sourceLayout, sourceSegmentsExperiencesIds, targetLayout,
 			targetSegmentsExperiencesIds);
 
-		String externalReferenceCode = sourceLayout.getExternalReferenceCode();
-
 		if ((sourceLayout.getClassPK() == targetLayout.getPlid()) &&
-			!externalReferenceCode.contains(
-				LayoutConstants.EXTERNAL_REFERENCE_CODE_INFIX_LAUNCH_DRAFT)) {
+			(sourceLayout.getLaunchSetId() == 0)) {
 
 			_createLayoutContentVersion(sourceLayout);
 		}
