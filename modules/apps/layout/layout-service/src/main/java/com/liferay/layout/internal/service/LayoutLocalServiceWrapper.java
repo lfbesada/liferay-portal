@@ -1012,6 +1012,28 @@ public class LayoutLocalServiceWrapper
 		return layoutPortletIds;
 	}
 
+	private String _getOriginalFragmentEntryLinkERC(
+		Layout sourceLayout, Layout targetLayout,
+		FragmentEntryLink sourceLayoutFragmentEntryLink) {
+
+		if (sourceLayout.getClassPK() == targetLayout.getPlid()) {
+			return sourceLayoutFragmentEntryLink.getExternalReferenceCode();
+		}
+
+		if (targetLayout.getLaunchSetId() > 0) {
+			if (sourceLayout.getPlid() == targetLayout.getClassPK()) {
+				return sourceLayoutFragmentEntryLink.
+					getOriginalFragmentEntryLinkERC();
+			}
+
+			if (sourceLayout.getClassPK() == targetLayout.getClassPK()) {
+				return sourceLayoutFragmentEntryLink.getExternalReferenceCode();
+			}
+		}
+
+		return null;
+	}
+
 	private String _getScopeExternalReferenceCode(
 			String externalReferenceCode, String scopeExternalReferenceCode,
 			long sourceGroupId, Layout targetLayout)
@@ -1379,14 +1401,10 @@ public class LayoutLocalServiceWrapper
 				newFragmentEntryLink.setModifiedDate(
 					serviceContext.getModifiedDate(new Date()));
 
-				if (sourceLayout.getClassPK() == targetLayout.getPlid()) {
-					newFragmentEntryLink.setOriginalFragmentEntryLinkERC(
-						sourceLayoutFragmentEntryLink.
-							getExternalReferenceCode());
-				}
-				else {
-					newFragmentEntryLink.setOriginalFragmentEntryLinkERC(null);
-				}
+				newFragmentEntryLink.setOriginalFragmentEntryLinkERC(
+					_getOriginalFragmentEntryLinkERC(
+						sourceLayout, targetLayout,
+						sourceLayoutFragmentEntryLink));
 
 				newFragmentEntryLink.setFragmentEntryScopeERC(
 					_getScopeExternalReferenceCode(
@@ -1429,16 +1447,10 @@ public class LayoutLocalServiceWrapper
 				targetLayoutFragmentEntryLink.setModifiedDate(
 					serviceContext.getModifiedDate(new Date()));
 
-				if (sourceLayout.getClassPK() == targetLayout.getPlid()) {
-					targetLayoutFragmentEntryLink.
-						setOriginalFragmentEntryLinkERC(
-							sourceLayoutFragmentEntryLink.
-								getExternalReferenceCode());
-				}
-				else {
-					targetLayoutFragmentEntryLink.
-						setOriginalFragmentEntryLinkERC(null);
-				}
+				targetLayoutFragmentEntryLink.setOriginalFragmentEntryLinkERC(
+					_getOriginalFragmentEntryLinkERC(
+						sourceLayout, targetLayout,
+						sourceLayoutFragmentEntryLink));
 
 				targetLayoutFragmentEntryLink.setSegmentsExperienceId(
 					targetSegmentsExperienceId);
