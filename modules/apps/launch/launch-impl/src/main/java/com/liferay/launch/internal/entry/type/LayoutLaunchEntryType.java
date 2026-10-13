@@ -7,14 +7,18 @@ package com.liferay.launch.internal.entry.type;
 
 import com.liferay.item.selector.ItemSelectorCriterion;
 import com.liferay.launch.entry.type.LaunchEntryType;
+import com.liferay.layout.content.creator.LayoutContentVersionCreator;
 import com.liferay.layout.item.selector.LayoutItemSelectorCriterion;
 import com.liferay.layout.item.selector.LayoutItemSelectorReturnType;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -67,9 +71,13 @@ public class LayoutLaunchEntryType implements LaunchEntryType {
 			return _toVersion(layout);
 		}
 
-		layout = _copyLayoutContent(launchDraftLayout, layout);
-
 		Layout draftLayout = layout.fetchDraftLayout();
+
+		if (draftLayout.isDraft()) {
+			_createLayoutContentVersion(draftLayout);
+		}
+
+		_copyLayoutContent(launchDraftLayout, layout);
 
 		if (draftLayout.getPlid() != launchDraftLayout.getPlid()) {
 			_copyLayoutContent(launchDraftLayout, draftLayout);
@@ -220,6 +228,22 @@ public class LayoutLaunchEntryType implements LaunchEntryType {
 		return _layoutLocalService.getLayout(targetLayout.getPlid());
 	}
 
+	private void _createLayoutContentVersion(Layout sourceLayout) {
+		LayoutContentVersionCreator layoutContentVersionCreator =
+			_layoutContentVersionCreatorSnapshot.get();
+
+		if (layoutContentVersionCreator == null) {
+			if (_log.isDebugEnabled()) {
+				_log.debug("Layout content version creator is null");
+			}
+
+			return;
+		}
+
+		layoutContentVersionCreator.createLayoutContentVersion(
+			sourceLayout, WorkflowConstants.STATUS_DRAFT);
+	}
+
 	private Layout _fetchLayout(long classPK, String classVersion) {
 		Layout layout = _layoutLocalService.fetchLayout(
 			GetterUtil.getLong(classVersion));
@@ -333,6 +357,14 @@ public class LayoutLaunchEntryType implements LaunchEntryType {
 
 		};
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		LayoutLaunchEntryType.class);
+
+	private static final Snapshot<LayoutContentVersionCreator>
+		_layoutContentVersionCreatorSnapshot = new Snapshot<>(
+			LayoutLaunchEntryType.class, LayoutContentVersionCreator.class,
+			null, true);
 
 	@Reference
 	private Language _language;
