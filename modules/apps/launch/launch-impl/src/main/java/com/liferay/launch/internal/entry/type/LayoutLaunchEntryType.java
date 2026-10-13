@@ -5,11 +5,19 @@
 
 package com.liferay.launch.internal.entry.type;
 
+import com.liferay.fragment.service.FragmentEntryLinkLocalService;
 import com.liferay.item.selector.ItemSelectorCriterion;
 import com.liferay.launch.entry.type.LaunchEntryType;
+import com.liferay.layout.constants.LayoutTypeSettingsConstants;
 import com.liferay.layout.content.creator.LayoutContentVersionCreator;
 import com.liferay.layout.item.selector.LayoutItemSelectorCriterion;
 import com.liferay.layout.item.selector.LayoutItemSelectorReturnType;
+import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
+import com.liferay.layout.page.template.model.LayoutPageTemplateStructureRel;
+import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
+import com.liferay.layout.page.template.service.LayoutPageTemplateStructureRelLocalService;
+import com.liferay.layout.util.structure.DeletedLayoutStructureItem;
+import com.liferay.layout.util.structure.LayoutStructure;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.Language;
@@ -20,6 +28,7 @@ import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.portlet.RequestBackedPortletURLFactory;
+import com.liferay.portal.kernel.search.IndexStatusManagerThreadLocal;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
@@ -28,6 +37,7 @@ import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import java.io.Serializable;
@@ -77,17 +87,15 @@ public class LayoutLaunchEntryType implements LaunchEntryType {
 			_createLayoutContentVersion(draftLayout);
 		}
 
-		_copyLayoutContent(launchDraftLayout, layout);
-
 		if (draftLayout.getPlid() != launchDraftLayout.getPlid()) {
-			_copyLayoutContent(launchDraftLayout, draftLayout);
+			draftLayout = _copyLayoutContent(launchDraftLayout, draftLayout);
 		}
 
 		if (launchDraftLayout.getLaunchSetId() > 0) {
 			_layoutLocalService.deleteLayout(launchDraftLayout);
 		}
 
-		return fetchPublishedVersion(classPK);
+		return _toVersion(_publishLayout(draftLayout, layout));
 	}
 
 	@Override
@@ -244,6 +252,45 @@ public class LayoutLaunchEntryType implements LaunchEntryType {
 			sourceLayout, WorkflowConstants.STATUS_DRAFT);
 	}
 
+	private void _deleteMarkedForDeletionItems(
+			long groupId, long plid, long userId)
+		throws PortalException {
+
+		LayoutPageTemplateStructure layoutPageTemplateStructure =
+			_layoutPageTemplateStructureLocalService.
+				fetchLayoutPageTemplateStructure(groupId, plid);
+
+		if (layoutPageTemplateStructure == null) {
+			return;
+		}
+
+		_fragmentEntryLinkLocalService.deleteFragmentEntryLinks(
+			groupId, plid, true);
+
+		for (LayoutPageTemplateStructureRel layoutPageTemplateStructureRel :
+				_layoutPageTemplateStructureRelLocalService.
+					getLayoutPageTemplateStructureRels(
+						layoutPageTemplateStructure.
+							getLayoutPageTemplateStructureId())) {
+
+			LayoutStructure layoutStructure = LayoutStructure.of(
+				layoutPageTemplateStructureRel.getData());
+
+			for (DeletedLayoutStructureItem deletedLayoutStructureItem :
+					layoutStructure.getDeletedLayoutStructureItems()) {
+
+				layoutStructure.deleteLayoutStructureItem(
+					deletedLayoutStructureItem.getItemId());
+			}
+
+			_layoutPageTemplateStructureLocalService.
+				updateLayoutPageTemplateStructureData(
+					userId, groupId, plid,
+					layoutPageTemplateStructureRel.getSegmentsExperienceId(),
+					layoutStructure.toString());
+		}
+	}
+
 	private Layout _fetchLayout(long classPK, String classVersion) {
 		Layout layout = _layoutLocalService.fetchLayout(
 			GetterUtil.getLong(classVersion));
@@ -286,6 +333,48 @@ public class LayoutLaunchEntryType implements LaunchEntryType {
 		}
 
 		return _language.get(locale, "draft");
+	}
+
+	private Layout _publishLayout(Layout draftLayout, Layout layout)
+		throws PortalException {
+
+		ServiceContext serviceContext =
+			ServiceContextThreadLocal.getServiceContext();
+
+		long userId = serviceContext.getUserId();
+
+		boolean indexReadOnly = IndexStatusManagerThreadLocal.isIndexReadOnly();
+
+		IndexStatusManagerThreadLocal.setIndexReadOnly(true);
+
+		try {
+			layout = _copyLayoutContent(draftLayout, layout);
+		}
+		finally {
+			IndexStatusManagerThreadLocal.setIndexReadOnly(indexReadOnly);
+		}
+
+		_deleteMarkedForDeletionItems(
+			draftLayout.getGroupId(), draftLayout.getPlid(), userId);
+
+		draftLayout = _layoutLocalService.getLayout(draftLayout.getPlid());
+
+		UnicodeProperties typeSettingsUnicodeProperties =
+			draftLayout.getTypeSettingsProperties();
+
+		typeSettingsUnicodeProperties.remove(
+			LayoutTypeSettingsConstants.KEY_DESIGN_CONFIGURATION_MODIFIED);
+
+		typeSettingsUnicodeProperties.put(
+			LayoutTypeSettingsConstants.KEY_PUBLISHED, Boolean.TRUE.toString());
+
+		draftLayout.setStatus(WorkflowConstants.STATUS_APPROVED);
+
+		_layoutLocalService.updateLayout(draftLayout);
+
+		layout.setStatus(WorkflowConstants.STATUS_APPROVED);
+
+		return _layoutLocalService.updateLayout(layout);
 	}
 
 	private Version _toVersion(Layout layout) {
@@ -367,10 +456,21 @@ public class LayoutLaunchEntryType implements LaunchEntryType {
 			null, true);
 
 	@Reference
+	private FragmentEntryLinkLocalService _fragmentEntryLinkLocalService;
+
+	@Reference
 	private Language _language;
 
 	@Reference
 	private LayoutLocalService _layoutLocalService;
+
+	@Reference
+	private LayoutPageTemplateStructureLocalService
+		_layoutPageTemplateStructureLocalService;
+
+	@Reference
+	private LayoutPageTemplateStructureRelLocalService
+		_layoutPageTemplateStructureRelLocalService;
 
 	@Reference
 	private Portal _portal;
