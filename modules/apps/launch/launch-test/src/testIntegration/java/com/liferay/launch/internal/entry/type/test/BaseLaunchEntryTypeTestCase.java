@@ -153,7 +153,7 @@ public abstract class BaseLaunchEntryTypeTestCase {
 		LaunchEntryType launchEntryType = getLaunchEntryType();
 
 		LaunchEntryType.Version rebranchedVersion = launchEntryType.addVersion(
-			classPK, version1.getClassVersion());
+			classPK, version1.getClassVersion(), RandomTestUtil.randomLong());
 
 		Assert.assertNotEquals(
 			version1.getClassVersion(), rebranchedVersion.getClassVersion());
@@ -315,7 +315,8 @@ public abstract class BaseLaunchEntryTypeTestCase {
 
 			Assert.assertNotNull(
 				classVersion,
-				launchEntryType.addVersion(classPK, classVersion));
+				launchEntryType.addVersion(
+					classPK, classVersion, RandomTestUtil.randomLong()));
 		}
 	}
 
@@ -365,7 +366,8 @@ public abstract class BaseLaunchEntryTypeTestCase {
 		LaunchEntryType.Version publishedVersion = getPublishedVersion(classPK);
 
 		return launchEntryType.addVersion(
-			classPK, publishedVersion.getClassVersion());
+			classPK, publishedVersion.getClassVersion(),
+			RandomTestUtil.randomLong());
 	}
 
 	protected void assertLiveEntryIsUnchanged(long classPK) throws Exception {

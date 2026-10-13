@@ -74,7 +74,8 @@ public class LayoutLaunchEntryTypeTest extends BaseLaunchEntryTypeTestCase {
 		Assert.assertEquals(title2, getEntryTitle(classPK));
 
 		LaunchEntryType.Version rebranchedVersion = launchEntryType.addVersion(
-			classPK, publishedVersion1.getClassVersion());
+			classPK, publishedVersion1.getClassVersion(),
+			RandomTestUtil.randomLong());
 
 		Assert.assertEquals(
 			title1, rebranchedVersion.getTitle(LocaleUtil.getSiteDefault()));

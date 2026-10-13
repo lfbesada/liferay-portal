@@ -224,7 +224,8 @@ public class LaunchSetPublisherTest {
 
 		LaunchEntryType.Version draftVersion = launchEntryType.addVersion(
 			journalArticle.getResourcePrimKey(),
-			String.valueOf(journalArticle.getVersion()));
+			String.valueOf(journalArticle.getVersion()),
+			RandomTestUtil.randomLong());
 
 		JournalArticle launchDraftJournalArticle =
 			_journalArticleLocalService.getArticle(
