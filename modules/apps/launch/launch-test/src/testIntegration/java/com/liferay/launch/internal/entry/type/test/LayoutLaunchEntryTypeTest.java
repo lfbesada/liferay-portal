@@ -9,19 +9,17 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.launch.entry.type.LaunchEntryType;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
-import com.liferay.portal.kernel.security.permission.PermissionChecker;
-import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
-import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
 import com.liferay.portal.kernel.service.LayoutLocalService;
-import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
-import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.TreeMapBuilder;
+import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.FeatureFlags;
@@ -45,49 +43,34 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class LayoutLaunchEntryTypeTest extends BaseLaunchEntryTypeTestCase {
 
-	@Override
-	@Test
-	public void testAddVersion() throws Exception {
-		super.testAddVersion();
-
-		long classPK = addEntry();
-
-		LaunchEntryType launchEntryType = getLaunchEntryType();
-
-		String title1 = RandomTestUtil.randomString();
-
-		LaunchEntryType.Version version1 = addVersion(classPK);
-
-		updateEntry(title1, version1);
-
-		LaunchEntryType.Version publishedVersion1 =
-			launchEntryType.publishVersion(classPK, version1.getClassVersion());
-
-		String title2 = RandomTestUtil.randomString();
-
-		LaunchEntryType.Version version2 = addVersion(classPK);
-
-		updateEntry(title2, version2);
-
-		launchEntryType.publishVersion(classPK, version2.getClassVersion());
-
-		Assert.assertEquals(title2, getEntryTitle(classPK));
-
-		LaunchEntryType.Version rebranchedVersion = launchEntryType.addVersion(
-			classPK, publishedVersion1.getClassVersion(),
-			RandomTestUtil.randomLong());
-
-		Assert.assertEquals(
-			title1, rebranchedVersion.getTitle(LocaleUtil.getSiteDefault()));
-	}
-
 	@Test
 	public void testGetPreviewBaseModel() throws Exception {
 		long classPK = addEntry();
 
-		Layout layout = _layoutLocalService.getLayout(classPK);
-
 		LaunchEntryType launchEntryType = getLaunchEntryType();
+
+		LaunchEntryType.Version version = addVersion(classPK);
+
+		Layout launchDraftLayout = (Layout)version.getPreviewBaseModel();
+
+		Assert.assertEquals(
+			GetterUtil.getLong(version.getClassVersion()),
+			launchDraftLayout.getPlid());
+
+		LaunchEntryType.Version publishedVersion =
+			launchEntryType.publishVersion(classPK, version.getClassVersion());
+
+		Layout previewLayout = (Layout)publishedVersion.getPreviewBaseModel();
+
+		Assert.assertEquals(classPK, previewLayout.getPlid());
+	}
+
+	@Override
+	@Test
+	public void testGetPrimaryKey() throws Exception {
+		long classPK = addEntry();
+
+		String entryTitle = getEntryTitle(classPK);
 
 		String title1 = RandomTestUtil.randomString();
 
@@ -95,92 +78,43 @@ public class LayoutLaunchEntryTypeTest extends BaseLaunchEntryTypeTestCase {
 
 		updateEntry(title1, version1);
 
-		Layout launchDraftLayout = (Layout)version1.getPreviewBaseModel();
-
-		Assert.assertEquals(
-			GetterUtil.getLong(version1.getClassVersion()),
-			launchDraftLayout.getPlid());
-
-		Assert.assertEquals(
-			layout.getFriendlyURL(), launchDraftLayout.getFriendlyURL());
-		Assert.assertEquals(
-			layout.getFriendlyURL(LocaleUtil.getSiteDefault()),
-			launchDraftLayout.getFriendlyURL(LocaleUtil.getSiteDefault()));
-		Assert.assertEquals(
-			layout.getFriendlyURLMap(), launchDraftLayout.getFriendlyURLMap());
-
-		LaunchEntryType.Version publishedVersion1 =
-			launchEntryType.publishVersion(classPK, version1.getClassVersion());
-
-		Assert.assertEquals(
-			classPK,
-			_getPreviewBaseModelPlid(
-				classPK, publishedVersion1.getClassVersion()));
-
 		String title2 = RandomTestUtil.randomString();
 
 		LaunchEntryType.Version version2 = addVersion(classPK);
 
 		updateEntry(title2, version2);
 
-		LaunchEntryType.Version publishedVersion2 =
-			launchEntryType.publishVersion(classPK, version2.getClassVersion());
+		try (SafeCloseable safeCloseable = setPreviewIdWithSafeCloseable(
+				classPK, version1)) {
 
-		long previewPlid = _getPreviewBaseModelPlid(
-			classPK, publishedVersion1.getClassVersion());
-
-		Assert.assertNotEquals(classPK, previewPlid);
-
-		Layout draftLayout = _layoutLocalService.fetchDraftLayout(classPK);
-
-		Assert.assertNotEquals(draftLayout.getPlid(), previewPlid);
-
-		Layout previewLayout = _layoutLocalService.getLayout(previewPlid);
-
-		Assert.assertEquals(
-			title1, previewLayout.getName(LocaleUtil.getSiteDefault()));
-
-		Assert.assertEquals(
-			previewPlid,
-			_getPreviewBaseModelPlid(
-				classPK, publishedVersion1.getClassVersion()));
-
-		List<String> classVersions = TransformUtil.transform(
-			launchEntryType.getVersions(classPK, LocaleUtil.getSiteDefault()),
-			LaunchEntryType.Version::getClassVersion);
-
-		Assert.assertFalse(
-			classVersions.toString(),
-			classVersions.contains(String.valueOf(previewPlid)));
-
-		LaunchEntryType.Version version3 = addVersion(classPK);
-
-		updateEntry(RandomTestUtil.randomString(), version3);
-
-		launchEntryType.publishVersion(classPK, version3.getClassVersion());
-
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		ServiceContextThreadLocal.popServiceContext();
-
-		try {
-			PermissionThreadLocal.setPermissionChecker(
-				PermissionCheckerFactoryUtil.create(
-					_userLocalService.getGuestUser(group.getCompanyId())));
-
-			previewLayout = _layoutLocalService.getLayout(
-				_getPreviewBaseModelPlid(
-					classPK, publishedVersion2.getClassVersion()));
-
-			Assert.assertEquals(
-				title2, previewLayout.getName(LocaleUtil.getSiteDefault()));
+			Assert.assertEquals(title1, getEntryTitle(classPK));
 		}
-		finally {
-			PermissionThreadLocal.setPermissionChecker(permissionChecker);
 
-			ServiceContextThreadLocal.pushServiceContext(serviceContext);
+		try (SafeCloseable safeCloseable = setPreviewIdWithSafeCloseable(
+				classPK, version2)) {
+
+			Assert.assertEquals(title2, getEntryTitle(classPK));
 		}
+
+		Assert.assertEquals(entryTitle, getEntryTitle(classPK));
+	}
+
+	@Override
+	@Test
+	public void testGetVersions() throws Exception {
+		long classPK = addEntry();
+
+		LaunchEntryType launchEntryType = getLaunchEntryType();
+
+		List<LaunchEntryType.Version> versions = launchEntryType.getVersions(
+			classPK, LocaleUtil.getSiteDefault());
+
+		Assert.assertEquals(versions.toString(), 1, versions.size());
+		Assert.assertEquals(
+			String.valueOf(classPK),
+			versions.get(
+				0
+			).getClassVersion());
 	}
 
 	@Override
@@ -217,7 +151,11 @@ public class LayoutLaunchEntryTypeTest extends BaseLaunchEntryTypeTestCase {
 	protected String getEntryTitle(long classPK) throws Exception {
 		Layout layout = _layoutLocalService.getLayout(classPK);
 
-		return layout.getName(LocaleUtil.getSiteDefault());
+		UnicodeProperties typeSettingsUnicodeProperties =
+			layout.getTypeSettingsProperties();
+
+		return typeSettingsUnicodeProperties.getProperty(
+			_DRAFTABLE_TITLE_KEY, StringPool.BLANK);
 	}
 
 	@Override
@@ -261,37 +199,51 @@ public class LayoutLaunchEntryTypeTest extends BaseLaunchEntryTypeTestCase {
 	}
 
 	@Override
+	protected String getVersionTitle(LaunchEntryType.Version version)
+		throws Exception {
+
+		Layout layout = (Layout)version.getPreviewBaseModel();
+
+		UnicodeProperties typeSettingsUnicodeProperties =
+			layout.getTypeSettingsProperties();
+
+		return typeSettingsUnicodeProperties.getProperty(
+			_DRAFTABLE_TITLE_KEY, StringPool.BLANK);
+	}
+
+	@Override
 	protected void updateEntry(String title, LaunchEntryType.Version version)
 		throws Exception {
 
-		_layoutLocalService.updateName(
-			GetterUtil.getLong(version.getPrimaryKey()), title,
-			LocaleUtil.toLanguageId(LocaleUtil.getSiteDefault()));
+		_updateDraftableTitle(
+			GetterUtil.getLong(version.getPrimaryKey()), title);
 	}
 
 	@Override
 	protected void updateLiveEntry(String title, long classPK)
 		throws Exception {
 
-		_layoutLocalService.updateName(
-			classPK, title,
-			LocaleUtil.toLanguageId(LocaleUtil.getSiteDefault()));
+		_updateDraftableTitle(classPK, title);
 	}
 
-	private long _getPreviewBaseModelPlid(long classPK, String classVersion)
+	private void _updateDraftableTitle(long plid, String title)
 		throws Exception {
 
-		LaunchEntryType.Version version = getVersion(classPK, classVersion);
+		Layout layout = _layoutLocalService.getLayout(plid);
 
-		Layout layout = (Layout)version.getPreviewBaseModel();
+		UnicodeProperties typeSettingsUnicodeProperties =
+			layout.getTypeSettingsProperties();
 
-		return layout.getPlid();
+		typeSettingsUnicodeProperties.setProperty(_DRAFTABLE_TITLE_KEY, title);
+
+		layout.setTypeSettingsProperties(typeSettingsUnicodeProperties);
+
+		_layoutLocalService.updateLayout(layout);
 	}
+
+	private static final String _DRAFTABLE_TITLE_KEY = "test-draftable-title";
 
 	@Inject
 	private LayoutLocalService _layoutLocalService;
-
-	@Inject
-	private UserLocalService _userLocalService;
 
 }
