@@ -29,7 +29,8 @@ public interface LaunchEntryType {
 	public Version addPublishedVersion(long classPK, String classVersion)
 		throws PortalException;
 
-	public Version addVersion(long classPK, String classVersion)
+	public Version addVersion(
+			long classPK, String classVersion, long launchSetId)
 		throws PortalException;
 
 	public Version fetchPublishedVersion(long classPK) throws PortalException;

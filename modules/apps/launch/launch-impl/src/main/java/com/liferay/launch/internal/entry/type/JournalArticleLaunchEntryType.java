@@ -85,7 +85,8 @@ public class JournalArticleLaunchEntryType implements LaunchEntryType {
 	}
 
 	@Override
-	public Version addVersion(long classPK, String classVersion)
+	public Version addVersion(
+			long classPK, String classVersion, long launchSetId)
 		throws PortalException {
 
 		JournalArticle journalArticle =
