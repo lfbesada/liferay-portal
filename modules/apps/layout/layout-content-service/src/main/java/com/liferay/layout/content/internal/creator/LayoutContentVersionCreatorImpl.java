@@ -35,6 +35,11 @@ public class LayoutContentVersionCreatorImpl
 
 	@Override
 	public void createLayoutContentVersion(Layout layout) {
+		createLayoutContentVersion(layout, WorkflowConstants.STATUS_APPROVED);
+	}
+
+	@Override
+	public void createLayoutContentVersion(Layout layout, int status) {
 		try {
 			if (!CTCollectionThreadLocal.isProductionMode() ||
 				!InitialRequestSyncUtil.isSynced() || !layout.isDraftLayout() ||
@@ -88,8 +93,7 @@ public class LayoutContentVersionCreatorImpl
 				null, layout.getUserId(),
 				_layoutContentVersionDataProvider.getLayoutContentVersionData(
 					layout, serviceContext),
-				layout.getNameMap(), layout.getPlid(),
-				WorkflowConstants.STATUS_APPROVED);
+				layout.getNameMap(), layout.getPlid(), status);
 		}
 		catch (Exception exception) {
 			_log.error(
