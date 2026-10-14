@@ -17,4 +17,6 @@ public interface LayoutContentVersionCreator {
 
 	public void createLayoutContentVersion(Layout layout);
 
+	public void createLayoutContentVersion(Layout layout, int status);
+
 }
