@@ -64,7 +64,8 @@ public class JournalArticleLaunchEntryManagerTest
 			entryValuesMap,
 			getDraftValuesMap(
 				launchEntryManager.addDraft(
-					classPK, publishedVersion.getVersionKey())));
+					classPK, RandomTestUtil.randomLong(),
+					publishedVersion.getVersionKey())));
 	}
 
 	@Test
