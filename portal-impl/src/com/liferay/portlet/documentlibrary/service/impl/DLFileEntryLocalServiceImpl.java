@@ -2198,7 +2198,10 @@ public class DLFileEntryLocalServiceImpl
 
 			if (Objects.equals(
 					dlFileVersion.getVersion(),
-					DLFileEntryConstants.VERSION_DEFAULT)) {
+					DLFileEntryConstants.VERSION_DEFAULT) &&
+				((status != WorkflowConstants.STATUS_EXPIRED) ||
+				 ((serviceContext != null) &&
+				  !serviceContext.isIndexingEnabled()))) {
 
 				Indexer<DLFileEntry> indexer =
 					IndexerRegistryUtil.nullSafeGetIndexer(DLFileEntry.class);
@@ -3722,14 +3725,16 @@ public class DLFileEntryLocalServiceImpl
 				_dlFileVersionLocalService.fetchLatestFileVersion(
 					dlFileEntry.getFileEntryId(), false);
 
-			if (WorkflowConstants.STATUS_SCHEDULED ==
+			if (WorkflowConstants.STATUS_SCHEDULED !=
 					latestFileVersion.getStatus()) {
 
-				updateStatus(
-					userId, dlFileEntry, latestFileVersion,
-					WorkflowConstants.STATUS_APPROVED, serviceContext,
-					workflowContext);
+				continue;
 			}
+
+			updateStatus(
+				userId, dlFileEntry, latestFileVersion,
+				WorkflowConstants.STATUS_APPROVED, serviceContext,
+				workflowContext);
 		}
 	}
 

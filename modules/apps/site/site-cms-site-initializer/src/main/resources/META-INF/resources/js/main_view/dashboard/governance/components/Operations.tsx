@@ -14,6 +14,8 @@ import {
 	LongStandingDraftsCard,
 	LongStandingDraftsList,
 } from './LongStandingDrafts';
+import {OverdueTasksCard} from './OverdueTasks';
+import {SLABreachesCard} from './SLABreaches';
 
 export function Operations({
 	additionalProps,
@@ -31,6 +33,10 @@ export function Operations({
 
 			<ClayLayout.Row className="mt-4">
 				<ClayLayout.Col className="mb-4" md={4}>
+					<OverdueTasksCard />
+				</ClayLayout.Col>
+
+				<ClayLayout.Col className="mb-4" md={4}>
 					<LongStandingDraftsCard
 						expanded={longStandingDraftsExpanded}
 						onClick={() =>
@@ -39,6 +45,10 @@ export function Operations({
 							)
 						}
 					/>
+				</ClayLayout.Col>
+
+				<ClayLayout.Col className="mb-4" md={4}>
+					<SLABreachesCard />
 				</ClayLayout.Col>
 
 				{longStandingDraftsExpanded ? (

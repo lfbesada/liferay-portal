@@ -46,6 +46,7 @@ import com.liferay.portal.kernel.image.ImageBag;
 import com.liferay.portal.kernel.instance.PortalInstancePool;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.language.constants.LanguageConstants;
+import com.liferay.portal.kernel.launch.LaunchPreviewThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.login.AuthLoginGroupSettingsUtil;
@@ -160,6 +161,7 @@ import com.liferay.portal.kernel.upload.UploadPortletRequest;
 import com.liferay.portal.kernel.upload.UploadServletRequest;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
+import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.DeterminateKeyGenerator;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
@@ -337,9 +339,11 @@ public class PortalImpl implements Portal {
 					networkInterface.getInetAddresses());
 
 				for (InetAddress inetAddress : inetAddresses) {
-					if (inetAddress instanceof Inet4Address) {
-						_computerAddresses.add(inetAddress.getHostAddress());
+					if (!(inetAddress instanceof Inet4Address)) {
+						continue;
 					}
+
+					_computerAddresses.add(inetAddress.getHostAddress());
 				}
 			}
 		}
@@ -566,11 +570,13 @@ public class PortalImpl implements Portal {
 		String[] keywordsArray = StringUtil.split(keywords);
 
 		for (String keyword : keywordsArray) {
-			if (!keywordsListMergeable.contains(
+			if (keywordsListMergeable.contains(
 					StringUtil.toLowerCase(keyword))) {
 
-				keywordsListMergeable.add(StringUtil.toLowerCase(keyword));
+				continue;
 			}
+
+			keywordsListMergeable.add(StringUtil.toLowerCase(keyword));
 		}
 	}
 
@@ -790,6 +796,15 @@ public class PortalImpl implements Portal {
 		if (CTCollectionPreviewThreadLocal.isIndicatorEnabled()) {
 			url = HttpComponentsUtil.setParameter(
 				url, "previewCTIndicator", true);
+		}
+
+		long previewLaunchSetId = LaunchPreviewThreadLocal.getLaunchSetId();
+
+		if (previewLaunchSetId > -1) {
+			url = HttpComponentsUtil.setParameter(
+				url, "p_l_mode", Constants.PREVIEW);
+			url = HttpComponentsUtil.setParameter(
+				url, "previewLaunchSetId", previewLaunchSetId);
 		}
 
 		return url;
@@ -4563,9 +4578,11 @@ public class PortalImpl implements Portal {
 		while (iterator.hasNext()) {
 			Group group = iterator.next();
 
-			if (!StagingUtil.isGroupAccessible(group, siteGroup)) {
-				iterator.remove();
+			if (StagingUtil.isGroupAccessible(group, siteGroup)) {
+				continue;
 			}
+
+			iterator.remove();
 		}
 
 		long[] groupIds = new long[groups.size()];
@@ -7160,9 +7177,11 @@ public class PortalImpl implements Portal {
 
 			String portletId2 = parameterName.substring(1, pos);
 
-			if (portletId1.equals(portletId2)) {
-				value = parameterValues[0];
+			if (!portletId1.equals(portletId2)) {
+				continue;
 			}
+
+			value = parameterValues[0];
 		}
 
 		if (value == null) {
@@ -7400,9 +7419,11 @@ public class PortalImpl implements Portal {
 			HttpComponentsUtil.getQueryString(url));
 
 		for (String parameterName : parameterNames) {
-			if (parameterName.endsWith("redirect")) {
-				url = HttpComponentsUtil.removeParameter(url, parameterName);
+			if (!parameterName.endsWith("redirect")) {
+				continue;
 			}
+
+			url = HttpComponentsUtil.removeParameter(url, parameterName);
 		}
 
 		return url;
@@ -7548,9 +7569,11 @@ public class PortalImpl implements Portal {
 		for (Map.Entry<String, String> entry : virtualHostnames.entrySet()) {
 			String languageId = entry.getValue();
 
-			if (Validator.isNotNull(languageId)) {
-				localizedVirtualHostnames.put(languageId, entry.getKey());
+			if (Validator.isNull(languageId)) {
+				continue;
 			}
+
+			localizedVirtualHostnames.put(languageId, entry.getKey());
 		}
 
 		if (localizedVirtualHostnames.isEmpty()) {
@@ -7816,11 +7839,13 @@ public class PortalImpl implements Portal {
 
 			int mappingEndIndex = mappingIndex + mappingPath.length();
 
-			if ((mappingEndIndex == url.length()) ||
-				(url.charAt(mappingEndIndex) == CharPool.SLASH)) {
+			if ((mappingEndIndex != url.length()) &&
+				(url.charAt(mappingEndIndex) != CharPool.SLASH)) {
 
-				friendlyURLMappingPath = url.substring(mappingIndex);
+				continue;
 			}
+
+			friendlyURLMappingPath = url.substring(mappingIndex);
 		}
 
 		return friendlyURLMappingPath;

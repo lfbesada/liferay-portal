@@ -187,19 +187,21 @@ public class SourceFormatBuild
 		WorkspaceGitRepository workspaceGitRepository =
 			workspace.getPrimaryWorkspaceGitRepository();
 
-		workspaceGitRepository.setGitHubURL(pullRequest.getHtmlURL());
-
-		String senderBranchSHA = getParameterValue("GITHUB_SENDER_BRANCH_SHA");
-
-		if (JenkinsResultsParserUtil.isSHA(senderBranchSHA)) {
-			workspaceGitRepository.setSenderBranchSHA(senderBranchSHA);
-		}
+		workspaceGitRepository.setUsePullRequestBaseRepository(true);
 
 		String upstreamBranchSHA = getParameterValue(
 			"GITHUB_UPSTREAM_BRANCH_SHA");
 
 		if (JenkinsResultsParserUtil.isSHA(upstreamBranchSHA)) {
 			workspaceGitRepository.setBaseBranchSHA(upstreamBranchSHA);
+		}
+
+		workspaceGitRepository.setGitHubURL(pullRequest.getHtmlURL());
+
+		String senderBranchSHA = getParameterValue("GITHUB_SENDER_BRANCH_SHA");
+
+		if (JenkinsResultsParserUtil.isSHA(senderBranchSHA)) {
+			workspaceGitRepository.setSenderBranchSHA(senderBranchSHA);
 		}
 
 		return workspace;
@@ -340,9 +342,11 @@ public class SourceFormatBuild
 			for (String line : consoleText.split("\\s*\\n\\s*")) {
 				Matcher matcher = _sourceFormatterVersionPattern.matcher(line);
 
-				if (matcher.find()) {
-					sourceFormatterVersion = matcher.group("version");
+				if (!matcher.find()) {
+					continue;
 				}
+
+				sourceFormatterVersion = matcher.group("version");
 			}
 
 			return sourceFormatterVersion;

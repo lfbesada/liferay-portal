@@ -2,9 +2,8 @@ import * as API from 'shared/api';
 import BaseEditPage from 'shared/components/base-edit-page';
 import Canvas from 'shared/components/canvas/Canvas';
 import ClayForm, {ClayInput} from '@clayui/form';
-import ClayIcon from '@clayui/icon';
+import ClayIcon from 'shared/components/Icon';
 import ClayLabel from '@clayui/label';
-import ClayLayout from '@clayui/layout';
 import ClayPopover from '@clayui/popover';
 import CriteriaBuilder from './criteria-builder';
 import CriteriaDragPreview from './criteria-sidebar/CriteriaDragPreview';
@@ -18,6 +17,7 @@ import Form, {
 } from 'shared/components/form';
 import NavigationWarning from 'shared/components/NavigationWarning';
 import React from 'react';
+import SegmentMembership from './SegmentMembership';
 import SegmentSequentialToggle from 'segment/components/SegmentSequentialToggle';
 import Toolbar from './Toolbar';
 import {AlertTypes} from 'shared/components/Alert';
@@ -155,17 +155,15 @@ const SegmentDetails: React.FC<{
 	});
 
 	return (
-		<div className="mb-4 mt-4">
-			<ClayLayout.Row className="align-items-center mb-2">
-				<ClayLayout.Col lg={2} md={3} sm={12}>
-					<span className="align-items-center d-flex font-weight-semi-bold text-nowrap text-secondary">
-						<ClayIcon className="mr-2" symbol="plus-squares" />
+		<div className="mb-4 mt-4 segment-details">
+			<div className="mb-2 segment-details-row">
+				<span className="font-weight-semi-bold segment-details-label text-secondary">
+					<ClayIcon className="mr-2" symbol="plus-squares" />
 
-						{Liferay.Language.get('segment-type')}
-					</span>
-				</ClayLayout.Col>
+					{Liferay.Language.get('segment-type')}
+				</span>
 
-				<ClayLayout.Col>
+				<div className="segment-details-value">
 					<ClayLabel displayType="secondary" inverse>
 						{getSegmentCategoryLabel(segmentCategory)}
 					</ClayLabel>
@@ -173,21 +171,16 @@ const SegmentDetails: React.FC<{
 					<ClayLabel displayType="info" inverse>
 						{getSegmentTypeLabel(type)}
 					</ClayLabel>
-				</ClayLayout.Col>
-			</ClayLayout.Row>
+				</div>
+			</div>
 
 			<ClayForm.Group
 				className={error && touched ? 'has-error mb-0' : 'mb-0'}
 			>
-				<ClayLayout.Row className="align-items-center">
-					<ClayLayout.Col
-						className="align-items-center d-flex"
-						lg={2}
-						md={3}
-						sm={12}
-					>
+				<div className="segment-details-row">
+					<div className="segment-details-label">
 						<label
-							className="align-items-center d-flex font-weight-semi-bold mb-0 text-nowrap text-secondary"
+							className="font-weight-semi-bold mb-0 text-secondary"
 							htmlFor="externalReferenceCode"
 						>
 							<ClayIcon className="mr-2" symbol="link" />
@@ -231,9 +224,9 @@ const SegmentDetails: React.FC<{
 								)}
 							</span>
 						</ClayPopover>
-					</ClayLayout.Col>
+					</div>
 
-					<ClayLayout.Col lg={4} md={6}>
+					<div className="segment-details-value">
 						<ClayInput
 							id="externalReferenceCode"
 							name="externalReferenceCode"
@@ -244,8 +237,8 @@ const SegmentDetails: React.FC<{
 							type="text"
 							value={value ?? ''}
 						/>
-					</ClayLayout.Col>
-				</ClayLayout.Row>
+					</div>
+				</div>
 
 				{error && touched && (
 					<p
@@ -298,18 +291,18 @@ class SegmentEditor extends React.Component<ISegmentEditorProps> {
 		enabledSequentialSegment: false,
 	};
 
+	declare context: React.ContextType<typeof ReferencedObjectsContext>;
+
+	_defaultExternalReferenceCode = uuidv4();
+
+	_formRef = React.createRef<any>();
+
 	constructor(props: ISegmentEditorProps) {
 		super(props);
 		this.createSegment = this.createSegment.bind(this);
 		this.hasChanges = this.hasChanges.bind(this);
 		this.handleSubmit = this.handleSubmit.bind(this);
 	}
-
-	declare context: React.ContextType<typeof ReferencedObjectsContext>;
-
-	_defaultExternalReferenceCode = uuidv4();
-
-	_formRef = React.createRef<any>();
 
 	createSegment({
 		criteria,
@@ -470,7 +463,7 @@ class SegmentEditor extends React.Component<ISegmentEditorProps> {
 
 							return (
 								<Form.Form
-									className="contributor-builder-root d-flex editing flex-column"
+									className="contributor-builder-root d-flex flex-column"
 									onSubmit={handleSubmit}
 								>
 									<NavigationWarning
@@ -483,16 +476,9 @@ class SegmentEditor extends React.Component<ISegmentEditorProps> {
 
 									<Toolbar
 										channelId={channelId}
-										criteria={criteria}
-										criteriaString={newCriteriaString}
 										groupId={groupId}
 										id={id ?? ''}
-										includeAnonymousUsers={
-											includeAnonymousUsers
-										}
 										onDeleteSegment={onDeleteSegment}
-										segmentCategory={segmentCategory}
-										segmentType={type}
 										valid={isValid && hasChanges}
 									/>
 
@@ -506,8 +492,13 @@ class SegmentEditor extends React.Component<ISegmentEditorProps> {
 										}
 										sequential={!!sequential}
 									>
-										<div className="form-body">
-											<div className="criteria-builder-section-sidebar">
+										<BaseEditPage.Body>
+											<BaseEditPage.Sidebar
+												label={Liferay.Language.get(
+													'conditions-library'
+												)}
+												position="left"
+											>
 												<CriteriaSidebar
 													channelId={channelId}
 													criteriaString={
@@ -520,82 +511,113 @@ class SegmentEditor extends React.Component<ISegmentEditorProps> {
 													}
 													type={type}
 												/>
-											</div>
+											</BaseEditPage.Sidebar>
 
 											<div className="criteria-builder-section-main">
-												<div className="contributor-container">
-													<div className="container-fluid container-fluid-max-xl">
-														<div className="content-wrapper">
-															<SegmentTitle />
+												<BaseEditPage.Main>
+													<SegmentTitle />
 
-															<SegmentDetails
+													<SegmentDetails
+														segmentCategory={
+															segmentCategory
+														}
+														type={type}
+													/>
+
+													{segmentState ===
+														SegmentStates.Disabled && (
+														<EmbeddedAlertList
+															alerts={[
+																{
+																	iconSymbol:
+																		'exclamation-full',
+																	message:
+																		Liferay.Language.get(
+																			'some-criteria-are-empty-please-update-to-continue-using-this-segment'
+																		),
+																	title: Liferay.Language.get(
+																		'error'
+																	),
+																	type: AlertTypes.Danger,
+																},
+															]}
+														/>
+													)}
+
+													<Canvas className="segment-membership-root">
+														<Canvas.Header
+															hasBody={false}
+															title={Liferay.Language.get(
+																'membership'
+															)}
+														>
+															<Canvas.Actions>
+																<SegmentMembership
+																	channelId={
+																		channelId
+																	}
+																	criteria={
+																		criteria
+																	}
+																	criteriaString={
+																		newCriteriaString
+																	}
+																	groupId={
+																		groupId
+																	}
+																	includeAnonymousUsers={
+																		includeAnonymousUsers
+																	}
+																	segmentCategory={
+																		segmentCategory
+																	}
+																	segmentType={
+																		type
+																	}
+																/>
+															</Canvas.Actions>
+														</Canvas.Header>
+													</Canvas>
+
+													<Canvas>
+														<Canvas.Header
+															title={Liferay.Language.get(
+																'segment-conditions'
+															)}
+														>
+															{type ===
+																SegmentTypes.RealTime && (
+																<Canvas.Actions>
+																	<SegmentSequentialToggle name="sequential" />
+																</Canvas.Actions>
+															)}
+														</Canvas.Header>
+
+														<Canvas.Body>
+															<CriteriaBuilderForm
+																channelId={
+																	channelId
+																}
+																groupId={
+																	groupId
+																}
+																id={id}
+																name="criteria"
 																segmentCategory={
 																	segmentCategory
 																}
-																type={type}
+																segmentType={
+																	type
+																}
+																sequential={
+																	sequential
+																}
 															/>
-
-															{segmentState ===
-																SegmentStates.Disabled && (
-																<EmbeddedAlertList
-																	alerts={[
-																		{
-																			iconSymbol:
-																				'exclamation-full',
-																			message:
-																				Liferay.Language.get(
-																					'some-criteria-are-empty-please-update-to-continue-using-this-segment'
-																				),
-																			title: Liferay.Language.get(
-																				'error'
-																			),
-																			type: AlertTypes.Danger,
-																		},
-																	]}
-																/>
-															)}
-
-															<Canvas>
-																<Canvas.Header
-																	title={Liferay.Language.get(
-																		'segment-conditions'
-																	)}
-																>
-																	{type ===
-																		SegmentTypes.RealTime && (
-																		<Canvas.Actions>
-																			<SegmentSequentialToggle name="sequential" />
-																		</Canvas.Actions>
-																	)}
-																</Canvas.Header>
-
-																<Canvas.Body>
-																	<CriteriaBuilderForm
-																		channelId={
-																			channelId
-																		}
-																		groupId={
-																			groupId
-																		}
-																		id={id}
-																		name="criteria"
-																		segmentCategory={
-																			segmentCategory
-																		}
-																		segmentType={
-																			type
-																		}
-																		sequential={
-																			sequential
-																		}
-																	/>
-																</Canvas.Body>
-															</Canvas>
-														</div>
-													</div>
-												</div>
+														</Canvas.Body>
+													</Canvas>
+												</BaseEditPage.Main>
 											</div>
-										</div>
+										</BaseEditPage.Body>
 									</KeyboardMovementProvider>
 								</Form.Form>
 							);

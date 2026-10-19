@@ -119,16 +119,20 @@ public class SaveDataSetUserConfigurationMVCResourceCommandTest {
 			ObjectEntry objectEntry = _fetchDataSetUserConfigurationObjectEntry(
 				externalReferenceCode);
 
-			if (objectEntry != null) {
-				_objectEntryLocalService.deleteObjectEntry(
-					objectEntry.getObjectEntryId());
+			if (objectEntry == null) {
+				continue;
 			}
+
+			_objectEntryLocalService.deleteObjectEntry(
+				objectEntry.getObjectEntryId());
 		}
 
 		_externalReferenceCodes.clear();
 
 		_objectEntryLocalService.deleteObjectEntry(
 			_dataSetSnapshotObjectEntry.getObjectEntryId());
+
+		FrontendDataSetTestUtil.tearDown();
 	}
 
 	@Test

@@ -177,7 +177,7 @@ test.beforeEach(async ({apiHelpers, page}) => {
 	await performUserSwitchViaApi(page, user.alternateName);
 });
 
-test.describe('Attention Required section', () => {
+test.describe('Freshness section', () => {
 	test(
 		'Stores the review date the user picked in their account time zone rather than the browser one',
 		{tag: ['@LPD-98462', '@LPD-104263']},
@@ -203,7 +203,11 @@ test.describe('Attention Required section', () => {
 
 			apiHelpers.data.push({id: overdueContent.id, type: 'document'});
 
-			await page.goto('/web/cms/overdue-reviews');
+			await page.goto('/web/cms/dashboard');
+
+			await selectSpace(page, spaceName);
+
+			await page.getByRole('button', {name: /^Overdue Reviews/}).click();
 
 			await updateReviewDate(page, title, DATE_INPUT);
 
@@ -218,13 +222,14 @@ test.describe('Attention Required section', () => {
 			const firstSpaceName = `space ${getRandomString()}`;
 			const secondSpaceName = `space ${getRandomString()}`;
 			const secondSpaceTitle = `overdue ${getRandomString()}`;
+			const listTitle = `overdue ${getRandomString()}`;
 			const remainingTitles = [
 				`overdue ${getRandomString()}`,
 				`overdue ${getRandomString()}`,
 			];
 
 			const overdueReviewsCard = page.getByRole('button', {
-				name: /overdue reviews/,
+				name: /^Overdue Reviews/,
 			});
 
 			const overdueReviewsCount = overdueReviewsCard
@@ -265,6 +270,7 @@ test.describe('Attention Required section', () => {
 						`overdue ${getRandomString()}`
 					),
 					await postOverdueContent(secondSpaceName, secondSpaceTitle),
+					await postOverdueContent(secondSpaceName, listTitle),
 					await postOverdueContent(
 						secondSpaceName,
 						remainingTitles[0]
@@ -294,13 +300,41 @@ test.describe('Attention Required section', () => {
 
 				await selectSpace(page, secondSpaceName);
 
-				await expect(overdueReviewsCount).toHaveText('3');
+				await expect(overdueReviewsCount).toHaveText('4');
+			});
+
+			const overdueReviewsList = page.getByRole('region', {
+				name: 'Overdue Reviews',
 			});
 
 			await test.step('Open the overdue reviews list', async () => {
 				await overdueReviewsCard.click();
 
-				await expect(page).toHaveURL(/cms\/overdue-reviews/);
+				await expect(
+					overdueReviewsList.getByText(secondSpaceTitle, {
+						exact: true,
+					})
+				).toBeVisible();
+			});
+
+			await test.step('Update a review date from the list', async () => {
+				await updateReviewDate(page, listTitle, DATE_INPUT);
+
+				await pollDate(apiHelpers, overdueContents[2].id, 'reviewDate');
+
+				await expect(
+					overdueReviewsList.getByText(listTitle, {exact: true})
+				).toBeHidden();
+
+				await expect(overdueReviewsCount).toHaveText('3');
+			});
+
+			await test.step('Open the all section from the list', async () => {
+				await page
+					.getByRole('link', {name: 'View All Overdue Reviews'})
+					.click();
+
+				await expect(page).toHaveURL(/cms\/all/);
 
 				await expect(
 					page.getByText(secondSpaceTitle, {exact: true})
@@ -337,7 +371,7 @@ test.describe('Attention Required section', () => {
 
 				await fillScheduleDateModal(page, DATE_INPUT);
 
-				for (const overdueContent of overdueContents.slice(2)) {
+				for (const overdueContent of overdueContents.slice(3)) {
 					await pollDate(apiHelpers, overdueContent.id, 'reviewDate');
 				}
 
@@ -359,6 +393,7 @@ test.describe('Attention Required section', () => {
 			const firstSpaceName = `space ${getRandomString()}`;
 			const secondSpaceName = `space ${getRandomString()}`;
 			const secondSpaceTitle = `expired ${getRandomString()}`;
+			const listTitle = `expired ${getRandomString()}`;
 			const remainingTitles = [
 				`expired ${getRandomString()}`,
 				`expired ${getRandomString()}`,
@@ -409,6 +444,7 @@ test.describe('Attention Required section', () => {
 						`expired ${getRandomString()}`
 					),
 					await postExpiredContent(secondSpaceName, secondSpaceTitle),
+					await postExpiredContent(secondSpaceName, listTitle),
 					await postExpiredContent(
 						secondSpaceName,
 						remainingTitles[0]
@@ -430,7 +466,7 @@ test.describe('Attention Required section', () => {
 			});
 
 			const expiredAssetsCard = page.getByRole('button', {
-				name: /expired assets/i,
+				name: /^Expired/,
 			});
 
 			const expiredAssetsCount = expiredAssetsCard
@@ -446,13 +482,43 @@ test.describe('Attention Required section', () => {
 
 				await selectSpace(page, secondSpaceName);
 
-				await expect(expiredAssetsCount).toHaveText('3');
+				await expect(expiredAssetsCount).toHaveText('4');
+			});
+
+			const expiredAssetsList = page.getByRole('region', {
+				name: 'Expired Assets',
 			});
 
 			await test.step('Open the expired assets list from its card', async () => {
 				await expiredAssetsCard.click();
 
-				await expect(page).toHaveURL(/cms\/expired-assets/);
+				await expect(
+					expiredAssetsList.getByText(secondSpaceTitle, {exact: true})
+				).toBeVisible();
+			});
+
+			await test.step('Update an expiration date from the list', async () => {
+				await updateExpirationDate(page, listTitle, DATE_INPUT);
+
+				await pollDate(
+					apiHelpers,
+					expiredContents[2].id,
+					'expirationDate'
+				);
+
+				await expect(
+					expiredAssetsList.getByText(listTitle, {exact: true})
+				).toBeHidden();
+
+				await expect(expiredAssetsCount).toHaveText('3');
+			});
+
+			await test.step('Open the all section from the list', async () => {
+				await page
+					.getByRole('link', {name: 'View All Expired Assets'})
+					.click();
+
+				await expect(page).toHaveURL(/cms\/all/);
 
 				await expect(async () => {
 					await page.reload();
@@ -499,7 +565,7 @@ test.describe('Attention Required section', () => {
 
 				await fillScheduleDateModal(page, DATE_INPUT);
 
-				for (const expiredContent of expiredContents.slice(2)) {
+				for (const expiredContent of expiredContents.slice(3)) {
 					await pollDate(
 						apiHelpers,
 						expiredContent.id,
@@ -519,7 +585,9 @@ test.describe('Attention Required section', () => {
 			});
 		}
 	);
+});
 
+test.describe('Attention Required section', () => {
 	test(
 		'Updates the due date of pending workflow contents from the dashboard',
 		{tag: '@LPD-98986'},

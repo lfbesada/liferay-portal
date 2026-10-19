@@ -16,6 +16,10 @@ import GovernanceDashboard from '../../../../src/main/resources/META-INF/resourc
 import GovernanceService from '../../../../src/main/resources/META-INF/resources/js/main_view/dashboard/governance/GovernanceService';
 
 jest.mock(
+	'../../../../src/main/resources/META-INF/resources/js/main_view/dashboard/governance/components/ContentAgeDistribution',
+	() => ({ContentAgeDistribution: () => null})
+);
+jest.mock(
 	'../../../../src/main/resources/META-INF/resources/js/main_view/dashboard/governance/components/Operations',
 	() => ({
 		Operations: () => null,
@@ -89,27 +93,37 @@ describe('[CMS Dashboard] GovernanceDashboard', () => {
 			/>
 		);
 
+		const freshness = within(
+			screen.getByRole('group', {name: 'freshness'})
+		);
+
 		expect(
 			await within(
-				screen.getByRole('button', {name: /expired-assets/})
+				freshness.getByRole('button', {name: /^expired /})
 			).findByText('6')
 		).toBeInTheDocument();
 
 		expect(
 			within(
-				screen.getByRole('button', {name: /overdue-reviews/})
+				freshness.getByRole('button', {name: /^overdue-reviews /})
 			).getByText('3')
 		).toBeInTheDocument();
 
+		const attentionRequired = within(
+			screen.getByRole('group', {name: 'attention-required'})
+		);
+
 		expect(
 			within(
-				screen.getByRole('button', {name: /pending-workflows/})
+				attentionRequired.getByRole('button', {
+					name: /pending-workflows/,
+				})
 			).getByText('4')
 		).toBeInTheDocument();
 
 		expect(
 			within(
-				screen.getByRole('button', {name: /broken-links/})
+				attentionRequired.getByRole('button', {name: /broken-links/})
 			).getByText('7')
 		).toBeInTheDocument();
 	});

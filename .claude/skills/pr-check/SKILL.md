@@ -17,6 +17,7 @@ Use the column for the repository that a remote of this checkout points at (chec
 | Setting | `liferay/liferay-portal` | `liferay/liferay-portal-ee` |
 | --- | --- | --- |
 | **Base Branch** | `master` | `master-private` |
+| **Forward Target** | `brianchandotcom/liferay-portal` | |
 | **Scopes** | branch, portal, workspaces | branch, workspaces |
 | **Skipped Validations** | Workspace Source Format | Source Format |
 | **Rules Commit** | `HEAD` | `master` |
@@ -26,6 +27,8 @@ Use the column for the repository that a remote of this checkout points at (chec
 In `liferay-portal-ee`, this skill and its validations are copied from local `master`, so local `master` is the rules commit there.
 
 `${BASE_BRANCH}` below stands for the **Base Branch** setting, and `${SOURCE_SHA}` stands for the **Rules Commit** setting, which is the commit this document and its validations were read from.
+
+The **Forward Target** is the repository `ci:forward` merges a pull request into. When it is empty, skip every step below that uses it.
 
 ## Preconditions
 
@@ -39,18 +42,38 @@ In `liferay-portal-ee`, this skill and its validations are copied from local `ma
 
 	1. Fast forward local `${BASE_BRANCH}` to the fetched tip. When `${BASE_BRANCH}` is checked out in another worktree, fast forward it there with `git -C <worktree> merge --ff-only <remote>/${BASE_BRANCH}`. Otherwise update it in place with `git fetch <remote> ${BASE_BRANCH}:${BASE_BRANCH}`, which also creates `${BASE_BRANCH}` when it does not exist. Both are fast forward only. When the command fails for any reason, such as a diverged `${BASE_BRANCH}`, a worktree that is not clean, or a denied permission, warn the developer and stop the run. Never continue against a stale base, since every validation would then compare the branch with a base that lacks the latest commits.
 
-	1. `git rebase <remote>/${BASE_BRANCH}`. On a clean rebase, continue against the rebased branch. On conflict, list the unmerged files (`git diff --diff-filter=U --name-only`) and ask the developer who should resolve the conflicts. When the developer asks you to resolve them, fix the conflicts, `git add` the files, and run `git rebase --continue`. In every other case (the developer resolves them, the conflicts cannot be resolved, or the rebase fails otherwise) run `git rebase --abort` and stop the run.
+	1. When the settings name a forward target, fetch its `${BASE_BRANCH}` from its GitHub URL rather than a remote, since remote names vary, and record the tip. When the fetch fails, warn the developer that the branch was not checked against the forward target and continue without `${FORWARD_TIP}`.
+
+	```bash
+	git fetch --no-tags https://github.com/<forward target>.git ${BASE_BRANCH} && FORWARD_TIP=$(git rev-parse FETCH_HEAD)
+	```
+
+	With `${FORWARD_TIP}` set, the branch sits on the forward target when it holds commits of the target that `<remote>/${BASE_BRANCH}` lacks, which this command reports by exiting `1`:
+
+	```bash
+	git merge-base --is-ancestor "$(git merge-base HEAD "${FORWARD_TIP}")" "<remote>/${BASE_BRANCH}"
+	```
+
+	1. `git rebase <remote>/${BASE_BRANCH}`, or `git rebase "${FORWARD_TIP}"` for a branch that sits on the forward target. On a clean rebase, continue against the rebased branch. On conflict, list the unmerged files (`git diff --diff-filter=U --name-only`) and ask the developer who should resolve the conflicts. When the developer asks you to resolve them, fix the conflicts, `git add` the files, and run `git rebase --continue`. In every other case (the developer resolves them, the conflicts cannot be resolved, or the rebase fails otherwise) run `git rebase --abort` and stop the run.
+
+	1. When `${FORWARD_TIP}` is set, test whether `ci:forward` can merge the branch into it.
+
+	```bash
+	git merge-tree --name-only --write-tree "${FORWARD_TIP}" HEAD
+	```
+
+	Exit `0` means the branch merges cleanly, so continue. Exit `1` means `ci:forward` will refuse the pull request. The lines after the first, up to the first blank line, name the conflicted files, and `git log --format='%h %s' "HEAD..${FORWARD_TIP}" -- <files>` names the commits of the forward target that touched them. Stop the run, give the developer both lists, and say what fixes it: rebase onto `${FORWARD_TIP}`, resolve the conflicts, run pr-check again, and send the pull request to the forward target directly. Offer to run the rebase, handle its conflicts the way the rebase step above does, and start pr-check over once it completes. Any other exit means the merge was not checked, so warn the developer and continue.
 
 - **Skills current in `liferay-portal-ee`.** In `liferay-portal-ee` only, run `git fetch <remote> master`. When `git rev-parse master` differs from `git rev-parse FETCH_HEAD`, the copied skills are stale, so stop the run and tell the developer to copy them again from the latest `master`.
 
-- **Diff baseline is local `${BASE_BRANCH}`.** After the rebase, the three dot diff against local `${BASE_BRANCH}` is the baseline.
+- **Diff baseline is `${BASE_REF}`.** That is `${FORWARD_TIP}` for a branch that sits on the forward target, and local `${BASE_BRANCH}` otherwise. After the rebase, the three dot diff against `${BASE_REF}` is the baseline.
 
 - **Diff is nonempty.** When the three dot diff produces no files, exit with a one line message — no validation produces useful signal on a clean branch.
 
 - **No source file hidden from git.** A file the build reads but git never sees passes every validation here and fails CI's clean checkout, as a Sass import of an uncommitted partial once did. The clean tree check above cannot see it when the developer's own ignore rules hide it, in `core.excludesFile` or `.git/info/exclude`, since `git status` honors those. List the ignored files under each changed module, keep those hidden by a rule outside the repository's own `.gitignore` files, and keep the source and build file types among them:
 
 	```bash
-	MERGE_BASE=$(git merge-base HEAD "${BASE_BRANCH}")
+	MERGE_BASE=$(git merge-base HEAD "${BASE_REF}")
 
 	git diff --name-only --no-renames "${MERGE_BASE}...HEAD" \
 		| bash <skill directory>/find_modules.sh "${MERGE_BASE}" \
@@ -93,7 +116,7 @@ In `liferay-portal-ee`, this skill and its validations are copied from local `ma
 ### Diff
 
 ```bash
-MERGE_BASE=$(git merge-base HEAD "${BASE_BRANCH}")
+MERGE_BASE=$(git merge-base HEAD "${BASE_REF}")
 
 git diff --name-only --no-renames "${MERGE_BASE}...HEAD"
 ```
@@ -126,7 +149,7 @@ The script [select_paths.sh](select_paths.sh) beside this document applies the r
 
 The script [find_modules.sh](find_modules.sh) beside this document reads paths relative to the repository root on standard input and runs from any directory inside it. For each path, it finds the module and writes one line, `<module> <path>`, such as `modules/apps/blogs/blogs-api modules/apps/blogs/blogs-api/src/main/java/Foo.java`. A **Command** that works on modules pipes its paths through it.
 
-- **Module** is the outermost directory above the path that the path's build root builds as a project. In a workspace, that is a directory holding `bnd.bnd` or `client-extension.yaml`, the rule the workspace Gradle plugin uses. The plugin also builds themes, wars, and JavaScript portlets, which no validation selects yet. Everywhere else, it is a directory holding `bnd.bnd`, `build.xml`, `gulpfile.js`, or `src/main/resources/application.properties`, not counting `modules` itself, the rule the Gradle settings plugin uses. It is `-` when there is none. A module under `modules` also has a Gradle project path, the directory without `modules/` and with `:` for `/`, such as `apps:blogs:blogs-api`.
+- **Module** is the outermost directory above the path that the path's build root builds as a project. In a workspace, that is a directory holding `bnd.bnd` or `client-extension.yaml`, the rule the workspace Gradle plugin uses. The plugin also builds themes, wars, and JavaScript portlets, which no validation selects yet. Everywhere else, it is a directory holding `bnd.bnd`, `build.xml`, `gulpfile.js`, `src/main/resources/application.properties`, or a `package.json` with a `liferayTheme` key, not counting `modules` itself, the rule the Gradle settings plugin uses. It is `-` when there is none. A module under `modules` also has a Gradle project path, the directory without `modules/` and with `:` for `/`, such as `apps:blogs:blogs-api`.
 
 ### Build Root
 
@@ -161,6 +184,8 @@ The procedure runs in two passes over the validations, in the order below. The o
 1. [Service Registration](validations/branch/service-registration.md)
 
 1. [Transaction Usage](validations/branch/transaction-usage.md)
+
+1. [ConcurrentMapperHashMap Usage](validations/branch/concurrent-mapper-hash-map-usage.md)
 
 1. [HTML Escaping](validations/branch/html-escaping.md)
 
@@ -197,7 +222,7 @@ Process each validation in a subagent.
 Run [select_validations.sh](select_validations.sh) beside this document once, from `${REPO_ROOT}`. It prints a line for every validation: `== <file> (<count> paths)` for one that fires, followed by its `## Preconditions` and `## Time Estimate` sections, and `-- <file> (not fired)` for one that does not. A workspace validation names its workspace after the file. A validation fires when `select_paths.sh` prints a path, and a workspace validation is tried once for each workspace the branch changed, as **Routing** describes:
 
 ```bash
-bash <skill directory>/select_validations.sh "$(git merge-base HEAD "${BASE_BRANCH}")"
+bash <skill directory>/select_validations.sh "$(git merge-base HEAD "${BASE_REF}")"
 ```
 
 Leave out the validations the settings skip or whose scope they disable. Sum the time estimates of the rest for the cumulative total, counting a workspace validation once for each workspace it fired for. Add about 3 minutes once when any of them names **Portal Snapshots**, and up to 2 minutes once when any names **Portal Classpath**. Estimate from the path counts the script prints rather than resolving modules, since the total only decides whether to ask the developer.
@@ -352,6 +377,8 @@ Capture the tested commit with `git rev-parse HEAD` **after** Pass 2 completes, 
 
 The block is the overall state and tested SHA, followed by a table with one row per **matched** validation — the validations that actually ran, in the execution order above, apart from those that returned `NOT APPLICABLE`. A workspace validation has one row for each workspace it ran for, named with the workspace in parentheses, such as `Workspace Compile (liferay-aihub-workspace)`. Validations that did not fire are omitted rather than listed as skipped, so the table reflects only what the diff exercised. When no validation fired, omit the table as well and say so in one line, since a header with no rows reads as a table that failed to render.
 
+When the branch sits on the forward target, follow the overall state with one line saying that the diff was taken against `${FORWARD_TIP}` and that the pull request goes to the forward target.
+
 Name every validation that returned `NOT APPLICABLE` on one line beneath the table, such as `Not applicable: HTML Escaping, Structural Smoke.`, and leave the line out when none did. A selection can come back wrongly empty, so without the line a broken selection reads exactly like a diff with nothing in it.
 
 ```markdown
@@ -372,4 +399,4 @@ The overall state is `FAIL` when any row is `FAIL` or `NOT RUN`, and `PASS` othe
 
 A validation may qualify its verdict, as **Baseline** does when it names the universe it compared, and the qualifier follows the verdict in the same cell rather than in a note. The overall state reads the verdict alone, so a qualified `PASS` is still a `PASS`.
 
-Every row whose validation returned a note appends it below the table, separated by a blank line. A `FAIL`, a `NO COVERAGE`, and a `NOT VERIFIED` always carry one, and a `PASS` can too, as **Module Registration** does when a diff pairs an addition it verified with a removal it can only report. The notes travel verbatim into the PR description through the `pr` skill and into any comment the `pr-check-publish` skill posts.
+Every row whose validation returned a note appends it below the table, separated by a blank line. A `FAIL`, a `NO COVERAGE`, and a `NOT VERIFIED` always carry one. A `PASS` carries one only when the run left something unexamined, as **Module Registration** does when a diff pairs an addition it verified with a removal it can only report. A `PASS` that examined the whole change carries none. The notes travel verbatim into the PR description through the `pr` skill and into any comment the `pr-check-publish` skill posts, so keep each to one short sentence naming what failed or what went unexamined. Leave out why a gap is acceptable or what else covers it, and leave out how the run went, such as the commands, flags, task counts, and modules built. Nothing else goes below the table.

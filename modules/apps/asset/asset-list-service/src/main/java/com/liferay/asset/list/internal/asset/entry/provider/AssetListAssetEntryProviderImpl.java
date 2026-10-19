@@ -363,21 +363,24 @@ public class AssetListAssetEntryProviderImpl
 				break;
 			}
 
-			boolean queryContains = GetterUtil.getBoolean(
-				unicodeProperties.getProperty(
-					"queryContains" + i, StringPool.BLANK));
 			boolean queryAndOperator = GetterUtil.getBoolean(
 				unicodeProperties.getProperty(
 					"queryAndOperator" + i, StringPool.BLANK));
+			boolean queryContains = GetterUtil.getBoolean(
+				unicodeProperties.getProperty(
+					"queryContains" + i, StringPool.BLANK));
 			String queryName = unicodeProperties.getProperty(
 				"queryName" + i, StringPool.BLANK);
 
-			if (Objects.equals(queryName, "assetCategories") && queryContains &&
-				(queryAndOperator || (queryValues.length == 1))) {
+			if (!Objects.equals(queryName, "assetCategories") ||
+				!queryContains ||
+				(!queryAndOperator && (queryValues.length != 1))) {
 
-				assetCategoryIds = ArrayUtil.append(
-					assetCategoryIds, GetterUtil.getLongValues(queryValues));
+				continue;
 			}
+
+			assetCategoryIds = ArrayUtil.append(
+				assetCategoryIds, GetterUtil.getLongValues(queryValues));
 		}
 
 		return assetCategoryIds;
@@ -454,20 +457,22 @@ public class AssetListAssetEntryProviderImpl
 				break;
 			}
 
-			boolean queryContains = GetterUtil.getBoolean(
-				unicodeProperties.getProperty(
-					"queryContains" + i, StringPool.BLANK));
 			boolean queryAndOperator = GetterUtil.getBoolean(
 				unicodeProperties.getProperty(
 					"queryAndOperator" + i, StringPool.BLANK));
+			boolean queryContains = GetterUtil.getBoolean(
+				unicodeProperties.getProperty(
+					"queryContains" + i, StringPool.BLANK));
 			String queryName = unicodeProperties.getProperty(
 				"queryName" + i, StringPool.BLANK);
 
-			if (Objects.equals(queryName, "assetTags") && queryContains &&
-				(queryAndOperator || (queryValues.length == 1))) {
+			if (!Objects.equals(queryName, "assetTags") || !queryContains ||
+				(!queryAndOperator && (queryValues.length != 1))) {
 
-				Collections.addAll(allAssetTagNames, queryValues);
+				continue;
 			}
+
+			Collections.addAll(allAssetTagNames, queryValues);
 		}
 
 		return allAssetTagNames.toArray(new String[0]);
@@ -871,20 +876,22 @@ public class AssetListAssetEntryProviderImpl
 				break;
 			}
 
-			boolean queryContains = GetterUtil.getBoolean(
-				unicodeProperties.getProperty(
-					"queryContains" + i, StringPool.BLANK));
 			boolean queryAndOperator = GetterUtil.getBoolean(
 				unicodeProperties.getProperty(
 					"queryAndOperator" + i, StringPool.BLANK));
+			boolean queryContains = GetterUtil.getBoolean(
+				unicodeProperties.getProperty(
+					"queryContains" + i, StringPool.BLANK));
 			String queryName = unicodeProperties.getProperty(
 				"queryName" + i, StringPool.BLANK);
 
-			if (Objects.equals(queryName, "keywords") && queryContains &&
-				(queryAndOperator || (queryValues.length == 1))) {
+			if (!Objects.equals(queryName, "keywords") || !queryContains ||
+				(!queryAndOperator && (queryValues.length != 1))) {
 
-				allKeywords = queryValues;
+				continue;
 			}
+
+			allKeywords = queryValues;
 		}
 
 		return allKeywords;
@@ -1138,12 +1145,12 @@ public class AssetListAssetEntryProviderImpl
 				break;
 			}
 
-			boolean queryContains = GetterUtil.getBoolean(
-				unicodeProperties.getProperty(
-					"queryContains" + i, StringPool.BLANK));
 			boolean queryAndOperator = GetterUtil.getBoolean(
 				unicodeProperties.getProperty(
 					"queryAndOperator" + i, StringPool.BLANK));
+			boolean queryContains = GetterUtil.getBoolean(
+				unicodeProperties.getProperty(
+					"queryContains" + i, StringPool.BLANK));
 			String queryName = unicodeProperties.getProperty(
 				"queryName" + i, StringPool.BLANK);
 

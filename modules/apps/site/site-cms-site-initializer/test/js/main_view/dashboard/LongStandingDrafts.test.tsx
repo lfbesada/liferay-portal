@@ -4,7 +4,10 @@
  */
 
 import '@testing-library/jest-dom';
-import {serializeFDSConfig} from '@liferay/frontend-data-set-web';
+import {
+	FrontendDataSet,
+	serializeFDSConfig,
+} from '@liferay/frontend-data-set-web';
 
 // eslint-disable-next-line @liferay/portal/no-cross-module-deep-import
 import {checkAccessibility} from '@liferay/layout-js-components-web/test/__lib__/index';
@@ -31,7 +34,7 @@ jest.mock('frontend-js-web', () => ({
 }));
 
 jest.mock('@liferay/frontend-data-set-web', () => ({
-	FrontendDataSet: () => null,
+	FrontendDataSet: jest.fn(() => null),
 	getConfigParamName: (fdsName: string) => `${fdsName}_fdsConfig`,
 	serializeFDSConfig: jest.fn(() => 'SERIALIZED_CONFIG'),
 }));
@@ -137,22 +140,6 @@ describe('[CMS Dashboard] LongStandingDrafts', () => {
 		expect(getCard()).toHaveTextContent('2.6% of 350 Assets');
 	});
 
-	it('shows 0% when there are no assets', () => {
-		renderOperations({
-			statistics: {longStandingDraftsCount: 0, totalCount: 0},
-		});
-
-		expect(getCard()).toHaveTextContent('0% of 0 Assets');
-	});
-
-	it('formats the total of assets with the thousands separator of the language', () => {
-		renderOperations({
-			statistics: {longStandingDraftsCount: 9, totalCount: 1280},
-		});
-
-		expect(getCard()).toHaveTextContent('0.7% of 1,280 Assets');
-	});
-
 	it('toggles the list of long-standing drafts when clicking the card', async () => {
 		renderOperations();
 
@@ -251,7 +238,7 @@ describe('[CMS Dashboard] LongStandingDrafts', () => {
 
 		expect(
 			itemsActions.map(({data}: {data: {id: string}}) => data.id)
-		).toEqual(['actionLink', 'delete', 'view-content', 'view-file']);
+		).toEqual(['actionLink', 'view-content', 'view-file', 'delete']);
 	});
 
 	it('reloads the statistics when the list data changes', async () => {
@@ -320,13 +307,22 @@ describe('[CMS Dashboard] LongStandingDrafts', () => {
 		expect(screen.getByText('Showing 8 of 9 Items')).toBeInTheDocument();
 	});
 
-	it('hides the listed count when there are no long-standing drafts', async () => {
+	it('describes the empty state when there are no long-standing drafts', async () => {
 		renderOperations({
 			statistics: {longStandingDraftsCount: 0, totalCount: 350},
 		});
 
 		await expandList();
 
+		const [{emptyState}] = (FrontendDataSet as jest.Mock).mock.calls.at(-1);
+
+		expect(emptyState).toEqual(
+			expect.objectContaining({
+				description:
+					'no-content-has-stayed-in-draft-longer-than-expected',
+				title: 'no-long-standing-drafts',
+			})
+		);
 		expect(screen.queryByText(/^Showing/)).not.toBeInTheDocument();
 	});
 

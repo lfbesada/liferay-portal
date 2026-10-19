@@ -4,12 +4,17 @@
     {{- if eq .name "http" -}}{{- $backendPort = .port -}}{{- end -}}
 {{- end -}}
 {{- $suffix := ternary "" (printf "-%s" .name) (eq .name "") }}
+{{- $deploySyncSecretName := printf "%s-deploy-sync" (include "liferay.name" .root) }}
+{{- $deploySyncVolumeName := "liferay-deploy-sync" }}
 {{- $licensing := .statefulset.licensing | default dict }}
 {{- $licenseSecretName := $licensing.secretName | default (printf "%s-entitlements" (include "liferay.name" .root)) }}
 {{- $licenseVolumeName := "liferay-license" }}
 {{- $marketplace := .statefulset.marketplace | default dict }}
 {{- $marketplaceClaimName := printf "%s-marketplace" (include "liferay.name" .root) }}
 {{- $marketplaceVolumeName := "liferay-marketplace" }}
+{{- if and $marketplace.enabled (not $licensing.enabled) }}
+{{- fail "The marketplace sync runs the deploy-sync script that the operator publishes, so licensing.enabled must be true when marketplace.enabled is true" }}
+{{- end }}
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
@@ -185,6 +190,7 @@ spec:
                 {{- toYaml $v | nindent 16 }}
                 {{- end }}
                 {{- if $licensing.enabled }}
+                {{- list (dict "name" $deploySyncVolumeName "secret" (dict "optional" true "secretName" $deploySyncSecretName)) | toYaml | nindent 16 }}
                 {{- list (dict "name" $licenseVolumeName "secret" (dict "items" (list (dict "key" "license.xml" "path" "license.xml")) "optional" true "secretName" $licenseSecretName)) | toYaml | nindent 16 }}
                 {{- end }}
                 {{- if $marketplace.enabled }}

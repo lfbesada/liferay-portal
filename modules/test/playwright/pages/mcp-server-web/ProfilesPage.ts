@@ -68,8 +68,8 @@ export class ProfilesPage extends FDSTablePage {
 		return this.dialog.getByRole('button', {exact: true, name: 'Add'});
 	}
 
-	get deselectAllButton(): Locator {
-		return this.dialog.getByRole('button', {name: 'Deselect All'});
+	get clearButton(): Locator {
+		return this.dialog.getByRole('button', {name: 'Clear'});
 	}
 
 	maskCheckbox(name: string): Locator {
@@ -108,6 +108,10 @@ export class ProfilesPage extends FDSTablePage {
 
 	maskRow(name: string): Locator {
 		return this.masksRows.filter({hasText: name});
+	}
+
+	get selectionStatus(): Locator {
+		return this.dialog.getByRole('status').filter({hasText: 'Selected'});
 	}
 
 	toolCheckbox(name: string): Locator {

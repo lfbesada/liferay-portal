@@ -19,6 +19,7 @@ import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 
 import java.util.List;
+import java.util.function.Function;
 
 /**
  * @author Shuyang Zhou
@@ -30,10 +31,12 @@ public class FilterCollectionPersistenceFinder
 	@SafeVarargs
 	public FilterCollectionPersistenceFinder(
 		BasePersistenceImpl<T, E> basePersistenceImpl,
-		FinderPath paginatedFindPath, FinderPath unpaginatedFindPath,
-		FinderPath countFinderPath, String sqlSelectWhere, String sqlCountWhere,
-		String defaultOrderByJpql, String orderByEntityAlias, String where,
-		String dbWhere, UniquePersistenceFinder<T, E> uniquePersistenceFinder,
+		Function<T, Long> classPKFunction, FinderPath countFinderPath,
+		String dbWhere, String defaultOrderByJpql, String orderByEntityAlias,
+		FinderPath paginatedFindPath, String sqlCountWhere,
+		String sqlSelectWhere,
+		UniquePersistenceFinder<T, E> uniquePersistenceFinder,
+		FinderPath unpaginatedFindPath, String where,
 		FinderColumn<T>... finderColumns) {
 
 		super(
@@ -41,6 +44,8 @@ public class FilterCollectionPersistenceFinder
 			countFinderPath, sqlSelectWhere, sqlCountWhere, defaultOrderByJpql,
 			orderByEntityAlias, where, dbWhere, uniquePersistenceFinder,
 			finderColumns);
+
+		_classPKFunction = classPKFunction;
 
 		String entityAlias = basePersistenceImpl.getEntityAlias();
 
@@ -214,7 +219,7 @@ public class FilterCollectionPersistenceFinder
 				finderCache, values, QueryUtil.ALL_POS, QueryUtil.ALL_POS, null,
 				true);
 
-			list = InlineSQLHelperUtil.filter(list, groupIds);
+			list = InlineSQLHelperUtil.filter(_classPKFunction, list, groupIds);
 
 			return list.size();
 		}
@@ -262,7 +267,7 @@ public class FilterCollectionPersistenceFinder
 				finderCache, values, QueryUtil.ALL_POS, QueryUtil.ALL_POS,
 				orderByComparator, true);
 
-			return InlineSQLHelperUtil.filter(list, groupIds);
+			return InlineSQLHelperUtil.filter(_classPKFunction, list, groupIds);
 		}
 
 		normalizeValues(values);
@@ -321,6 +326,7 @@ public class FilterCollectionPersistenceFinder
 
 	private static final long[] _EMPTY_GROUP_IDS = new long[0];
 
+	private final Function<T, Long> _classPKFunction;
 	private final String _filterPKColumn;
 	private final String _filterSqlCountWhere;
 	private final String _filterSqlSelectNoInlineDistinctWhere1;

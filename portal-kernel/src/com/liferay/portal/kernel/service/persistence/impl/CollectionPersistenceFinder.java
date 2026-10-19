@@ -60,9 +60,11 @@ public class CollectionPersistenceFinder
 		List<Integer> arrayableIndexes = new ArrayList<>();
 
 		for (int i = 0; i < finderColumns.length; i++) {
-			if (finderColumns[i] instanceof ArrayableFinderColumn) {
-				arrayableIndexes.add(i);
+			if (!(finderColumns[i] instanceof ArrayableFinderColumn)) {
+				continue;
 			}
+
+			arrayableIndexes.add(i);
 		}
 
 		if (arrayableIndexes.isEmpty()) {
@@ -71,6 +73,8 @@ public class CollectionPersistenceFinder
 		else {
 			_arrayableIndexes = ArrayUtil.toIntArray(arrayableIndexes);
 		}
+
+		_equalityCountFinderPath = _createEqualityCountFinderPath();
 	}
 
 	public int count(FinderCache finderCache, Object[] values) {
@@ -85,10 +89,18 @@ public class CollectionPersistenceFinder
 
 			normalizeValues(values);
 
+			FinderPath countFinderPath = _countFinderPath;
+
+			if ((_equalityCountFinderPath != null) &&
+				_isAllArrayableLengthOne(values)) {
+
+				countFinderPath = _equalityCountFinderPath;
+			}
+
 			Object[] finderArgs = buildFinderArgs(values);
 
 			Long count = (Long)finderCache.getResult(
-				_countFinderPath, finderArgs, basePersistenceImpl);
+				countFinderPath, finderArgs, basePersistenceImpl);
 
 			if (count == null) {
 				List<Object[]> valuesList = _paginate(
@@ -101,7 +113,7 @@ public class CollectionPersistenceFinder
 					count = _countChunked(valuesList);
 				}
 
-				finderCache.putResult(_countFinderPath, finderArgs, count);
+				finderCache.putResult(countFinderPath, finderArgs, count);
 			}
 
 			return count.intValue();
@@ -275,6 +287,21 @@ public class CollectionPersistenceFinder
 		return total;
 	}
 
+	private FinderPath _createEqualityCountFinderPath() {
+		if ((_arrayableIndexes == null) || (_unpaginatedFindPath == null) ||
+			(_uniquePersistenceFinder != null)) {
+
+			return null;
+		}
+
+		FinderPath equalityCountFinderPath =
+			_countFinderPath.createEqualityCountFinderPath();
+
+		CountFinderPathRegistry.register(equalityCountFinderPath);
+
+		return equalityCountFinderPath;
+	}
+
 	private List<T> _findChunked(
 		List<Object[]> valuesList, int start, int end,
 		OrderByComparator<T> orderByComparator) {
@@ -298,6 +325,20 @@ public class CollectionPersistenceFinder
 
 		return Collections.unmodifiableList(
 			ListUtil.subList(result, start, end));
+	}
+
+	private boolean _isAllArrayableLengthOne(Object[] values) {
+		if (_arrayableIndexes == null) {
+			return false;
+		}
+
+		for (int index : _arrayableIndexes) {
+			if (Array.getLength(values[index]) != 1) {
+				return false;
+			}
+		}
+
+		return true;
 	}
 
 	private boolean _isMultiElementArrayable(Object[] values) {
@@ -416,14 +457,8 @@ public class CollectionPersistenceFinder
 	}
 
 	private boolean _unwrapIfAllArrayableLengthOne(Object[] values) {
-		if (_arrayableIndexes == null) {
+		if (!_isAllArrayableLengthOne(values)) {
 			return false;
-		}
-
-		for (int index : _arrayableIndexes) {
-			if (Array.getLength(values[index]) != 1) {
-				return false;
-			}
 		}
 
 		for (int index : _arrayableIndexes) {
@@ -436,6 +471,7 @@ public class CollectionPersistenceFinder
 	private final int[] _arrayableIndexes;
 	private final FinderPath _countFinderPath;
 	private final String _defaultOrderByJpql;
+	private final FinderPath _equalityCountFinderPath;
 	private final String _orderByEntityAlias;
 	private final FinderPath _paginatedFindPath;
 	private final String _sqlCountWhere;

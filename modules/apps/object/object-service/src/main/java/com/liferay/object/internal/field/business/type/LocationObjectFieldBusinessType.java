@@ -97,6 +97,10 @@ public class LocationObjectFieldBusinessType
 			return Location.toDTO(_jsonFactory.looseSerializeDeep(locationMap));
 		}
 
+		if (Validator.isNull(MapUtil.getString(locationMap, "address"))) {
+			return null;
+		}
+
 		return new Location() {
 			{
 				setAddress(() -> MapUtil.getString(locationMap, "address"));
@@ -203,7 +207,7 @@ public class LocationObjectFieldBusinessType
 			Long groupId, ObjectField objectField, Object value)
 		throws PortalException {
 
-		if (value == null) {
+		if (Validator.isNull(value)) {
 			return null;
 		}
 

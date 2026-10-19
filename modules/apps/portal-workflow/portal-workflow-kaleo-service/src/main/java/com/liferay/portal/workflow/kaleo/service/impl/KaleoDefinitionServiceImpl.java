@@ -42,17 +42,72 @@ import org.osgi.service.component.annotations.Reference;
 public class KaleoDefinitionServiceImpl extends KaleoDefinitionServiceBaseImpl {
 
 	@Override
+	public KaleoDefinition activateKaleoDefinition(
+			String name, int version, ServiceContext serviceContext)
+		throws PortalException {
+
+		KaleoDefinition kaleoDefinition =
+			kaleoDefinitionPersistence.findByC_N_V(
+				serviceContext.getCompanyId(), name, version);
+
+		_checkPermissions(
+			ActionKeys.ADD_DEFINITION,
+			_getGroupId(
+				kaleoDefinition.getGroupId(), kaleoDefinition.getScope()));
+
+		return _kaleoDefinitionLocalService.activateKaleoDefinition(
+			name, version, serviceContext);
+	}
+
+	@Override
 	public KaleoDefinition addKaleoDefinition(
 			String externalReferenceCode, String name, String title,
 			String description, String content, String scope, boolean system,
 			int version, ServiceContext serviceContext)
 		throws PortalException {
 
-		_checkPermissions(_getGroupId(serviceContext.getScopeGroupId(), scope));
+		_checkPermissions(
+			ActionKeys.ADD_DEFINITION,
+			_getGroupId(serviceContext.getScopeGroupId(), scope));
 
 		return _kaleoDefinitionLocalService.addKaleoDefinition(
 			externalReferenceCode, name, title, description, content, scope,
 			system, version, serviceContext);
+	}
+
+	@Override
+	public KaleoDefinition deactivateKaleoDefinition(
+			String name, int version, ServiceContext serviceContext)
+		throws PortalException {
+
+		KaleoDefinition kaleoDefinition =
+			kaleoDefinitionPersistence.findByC_N_V(
+				serviceContext.getCompanyId(), name, version);
+
+		_checkPermissions(
+			ActionKeys.ADD_DEFINITION,
+			_getGroupId(
+				kaleoDefinition.getGroupId(), kaleoDefinition.getScope()));
+
+		return _kaleoDefinitionLocalService.deactivateKaleoDefinition(
+			name, version, serviceContext);
+	}
+
+	@Override
+	public KaleoDefinition deleteKaleoDefinition(
+			String name, ServiceContext serviceContext)
+		throws PortalException {
+
+		KaleoDefinition kaleoDefinition = kaleoDefinitionPersistence.findByC_N(
+			serviceContext.getCompanyId(), name);
+
+		_checkPermissions(
+			ActionKeys.DELETE,
+			_getGroupId(
+				kaleoDefinition.getGroupId(), kaleoDefinition.getScope()));
+
+		return _kaleoDefinitionLocalService.deleteKaleoDefinition(
+			kaleoDefinition);
 	}
 
 	@Override
@@ -143,6 +198,7 @@ public class KaleoDefinitionServiceImpl extends KaleoDefinitionServiceBaseImpl {
 			kaleoDefinitionPersistence.findByPrimaryKey(kaleoDefinitionId);
 
 		_checkPermissions(
+			ActionKeys.ADD_DEFINITION,
 			_getGroupId(
 				kaleoDefinition.getGroupId(), kaleoDefinition.getScope()));
 
@@ -151,7 +207,9 @@ public class KaleoDefinitionServiceImpl extends KaleoDefinitionServiceBaseImpl {
 			content, system, serviceContext);
 	}
 
-	private void _checkPermissions(long groupId) throws PrincipalException {
+	private void _checkPermissions(String actionId, long groupId)
+		throws PrincipalException {
+
 		PermissionChecker permissionChecker =
 			PermissionThreadLocal.getPermissionChecker();
 
@@ -159,8 +217,7 @@ public class KaleoDefinitionServiceImpl extends KaleoDefinitionServiceBaseImpl {
 			return;
 		}
 
-		_portletResourcePermission.check(
-			permissionChecker, groupId, ActionKeys.ADD_DEFINITION);
+		_portletResourcePermission.check(permissionChecker, groupId, actionId);
 	}
 
 	private long _getGroupId(long groupId, String scope) {

@@ -32,7 +32,6 @@ import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
-import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CamelCaseUtil;
 import com.liferay.portal.kernel.util.ClassUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
@@ -1018,23 +1017,24 @@ public class GraphQLServletExtender {
 				Class<?> queryClass = query.getClass();
 
 				for (Class<?> innerClasses : queryClass.getClasses()) {
-					if (innerClasses.isAnnotationPresent(
+					if (!innerClasses.isAnnotationPresent(
 							GraphQLTypeExtension.class)) {
 
-						GraphQLTypeExtension graphQLTypeExtension =
-							innerClasses.getAnnotation(
-								GraphQLTypeExtension.class);
+						continue;
+					}
 
-						Class<?> clazz = graphQLTypeExtension.value();
+					GraphQLTypeExtension graphQLTypeExtension =
+						innerClasses.getAnnotation(GraphQLTypeExtension.class);
 
-						Set<Class<?>> classes = classesMap.computeIfAbsent(
-							clazz, key -> new HashSet<>());
+					Class<?> clazz = graphQLTypeExtension.value();
 
-						classes.add(innerClasses);
+					Set<Class<?>> classes = classesMap.computeIfAbsent(
+						clazz, key -> new HashSet<>());
 
-						for (Method method : innerClasses.getMethods()) {
-							_servletDataMap.put(method, servletData);
-						}
+					classes.add(innerClasses);
+
+					for (Method method : innerClasses.getMethods()) {
+						_servletDataMap.put(method, servletData);
 					}
 				}
 			}
@@ -1318,9 +1318,12 @@ public class GraphQLServletExtender {
 		Configuration[] configurations = _configurationAdmin.listConfigurations(
 			filterString);
 
-		if (ArrayUtil.isNotEmpty(configurations)) {
+		Configuration configuration = ConfigurationUtil.fetchConfiguration(
+			configurations);
+
+		if (configuration != null) {
 			Dictionary<String, Object> dictionary =
-				configurations[0].getProperties();
+				configuration.getProperties();
 
 			return GetterUtil.getBoolean(
 				dictionary.get("graphQLEnabled"), true);
@@ -1826,19 +1829,20 @@ public class GraphQLServletExtender {
 
 			String typeName = GraphQLTypeUtil.simplePrint(graphQLOutputType);
 
-			if ((typeName != null) && typeName.equals("Object") &&
-				StringUtil.endsWith(graphQLFieldDefinition.getName(), "Id")) {
+			if ((typeName == null) || !typeName.equals("Object") ||
+				!StringUtil.endsWith(graphQLFieldDefinition.getName(), "Id")) {
 
-				GraphQLFieldDefinition.Builder
-					newGraphQLFieldDefinitionBuilder =
-						GraphQLFieldDefinition.newFieldDefinition(
-							graphQLFieldDefinition);
-
-				graphQLObjectTypeBuilder.field(
-					newGraphQLFieldDefinitionBuilder.type(
-						graphQLInterfaceType
-					).build());
+				continue;
 			}
+
+			GraphQLFieldDefinition.Builder newGraphQLFieldDefinitionBuilder =
+				GraphQLFieldDefinition.newFieldDefinition(
+					graphQLFieldDefinition);
+
+			graphQLObjectTypeBuilder.field(
+				newGraphQLFieldDefinitionBuilder.type(
+					graphQLInterfaceType
+				).build());
 		}
 	}
 
@@ -2203,11 +2207,13 @@ public class GraphQLServletExtender {
 			Method[] methods = clazz.getMethods();
 
 			for (Method existingMethod : methods) {
-				if (StringUtil.equals(
+				if (!StringUtil.equals(
 						existingMethod.getName(), "getContentId")) {
 
-					method = existingMethod;
+					continue;
 				}
+
+				method = existingMethod;
 			}
 
 			return dataFetcher.get(

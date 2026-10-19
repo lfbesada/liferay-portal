@@ -980,6 +980,10 @@ mariadb.executable=${mariadb.executable}]]></echo>
 					}
 
 					public List getTestUtilModules() {
+						String standaloneBuildProfile = project.getProperty("env.TEST_PORTAL_RELEASE_BUILD_PROFILE");
+
+						boolean standaloneRelease = StringUtils.isNotEmpty(standaloneBuildProfile);
+
 						List appBndFiles = findFiles(new File(projectDir, "modules/apps"), ".+/app.bnd");
 
 						File dxpAppsDir = new File(projectDir, "modules/dxp/apps");
@@ -999,11 +1003,12 @@ mariadb.executable=${mariadb.executable}]]></echo>
 						for (File appBndFile : appBndFiles) {
 							String fileContent = new String(Files.readAllBytes(appBndFile.toPath()));
 
-							if (fileContent.contains("Liferay-Releng-Bundle: true")) {
+							if (standaloneRelease || fileContent.contains("Liferay-Releng-Bundle: true")) {
 								releasedAppDirs.add(appBndFile.getParentFile());
 							}
 						}
 
+						boolean standaloneTestUtilModuleFound = false;
 						List testUtilModules = new ArrayList();
 
 						for (File releasedAppDir : releasedAppDirs) {
@@ -1011,6 +1016,18 @@ mariadb.executable=${mariadb.executable}]]></echo>
 
 							for (File testUtilModuleBuildGradleFile : testUtilModuleBuildGradleFiles) {
 								String testUtilModule = testUtilModuleBuildGradleFile.getParent();
+
+								if (standaloneRelease) {
+									File standaloneBuildProfileFile = new File(testUtilModule, ".lfrbuild-" + standaloneBuildProfile);
+
+									if (!standaloneBuildProfileFile.exists()) {
+										System.out.println("Ignoring " + testUtilModule.replace(projectDir + "/", ""));
+
+										continue;
+									}
+
+									standaloneTestUtilModuleFound = true;
+								}
 
 								File skipTestIntegrationCheckFile = new File(testUtilModule, ".lfrbuild-ci-skip-test-integration-check");
 
@@ -1036,6 +1053,10 @@ mariadb.executable=${mariadb.executable}]]></echo>
 
 								testUtilModules.add(testUtilModule);
 							}
+						}
+
+						if (standaloneRelease && !standaloneTestUtilModuleFound) {
+							throw new RuntimeException("No test util module is marked .lfrbuild-" + standaloneBuildProfile);
 						}
 
 						return testUtilModules;
@@ -3158,7 +3179,6 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 								<matches pattern="(file|https?)://" string="${test.portal.bundle.war.url}" />
 								<matches pattern="(file|https?)://" string="${test.portal.bundle.zip.url}" />
 							</or>
-							<matches pattern="(file|https?)://" string="${test.sql.zip.url}" />
 							<contains string="${env.JOB_NAME}" substring="-release" />
 						</and>
 						<then>
@@ -3202,7 +3222,10 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 							/>
 
 							<parallel failonany="true" threadcount="${parallel.thread.count}">
-								<ant dir="portal-test" inheritAll="false" target="jar" />
+								<ant dir="portal-test" inheritAll="false" target="jar">
+									<property name="baseline.jar.report.level" value="off" />
+								</ant>
+
 								<ant dir="support-tomcat" inheritAll="false" target="compile" />
 								<ant dir="util-bridges" inheritAll="false" target="compile" />
 
@@ -3836,7 +3859,6 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 								<matches pattern="(file|https?)://" string="${test.portal.bundle.war.url}" />
 								<matches pattern="(file|https?)://" string="${test.portal.bundle.zip.url}" />
 							</or>
-							<matches pattern="(file|https?)://" string="${test.sql.zip.url}" />
 							<contains string="${env.JOB_NAME}" substring="-release" />
 						</and>
 						<then>

@@ -28,6 +28,7 @@ import com.liferay.portal.kernel.security.permission.PermissionCheckerFactory;
 import com.liferay.portal.kernel.service.CompanyLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ResourceActionLocalService;
+import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
@@ -44,6 +45,7 @@ import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Http;
 import com.liferay.portal.kernel.util.InstancePool;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PrefsPropsUtil;
 import com.liferay.portal.kernel.util.PropsKeys;
@@ -213,13 +215,12 @@ public class ServicePreActionTest {
 		Object viewableLayoutComposite = ReflectionTestUtil.invoke(
 			_servicePreAction, "_getViewableLayoutComposite",
 			new Class<?>[] {
-				HttpServletRequest.class, User.class, PermissionChecker.class,
-				Layout.class, List.class, boolean.class
+				HttpServletRequest.class, boolean.class, Layout.class,
+				List.class, PermissionChecker.class, boolean.class, User.class
 			},
-			_mockHttpServletRequest, _user,
-			_permissionCheckerFactory.create(_user),
-			_getLayout(defaultLayoutComposite),
-			_getLayouts(defaultLayoutComposite), false);
+			_mockHttpServletRequest, false, _getLayout(defaultLayoutComposite),
+			_getLayouts(defaultLayoutComposite),
+			_permissionCheckerFactory.create(_user), true, _user);
 
 		Layout layout = _getLayout(viewableLayoutComposite);
 
@@ -263,7 +264,7 @@ public class ServicePreActionTest {
 	}
 
 	@Test
-	@TestInfo("LPD-100303")
+	@TestInfo({"LPD-100303", "LPD-105580"})
 	public void testInitThemeDisplayDefaultLayoutIsPublished()
 		throws Exception {
 
@@ -287,6 +288,33 @@ public class ServicePreActionTest {
 
 		Assert.assertEquals(publishedLayout.getPlid(), plid);
 
+		_addResources(contentPageLayout);
+
+		plid = _getThemeDisplayPlid(true, contentPageLayout.getPlid(), false);
+
+		Assert.assertEquals(contentPageLayout.getPlid(), plid);
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)_mockHttpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		List<Layout> publishedLayouts = themeDisplay.getLayouts();
+
+		for (Layout layout : publishedLayouts) {
+			Assert.assertTrue(layout.isPublished());
+		}
+
+		Assert.assertTrue(ListUtil.isNotEmpty(publishedLayouts));
+
+		_mockHttpServletRequest.setRequestURI(
+			_portal.getPathMain() + "/portal/layout");
+		_mockHttpServletRequest.setAttribute(
+			WebKeys.REDIRECT_TO_DEFAULT_LAYOUT, Boolean.TRUE);
+
+		plid = _getThemeDisplayPlid(true, contentPageLayout.getPlid(), false);
+
+		Assert.assertEquals(publishedLayout.getPlid(), plid);
+
 		int count = layouts.size();
 
 		layouts = _layoutLocalService.getLayouts(_group.getGroupId(), false);
@@ -296,6 +324,14 @@ public class ServicePreActionTest {
 		Assert.assertEquals(firstLayout.getPlid(), contentPageLayout.getPlid());
 
 		Assert.assertEquals(layouts.toString(), count + 1, layouts.size());
+
+		for (Layout layout : publishedLayouts) {
+			_layoutLocalService.deleteLayout(layout);
+		}
+
+		plid = _getThemeDisplayPlid(true, contentPageLayout.getPlid(), false);
+
+		Assert.assertEquals(contentPageLayout.getPlid(), plid);
 	}
 
 	@Test
@@ -418,6 +454,12 @@ public class ServicePreActionTest {
 				CookiesConstants.NAME_COOKIE_SUPPORT));
 	}
 
+	private void _addResources(Layout layout) throws Exception {
+		_resourceLocalService.addResources(
+			_company.getCompanyId(), _group.getGroupId(), layout.getUserId(),
+			Layout.class.getName(), layout.getPlid(), false, true, true);
+	}
+
 	private Layout _getLayout(Object layoutComposite) {
 		return ReflectionTestUtil.invoke(
 			layoutComposite, "getLayout", null, null);
@@ -431,6 +473,21 @@ public class ServicePreActionTest {
 	private long _getThemeDisplayPlid(
 			boolean hasGuestViewPermission, boolean signedIn)
 		throws Exception {
+
+		return _getThemeDisplayPlid(hasGuestViewPermission, 0, signedIn);
+	}
+
+	private long _getThemeDisplayPlid(
+			boolean hasGuestViewPermission, long plid, boolean signedIn)
+		throws Exception {
+
+		if (plid > 0) {
+			_mockHttpServletRequest.setParameter(
+				"p_l_id", String.valueOf(plid));
+		}
+		else {
+			_mockHttpServletRequest.removeParameter("p_l_id");
+		}
 
 		if (!hasGuestViewPermission) {
 			Role role = _roleLocalService.getRole(
@@ -612,6 +669,9 @@ public class ServicePreActionTest {
 
 	@Inject
 	private ResourceActionLocalService _resourceActionLocalService;
+
+	@Inject
+	private ResourceLocalService _resourceLocalService;
 
 	@Inject
 	private ResourcePermissionLocalService _resourcePermissionLocalService;

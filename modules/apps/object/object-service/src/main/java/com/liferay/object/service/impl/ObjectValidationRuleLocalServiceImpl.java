@@ -58,6 +58,7 @@ import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
+import com.liferay.portal.kernel.model.ExternalReferenceCodeModel;
 import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.module.service.Snapshot;
@@ -308,12 +309,14 @@ public class ObjectValidationRuleLocalServiceImpl
 				ObjectValidationRuleSettingConstants.
 					NAME_OUTPUT_OBJECT_FIELD_ID);
 
-			if (count == 0) {
-				objectValidationRule.setOutputType(
-					ObjectValidationRuleConstants.OUTPUT_TYPE_FULL_VALIDATION);
-
-				objectValidationRulePersistence.update(objectValidationRule);
+			if (count != 0) {
+				continue;
 			}
+
+			objectValidationRule.setOutputType(
+				ObjectValidationRuleConstants.OUTPUT_TYPE_FULL_VALIDATION);
+
+			objectValidationRulePersistence.update(objectValidationRule);
 		}
 	}
 
@@ -639,6 +642,15 @@ public class ObjectValidationRuleLocalServiceImpl
 		ObjectDefinition objectDefinition =
 			_objectDefinitionPersistence.fetchByPrimaryKey(objectDefinitionId);
 
+		String objectEntryExternalReferenceCode = null;
+
+		if (baseModel instanceof
+				ExternalReferenceCodeModel externalReferenceCodeModel) {
+
+			objectEntryExternalReferenceCode =
+				externalReferenceCodeModel.getExternalReferenceCode();
+		}
+
 		Map<String, Object> variables = ObjectEntryVariablesUtil.getVariables(
 			_dtoConverterRegistry, objectDefinition, payloadJSONObject,
 			_systemObjectDefinitionManagerRegistry);
@@ -744,6 +756,7 @@ public class ObjectValidationRuleLocalServiceImpl
 						new ObjectValidationRuleResult(
 							errorMessage,
 							objectValidationRule.getExternalReferenceCode(),
+							objectEntryExternalReferenceCode,
 							objectField.getName()));
 				}
 			}
@@ -751,7 +764,8 @@ public class ObjectValidationRuleLocalServiceImpl
 				objectValidationRuleResults.add(
 					new ObjectValidationRuleResult(
 						errorMessage,
-						objectValidationRule.getExternalReferenceCode()));
+						objectValidationRule.getExternalReferenceCode(),
+						objectEntryExternalReferenceCode, null));
 			}
 		}
 

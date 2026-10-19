@@ -948,6 +948,8 @@ describe('AIAssistantHost', () => {
 	});
 
 	describe('scrolling', () => {
+		const CONTAINER_TOP = 100;
+		const MESSAGE_HEIGHT = 300;
 		const SCROLL_HEIGHT = 900;
 
 		let scrollTo: jest.Mock;
@@ -961,10 +963,23 @@ describe('AIAssistantHost', () => {
 				{configurable: true, value: SCROLL_HEIGHT}
 			);
 
+			window.HTMLElement.prototype.getBoundingClientRect = function (
+				this: HTMLElement
+			) {
+				return {
+					top: this.classList.contains('ai-assistant-chat__message')
+						? CONTAINER_TOP + getMessageOffset(this)
+						: CONTAINER_TOP,
+				} as DOMRect;
+			};
 			window.HTMLElement.prototype.scrollTo = scrollTo;
 		});
 
 		afterEach(() => {
+			Reflect.deleteProperty(
+				window.HTMLElement.prototype,
+				'getBoundingClientRect'
+			);
 			Reflect.deleteProperty(
 				window.HTMLElement.prototype,
 				'scrollHeight'
@@ -972,7 +987,34 @@ describe('AIAssistantHost', () => {
 			Reflect.deleteProperty(window.HTMLElement.prototype, 'scrollTo');
 		});
 
-		it('scrolls the conversation to the bottom when a message arrives', async () => {
+		function emitImage(
+			fakeEventSource: ReturnType<typeof createFakeEventSource>
+		) {
+			fakeEventSource.emit(
+				'Chat Message Sent',
+				JSON.stringify({
+					data: 'BASE64',
+					mimeType: 'image/png',
+					type: 'image',
+				})
+			);
+		}
+
+		function getMessageOffset(element: Element | null) {
+			const messageWrappers = Array.from(
+				document.querySelectorAll('.ai-assistant-chat__message')
+			);
+
+			return MESSAGE_HEIGHT * (messageWrappers.indexOf(element!) + 1);
+		}
+
+		function getMessageWrapper(text: string) {
+			return screen
+				.getByText(text)
+				.closest('.ai-assistant-chat__message');
+		}
+
+		it('scrolls the conversation to the bottom when an image arrives without text', async () => {
 			const fakeEventSource = createFakeEventSource();
 
 			mockCreateEventSource.mockResolvedValue(fakeEventSource as never);
@@ -982,10 +1024,7 @@ describe('AIAssistantHost', () => {
 			scrollTo.mockClear();
 
 			await act(async () => {
-				fakeEventSource.emit(
-					'Chat Message Sent',
-					JSON.stringify({data: 'Here are your tags'})
-				);
+				emitImage(fakeEventSource);
 			});
 
 			expect(scrollTo).toHaveBeenCalledWith({
@@ -1037,6 +1076,102 @@ describe('AIAssistantHost', () => {
 				behavior: 'smooth',
 				top: SCROLL_HEIGHT,
 			});
+		});
+
+		it('scrolls the conversation to the start of the reply when a message arrives', async () => {
+			const fakeEventSource = createFakeEventSource();
+
+			mockCreateEventSource.mockResolvedValue(fakeEventSource as never);
+
+			await renderAndOpen();
+
+			scrollTo.mockClear();
+
+			await act(async () => {
+				fakeEventSource.emit(
+					'Chat Message Sent',
+					JSON.stringify({data: 'Here are your tags'})
+				);
+			});
+
+			expect(scrollTo).toHaveBeenCalledWith({
+				behavior: 'smooth',
+				top: getMessageOffset(getMessageWrapper('Here are your tags')),
+			});
+		});
+
+		it('scrolls the conversation to the start of the text when an image arrives after it', async () => {
+			const fakeEventSource = createFakeEventSource();
+
+			mockCreateEventSource.mockResolvedValue(fakeEventSource as never);
+
+			await renderAndOpen();
+
+			await act(async () => {
+				fakeEventSource.emit(
+					'Chat Message Sent',
+					JSON.stringify({data: 'Here is your image'})
+				);
+			});
+
+			scrollTo.mockClear();
+
+			await act(async () => {
+				emitImage(fakeEventSource);
+			});
+
+			expect(scrollTo).toHaveBeenCalledWith({
+				behavior: 'smooth',
+				top: getMessageOffset(getMessageWrapper('Here is your image')),
+			});
+		});
+
+		it('shows the scroll to bottom button only when not scrolled to the bottom', async () => {
+			await renderAndOpen();
+
+			const messagesContainer = document.querySelector(
+				'.ai-assistant-chat__messages-container'
+			) as HTMLElement;
+
+			function scrollMessagesContainer(scrollTop: number) {
+				Object.defineProperty(messagesContainer, 'clientHeight', {
+					configurable: true,
+					value: 300,
+				});
+				Object.defineProperty(messagesContainer, 'scrollTop', {
+					configurable: true,
+					value: scrollTop,
+				});
+
+				fireEvent.scroll(messagesContainer);
+			}
+
+			expect(
+				screen.queryByRole('button', {name: 'scroll-to-bottom'})
+			).not.toBeInTheDocument();
+
+			act(() => {
+				scrollMessagesContainer(0);
+			});
+
+			scrollTo.mockClear();
+
+			fireEvent.click(
+				screen.getByRole('button', {name: 'scroll-to-bottom'})
+			);
+
+			expect(scrollTo).toHaveBeenCalledWith({
+				behavior: 'smooth',
+				top: SCROLL_HEIGHT,
+			});
+
+			act(() => {
+				scrollMessagesContainer(SCROLL_HEIGHT - 300);
+			});
+
+			expect(
+				screen.queryByRole('button', {name: 'scroll-to-bottom'})
+			).not.toBeInTheDocument();
 		});
 	});
 

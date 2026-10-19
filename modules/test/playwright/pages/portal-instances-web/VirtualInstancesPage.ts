@@ -3,9 +3,10 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {FrameLocator, Locator, Page, expect} from '@playwright/test';
+import {FrameLocator, Locator, Page, expect, request} from '@playwright/test';
 
 import {ApiHelpers} from '../../helpers/ApiHelpers';
+import {liferayConfig} from '../../liferay.config';
 import {clickAndExpectToBeVisible} from '../../utils/clickAndExpectToBeVisible';
 import {NotificationsPage} from '../notifications-web/NotificationsPage';
 import {GlobalMenuPage} from '../product-navigation-applications-menu/GlobalMenuPage';
@@ -156,15 +157,19 @@ export class VirtualInstancesPage {
 
 		await this.submitAddInstanceForm();
 
-		// Only wait for Virtual Instance creation if there are no errors
-
-		if (await this.errorMessage.isHidden()) {
-			await expect(this.creationStartedMessage(name)).toBeVisible();
-
-			await this.waitForCreationNotification(name);
-
-			await this.goto();
+		if (await this.errorMessage.isVisible()) {
+			throw new Error(
+				`Unable to add virtual instance ${name}: ${await this.errorMessage.innerText()}`
+			);
 		}
+
+		await expect(this.creationStartedMessage(name)).toBeVisible();
+
+		await this.waitForCreationNotification(name);
+
+		await this.waitForVirtualInstanceToBeReady(name);
+
+		await this.goto();
 	}
 
 	async addNewVirtualInstanceAndSetupAdminUser(
@@ -207,6 +212,8 @@ export class VirtualInstancesPage {
 		await expect(this.creationStartedMessage(name)).toBeVisible();
 
 		await this.waitForCreationNotification(name);
+
+		await this.waitForVirtualInstanceToBeReady(name);
 	}
 
 	private async clickAddInstance() {
@@ -315,9 +322,9 @@ export class VirtualInstancesPage {
 			await notificationsPage.goto();
 
 			await expect(
-				notificationsPage.getNotificationByTitle(
-					`The instance ${name} was created.`
-				)
+				notificationsPage
+					.getNotificationByTitle(`The instance ${name} was created.`)
+					.first()
 			).toBeVisible({timeout: 10 * 1000});
 		}).toPass({timeout: 300 * 1000});
 	}
@@ -382,6 +389,71 @@ export class VirtualInstancesPage {
 				{intervals: [1000], timeout: 180 * 1000}
 			)
 			.toBe(exists);
+	}
+
+	async waitForVirtualInstanceToBeReady(name: string) {
+		const apiHelpers = new ApiHelpers(this.page);
+
+		// The creation notification is sent before the virtual instance
+		// finishes initializing its sites, and the default instance answers
+		// for the virtual host until the new one is registered, so wait for
+		// the new instance itself to render its guest site. CI cannot resolve
+		// arbitrary virtual instance names, so the requests go to the portal
+		// URL with the virtual host in the Host header, and redirects such as
+		// the locale prepend one are followed the same way. A separate request
+		// context keeps the new instance's cookies out of the page's session.
+
+		await expect(async () => {
+			const portalInstances =
+				await apiHelpers.headlessPortalInstance.getVirtualInstances();
+
+			const portalInstance = portalInstances.find(
+				(portalInstance) => portalInstance.portalInstanceId === name
+			);
+
+			expect(portalInstance).toBeTruthy();
+
+			const requestContext = await request.newContext();
+
+			try {
+				let path = '/web/guest';
+				let response;
+
+				for (let i = 0; i < 5; i++) {
+					response = await requestContext.get(
+						`${liferayConfig.environment.baseUrl}${path}`,
+						{
+							headers: {
+								Host: `${name}:${liferayConfig.environment.port}`,
+							},
+							maxRedirects: 0,
+							timeout: 10 * 1000,
+						}
+					);
+
+					const headers = response.headers();
+
+					if (!headers.location) {
+						break;
+					}
+
+					const locationURL = new URL(
+						headers.location,
+						liferayConfig.environment.baseUrl
+					);
+
+					path = locationURL.pathname + locationURL.search;
+				}
+
+				expect(response.status()).toBe(200);
+				expect(await response.text()).toContain(
+					`getCompanyId: () => '${portalInstance.companyId}'`
+				);
+			}
+			finally {
+				await requestContext.dispose();
+			}
+		}).toPass({intervals: [1000], timeout: 300 * 1000});
 	}
 
 	async startVirtualInstanceExport(name: string) {

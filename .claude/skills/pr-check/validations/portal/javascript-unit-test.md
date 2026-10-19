@@ -28,15 +28,11 @@ Run each selected module's **full Jest suite**; do not select individual specs b
 
 With no `test` script there is no suite, so record that and continue to the sweeps below rather than exiting.
 
-**Cross-module consumer snapshots.** The changed module's own suite does not cover a snapshot stored in a *consumer* module. When another module declares the changed module by name in its `dependencies` or `devDependencies`, also run those consumers. Do not read `"private": true` as ruling this out, since Liferay modules depend on each other by bare name with `"*"` and a private module is still a workspace dependency:
+**Cross module consumer snapshots.** The changed module's own suite does not cover a snapshot stored in a *consumer* module. When another module declares the changed module by name in its `dependencies` or `devDependencies`, also run those consumers. Do not read `"private": true` as ruling this out, since Liferay modules depend on each other by bare name with `"*"` and a private module is still a workspace dependency.
 
-1. Read the changed module's `package.json` `name` (for example `@clayui/*` for clay packages).
+List the consumers in a fixed order. A consumer is a module under `modules`, other than the changed module, whose `package.json` names the changed module's package `name` in `dependencies` or `devDependencies` and declares a `test` script. Put first the consumers that have a file under their `test` directory that imports or mocks the package, then the rest, and sort each group by module path, as `LC_ALL=C sort` does. A file imports or mocks the package when it has `from`, `require(`, `import(`, or `jest.mock(` followed by a quote and the package name, then either the closing quote or a `/`.
 
-1. Grep other modules' `package.json` `dependencies`/`devDependencies` for that name.
-
-1. Run the full suite of each consumer that declares a `test` script, taking the consumers whose spec or `__snapshots__` files import the package first.
-
-Cap the consumer set at 8. When more modules depend on the package, note the blast radius rather than running them all.
+Run the full suite of each of the first 8. When the list is longer, qualify the verdict with how many of the listed consumers ran, such as `PASS (8 of 103 consumers)`.
 
 **Stale stub lists.** A module that stubs a shared package family for Jest keeps its own copy of the stub list, so adding a package to that family leaves every copy stale.
 

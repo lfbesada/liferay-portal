@@ -8410,6 +8410,73 @@ public class ObjectEntryLocalServiceTest {
 	}
 
 	@Test
+	@TestInfo("LPD-109780")
+	public void testUpdateCommerceProductSystemObjectDefinitionWithObjectValidationRule()
+		throws Exception {
+
+		CommerceCatalog commerceCatalog = CPTestUtil.getSystemCommerceCatalog(
+			TestPropsValues.getCompanyId());
+
+		CPDefinition cpDefinition = CPTestUtil.addCPDefinition(
+			commerceCatalog.getGroupId());
+
+		ObjectDefinition objectDefinition =
+			_objectDefinitionLocalService.fetchObjectDefinitionByClassName(
+				TestPropsValues.getCompanyId(), CPDefinition.class.getName());
+
+		ObjectField objectField = _addCustomObjectField(
+			new TextObjectFieldBuilder(
+			).labelMap(
+				RandomTestUtil.randomLocaleStringMap()
+			).name(
+				"a" + RandomTestUtil.randomString()
+			).objectDefinitionId(
+				objectDefinition.getObjectDefinitionId()
+			).build());
+
+		_objectEntryLocalService.
+			addOrUpdateExtensionDynamicObjectDefinitionTableValues(
+				TestPropsValues.getUserId(), objectDefinition,
+				cpDefinition.getCProductId(),
+				HashMapBuilder.<String, Serializable>put(
+					objectField.getName(), RandomTestUtil.randomString()
+				).build(),
+				ServiceContextTestUtil.getServiceContext());
+
+		ObjectValidationRule objectValidationRule =
+			_objectValidationRuleLocalService.addObjectValidationRule(
+				StringPool.BLANK, TestPropsValues.getUserId(),
+				objectDefinition.getObjectDefinitionId(), true,
+				ObjectValidationRuleConstants.ENGINE_TYPE_DDM,
+				LocalizedMapUtil.getLocalizedMap(
+					objectField.getName() + " must be empty"),
+				RandomTestUtil.randomLocaleStringMap(),
+				ObjectValidationRuleConstants.OUTPUT_TYPE_FULL_VALIDATION,
+				StringBundler.concat("isEmpty(", objectField.getName(), ")"),
+				false, Collections.emptyList());
+
+		ModelListenerException modelListenerException = Assert.assertThrows(
+			ModelListenerException.class,
+			() -> _cpDefinitionLocalService.updateCPDefinition(cpDefinition));
+
+		ObjectValidationRuleEngineException
+			objectValidationRuleEngineException =
+				(ObjectValidationRuleEngineException)
+					modelListenerException.getCause();
+
+		Assert.assertEquals(
+			objectField.getName() + " must be empty",
+			objectValidationRuleEngineException.getMessage());
+
+		_cpDefinitionLocalService.deleteCPDefinition(
+			cpDefinition.getCPDefinitionId());
+		_objectFieldLocalService.deleteObjectField(
+			objectField.getObjectFieldId());
+		_objectValidationRuleLocalService.deleteObjectValidationRule(
+			objectValidationRule);
+	}
+
+	@Test
 	@TestInfo("LPD-53245")
 	public void testUpdateObjectEntry() throws Exception {
 		_assertCount(0);
@@ -9432,11 +9499,13 @@ public class ObjectEntryLocalServiceTest {
 			for (LogEntry logEntry : logCapture.getLogEntries()) {
 				String message = logEntry.getMessage();
 
-				if (message.startsWith("select") &&
-					message.contains(objectDefinition.getDBTableName())) {
+				if (!message.startsWith("select") ||
+					!message.contains(objectDefinition.getDBTableName())) {
 
-					count++;
+					continue;
 				}
+
+				count++;
 			}
 
 			Assert.assertEquals(
@@ -10675,12 +10744,14 @@ public class ObjectEntryLocalServiceTest {
 		for (LogEntry logEntry : logCapture.getLogEntries()) {
 			String message = logEntry.getMessage();
 
-			if (message.startsWith(
+			if (!message.startsWith(
 					"SQL: insert into " +
 						objectDefinition.getExtensionDBTableName())) {
 
-				sqls.add(message);
+				continue;
 			}
+
+			sqls.add(message);
 		}
 
 		Assert.assertEquals(sqls.toString(), expectedCount, sqls.size());
@@ -11080,9 +11151,11 @@ public class ObjectEntryLocalServiceTest {
 		for (int i = 1; i <= size; i++) {
 			sb.append(prefixKey + i);
 
-			if (i < size) {
-				sb.append(StringPool.COMMA_AND_SPACE);
+			if (i >= size) {
+				continue;
 			}
+
+			sb.append(StringPool.COMMA_AND_SPACE);
 		}
 
 		return sb.toString();

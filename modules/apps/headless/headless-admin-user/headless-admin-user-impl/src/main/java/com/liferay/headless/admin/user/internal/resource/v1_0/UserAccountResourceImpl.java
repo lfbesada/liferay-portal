@@ -741,7 +741,8 @@ public class UserAccountResourceImpl extends BaseUserAccountResourceImpl {
 		ServiceContext serviceContext = _createServiceContext(userAccount);
 
 		user = _userService.updateUser(
-			userAccountId, null, null, null, false, null, null,
+			userAccountId, userAccount.getCurrentPassword(), null, null, false,
+			null, null,
 			GetterUtil.getString(
 				userAccount.getAlternateName(), user.getScreenName()),
 			GetterUtil.getString(
@@ -799,12 +800,13 @@ public class UserAccountResourceImpl extends BaseUserAccountResourceImpl {
 
 				RoleBrief[] accountRoleBriefs = accountBrief.getRoleBriefs();
 
-				if (accountRoleBriefs != null) {
-					for (RoleBrief roleBrief : accountRoleBriefs) {
-						_accountRoleService.associateUser(
-							accountBrief.getId(), roleBrief.getId(),
-							userAccountId);
-					}
+				if (accountRoleBriefs == null) {
+					continue;
+				}
+
+				for (RoleBrief roleBrief : accountRoleBriefs) {
+					_accountRoleService.associateUser(
+						accountBrief.getId(), roleBrief.getId(), userAccountId);
 				}
 			}
 		}
@@ -1196,9 +1198,9 @@ public class UserAccountResourceImpl extends BaseUserAccountResourceImpl {
 		ServiceContext serviceContext = _createServiceContext(userAccount);
 
 		user = _userService.updateUser(
-			userAccountId, null, null, null, false, null, null,
-			userAccount.getAlternateName(), userAccount.getEmailAddress(),
-			_hasPortrait(null, userAccount),
+			userAccountId, userAccount.getCurrentPassword(), null, null, false,
+			null, null, userAccount.getAlternateName(),
+			userAccount.getEmailAddress(), _hasPortrait(null, userAccount),
 			_getPortraitBytes(false, user, userAccount),
 			GetterUtil.getString(
 				userAccount.getLanguageId(), user.getLanguageId()),

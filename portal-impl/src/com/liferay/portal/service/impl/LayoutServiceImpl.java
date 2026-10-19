@@ -424,8 +424,12 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 	public Layout copyLayoutContent(Layout sourceLayout, Layout targetLayout)
 		throws Exception {
 
+		sourceLayout = layoutLocalService.getLayout(sourceLayout.getPlid());
+
 		LayoutPermissionUtil.check(
 			getPermissionChecker(), sourceLayout, ActionKeys.VIEW);
+
+		targetLayout = layoutLocalService.getLayout(targetLayout.getPlid());
 
 		LayoutPermissionUtil.checkLayoutUpdatePermission(
 			getPermissionChecker(), targetLayout);
@@ -439,8 +443,12 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 			long targetSegmentsExperienceId, Layout targetLayout)
 		throws Exception {
 
+		sourceLayout = layoutLocalService.getLayout(sourceLayout.getPlid());
+
 		LayoutPermissionUtil.check(
 			getPermissionChecker(), sourceLayout, ActionKeys.VIEW);
+
+		targetLayout = layoutLocalService.getLayout(targetLayout.getPlid());
 
 		LayoutPermissionUtil.checkLayoutUpdatePermission(
 			getPermissionChecker(), targetLayout);
@@ -1871,9 +1879,11 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 			Portlet portlet = _portletLocalService.fetchPortletById(
 				layout.getCompanyId(), portletId);
 
-			if (portlet != null) {
-				portletIds.add(portletId);
+			if (portlet == null) {
+				continue;
 			}
+
+			portletIds.add(portletId);
 		}
 
 		return portletIds;
@@ -1905,9 +1915,11 @@ public class LayoutServiceImpl extends LayoutServiceBaseImpl {
 
 			start = start + interval;
 
-			if (layouts.size() < interval) {
-				hasNext = false;
+			if (layouts.size() >= interval) {
+				continue;
 			}
+
+			hasNext = false;
 		}
 
 		return null;

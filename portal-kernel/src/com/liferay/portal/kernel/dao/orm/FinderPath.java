@@ -35,9 +35,11 @@ public class FinderPath {
 		for (int i = 0; i < tableNames.length; i++) {
 			sb.append(tableNames[i]);
 
-			if ((i + 1) < tableNames.length) {
-				sb.append(_TABLE_SEPARATOR);
+			if ((i + 1) >= tableNames.length) {
+				continue;
 			}
+
+			sb.append(_TABLE_SEPARATOR);
 		}
 
 		return sb.toString();
@@ -58,6 +60,8 @@ public class FinderPath {
 		int convertNullBitmask, boolean baseModelResult,
 		Function<Object, Object[]> argsExtractorFunction) {
 
+		_methodName = methodName;
+		_params = params;
 		_columnNames = columnNames;
 		_caseInsensitiveBitmask = caseInsensitiveBitmask;
 		_convertNullBitmask = convertNullBitmask;
@@ -114,6 +118,13 @@ public class FinderPath {
 		else {
 			_singleResult = true;
 		}
+	}
+
+	public FinderPath createEqualityCountFinderPath() {
+		return new FinderPath(
+			_entityClassName.concat(_LIST_WITHOUT_PAGINATION_SUFFIX),
+			_methodName, _params, _columnNames, _caseInsensitiveBitmask,
+			_convertNullBitmask, _baseModelResult, _argsExtractorFunction);
 	}
 
 	public Object[] extractArgs(BaseModel<?> baseModel) {
@@ -264,6 +275,8 @@ public class FinderPath {
 	private final boolean _countResult;
 	private final String _entityClassName;
 	private final String _finderName;
+	private final String _methodName;
+	private final String[] _params;
 	private final boolean _singleResult;
 	private volatile long _timestamp;
 

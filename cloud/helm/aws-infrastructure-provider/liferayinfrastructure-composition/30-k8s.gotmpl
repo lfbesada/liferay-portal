@@ -3,8 +3,9 @@
 {{- $observedSearch := dig "search" (dict) $observedResources -}}
 {{- $observedStorage := dig (printf "storage-%s" $activeDataPlane) (dict) $observedResources -}}
 
-{{- $doclibBucketName := dig "resource" "metadata" "annotations" "crossplane.io/external-name" "" $observedStorage | toString -}}
+{{- $doclibBucketName := dig "resource" "status" "atProvider" "id" "" $observedStorage | toString -}}
 {{- $searchEndpoint := dig "resource" "status" "atProvider" "endpoint" "" $observedSearch | toString -}}
+{{- $searchMasterPassword := dig "search-password-secret" "resource" "status" "atProvider" "manifest" "data" "password" "" $observedResources | toString | b64dec | default (print (randAlphaNum 16) "!#%+7QZ_b" | shuffle) -}}
 {{- $searchPassword := dig "connectionDetails" "attribute.advanced_security_options.0.master_user_options.0.master_user_password" "" $observedSearch | toString | b64dec -}}
 
 {{- $isDatabaseBootstrapped := false -}}
@@ -121,7 +122,6 @@ apiVersion: kubernetes.m.crossplane.io/v1alpha1
 kind: Object
 metadata:
     annotations:
-        crossplane.io/external-name: {{ $baseName }}-search-password-secret
         gotemplating.fn.crossplane.io/composition-resource-name: search-password-secret
     labels:
         app: liferay
@@ -144,7 +144,7 @@ spec:
                 name: liferay-search-password
                 namespace: {{ $namespace }}
             stringData:
-                password: {{ print (randAlphaNum 16) "!#%+7QZ_b" | shuffle | quote }}
+                password: {{ $searchMasterPassword | quote }}
             type: Opaque
     managementPolicies: {{ $xr.spec.orphanOnDelete | ternary (list "Create" "Observe") (list "Create" "Delete" "Observe") | toJson }}
 {{- end }}
@@ -154,7 +154,6 @@ apiVersion: kubernetes.m.crossplane.io/v1alpha1
 kind: Object
 metadata:
     annotations:
-        crossplane.io/external-name: {{ $baseName }}-database-server-details-configmap
         gotemplating.fn.crossplane.io/composition-resource-name: database-server-details-configmap
     labels:
         app: liferay
@@ -193,7 +192,6 @@ apiVersion: kubernetes.m.crossplane.io/v1alpha1
 kind: Object
 metadata:
     annotations:
-        crossplane.io/external-name: {{ $baseName }}-search-connection-details-secret
         gotemplating.fn.crossplane.io/composition-resource-name: search-connection-details-secret
     labels:
         app: liferay
@@ -235,7 +233,6 @@ apiVersion: kubernetes.m.crossplane.io/v1alpha1
 kind: Object
 metadata:
     annotations:
-        crossplane.io/external-name: {{ $baseName }}-document-library-connection-details-secret
         gotemplating.fn.crossplane.io/composition-resource-name: document-library-connection-details-secret
     labels:
         app: liferay
@@ -276,7 +273,6 @@ apiVersion: kubernetes.m.crossplane.io/v1alpha1
 kind: Object
 metadata:
     annotations:
-        crossplane.io/external-name: {{ $baseName }}-overlay-bucket-details-secret
         gotemplating.fn.crossplane.io/composition-resource-name: overlay-bucket-details-secret
     labels:
         app: liferay

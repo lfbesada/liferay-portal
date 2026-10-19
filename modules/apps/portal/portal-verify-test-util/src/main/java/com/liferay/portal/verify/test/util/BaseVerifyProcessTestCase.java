@@ -11,6 +11,7 @@ import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBInspector;
 import com.liferay.portal.kernel.dao.db.DBManagerUtil;
 import com.liferay.portal.kernel.dao.db.DBType;
+import com.liferay.portal.kernel.dao.db.IndexMetadata;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
@@ -26,6 +27,7 @@ import java.lang.reflect.Method;
 
 import java.sql.Connection;
 
+import java.util.Collections;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 
@@ -74,19 +76,37 @@ public abstract class BaseVerifyProcessTestCase {
 
 				Connection connection = objectValuePair.getKey();
 
-				if (!connection.isClosed()) {
-					if (exception == null) {
-						exception = objectValuePair.getValue();
-					}
-					else {
-						exception.addSuppressed(objectValuePair.getValue());
-					}
+				if (connection.isClosed()) {
+					continue;
+				}
+
+				if (exception == null) {
+					exception = objectValuePair.getValue();
+				}
+				else {
+					exception.addSuppressed(objectValuePair.getValue());
 				}
 			}
 
 			if (exception != null) {
 				throw exception;
 			}
+		}
+	}
+
+	protected void addIndex(
+			String indexName, String tableName, boolean unique,
+			String... columnNames)
+		throws Exception {
+
+		DB db = DBManagerUtil.getDB();
+
+		try (Connection connection = DataAccess.getConnection()) {
+			db.addIndexes(
+				connection,
+				Collections.singletonList(
+					new IndexMetadata(
+						indexName, tableName, unique, columnNames)));
 		}
 	}
 
@@ -119,6 +139,17 @@ public abstract class BaseVerifyProcessTestCase {
 		verifyProcess.verify();
 	}
 
+	protected void dropIndex(String indexName, String tableName)
+		throws Exception {
+
+		DB db = DBManagerUtil.getDB();
+
+		try (Connection connection = DataAccess.getConnection()) {
+			db.dropIndexes(
+				connection, Collections.singletonList(indexName), tableName);
+		}
+	}
+
 	protected String getNormalizedName(String name) throws Exception {
 		try (Connection connection = DataAccess.getConnection()) {
 			DBInspector dbInspector = new DBInspector(connection);
@@ -128,6 +159,14 @@ public abstract class BaseVerifyProcessTestCase {
 	}
 
 	protected abstract VerifyProcess getVerifyProcess();
+
+	protected void removePrimaryKey(String tableName) throws Exception {
+		DB db = DBManagerUtil.getDB();
+
+		try (Connection connection = DataAccess.getConnection()) {
+			db.removePrimaryKey(connection, tableName);
+		}
+	}
 
 	protected void renameView(String fromViewName, String toViewName)
 		throws Exception {
@@ -149,6 +188,27 @@ public abstract class BaseVerifyProcessTestCase {
 						"alter view ", fromViewName, " rename to ",
 						toViewName));
 			}
+		}
+	}
+
+	protected void updateIndex(
+			String indexName, String tableName, boolean unique,
+			String... columnNames)
+		throws Exception {
+
+		dropIndex(indexName, tableName);
+
+		addIndex(indexName, tableName, unique, columnNames);
+	}
+
+	protected void updatePrimaryKey(
+			String tableName, String... primaryKeyColumnNames)
+		throws Exception {
+
+		DB db = DBManagerUtil.getDB();
+
+		try (Connection connection = DataAccess.getConnection()) {
+			db.updatePrimaryKey(connection, tableName, primaryKeyColumnNames);
 		}
 	}
 
