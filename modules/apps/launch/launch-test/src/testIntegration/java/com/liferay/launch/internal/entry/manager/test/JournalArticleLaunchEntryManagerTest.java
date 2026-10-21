@@ -12,6 +12,7 @@ import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.launch.entry.manager.LaunchEntryManager;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
@@ -31,15 +32,98 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
  * @author Alejandro Tardín
+ * @author Lourdes Fernández Besada
  */
 @FeatureFlag("LPD-72278")
 @RunWith(Arquillian.class)
 public class JournalArticleLaunchEntryManagerTest
 	extends BaseLaunchEntryManagerTestCase {
+
+	@Test
+	public void testAddDraftFromHistoricalVersion() throws Exception {
+		long classPK = addEntry();
+
+		Map<String, Object> entryValues = getEntryMap(classPK);
+
+		LaunchEntryManager.Version version = getPublishedVersion(classPK);
+
+		updateLiveEntry(randomValuesMap(), classPK);
+
+		Assert.assertNotEquals(entryValues, getEntryMap(classPK));
+
+		LaunchEntryManager launchEntryManager = getLaunchEntryManager();
+
+		Assert.assertEquals(
+			entryValues,
+			getDraftMap(
+				launchEntryManager.addDraft(classPK, version.getVersionKey())));
+	}
+
+	@Test
+	public void testGetPreviewBaseModelForHistoricalVersion() throws Exception {
+		long classPK = addEntry();
+
+		Map<String, Object> values1 = randomValuesMap();
+
+		LaunchEntryManager.Draft draft1 = addDraft(classPK);
+
+		updateDraft(values1, draft1);
+
+		Map<String, Object> values2 = randomValuesMap();
+
+		LaunchEntryManager.Draft draft2 = addDraft(classPK);
+
+		updateDraft(values2, draft2);
+
+		LaunchEntryManager launchEntryManager = getLaunchEntryManager();
+
+		LaunchEntryManager.Version publishedVersion1 =
+			launchEntryManager.publishDraft(classPK, draft1.getDraftId());
+
+		launchEntryManager.publishDraft(classPK, draft2.getDraftId());
+
+		LaunchEntryManager.Version version1 = getVersion(
+			classPK, publishedVersion1.getVersionKey());
+
+		try (SafeCloseable safeCloseable = setPreviewIdWithSafeCloseable(
+				classPK, version1.getPreviewPrimaryKey())) {
+
+			Assert.assertEquals(values1, getEntryMap(classPK));
+		}
+
+		Assert.assertEquals(values2, getEntryMap(classPK));
+	}
+
+	@Test
+	public void testPublishDraftProducesDistinctVersionKey() throws Exception {
+		long classPK = addEntry();
+
+		LaunchEntryManager.Draft draft1 = addDraft(classPK);
+
+		updateDraft(randomValuesMap(), draft1);
+
+		LaunchEntryManager.Draft draft2 = addDraft(classPK);
+
+		updateDraft(randomValuesMap(), draft2);
+
+		LaunchEntryManager launchEntryManager = getLaunchEntryManager();
+
+		LaunchEntryManager.Version publishedVersion2 =
+			launchEntryManager.publishDraft(classPK, draft2.getDraftId());
+
+		LaunchEntryManager.Version publishedVersion1 =
+			launchEntryManager.publishDraft(classPK, draft1.getDraftId());
+
+		Assert.assertNotEquals(
+			publishedVersion2.getVersionKey(),
+			publishedVersion1.getVersionKey());
+	}
 
 	@Override
 	protected long addEntry() throws Exception {
