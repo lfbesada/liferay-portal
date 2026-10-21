@@ -110,14 +110,10 @@ public abstract class BaseLaunchEntryManagerTestCase {
 
 		LaunchEntryManager launchEntryManager = getLaunchEntryManager();
 
-		try {
-			launchEntryManager.addDraft(
-				classPK, String.valueOf(draft1.getDraftId()));
-
-			Assert.fail();
-		}
-		catch (PortalException portalException) {
-		}
+		Assert.assertThrows(
+			PortalException.class,
+			() -> launchEntryManager.addDraft(
+				classPK, String.valueOf(draft1.getDraftId())));
 	}
 
 	@Test
@@ -368,13 +364,10 @@ public abstract class BaseLaunchEntryManagerTestCase {
 
 		_assertPublishedVersion(classPK, draft1, values1, publishedVersion1);
 
-		try {
-			launchEntryManager.publishDraft(classPK, draft1.getDraftId());
-
-			Assert.fail();
-		}
-		catch (PortalException portalException) {
-		}
+		Assert.assertThrows(
+			PortalException.class,
+			() -> launchEntryManager.publishDraft(
+				classPK, draft1.getDraftId()));
 	}
 
 	protected LaunchEntryManager.Draft addDraft(long classPK) throws Exception {
