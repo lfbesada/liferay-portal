@@ -95,7 +95,7 @@ public class JournalArticleLaunchEntryManagerTest
 			classPK, publishedVersion1.getVersionKey());
 
 		try (SafeCloseable safeCloseable = setPreviewIdWithSafeCloseable(
-				classPK, version1.getPreviewPrimaryKey())) {
+				classPK, version1::getPreviewBaseModel)) {
 
 			Assert.assertEquals(valuesMap1, getEntryValuesMap(classPK));
 		}
