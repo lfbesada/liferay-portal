@@ -13,11 +13,13 @@ import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.launch.entry.manager.LaunchEntryManager;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.MapUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.TreeMapBuilder;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
@@ -55,23 +57,27 @@ public class JournalArticleLaunchEntryManagerTest
 	}
 
 	@Override
-	protected String getDraftTitle(LaunchEntryManager.Draft draft)
+	protected Map<String, Object> getDraftMap(LaunchEntryManager.Draft draft)
 		throws Exception {
 
 		JournalArticle journalArticle =
 			_journalArticleLocalService.getLatestArticle(
 				draft.getDraftId(), WorkflowConstants.STATUS_ANY, false);
 
-		return journalArticle.getTitle(LocaleUtil.getSiteDefault());
+		return HashMapBuilder.<String, Object>put(
+			"title", journalArticle.getTitle(LocaleUtil.getSiteDefault())
+		).build();
 	}
 
 	@Override
-	protected String getEntryTitle(long classPK) {
+	protected Map<String, Object> getEntryMap(long classPK) {
 		JournalArticle journalArticle =
 			_journalArticleLocalService.fetchLatestArticle(
 				classPK, WorkflowConstants.STATUS_APPROVED);
 
-		return journalArticle.getTitle(LocaleUtil.getSiteDefault());
+		return HashMapBuilder.<String, Object>put(
+			"title", journalArticle.getTitle(LocaleUtil.getSiteDefault())
+		).build();
 	}
 
 	@Override
@@ -102,7 +108,15 @@ public class JournalArticleLaunchEntryManagerTest
 	}
 
 	@Override
-	protected void updateDraft(String title, LaunchEntryManager.Draft draft)
+	protected Map<String, Object> randomValuesMap() {
+		return HashMapBuilder.<String, Object>put(
+			"title", RandomTestUtil.randomString()
+		).build();
+	}
+
+	@Override
+	protected void updateDraft(
+			Map<String, Object> values, LaunchEntryManager.Draft draft)
 		throws Exception {
 
 		JournalArticle journalArticle =
@@ -120,20 +134,20 @@ public class JournalArticleLaunchEntryManagerTest
 			journalArticle.getFolderId(), journalArticle.getArticleId(),
 			journalArticle.getVersion(),
 			HashMapBuilder.put(
-				LocaleUtil.getSiteDefault(), title
+				LocaleUtil.getSiteDefault(), MapUtil.getString(values, "title")
 			).build(),
 			journalArticle.getDescriptionMap(), journalArticle.getContent(),
 			journalArticle.getLayoutUuid(), serviceContext);
 	}
 
 	@Override
-	protected void updateLiveEntry(String title, long classPK)
+	protected void updateLiveEntry(Map<String, Object> values, long classPK)
 		throws Exception {
 
 		JournalTestUtil.updateArticle(
 			_journalArticleLocalService.getLatestArticle(
 				classPK, WorkflowConstants.STATUS_APPROVED),
-			title);
+			MapUtil.getString(values, "title"));
 	}
 
 	@Inject
