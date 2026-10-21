@@ -49,37 +49,39 @@ public class JournalArticleLaunchEntryManagerTest
 	public void testAddDraftFromHistoricalVersion() throws Exception {
 		long classPK = addEntry();
 
-		Map<String, Object> entryValues = getEntryMap(classPK);
+		Map<String, Object> entryValuesMap = getEntryValuesMap(classPK);
 
-		LaunchEntryManager.Version version = getPublishedVersion(classPK);
+		LaunchEntryManager.Version publishedVersion = getPublishedVersion(
+			classPK);
 
-		updateLiveEntry(randomValuesMap(), classPK);
+		updateLiveEntry(classPK, randomValuesMap());
 
-		Assert.assertNotEquals(entryValues, getEntryMap(classPK));
+		Assert.assertNotEquals(entryValuesMap, getEntryValuesMap(classPK));
 
 		LaunchEntryManager launchEntryManager = getLaunchEntryManager();
 
 		Assert.assertEquals(
-			entryValues,
-			getDraftMap(
-				launchEntryManager.addDraft(classPK, version.getVersionKey())));
+			entryValuesMap,
+			getDraftValuesMap(
+				launchEntryManager.addDraft(
+					classPK, publishedVersion.getVersionKey())));
 	}
 
 	@Test
 	public void testGetPreviewBaseModelForHistoricalVersion() throws Exception {
 		long classPK = addEntry();
 
-		Map<String, Object> values1 = randomValuesMap();
+		Map<String, Object> valuesMap1 = randomValuesMap();
 
 		LaunchEntryManager.Draft draft1 = addDraft(classPK);
 
-		updateDraft(values1, draft1);
+		updateDraft(draft1, valuesMap1);
 
-		Map<String, Object> values2 = randomValuesMap();
+		Map<String, Object> valuesMap2 = randomValuesMap();
 
 		LaunchEntryManager.Draft draft2 = addDraft(classPK);
 
-		updateDraft(values2, draft2);
+		updateDraft(draft2, valuesMap2);
 
 		LaunchEntryManager launchEntryManager = getLaunchEntryManager();
 
@@ -94,10 +96,10 @@ public class JournalArticleLaunchEntryManagerTest
 		try (SafeCloseable safeCloseable = setPreviewIdWithSafeCloseable(
 				classPK, version1.getPreviewPrimaryKey())) {
 
-			Assert.assertEquals(values1, getEntryMap(classPK));
+			Assert.assertEquals(valuesMap1, getEntryValuesMap(classPK));
 		}
 
-		Assert.assertEquals(values2, getEntryMap(classPK));
+		Assert.assertEquals(valuesMap2, getEntryValuesMap(classPK));
 	}
 
 	@Test
@@ -106,11 +108,11 @@ public class JournalArticleLaunchEntryManagerTest
 
 		LaunchEntryManager.Draft draft1 = addDraft(classPK);
 
-		updateDraft(randomValuesMap(), draft1);
+		updateDraft(draft1, randomValuesMap());
 
 		LaunchEntryManager.Draft draft2 = addDraft(classPK);
 
-		updateDraft(randomValuesMap(), draft2);
+		updateDraft(draft2, randomValuesMap());
 
 		LaunchEntryManager launchEntryManager = getLaunchEntryManager();
 
@@ -141,7 +143,8 @@ public class JournalArticleLaunchEntryManagerTest
 	}
 
 	@Override
-	protected Map<String, Object> getDraftMap(LaunchEntryManager.Draft draft)
+	protected Map<String, Object> getDraftValuesMap(
+			LaunchEntryManager.Draft draft)
 		throws Exception {
 
 		JournalArticle journalArticle =
@@ -154,7 +157,7 @@ public class JournalArticleLaunchEntryManagerTest
 	}
 
 	@Override
-	protected Map<String, Object> getEntryMap(long classPK) {
+	protected Map<String, Object> getEntryValuesMap(long classPK) {
 		JournalArticle journalArticle =
 			_journalArticleLocalService.fetchLatestArticle(
 				classPK, WorkflowConstants.STATUS_APPROVED);
@@ -200,7 +203,7 @@ public class JournalArticleLaunchEntryManagerTest
 
 	@Override
 	protected void updateDraft(
-			Map<String, Object> values, LaunchEntryManager.Draft draft)
+			LaunchEntryManager.Draft draft, Map<String, Object> valuesMap)
 		throws Exception {
 
 		JournalArticle journalArticle =
@@ -218,20 +221,21 @@ public class JournalArticleLaunchEntryManagerTest
 			journalArticle.getFolderId(), journalArticle.getArticleId(),
 			journalArticle.getVersion(),
 			HashMapBuilder.put(
-				LocaleUtil.getSiteDefault(), MapUtil.getString(values, "title")
+				LocaleUtil.getSiteDefault(),
+				MapUtil.getString(valuesMap, "title")
 			).build(),
 			journalArticle.getDescriptionMap(), journalArticle.getContent(),
 			journalArticle.getLayoutUuid(), serviceContext);
 	}
 
 	@Override
-	protected void updateLiveEntry(Map<String, Object> values, long classPK)
+	protected void updateLiveEntry(long classPK, Map<String, Object> valuesMap)
 		throws Exception {
 
 		JournalTestUtil.updateArticle(
 			_journalArticleLocalService.getLatestArticle(
 				classPK, WorkflowConstants.STATUS_APPROVED),
-			MapUtil.getString(values, "title"));
+			MapUtil.getString(valuesMap, "title"));
 	}
 
 	@Inject

@@ -77,36 +77,36 @@ public abstract class BaseLaunchEntryManagerTestCase {
 	public void testAddDraft() throws Exception {
 		long classPK = addEntry();
 
-		Map<String, Object> entryValues = getEntryMap(classPK);
+		Map<String, Object> entryValuesMap = getEntryValuesMap(classPK);
 
 		LaunchEntryManager.Draft draft1 = addDraft(classPK);
 		LaunchEntryManager.Draft draft2 = addDraft(classPK);
 
 		Assert.assertNotEquals(draft1.getDraftId(), draft2.getDraftId());
 
-		Map<String, Object> values1 = randomValuesMap();
+		Map<String, Object> valuesMap1 = randomValuesMap();
 
-		updateDraft(values1, draft1);
+		updateDraft(draft1, valuesMap1);
 
-		Map<String, Object> values2 = randomValuesMap();
+		Map<String, Object> valuesMap2 = randomValuesMap();
 
-		updateDraft(values2, draft2);
+		updateDraft(draft2, valuesMap2);
 
-		Assert.assertEquals(values1, _getDraftMap(classPK, draft1));
-		Assert.assertEquals(values2, _getDraftMap(classPK, draft2));
+		Assert.assertEquals(valuesMap1, _getDraftValuesMap(classPK, draft1));
+		Assert.assertEquals(valuesMap2, _getDraftValuesMap(classPK, draft2));
 
-		Assert.assertEquals(entryValues, getEntryMap(classPK));
+		Assert.assertEquals(entryValuesMap, getEntryValuesMap(classPK));
 
-		Map<String, Object> values3 = randomValuesMap();
+		Map<String, Object> valuesMap3 = randomValuesMap();
 
-		updateLiveEntry(values3, classPK);
+		updateLiveEntry(classPK, valuesMap3);
 
-		Assert.assertEquals(values3, getEntryMap(classPK));
+		Assert.assertEquals(valuesMap3, getEntryValuesMap(classPK));
 
-		Assert.assertEquals(values1, _getDraftMap(classPK, draft1));
-		Assert.assertEquals(values2, _getDraftMap(classPK, draft2));
+		Assert.assertEquals(valuesMap1, _getDraftValuesMap(classPK, draft1));
+		Assert.assertEquals(valuesMap2, _getDraftValuesMap(classPK, draft2));
 
-		Assert.assertEquals(values3, getDraftMap(addDraft(classPK)));
+		Assert.assertEquals(valuesMap3, getDraftValuesMap(addDraft(classPK)));
 
 		LaunchEntryManager launchEntryManager = getLaunchEntryManager();
 
@@ -120,7 +120,7 @@ public abstract class BaseLaunchEntryManagerTestCase {
 	public void testDeleteDraft() throws Exception {
 		long classPK = addEntry();
 
-		Map<String, Object> entryValues = getEntryMap(classPK);
+		Map<String, Object> entryValuesMap = getEntryValuesMap(classPK);
 		LaunchEntryManager.Version publishedVersion = getPublishedVersion(
 			classPK);
 
@@ -135,7 +135,7 @@ public abstract class BaseLaunchEntryManagerTestCase {
 
 		launchEntryManager.deleteDraft(classPK, draft.getDraftId());
 
-		Assert.assertEquals(entryValues, getEntryMap(classPK));
+		Assert.assertEquals(entryValuesMap, getEntryValuesMap(classPK));
 
 		LaunchEntryManager.Version currentPublishedVersion =
 			getPublishedVersion(classPK);
@@ -149,17 +149,17 @@ public abstract class BaseLaunchEntryManagerTestCase {
 	public void testFetchDraft() throws Exception {
 		long classPK = addEntry();
 
-		Map<String, Object> values = randomValuesMap();
+		Map<String, Object> valuesMap = randomValuesMap();
 
 		LaunchEntryManager.Draft draft = addDraft(classPK);
 
-		updateDraft(values, draft);
+		updateDraft(draft, valuesMap);
 
 		LaunchEntryManager.Draft fetchedDraft = getDraft(
 			classPK, draft.getDraftId());
 
 		Assert.assertEquals(draft.getDraftId(), fetchedDraft.getDraftId());
-		Assert.assertEquals(values, getDraftMap(fetchedDraft));
+		Assert.assertEquals(valuesMap, getDraftValuesMap(fetchedDraft));
 
 		LaunchEntryManager launchEntryManager = getLaunchEntryManager();
 
@@ -257,26 +257,26 @@ public abstract class BaseLaunchEntryManagerTestCase {
 	public void testGetPreviewBaseModel() throws Exception {
 		long classPK = addEntry();
 
-		Map<String, Object> entryValues = getEntryMap(classPK);
+		Map<String, Object> entryValuesMap = getEntryValuesMap(classPK);
 
-		Map<String, Object> values1 = randomValuesMap();
+		Map<String, Object> valuesMap1 = randomValuesMap();
 
 		LaunchEntryManager.Draft draft1 = addDraft(classPK);
 
-		updateDraft(values1, draft1);
+		updateDraft(draft1, valuesMap1);
 
-		Map<String, Object> values2 = randomValuesMap();
+		Map<String, Object> valuesMap2 = randomValuesMap();
 
 		LaunchEntryManager.Draft draft2 = addDraft(classPK);
 
-		updateDraft(values2, draft2);
+		updateDraft(draft2, valuesMap2);
 
 		draft1 = getDraft(classPK, draft1.getDraftId());
 
 		try (SafeCloseable safeCloseable = setPreviewIdWithSafeCloseable(
 				classPK, draft1.getPreviewPrimaryKey())) {
 
-			Assert.assertEquals(values1, getEntryMap(classPK));
+			Assert.assertEquals(valuesMap1, getEntryValuesMap(classPK));
 		}
 
 		draft2 = getDraft(classPK, draft2.getDraftId());
@@ -284,10 +284,10 @@ public abstract class BaseLaunchEntryManagerTestCase {
 		try (SafeCloseable safeCloseable = setPreviewIdWithSafeCloseable(
 				classPK, draft2.getPreviewPrimaryKey())) {
 
-			Assert.assertEquals(values2, getEntryMap(classPK));
+			Assert.assertEquals(valuesMap2, getEntryValuesMap(classPK));
 		}
 
-		Assert.assertEquals(entryValues, getEntryMap(classPK));
+		Assert.assertEquals(entryValuesMap, getEntryValuesMap(classPK));
 	}
 
 	@Test
@@ -314,8 +314,8 @@ public abstract class BaseLaunchEntryManagerTestCase {
 			versionKeys.toString(),
 			versionKeys.contains(String.valueOf(draft.getDraftId())));
 
-		updateDraft(randomValuesMap(), draft);
-		updateDraft(randomValuesMap(), draft);
+		updateDraft(draft, randomValuesMap());
+		updateDraft(draft, randomValuesMap());
 
 		Assert.assertEquals(
 			versionKeys,
@@ -338,31 +338,31 @@ public abstract class BaseLaunchEntryManagerTestCase {
 	public void testPublishDraft() throws Exception {
 		long classPK = addEntry();
 
-		Map<String, Object> values1 = randomValuesMap();
+		Map<String, Object> valuesMap1 = randomValuesMap();
 
 		LaunchEntryManager.Draft draft1 = addDraft(classPK);
 
-		updateDraft(values1, draft1);
+		updateDraft(draft1, valuesMap1);
 
-		Map<String, Object> values2 = randomValuesMap();
+		Map<String, Object> valuesMap2 = randomValuesMap();
 
 		LaunchEntryManager.Draft draft2 = addDraft(classPK);
 
-		updateDraft(values2, draft2);
+		updateDraft(draft2, valuesMap2);
 
 		LaunchEntryManager launchEntryManager = getLaunchEntryManager();
 
 		LaunchEntryManager.Version publishedVersion2 =
 			launchEntryManager.publishDraft(classPK, draft2.getDraftId());
 
-		_assertPublishedVersion(classPK, draft2, values2, publishedVersion2);
+		_assertPublishedVersion(classPK, draft2, valuesMap2, publishedVersion2);
 
-		Assert.assertEquals(values1, _getDraftMap(classPK, draft1));
+		Assert.assertEquals(valuesMap1, _getDraftValuesMap(classPK, draft1));
 
 		LaunchEntryManager.Version publishedVersion1 =
 			launchEntryManager.publishDraft(classPK, draft1.getDraftId());
 
-		_assertPublishedVersion(classPK, draft1, values1, publishedVersion1);
+		_assertPublishedVersion(classPK, draft1, valuesMap1, publishedVersion1);
 
 		Assert.assertThrows(
 			PortalException.class,
@@ -395,11 +395,11 @@ public abstract class BaseLaunchEntryManagerTestCase {
 		return draft;
 	}
 
-	protected abstract Map<String, Object> getDraftMap(
+	protected abstract Map<String, Object> getDraftValuesMap(
 			LaunchEntryManager.Draft draft)
 		throws Exception;
 
-	protected abstract Map<String, Object> getEntryMap(long classPK)
+	protected abstract Map<String, Object> getEntryValuesMap(long classPK)
 		throws Exception;
 
 	protected LaunchEntryManager.Item getItem(long classPK) {
@@ -480,11 +480,11 @@ public abstract class BaseLaunchEntryManagerTestCase {
 	}
 
 	protected abstract void updateDraft(
-			Map<String, Object> values, LaunchEntryManager.Draft draft)
+			LaunchEntryManager.Draft draft, Map<String, Object> valuesMap)
 		throws Exception;
 
 	protected abstract void updateLiveEntry(
-			Map<String, Object> values, long classPK)
+			long classPK, Map<String, Object> valuesMap)
 		throws Exception;
 
 	protected Group group;
@@ -492,11 +492,11 @@ public abstract class BaseLaunchEntryManagerTestCase {
 
 	private void _assertPublishedVersion(
 			long classPK, LaunchEntryManager.Draft draft,
-			Map<String, Object> expectedValues,
+			Map<String, Object> expectedValuesMap,
 			LaunchEntryManager.Version publishedVersion)
 		throws Exception {
 
-		Assert.assertEquals(expectedValues, getEntryMap(classPK));
+		Assert.assertEquals(expectedValuesMap, getEntryValuesMap(classPK));
 
 		LaunchEntryManager.Version currentPublishedVersion =
 			getPublishedVersion(classPK);
@@ -517,11 +517,11 @@ public abstract class BaseLaunchEntryManagerTestCase {
 			launchEntryManager.fetchDraft(classPK, draft.getDraftId()));
 	}
 
-	private Map<String, Object> _getDraftMap(
+	private Map<String, Object> _getDraftValuesMap(
 			long classPK, LaunchEntryManager.Draft draft)
 		throws Exception {
 
-		return getDraftMap(getDraft(classPK, draft.getDraftId()));
+		return getDraftValuesMap(getDraft(classPK, draft.getDraftId()));
 	}
 
 	private String _getEditURL(LaunchEntryManager.Draft draft)
