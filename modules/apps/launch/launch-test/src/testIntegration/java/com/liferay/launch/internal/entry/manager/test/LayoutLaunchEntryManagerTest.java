@@ -9,6 +9,7 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.launch.entry.manager.LaunchEntryManager;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -22,8 +23,11 @@ import com.liferay.portal.test.rule.Inject;
 
 import java.io.Serializable;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Set;
 
 import org.junit.Assert;
 import org.junit.Test;
@@ -42,6 +46,7 @@ public class LayoutLaunchEntryManagerTest
 	public void testAddDraft() throws Exception {
 		super.testAddDraft();
 
+		_testAddDraftCopiesLayoutContent();
 		_testAddDraftWithExistingLaunchDraft();
 	}
 
@@ -58,7 +63,16 @@ public class LayoutLaunchEntryManagerTest
 	public void testGetPreviewBaseModel() throws Exception {
 		super.testGetPreviewBaseModel();
 
+		_testGetPreviewBaseModelForPublishedVersionReturnsLive();
 		_testGetPreviewBaseModelPreservesPublishedFriendlyURL();
+	}
+
+	@Override
+	@Test
+	public void testPublishDraft() throws Exception {
+		super.testPublishDraft();
+
+		_testPublishDraftReturnsStableVersionKey();
 	}
 
 	@Override
@@ -150,6 +164,62 @@ public class LayoutLaunchEntryManagerTest
 		).build();
 	}
 
+	private void _testAddDraftCopiesLayoutContent() throws Exception {
+		Layout layout = LayoutTestUtil.addTypeContentPublishedLayout(
+			group, RandomTestUtil.randomString(),
+			WorkflowConstants.STATUS_APPROVED);
+
+		Map<String, Object> publishedLayoutValuesMap = randomValuesMap();
+
+		_updateLayout(layout.getPlid(), publishedLayoutValuesMap);
+
+		LaunchEntryManager launchEntryManager = getLaunchEntryManager();
+
+		List<LaunchEntryManager.Version> versions =
+			launchEntryManager.getVersions(layout.getPlid());
+
+		LaunchEntryManager.Version publishedVersion = versions.get(0);
+
+		LaunchEntryManager.Draft draft = launchEntryManager.addDraft(
+			layout.getPlid(), RandomTestUtil.randomLong(),
+			publishedVersion.getVersionKey());
+
+		Assert.assertEquals(publishedLayoutValuesMap, getDraftValuesMap(draft));
+
+		Assert.assertEquals(versions.toString(), 1, versions.size());
+
+		Layout draftLayout = layout.fetchDraftLayout();
+
+		Map<String, Object> mainDraftLayoutValuesMap = randomValuesMap();
+
+		_updateLayout(draftLayout.getPlid(), mainDraftLayoutValuesMap);
+
+		versions = launchEntryManager.getVersions(layout.getPlid());
+
+		Set<String> versionKeys = new HashSet<>();
+
+		for (LaunchEntryManager.Version version : versions) {
+			String versionKey = version.getVersionKey();
+
+			Assert.assertTrue(versionKeys.add(versionKey));
+
+			Map<String, Object> expectedValuesMap = publishedLayoutValuesMap;
+
+			if (!Objects.equals(versionKey, publishedVersion.getVersionKey())) {
+				expectedValuesMap = mainDraftLayoutValuesMap;
+			}
+
+			LaunchEntryManager.Draft curDraft = launchEntryManager.addDraft(
+				layout.getPlid(), RandomTestUtil.randomLong(), versionKey);
+
+			Assert.assertEquals(expectedValuesMap, getDraftValuesMap(curDraft));
+
+			Assert.assertNotEquals(draft.getDraftId(), curDraft.getDraftId());
+		}
+
+		Assert.assertEquals(versions.toString(), 2, versions.size());
+	}
+
 	private void _testAddDraftWithExistingLaunchDraft() throws Exception {
 		long classPK = addEntry();
 
@@ -209,6 +279,40 @@ public class LayoutLaunchEntryManagerTest
 			mainDraftLayout, _layoutLocalService.fetchDraftLayout(classPK, 0));
 	}
 
+	private void _testGetPreviewBaseModelForPublishedVersionReturnsLive()
+		throws Exception {
+
+		long classPK = addEntry();
+
+		Map<String, Object> valuesMap1 = randomValuesMap();
+
+		LaunchEntryManager.Draft draft1 = addDraft(classPK);
+
+		updateDraft(draft1, valuesMap1);
+
+		Map<String, Object> valuesMap2 = randomValuesMap();
+
+		LaunchEntryManager.Draft draft2 = addDraft(classPK);
+
+		updateDraft(draft2, valuesMap2);
+
+		LaunchEntryManager launchEntryManager = getLaunchEntryManager();
+
+		LaunchEntryManager.Version publishedVersion1 =
+			launchEntryManager.publishDraft(classPK, draft1.getDraftId());
+
+		launchEntryManager.publishDraft(classPK, draft2.getDraftId());
+
+		LaunchEntryManager.Version version1 = getVersion(
+			classPK, publishedVersion1.getVersionKey());
+
+		try (SafeCloseable safeCloseable = setPreviewIdWithSafeCloseable(
+				classPK, version1::getPreviewBaseModel)) {
+
+			Assert.assertEquals(valuesMap2, getEntryValuesMap(classPK));
+		}
+	}
+
 	private void _testGetPreviewBaseModelPreservesPublishedFriendlyURL()
 		throws Exception {
 
@@ -232,6 +336,30 @@ public class LayoutLaunchEntryManagerTest
 			previewBaseModel.getFriendlyURLMap());
 	}
 
+	private void _testPublishDraftReturnsStableVersionKey() throws Exception {
+		long classPK = addEntry();
+
+		LaunchEntryManager.Draft draft1 = addDraft(classPK);
+
+		updateDraft(draft1, randomValuesMap());
+
+		LaunchEntryManager.Draft draft2 = addDraft(classPK);
+
+		updateDraft(draft2, randomValuesMap());
+
+		LaunchEntryManager launchEntryManager = getLaunchEntryManager();
+
+		LaunchEntryManager.Version publishedVersion2 =
+			launchEntryManager.publishDraft(classPK, draft2.getDraftId());
+
+		LaunchEntryManager.Version publishedVersion1 =
+			launchEntryManager.publishDraft(classPK, draft1.getDraftId());
+
+		Assert.assertEquals(
+			publishedVersion2.getVersionKey(),
+			publishedVersion1.getVersionKey());
+	}
+
 	private void _updateLayout(long plid, Map<String, Object> valuesMap)
 		throws Exception {
 
@@ -241,6 +369,10 @@ public class LayoutLaunchEntryManagerTest
 			MapUtil.getString(valuesMap, "styleBookEntryERC"));
 		layout.setMasterLayoutPageTemplateEntryERC(
 			MapUtil.getString(valuesMap, "masterLayoutPageTemplateEntryERC"));
+
+		if (layout.isDraftLayout()) {
+			layout.setStatus(WorkflowConstants.STATUS_DRAFT);
+		}
 
 		_layoutLocalService.updateLayout(layout);
 	}
