@@ -30,6 +30,7 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -91,7 +92,7 @@ public class LayoutUtil {
 			HttpServletRequest httpServletRequest,
 			String itemSelectorReturnType, boolean privateLayout,
 			long parentLayoutId, String[] selectedLayoutUuid, long selPlid,
-			int start, int end)
+			int start, int end, int[] statuses)
 		throws Exception {
 
 		ThemeDisplay themeDisplay =
@@ -103,13 +104,13 @@ public class LayoutUtil {
 		List<Layout> layouts = ListUtil.filter(
 			LayoutServiceUtil.getLayouts(
 				groupId, privateLayout, parentLayoutId),
-			layout -> _isIncluded(layout));
+			layout -> _isIncluded(layout, statuses));
 
 		for (Layout layout : ListUtil.subList(layouts, start, end)) {
 			List<Layout> childLayouts = ListUtil.filter(
 				LayoutServiceUtil.getLayouts(
 					groupId, layout.isPrivateLayout(), layout.getLayoutId()),
-				curLayout -> _isIncluded(curLayout));
+				curLayout -> _isIncluded(curLayout, statuses));
 
 			jsonArray.put(
 				JSONUtil.put(
@@ -199,13 +200,15 @@ public class LayoutUtil {
 		);
 	}
 
-	private static boolean _isIncluded(Layout layout) {
+	private static boolean _isIncluded(Layout layout, int[] statuses) {
 		if (!layout.isTypeContent() && !layout.isTypeEmpty()) {
 			return true;
 		}
 
 		if (layout.fetchDraftLayout() != null) {
-			if (layout.isPublished()) {
+			if (layout.isPublished() ||
+				ArrayUtil.contains(statuses, WorkflowConstants.STATUS_DRAFT)) {
+
 				return true;
 			}
 
