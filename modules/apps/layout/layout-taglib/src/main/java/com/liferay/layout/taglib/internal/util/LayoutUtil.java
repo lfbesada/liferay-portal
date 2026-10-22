@@ -11,12 +11,14 @@ import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.launch.LaunchPreviewThreadLocal;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.auth.AuthTokenUtil;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
 import com.liferay.portal.kernel.service.LayoutServiceUtil;
 import com.liferay.portal.kernel.service.ResourcePermissionLocalServiceUtil;
 import com.liferay.portal.kernel.service.RoleLocalServiceUtil;
@@ -203,7 +205,24 @@ public class LayoutUtil {
 		}
 
 		if (layout.fetchDraftLayout() != null) {
-			return layout.isPublished();
+			if (layout.isPublished()) {
+				return true;
+			}
+
+			long launchSetId = LaunchPreviewThreadLocal.getLaunchSetId();
+
+			if (launchSetId <= 0) {
+				return false;
+			}
+
+			Layout launchDraftLayout = LayoutLocalServiceUtil.fetchDraftLayout(
+				layout.getPlid(), launchSetId);
+
+			if (launchDraftLayout != null) {
+				return true;
+			}
+
+			return false;
 		}
 
 		if (layout.isApproved() && !layout.isHidden() && !layout.isSystem()) {
