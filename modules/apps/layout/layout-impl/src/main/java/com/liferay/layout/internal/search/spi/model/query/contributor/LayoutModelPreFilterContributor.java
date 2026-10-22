@@ -5,6 +5,7 @@
 
 package com.liferay.layout.internal.search.spi.model.query.contributor;
 
+import com.liferay.portal.kernel.launch.LaunchPreviewThreadLocal;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.search.BooleanClauseOccur;
 import com.liferay.portal.kernel.search.Field;
@@ -12,6 +13,7 @@ import com.liferay.portal.kernel.search.SearchContext;
 import com.liferay.portal.kernel.search.filter.BooleanFilter;
 import com.liferay.portal.kernel.search.filter.TermFilter;
 import com.liferay.portal.kernel.search.filter.TermsFilter;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.Validator;
@@ -20,6 +22,7 @@ import com.liferay.portal.search.spi.model.query.contributor.ModelPreFilterContr
 import com.liferay.portal.search.spi.model.registrar.ModelSearchSettings;
 
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Vagner B.C
@@ -90,8 +93,54 @@ public class LayoutModelPreFilterContributor
 
 			statusesTermsFilter.addValues(ArrayUtil.toStringArray(statuses));
 
-			booleanFilter.add(statusesTermsFilter, BooleanClauseOccur.MUST);
+			long[] groupIds = searchContext.getGroupIds();
+			long launchSetId = LaunchPreviewThreadLocal.getLaunchSetId();
+
+			long[] classPKs = new long[0];
+
+			if (ArrayUtil.isNotEmpty(groupIds) && (launchSetId > 0)) {
+				classPKs = _layoutLocalService.getClassPKsByLaunchSetId(
+					groupIds[0], launchSetId);
+			}
+
+			if (ArrayUtil.isNotEmpty(classPKs)) {
+				booleanFilter.add(
+					_createStatusesOrLaunchDraftsFilter(
+						classPKs, statusesTermsFilter),
+					BooleanClauseOccur.MUST);
+			}
+			else {
+				booleanFilter.add(statusesTermsFilter, BooleanClauseOccur.MUST);
+			}
 		}
 	}
+
+	private BooleanFilter _createStatusesOrLaunchDraftsFilter(
+		long[] classPKs, TermsFilter statusesTermsFilter) {
+
+		BooleanFilter booleanFilter = new BooleanFilter();
+
+		booleanFilter.add(statusesTermsFilter, BooleanClauseOccur.SHOULD);
+
+		BooleanFilter launchDraftFilter = new BooleanFilter();
+
+		launchDraftFilter.add(
+			new TermFilter(
+				Field.STATUS, String.valueOf(WorkflowConstants.STATUS_DRAFT)),
+			BooleanClauseOccur.MUST);
+
+		TermsFilter plidTermsFilter = new TermsFilter(Field.ENTRY_CLASS_PK);
+
+		plidTermsFilter.addValues(ArrayUtil.toStringArray(classPKs));
+
+		launchDraftFilter.add(plidTermsFilter, BooleanClauseOccur.MUST);
+
+		booleanFilter.add(launchDraftFilter, BooleanClauseOccur.SHOULD);
+
+		return booleanFilter;
+	}
+
+	@Reference
+	private LayoutLocalService _layoutLocalService;
 
 }
