@@ -24,6 +24,8 @@ import java.io.Serializable;
 import java.util.List;
 import java.util.Map;
 
+import org.junit.Assert;
+import org.junit.Test;
 import org.junit.runner.RunWith;
 
 /**
@@ -33,6 +35,22 @@ import org.junit.runner.RunWith;
 @RunWith(Arquillian.class)
 public class LayoutLaunchEntryManagerTest
 	extends BaseLaunchEntryManagerTestCase {
+
+	@Override
+	@Test
+	public void testAddDraft() throws Exception {
+		super.testAddDraft();
+
+		_testAddDraftWithExistingLaunchDraft();
+	}
+
+	@Override
+	@Test
+	public void testFetchDraft() throws Exception {
+		super.testFetchDraft();
+
+		_testFetchDraftLayoutByLaunchSetId();
+	}
 
 	@Override
 	protected long addEntry() throws Exception {
@@ -121,6 +139,65 @@ public class LayoutLaunchEntryManagerTest
 		).put(
 			"styleBookEntryERC", layout.getStyleBookEntryERC()
 		).build();
+	}
+
+	private void _testAddDraftWithExistingLaunchDraft() throws Exception {
+		long classPK = addEntry();
+
+		Map<String, Object> entryValuesMap = getEntryValuesMap(classPK);
+
+		long launchSetId = RandomTestUtil.randomLong();
+
+		LaunchEntryManager launchEntryManager = getLaunchEntryManager();
+
+		LaunchEntryManager.Draft draft1 = launchEntryManager.addDraft(
+			classPK, launchSetId, String.valueOf(classPK));
+
+		Assert.assertEquals(entryValuesMap, getDraftValuesMap(draft1));
+
+		Map<String, Object> valuesMap = randomValuesMap();
+
+		updateDraft(draft1, valuesMap);
+
+		Assert.assertEquals(valuesMap, getDraftValuesMap(draft1));
+
+		LaunchEntryManager.Draft draft2 = launchEntryManager.addDraft(
+			classPK, launchSetId, String.valueOf(classPK));
+
+		Assert.assertEquals(draft1.getDraftId(), draft2.getDraftId());
+		Assert.assertEquals(entryValuesMap, getDraftValuesMap(draft2));
+
+		Layout launchDraftLayout = _layoutLocalService.getLayout(
+			draft2.getDraftId());
+
+		Assert.assertEquals(launchSetId, launchDraftLayout.getLaunchSetId());
+
+		Layout draftLayout = _layoutLocalService.fetchDraftLayout(classPK);
+
+		Assert.assertEquals(0, draftLayout.getLaunchSetId());
+	}
+
+	private void _testFetchDraftLayoutByLaunchSetId() throws Exception {
+		long classPK = addEntry();
+
+		Layout mainDraftLayout = _layoutLocalService.fetchDraftLayout(classPK);
+
+		long launchSetId = RandomTestUtil.randomLong();
+
+		LaunchEntryManager launchEntryManager = getLaunchEntryManager();
+
+		LaunchEntryManager.Draft launchDraft = launchEntryManager.addDraft(
+			classPK, launchSetId, String.valueOf(classPK));
+
+		Layout launchDraftLayout = _layoutLocalService.fetchDraftLayout(
+			classPK, launchSetId);
+
+		Assert.assertEquals(
+			launchDraft.getDraftId(), launchDraftLayout.getPlid());
+		Assert.assertEquals(launchSetId, launchDraftLayout.getLaunchSetId());
+
+		Assert.assertEquals(
+			mainDraftLayout, _layoutLocalService.fetchDraftLayout(classPK, 0));
 	}
 
 	private void _updateLayout(long plid, Map<String, Object> valuesMap)
