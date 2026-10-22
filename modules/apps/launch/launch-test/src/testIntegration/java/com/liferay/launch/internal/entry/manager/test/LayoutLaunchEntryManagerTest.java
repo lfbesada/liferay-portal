@@ -69,10 +69,19 @@ public class LayoutLaunchEntryManagerTest
 
 	@Override
 	@Test
+	public void testGetVersions() throws Exception {
+		super.testGetVersions();
+
+		_testGetVersionsWithExistingMainDraft();
+	}
+
+	@Override
+	@Test
 	public void testPublishDraft() throws Exception {
 		super.testPublishDraft();
 
 		_testPublishDraftReturnsStableVersionKey();
+		_testPublishDraftWithExistingMainDraft();
 	}
 
 	@Override
@@ -336,6 +345,25 @@ public class LayoutLaunchEntryManagerTest
 			previewBaseModel.getFriendlyURLMap());
 	}
 
+	private void _testGetVersionsWithExistingMainDraft() throws Exception {
+		long classPK = addEntry();
+
+		Layout mainDraft = _layoutLocalService.fetchDraftLayout(classPK);
+
+		_updateLayout(mainDraft.getPlid(), randomValuesMap());
+
+		LaunchEntryManager launchEntryManager = getLaunchEntryManager();
+
+		List<String> versionKeys = TransformUtil.transform(
+			launchEntryManager.getVersions(classPK),
+			LaunchEntryManager.Version::getVersionKey);
+
+		Assert.assertTrue(versionKeys.contains(String.valueOf(classPK)));
+		Assert.assertTrue(
+			versionKeys.contains(String.valueOf(mainDraft.getPlid())));
+		Assert.assertEquals(versionKeys.toString(), 2, versionKeys.size());
+	}
+
 	private void _testPublishDraftReturnsStableVersionKey() throws Exception {
 		long classPK = addEntry();
 
@@ -358,6 +386,30 @@ public class LayoutLaunchEntryManagerTest
 		Assert.assertEquals(
 			publishedVersion2.getVersionKey(),
 			publishedVersion1.getVersionKey());
+	}
+
+	private void _testPublishDraftWithExistingMainDraft() throws Exception {
+		long classPK = addEntry();
+
+		Map<String, Object> valuesMap = randomValuesMap();
+
+		LaunchEntryManager.Draft draft = addDraft(classPK);
+
+		updateDraft(draft, valuesMap);
+
+		Layout mainDraft = _layoutLocalService.fetchDraftLayout(classPK);
+
+		_updateLayout(mainDraft.getPlid(), randomValuesMap());
+
+		LaunchEntryManager launchEntryManager = getLaunchEntryManager();
+
+		launchEntryManager.publishDraft(classPK, draft.getDraftId());
+
+		mainDraft = _layoutLocalService.getLayout(mainDraft.getPlid());
+
+		Assert.assertEquals(valuesMap, _getDraftableValuesMap(mainDraft));
+		Assert.assertEquals(
+			WorkflowConstants.STATUS_APPROVED, mainDraft.getStatus());
 	}
 
 	private void _updateLayout(long plid, Map<String, Object> valuesMap)
