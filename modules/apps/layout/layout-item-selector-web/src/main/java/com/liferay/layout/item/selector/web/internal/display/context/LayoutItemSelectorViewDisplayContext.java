@@ -89,6 +89,10 @@ public class LayoutItemSelectorViewDisplayContext {
 			_getHomeBreadcrumbEntry());
 	}
 
+	public int[] getStatuses() {
+		return _layoutItemSelectorCriterion.getStatuses();
+	}
+
 	public boolean isCheckDisplayPage() {
 		return _layoutItemSelectorCriterion.isCheckDisplayPage();
 	}
