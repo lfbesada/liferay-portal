@@ -196,6 +196,7 @@ import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.launch.LaunchPreviewThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
@@ -5009,6 +5010,73 @@ public class ObjectEntryLocalServiceImpl
 			PropsValues.OBJECT_ENCRYPTION_ALGORITHM);
 	}
 
+	private Predicate _getLaunchAwareHeadPredicate(
+			ObjectDefinition objectDefinition, boolean preferApproved)
+		throws PortalException {
+
+		Predicate headPredicate = _getHeadObjectEntryPredicate(preferApproved);
+
+		long launchSetId = LaunchPreviewThreadLocal.getLaunchSetId();
+
+		if (launchSetId <= 0) {
+			return headPredicate;
+		}
+
+		long[] launchDraftClassPKs = _getLaunchDraftClassPKs(
+			launchSetId, objectDefinition);
+
+		if (ArrayUtil.isEmpty(launchDraftClassPKs)) {
+			return headPredicate;
+		}
+
+		return headPredicate.or(
+			ObjectEntryTable.INSTANCE.objectEntryId.in(
+				ArrayUtil.toArray(launchDraftClassPKs)));
+	}
+
+	private long[] _getLaunchDraftClassPKs(
+			long launchSetId, ObjectDefinition targetObjectDefinition)
+		throws PortalException {
+
+		ObjectDefinition launchEntryObjectDefinition =
+			_objectDefinitionPersistence.fetchByC_N(
+				targetObjectDefinition.getCompanyId(), "LaunchEntry");
+
+		if (launchEntryObjectDefinition == null) {
+			return new long[0];
+		}
+
+		DynamicObjectDefinitionTable launchEntryTable =
+			DynamicObjectDefinitionTableUtil.getDynamicObjectDefinitionTable(
+				false, launchEntryObjectDefinition, _objectFieldLocalService);
+
+		Column<DynamicObjectDefinitionTable, String> classNameColumn =
+			(Column<DynamicObjectDefinitionTable, String>)
+				launchEntryTable.getColumn("className");
+		Column<DynamicObjectDefinitionTable, Long> classPKColumn =
+			(Column<DynamicObjectDefinitionTable, Long>)
+				launchEntryTable.getColumn("classPK");
+		Column<DynamicObjectDefinitionTable, Long> launchSetIdColumn =
+			(Column<DynamicObjectDefinitionTable, Long>)
+				launchEntryTable.getColumn(
+					"r_launchSetToLaunchEntries_c_launchSetId");
+
+		List<Long> classPKs = dslQuery(
+			DSLQueryFactoryUtil.select(
+				classPKColumn
+			).from(
+				launchEntryTable
+			).where(
+				classNameColumn.eq(
+					targetObjectDefinition.getClassName()
+				).and(
+					launchSetIdColumn.eq(launchSetId)
+				)
+			));
+
+		return ArrayUtil.toLongArray(classPKs);
+	}
+
 	private Predicate _getLeftJoinRootObjectDefinitionTablePredicate(
 		DynamicObjectDefinitionTable dynamicObjectDefinitionTable) {
 
@@ -5331,7 +5399,7 @@ public class ObjectEntryLocalServiceImpl
 				ObjectEntryTable.INSTANCE.status.neq(
 					WorkflowConstants.STATUS_IN_TRASH)
 			).and(
-				_getHeadObjectEntryPredicate(preferApproved)
+				_getLaunchAwareHeadPredicate(objectDefinition, preferApproved)
 			).and(
 				_getPermissionWherePredicate(
 					dynamicObjectDefinitionTable, groupIds)
