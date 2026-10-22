@@ -748,6 +748,12 @@ public class LayoutLocalServiceUtil {
 		return getService().getBrowsableLayout(layout);
 	}
 
+	public static long[] getClassPKsByLaunchSetId(
+		long groupId, long launchSetId) {
+
+		return getService().getClassPKsByLaunchSetId(groupId, launchSetId);
+	}
+
 	/**
 	 * Returns the primary key of the default layout for the group.
 	 *
@@ -2113,4 +2119,4 @@ public class LayoutLocalServiceUtil {
 	private static volatile LayoutLocalService _service;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1378641521
+// LIFERAY-SERVICE-BUILDER-HASH:-103385663
