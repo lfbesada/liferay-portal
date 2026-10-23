@@ -188,6 +188,11 @@ public class LayoutLaunchEntryManager implements LaunchEntryManager {
 
 		layoutItemSelectorCriterion.setDesiredItemSelectorReturnTypes(
 			new LayoutItemSelectorReturnType());
+		layoutItemSelectorCriterion.setStatuses(
+			new int[] {
+				WorkflowConstants.STATUS_APPROVED,
+				WorkflowConstants.STATUS_DRAFT
+			});
 
 		return layoutItemSelectorCriterion;
 	}
