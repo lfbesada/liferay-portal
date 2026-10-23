@@ -97,7 +97,7 @@ public class LaunchPreviewFilter extends BasePortalFilter {
 
 		String mode = ParamUtil.getString(httpServletRequest, "p_l_mode");
 
-		if (!mode.equals(Constants.PREVIEW)) {
+		if (!mode.equals(Constants.EDIT) && !mode.equals(Constants.PREVIEW)) {
 			httpServletResponse.sendRedirect(
 				HttpComponentsUtil.addParameter(
 					_portal.getCurrentURL(httpServletRequest), "p_l_mode",
