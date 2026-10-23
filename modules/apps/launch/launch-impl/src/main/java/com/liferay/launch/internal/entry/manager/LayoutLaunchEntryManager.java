@@ -400,7 +400,7 @@ public class LayoutLaunchEntryManager implements LaunchEntryManager {
 				_portal.getLayoutFullURL(layout, themeDisplay), "p_l_back_url",
 				redirect, "p_l_back_url_title",
 				_language.get(themeDisplay.getLocale(), "launches"), "p_l_mode",
-				Constants.EDIT);
+				Constants.EDIT, "previewLaunchSetId", layout.getLaunchSetId());
 		}
 		catch (PortalException portalException) {
 			throw new SystemException(portalException);
@@ -580,9 +580,6 @@ public class LayoutLaunchEntryManager implements LaunchEntryManager {
 
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		LayoutLaunchEntryManager.class);
-
 	private static final Snapshot<LayoutContentVersionCreator>
 		_layoutContentVersionCreatorSnapshot = new Snapshot<>(
 			LayoutLaunchEntryManager.class, LayoutContentVersionCreator.class,
@@ -607,5 +604,8 @@ public class LayoutLaunchEntryManager implements LaunchEntryManager {
 
 	@Reference
 	private Portal _portal;
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		LayoutLaunchEntryManager.class);
 
 }
