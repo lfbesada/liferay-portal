@@ -114,7 +114,13 @@ definition {
 
 			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Complex Title 1");
 
-			PortletEntry.changeLocale(locale = "en-US");
+			Portlet.waitForForm();
+
+			Click.clickNoMouseOver(locator1 = "Button#LOCALIZATION_GENERIC");
+
+			Click(
+				key_locale = "en-US",
+				locator1 = "Translation#DROPDOWN_MENU_ITEM");
 
 			AssertVisible(
 				key_fieldFieldLabel = "HomePage",
@@ -238,6 +244,10 @@ definition {
 				Click(
 					key_fieldName = ${fieldName},
 					locator1 = "WCEditWebContent#REPEATED_FIELD_IN_FIELDS_GROUP_ADD_BUTTON");
+
+				DataEngine.assertFieldInFieldsGroupRepeated(
+					fieldName = ${fieldName},
+					index = 2);
 			}
 
 			for (var fieldName : list "LogoFieldSet,Beneficio,Companhia,JeitoIdentificarFieldSet,Destino,DescricaoOpPar,CompanhiaOperadoraFieldSet") {
@@ -257,6 +267,11 @@ definition {
 					key_fieldName = ${fieldName},
 					key_index = 2,
 					locator1 = "WCEditWebContent#REPEATED_FIELD_IN_FIELDS_GROUP_REMOVE_BUTTON");
+
+				AssertElementNotPresent(
+					key_fieldName = ${fieldName},
+					key_index = 2,
+					locator1 = "WCEditWebContent#REPEATED_FIELD_IN_FIELDS_GROUP");
 			}
 
 			for (var fieldName : list "LogoFieldSet,Beneficio,Companhia,JeitoIdentificarFieldSet,Destino,DescricaoOpPar,CompanhiaOperadoraFieldSet") {
@@ -281,6 +296,10 @@ definition {
 			templateName = "WC Template Name");
 
 		Button.clickSaveAsDraft();
+
+		Alert.viewSuccessMessage();
+
+		Alert.closeMessage(messageType = "SUCCESS");
 
 		WebContent.publishExistingWCArticleWithPermissions();
 

@@ -20,7 +20,6 @@ import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.object.service.ObjectEntryService;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.license.util.LicenseManagerUtil;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.portlet.LiferayWindowState;
@@ -73,12 +72,6 @@ public class BrokenLinkAssetResourceImpl
 		throws Exception {
 
 		LicenseManagerUtil.checkFreeTier();
-
-		if (!FeatureFlagManagerUtil.isEnabled(
-				contextCompany.getCompanyId(), "LPD-82226")) {
-
-			throw new UnsupportedOperationException();
-		}
 
 		Long[] spaceGroupIds = CMSGroupUtil.getSpaceGroupIds(
 			contextCompany.getCompanyId(), _depotEntryService,
@@ -177,9 +170,11 @@ public class BrokenLinkAssetResourceImpl
 		long brokenLinksCount = 0;
 
 		for (BrokenLinkTarget brokenLinkTarget : brokenLinkTargets) {
-			if (brokenLinkTarget.getStatus() == status) {
-				brokenLinksCount++;
+			if (brokenLinkTarget.getStatus() != status) {
+				continue;
 			}
+
+			brokenLinksCount++;
 		}
 
 		return brokenLinksCount;
@@ -191,9 +186,11 @@ public class BrokenLinkAssetResourceImpl
 		long deletedBrokenLinksCount = 0;
 
 		for (BrokenLinkTarget brokenLinkTarget : brokenLinkTargets) {
-			if (brokenLinkTarget.isDeleted()) {
-				deletedBrokenLinksCount++;
+			if (!brokenLinkTarget.isDeleted()) {
+				continue;
 			}
+
+			deletedBrokenLinksCount++;
 		}
 
 		return deletedBrokenLinksCount;
@@ -222,9 +219,11 @@ public class BrokenLinkAssetResourceImpl
 			BrokenLinkTarget brokenLinkTarget = brokenLinkTargetsMap.get(
 				outboundLink);
 
-			if (brokenLinkTarget != null) {
-				brokenLinkTargets.add(brokenLinkTarget);
+			if (brokenLinkTarget == null) {
+				continue;
 			}
+
+			brokenLinkTargets.add(brokenLinkTarget);
 		}
 
 		long objectDefinitionId = GetterUtil.getLong(

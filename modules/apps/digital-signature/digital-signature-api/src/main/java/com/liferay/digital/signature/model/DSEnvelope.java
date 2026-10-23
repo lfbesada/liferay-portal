@@ -44,6 +44,14 @@ public class DSEnvelope {
 		return emailSubject;
 	}
 
+	public LocalDateTime getExpirationLocalDateTime() {
+		return expirationLocalDateTime;
+	}
+
+	public int getExpireAfter() {
+		return expireAfter;
+	}
+
 	public String getName() {
 		return name;
 	}
@@ -54,6 +62,10 @@ public class DSEnvelope {
 
 	public String getStatus() {
 		return status;
+	}
+
+	public LocalDateTime getStatusLocalDateTime() {
+		return statusLocalDateTime;
 	}
 
 	public void setCreatedLocalDateTime(LocalDateTime createdLocalDateTime) {
@@ -80,6 +92,16 @@ public class DSEnvelope {
 		this.emailSubject = emailSubject;
 	}
 
+	public void setExpirationLocalDateTime(
+		LocalDateTime expirationLocalDateTime) {
+
+		this.expirationLocalDateTime = expirationLocalDateTime;
+	}
+
+	public void setExpireAfter(int expireAfter) {
+		this.expireAfter = expireAfter;
+	}
+
 	public void setName(String name) {
 		this.name = name;
 	}
@@ -90,6 +112,10 @@ public class DSEnvelope {
 
 	public void setStatus(String status) {
 		this.status = status;
+	}
+
+	public void setStatusLocalDateTime(LocalDateTime statusLocalDateTime) {
+		this.statusLocalDateTime = statusLocalDateTime;
 	}
 
 	public JSONObject toJSONObject() {
@@ -107,6 +133,24 @@ public class DSEnvelope {
 			"envelopeId", getDSEnvelopeId()
 		).put(
 			"name", getName()
+		).put(
+			"notification",
+			() -> {
+				if (getExpireAfter() <= 0) {
+					return null;
+				}
+
+				return JSONUtil.put(
+					"expirations",
+					JSONUtil.put(
+						"expireAfter", String.valueOf(getExpireAfter())
+					).put(
+						"expireEnabled", "true"
+					)
+				).put(
+					"useAccountDefaults", "false"
+				);
+			}
 		).put(
 			"recipients",
 			JSONUtil.put(
@@ -132,9 +176,12 @@ public class DSEnvelope {
 	protected List<DSRecipient> dsRecipients;
 	protected String emailBlurb;
 	protected String emailSubject;
+	protected LocalDateTime expirationLocalDateTime;
+	protected int expireAfter;
 	protected String name;
 	protected String senderEmailAddress;
 	protected String status;
+	protected LocalDateTime statusLocalDateTime;
 
 	private static final Log _log = LogFactoryUtil.getLog(DSEnvelope.class);
 

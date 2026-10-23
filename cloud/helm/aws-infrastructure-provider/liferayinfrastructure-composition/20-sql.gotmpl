@@ -17,7 +17,6 @@ apiVersion: rds.aws.m.upbound.io/v1beta1
 kind: Instance
 metadata:
     annotations:
-        crossplane.io/external-name: {{ $baseName }}-database-{{ $dataPlane }}
         gotemplating.fn.crossplane.io/composition-resource-name: database-{{ $dataPlane }}
     labels:
         app: liferay
@@ -46,7 +45,7 @@ spec:
                 projectId: {{ $projectId }}
         deletionProtection: {{ and (not $forceDestroy) (eq $dataPlane $activeDataPlane) }}
         engine: postgres
-        engineVersion: {{ $database.version | quote }}
+        engineVersion: {{ $database.version | default "16" | quote }}
         iamDatabaseAuthenticationEnabled: true
         identifier: {{ $baseName }}-database-{{ $dataPlane }}
         instanceClass: {{ $database.instanceType | default "db.t3.medium" }}
@@ -135,7 +134,6 @@ apiVersion: rds.aws.m.upbound.io/v1beta1
 kind: SubnetGroup
 metadata:
     annotations:
-        crossplane.io/external-name: {{ $baseName }}-database-subnet-group-{{ $dataPlane }}
         gotemplating.fn.crossplane.io/composition-resource-name: database-subnet-group-{{ $dataPlane }}
     labels:
         app: liferay

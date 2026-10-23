@@ -71,9 +71,6 @@
 
 		<!-- Finder methods -->
 
-		<finder name="CompanyId" return-type="Collection">
-			<finder-column name="companyId" />
-		</finder>
 		<finder name="OAuth2ApplicationId" return-type="Collection">
 			<finder-column name="oAuth2ApplicationId" />
 		</finder>
@@ -128,10 +125,14 @@
 			<finder-column name="companyId" />
 			<finder-column name="refreshTokenContentHash" />
 		</finder>
+		<finder name="U_O" return-type="Collection">
+			<finder-column name="userId" />
+			<finder-column name="oAuth2ApplicationId" />
+		</finder>
 		<finder name="U_O_R" return-type="Collection">
-			<finder-column name="userId"></finder-column>
-			<finder-column name="oAuth2ApplicationId"></finder-column>
-			<finder-column name="rememberDeviceContent"></finder-column>
+			<finder-column name="userId" />
+			<finder-column name="oAuth2ApplicationId" />
+			<finder-column name="rememberDeviceContent" />
 		</finder>
 	</entity>
 	<entity json-enabled="false" local-service="true" name="OAuth2ScopeGrant" remote-service="false">

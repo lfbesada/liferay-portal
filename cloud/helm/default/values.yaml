@@ -50,6 +50,8 @@ clientExtensions:
         operatorServiceAccount:
             name: dxp-operator
             namespace: dxp-operator-system
+    policy:
+        allowedNamespaces: []
 configmap:
     annotations: {}
     data: {}
@@ -84,9 +86,8 @@ customInitContainers:
                         seccompProfile:
                             type: RuntimeDefault
                     volumeMounts:
-                        -   mountPath: /liferay-init-scripts/deploy-sync.sh
-                            name: {{ .licensing.initScriptsVolumeName }}
-                            subPath: deploy-sync.sh
+                        -   mountPath: /liferay-init-scripts
+                            name: liferay-deploy-sync
                         -   mountPath: /secret
                             name: liferay-license
                         -   mountPath: /opt/liferay
@@ -297,9 +298,8 @@ customInitContainers:
                         seccompProfile:
                             type: RuntimeDefault
                     volumeMounts:
-                        -   mountPath: /liferay-init-scripts/deploy-sync.sh
-                            name: {{ .marketplace.initScriptsVolumeName }}
-                            subPath: deploy-sync.sh
+                        -   mountPath: /liferay-init-scripts
+                            name: liferay-deploy-sync
                         -   mountPath: /marketplace
                             name: liferay-marketplace
                             readOnly: true
@@ -321,6 +321,11 @@ customVolumes:
                 defaultMode: 0755
                 name: liferay-init-scripts-default
             name: liferay-init-scripts-default
+database:
+    engine: ""
+    host: ""
+    port: ""
+    tlsRequired: false
 dependencies: {}
 env:
     -   name: DNS_MEMBERSHIP_SERVICE_NAME
@@ -395,13 +400,13 @@ licensing:
     activationCodeSecretName: ""
     dxpVersion: ""
     enabled: false
-    initScriptsVolumeName: liferay-init-scripts-default
+    environmentName: ""
     offline: false
     offlineActivationBundle: ""
     onlineActivationWorkflow:
         clusterRoleName: online-activation-cluster-role
         clusterWorkflowTemplateName: online-activation-cluster-workflow-template
-        enabled: true
+        enabled: false
         serviceAccountName: online-activation-service-account
         ttlSecondsAfterCompletion: 3600
         userAccess:
@@ -425,7 +430,6 @@ marketplace:
         volumeAttributes: {}
         volumeHandle: ""
     enabled: false
-    initScriptsVolumeName: liferay-init-scripts-default
     size: 10Gi
     syncInterval: 600
 nameOverride: ""
@@ -509,6 +513,8 @@ resources:
         cpu: 2000m
         memory: 6Gi
 schedulingGates: []
+search:
+    engine: ""
 securityContext: {}
 service:
     annotations: {}

@@ -21,6 +21,7 @@ import com.liferay.object.web.internal.util.ObjectEntryUtil;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.launch.LaunchPreviewThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
@@ -172,8 +173,7 @@ public class ObjectEntryItemSelectorViewDescriptor
 					_objectEntryManager.getObjectEntries(
 						_themeDisplay.getCompanyId(), _objectDefinition,
 						scopeGroup.getGroupKey(), null,
-						_getDTOConverterContext(),
-						"status eq " + WorkflowConstants.STATUS_APPROVED,
+						_getDTOConverterContext(), _getFilterString(),
 						Pagination.of(
 							searchContainer.getCur(),
 							searchContainer.getDelta()),
@@ -216,6 +216,14 @@ public class ObjectEntryItemSelectorViewDescriptor
 		return new DefaultDTOConverterContext(
 			false, null, null, _httpServletRequest, null,
 			_themeDisplay.getLocale(), null, _themeDisplay.getUser());
+	}
+
+	private String _getFilterString() {
+		if (LaunchPreviewThreadLocal.getLaunchSetId() > 0) {
+			return "status ne " + WorkflowConstants.STATUS_IN_TRASH;
+		}
+
+		return "status eq " + WorkflowConstants.STATUS_APPROVED;
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

@@ -92,18 +92,16 @@ public class DBCopyTablesProcess {
 		List<String> targetColumnNames = _targetColumnNamesMap.get(
 			targetTableName);
 
-		if (sourceColumnNames.size() < targetColumnNames.size()) {
-			Set<String> sourceColumnNamesSet = new TreeSet<String>(
-				String.CASE_INSENSITIVE_ORDER) {
+		Set<String> sourceColumnNamesSet = new TreeSet<String>(
+			String.CASE_INSENSITIVE_ORDER) {
 
-				{
-					addAll(sourceColumnNames);
-				}
-			};
+			{
+				addAll(sourceColumnNames);
+			}
+		};
 
-			targetColumnNames.removeIf(
-				columnName -> !sourceColumnNamesSet.contains(columnName));
-		}
+		targetColumnNames.removeIf(
+			columnName -> !sourceColumnNamesSet.contains(columnName));
 
 		String selectSQL = StringBundler.concat(
 			"select ", StringUtil.merge(sourceColumnNames), " from ",
@@ -596,20 +594,25 @@ public class DBCopyTablesProcess {
 			String sourceTableName = sourceIterator.next();
 			String targetTableName = targetIterator.next();
 
-			List<String> sourceColumnNames = _sourceColumnNamesMap.get(
-				sourceTableName);
-			List<String> targetColumnNames = _targetColumnNamesMap.get(
-				targetTableName);
+			Set<String> targetColumnNames = new TreeSet<>(
+				String.CASE_INSENSITIVE_ORDER);
 
-			if (sourceColumnNames.size() > targetColumnNames.size()) {
-				sb.append("Source table ");
+			targetColumnNames.addAll(
+				_targetColumnNamesMap.get(targetTableName));
+
+			for (String sourceColumnName :
+					_sourceColumnNamesMap.get(sourceTableName)) {
+
+				if (targetColumnNames.contains(sourceColumnName)) {
+					continue;
+				}
+
+				sb.append("Column ");
+				sb.append(sourceColumnName);
+				sb.append(" of source table ");
 				sb.append(sourceTableName);
-				sb.append(" has ");
-				sb.append(sourceColumnNames.size());
-				sb.append(" columns, but target table ");
+				sb.append(" does not exist in target table ");
 				sb.append(targetTableName);
-				sb.append(" has only ");
-				sb.append(targetColumnNames.size());
 				sb.append(_partitionMessage);
 				sb.append(StringPool.NEW_LINE);
 			}

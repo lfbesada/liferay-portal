@@ -1233,6 +1233,13 @@ public class OAuthClientPRLocalMetadataPersistenceImpl
 		_collectionPersistenceFinderByUuid =
 			new FilterCollectionPersistenceFinder<>(
 				this,
+				OAuthClientPRLocalMetadata::getOAuthClientPRLocalMetadataId,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
+					new String[] {String.class.getName()},
+					new String[] {"uuid_"}, 0, 1, false, null),
+				"", OAuthClientPRLocalMetadataModelImpl.ORDER_BY_JPQL,
+				_ENTITY_ALIAS_PREFIX,
 				new FinderPath(
 					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid",
 					new String[] {
@@ -1241,18 +1248,13 @@ public class OAuthClientPRLocalMetadataPersistenceImpl
 						OrderByComparator.class.getName()
 					},
 					new String[] {"uuid_"}, true),
+				_SQL_COUNT_OAUTHCLIENTPRLOCALMETADATA_WHERE,
+				_SQL_SELECT_OAUTHCLIENTPRLOCALMETADATA_WHERE, null,
 				new FinderPath(
 					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid",
 					new String[] {String.class.getName()},
 					new String[] {"uuid_"}, 0, 1, true, null),
-				new FinderPath(
-					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid",
-					new String[] {String.class.getName()},
-					new String[] {"uuid_"}, 0, 1, false, null),
-				_SQL_SELECT_OAUTHCLIENTPRLOCALMETADATA_WHERE,
-				_SQL_COUNT_OAUTHCLIENTPRLOCALMETADATA_WHERE,
-				OAuthClientPRLocalMetadataModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX, "", "", null,
+				"",
 				new FinderColumn<>(
 					"oAuthClientPRLocalMetadata.", "uuid", "uuid_",
 					FinderColumn.Type.STRING, "=", true, true,
@@ -1261,6 +1263,13 @@ public class OAuthClientPRLocalMetadataPersistenceImpl
 		_collectionPersistenceFinderByUuid_C =
 			new FilterCollectionPersistenceFinder<>(
 				this,
+				OAuthClientPRLocalMetadata::getOAuthClientPRLocalMetadataId,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
+					new String[] {String.class.getName(), Long.class.getName()},
+					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
+				"", OAuthClientPRLocalMetadataModelImpl.ORDER_BY_JPQL,
+				_ENTITY_ALIAS_PREFIX,
 				new FinderPath(
 					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUuid_C",
 					new String[] {
@@ -1269,18 +1278,13 @@ public class OAuthClientPRLocalMetadataPersistenceImpl
 						OrderByComparator.class.getName()
 					},
 					new String[] {"uuid_", "companyId"}, true),
+				_SQL_COUNT_OAUTHCLIENTPRLOCALMETADATA_WHERE,
+				_SQL_SELECT_OAUTHCLIENTPRLOCALMETADATA_WHERE, null,
 				new FinderPath(
 					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUuid_C",
 					new String[] {String.class.getName(), Long.class.getName()},
 					new String[] {"uuid_", "companyId"}, 0, 1, true, null),
-				new FinderPath(
-					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUuid_C",
-					new String[] {String.class.getName(), Long.class.getName()},
-					new String[] {"uuid_", "companyId"}, 0, 1, false, null),
-				_SQL_SELECT_OAUTHCLIENTPRLOCALMETADATA_WHERE,
-				_SQL_COUNT_OAUTHCLIENTPRLOCALMETADATA_WHERE,
-				OAuthClientPRLocalMetadataModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX, "", "", null,
+				"",
 				new FinderColumn<>(
 					"oAuthClientPRLocalMetadata.", "uuid", "uuid_",
 					FinderColumn.Type.STRING, "=", true, true,
@@ -1293,6 +1297,13 @@ public class OAuthClientPRLocalMetadataPersistenceImpl
 		_collectionPersistenceFinderByCompanyId =
 			new FilterCollectionPersistenceFinder<>(
 				this,
+				OAuthClientPRLocalMetadata::getOAuthClientPRLocalMetadataId,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
+					"countByCompanyId", new String[] {Long.class.getName()},
+					new String[] {"companyId"}, false),
+				"", OAuthClientPRLocalMetadataModelImpl.ORDER_BY_JPQL,
+				_ENTITY_ALIAS_PREFIX,
 				new FinderPath(
 					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByCompanyId",
 					new String[] {
@@ -1301,18 +1312,13 @@ public class OAuthClientPRLocalMetadataPersistenceImpl
 						OrderByComparator.class.getName()
 					},
 					new String[] {"companyId"}, true),
+				_SQL_COUNT_OAUTHCLIENTPRLOCALMETADATA_WHERE,
+				_SQL_SELECT_OAUTHCLIENTPRLOCALMETADATA_WHERE, null,
 				new FinderPath(
 					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
 					"findByCompanyId", new String[] {Long.class.getName()},
 					new String[] {"companyId"}, true),
-				new FinderPath(
-					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION,
-					"countByCompanyId", new String[] {Long.class.getName()},
-					new String[] {"companyId"}, false),
-				_SQL_SELECT_OAUTHCLIENTPRLOCALMETADATA_WHERE,
-				_SQL_COUNT_OAUTHCLIENTPRLOCALMETADATA_WHERE,
-				OAuthClientPRLocalMetadataModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX, "", "", null,
+				"",
 				new FinderColumn<>(
 					"oAuthClientPRLocalMetadata.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
@@ -1321,6 +1327,13 @@ public class OAuthClientPRLocalMetadataPersistenceImpl
 		_collectionPersistenceFinderByUserId =
 			new FilterCollectionPersistenceFinder<>(
 				this,
+				OAuthClientPRLocalMetadata::getOAuthClientPRLocalMetadataId,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
+					new String[] {Long.class.getName()},
+					new String[] {"userId"}, false),
+				"", OAuthClientPRLocalMetadataModelImpl.ORDER_BY_JPQL,
+				_ENTITY_ALIAS_PREFIX,
 				new FinderPath(
 					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByUserId",
 					new String[] {
@@ -1329,18 +1342,13 @@ public class OAuthClientPRLocalMetadataPersistenceImpl
 						OrderByComparator.class.getName()
 					},
 					new String[] {"userId"}, true),
+				_SQL_COUNT_OAUTHCLIENTPRLOCALMETADATA_WHERE,
+				_SQL_SELECT_OAUTHCLIENTPRLOCALMETADATA_WHERE, null,
 				new FinderPath(
 					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByUserId",
 					new String[] {Long.class.getName()},
 					new String[] {"userId"}, true),
-				new FinderPath(
-					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByUserId",
-					new String[] {Long.class.getName()},
-					new String[] {"userId"}, false),
-				_SQL_SELECT_OAUTHCLIENTPRLOCALMETADATA_WHERE,
-				_SQL_COUNT_OAUTHCLIENTPRLOCALMETADATA_WHERE,
-				OAuthClientPRLocalMetadataModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX, "", "", null,
+				"",
 				new FinderColumn<>(
 					"oAuthClientPRLocalMetadata.", "userId",
 					FinderColumn.Type.LONG, "=", true, true,
@@ -1349,6 +1357,15 @@ public class OAuthClientPRLocalMetadataPersistenceImpl
 		_collectionPersistenceFinderByC_L =
 			new FilterCollectionPersistenceFinder<>(
 				this,
+				OAuthClientPRLocalMetadata::getOAuthClientPRLocalMetadataId,
+				new FinderPath(
+					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_L",
+					new String[] {
+						Long.class.getName(), Boolean.class.getName()
+					},
+					new String[] {"companyId", "localWellKnownEnabled"}, false),
+				"", OAuthClientPRLocalMetadataModelImpl.ORDER_BY_JPQL,
+				_ENTITY_ALIAS_PREFIX,
 				new FinderPath(
 					FINDER_CLASS_NAME_LIST_WITH_PAGINATION, "findByC_L",
 					new String[] {
@@ -1357,22 +1374,15 @@ public class OAuthClientPRLocalMetadataPersistenceImpl
 						OrderByComparator.class.getName()
 					},
 					new String[] {"companyId", "localWellKnownEnabled"}, true),
+				_SQL_COUNT_OAUTHCLIENTPRLOCALMETADATA_WHERE,
+				_SQL_SELECT_OAUTHCLIENTPRLOCALMETADATA_WHERE, null,
 				new FinderPath(
 					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "findByC_L",
 					new String[] {
 						Long.class.getName(), Boolean.class.getName()
 					},
 					new String[] {"companyId", "localWellKnownEnabled"}, true),
-				new FinderPath(
-					FINDER_CLASS_NAME_LIST_WITHOUT_PAGINATION, "countByC_L",
-					new String[] {
-						Long.class.getName(), Boolean.class.getName()
-					},
-					new String[] {"companyId", "localWellKnownEnabled"}, false),
-				_SQL_SELECT_OAUTHCLIENTPRLOCALMETADATA_WHERE,
-				_SQL_COUNT_OAUTHCLIENTPRLOCALMETADATA_WHERE,
-				OAuthClientPRLocalMetadataModelImpl.ORDER_BY_JPQL,
-				_ENTITY_ALIAS_PREFIX, "", "", null,
+				"",
 				new FinderColumn<>(
 					"oAuthClientPRLocalMetadata.", "companyId",
 					FinderColumn.Type.LONG, "=", true, true,
@@ -1503,4 +1513,4 @@ public class OAuthClientPRLocalMetadataPersistenceImpl
 	}
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:283184806
+// LIFERAY-SERVICE-BUILDER-HASH:-1110097692

@@ -51,12 +51,27 @@ const pimPages = test.extend<{
 		async ({page}, use) => {
 			const apiHelpers = new ApiHelpers(page);
 
-			await apiHelpers.objectAdmin.waitForObjectDefinition('PIMBaseSku');
+			await apiHelpers.objectAdmin.waitForObjectDefinition(
+				'PIMBasicProduct'
+			);
 			await apiHelpers.objectAdmin.waitForObjectDefinition(
 				'PIMConnector'
 			);
 
 			await use();
+
+			const {items} =
+				await apiHelpers.objectEntry.getObjectDefinitionObjectEntries(
+					'pim/connectors',
+					new URLSearchParams({pageSize: '-1'})
+				);
+
+			for (const {id} of items) {
+				await apiHelpers.objectEntry.deleteObjectEntry(
+					'pim/connectors',
+					id
+				);
+			}
 		},
 		{auto: true},
 	],

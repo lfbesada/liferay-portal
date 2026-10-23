@@ -120,7 +120,7 @@ public class AssetEntriesWithSameAssetCategoryRelatedInfoItemCollectionProvider
 		}
 
 		try {
-			long[] groupIds = _getGroupIds(assetEntry);
+			long[] groupIds = _getGroupIds();
 
 			SearchContext searchContext = _getSearchContext(groupIds);
 
@@ -504,9 +504,11 @@ public class AssetEntriesWithSameAssetCategoryRelatedInfoItemCollectionProvider
 			String[] itemTypes = configuration.get("item_types");
 
 			for (String itemType : itemTypes) {
-				if (Validator.isNotNull(itemType)) {
-					classNameIds.add(_portal.getClassNameId(itemType));
+				if (Validator.isNull(itemType)) {
+					continue;
 				}
+
+				classNameIds.add(_portal.getClassNameId(itemType));
 			}
 
 			if (ListUtil.isNotEmpty(classNameIds)) {
@@ -521,20 +523,11 @@ public class AssetEntriesWithSameAssetCategoryRelatedInfoItemCollectionProvider
 			serviceContext.getCompanyId(), true);
 	}
 
-	private long[] _getGroupIds(AssetEntry assetEntry) throws PortalException {
+	private long[] _getGroupIds() throws PortalException {
 		ServiceContext serviceContext =
 			ServiceContextThreadLocal.getServiceContext();
 
 		long scopeGroupId = serviceContext.getScopeGroupId();
-
-		DepotEntry depotEntry = _depotEntryLocalService.fetchGroupDepotEntry(
-			assetEntry.getGroupId());
-
-		if ((depotEntry == null) ||
-			(depotEntry.getType() != DepotConstants.TYPE_SPACE)) {
-
-			return new long[] {scopeGroupId};
-		}
 
 		return ArrayUtil.append(
 			new long[] {scopeGroupId},

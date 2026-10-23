@@ -52,6 +52,7 @@ const buildStages = (): ILifecycleStage[] =>
 		},
 		description: 'A configured stage',
 		displayOrder: index + 1,
+		externalReferenceCode: `erc-stage-${index + 1}`,
 		id: `stage-${index}`,
 		maxDuration: 30,
 		stageType,
@@ -86,9 +87,10 @@ const renderPage = () =>
 		</MemoryRouter>
 	);
 
-const lifecycleURL = toRoute(Routes.LIFECYCLE, {
+const lifecycleURL = toRoute(Routes.LIFECYCLE_DASHBOARD, {
 	channelId: '123',
 	groupId: '23',
+	lifecycleId: '9',
 });
 
 describe('EditLifecycle', () => {

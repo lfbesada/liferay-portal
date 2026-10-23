@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {ObjectField} from '@liferay/object-admin-rest-client-js';
+import {ObjectField} from '@liferay/object-admin-rest-client-js/v1_0';
 
 import {getRandomInt} from '../../../utils/getRandomInt';
 
@@ -176,6 +176,12 @@ function getObjectFieldSpecificProperties(
 				businessType: 'MultiselectPicklist',
 				listTypeDefinitionExternalReferenceCode,
 				type: 'String',
+			};
+		case 'Location':
+			return {
+				DBType: 'Clob',
+				businessType: 'Location',
+				type: 'Clob',
 			};
 		case 'Picklist':
 			return {

@@ -6,7 +6,6 @@
 package com.liferay.dynamic.data.mapping.internal.search.util;
 
 import com.liferay.dynamic.data.mapping.model.DDMStructure;
-import com.liferay.dynamic.data.mapping.model.DDMStructureLayout;
 import com.liferay.dynamic.data.mapping.model.DDMTemplate;
 import com.liferay.dynamic.data.mapping.security.permission.DDMPermissionSupport;
 import com.liferay.petra.function.UnsafeFunction;
@@ -35,33 +34,6 @@ import java.util.Map;
  */
 public class DDMSearchUtil {
 
-	public static SearchContext buildStructureLayoutSearchContext(
-		long companyId, long[] groupIds, long classNameId, String name,
-		String description, String storageType, Integer type, int status,
-		int start, int end,
-		OrderByComparator<DDMStructureLayout> orderByComparator) {
-
-		SearchContext searchContext = new SearchContext();
-
-		searchContext.setAttribute(Field.CLASS_NAME_ID, classNameId);
-		searchContext.setAttribute(Field.CLASS_PK, null);
-		searchContext.setAttribute(Field.DESCRIPTION, description);
-		searchContext.setAttribute(Field.NAME, name);
-		searchContext.setCompanyId(companyId);
-		searchContext.setEnd(end);
-		searchContext.setGroupIds(groupIds);
-
-		if (orderByComparator != null) {
-			searchContext.setSorts(
-				_getSortsFromComparator(
-					searchContext.getLanguageId(), orderByComparator));
-		}
-
-		searchContext.setStart(start);
-
-		return searchContext;
-	}
-
 	public static SearchContext buildStructureSearchContext(
 		DDMPermissionSupport ddmPermissionSupport, long companyId,
 		long[] groupIds, long userId, long classNameId, Long classPK,
@@ -76,9 +48,19 @@ public class DDMSearchUtil {
 		searchContext.setAttribute(Field.DESCRIPTION, description);
 		searchContext.setAttribute(Field.NAME, name);
 		searchContext.setAttribute(Field.STATUS, status);
-		searchContext.setAttribute(
-			"resourcePermissionName",
-			ddmPermissionSupport.getStructureModelResourceName(classNameId));
+
+		try {
+			searchContext.setAttribute(
+				"resourcePermissionName",
+				ddmPermissionSupport.getStructureModelResourceName(
+					classNameId));
+		}
+		catch (PortalException portalException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(portalException);
+			}
+		}
+
 		searchContext.setAttribute("storageType", storageType);
 		searchContext.setAttribute("type", type);
 		searchContext.setCompanyId(companyId);

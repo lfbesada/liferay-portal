@@ -64,6 +64,7 @@ import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.model.MVCCModel;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
@@ -353,11 +354,13 @@ public class DDMFormDisplayContext {
 		for (String key : SessionErrors.keySet(_renderRequest)) {
 			Object value = SessionErrors.get(_renderRequest, key);
 
-			if (!(value instanceof PortalException) &&
-				(value instanceof Throwable throwable)) {
+			if ((value instanceof PortalException) ||
+				!(value instanceof Throwable throwable)) {
 
-				errorMessages.put(key, HtmlUtil.escape(throwable.getMessage()));
+				continue;
 			}
+
+			errorMessages.put(key, HtmlUtil.escape(throwable.getMessage()));
 		}
 
 		return errorMessages;
@@ -372,24 +375,35 @@ public class DDMFormDisplayContext {
 			_ddmFormInstance = _ddmFormInstanceLocalService.fetchFormInstance(
 				getFormInstanceId());
 
-			if ((_ddmFormInstance != null) && !isPreview()) {
-				DDMFormInstanceVersion latestApprovedDDMFormInstanceVersion =
-					_getLatestApprovedDDMFormInstanceVersion();
-
-				if (Validator.isNotNull(
-						latestApprovedDDMFormInstanceVersion.getSettings())) {
-
-					_ddmFormInstance.setSettings(
-						latestApprovedDDMFormInstanceVersion.getSettings());
-
-					DDMStructureVersion ddmStructureVersion =
-						latestApprovedDDMFormInstanceVersion.
-							getStructureVersion();
-
-					_ddmFormInstance.setStructureId(
-						ddmStructureVersion.getStructureId());
-				}
+			if ((_ddmFormInstance == null) || isPreview()) {
+				return _ddmFormInstance;
 			}
+
+			DDMFormInstanceVersion latestApprovedDDMFormInstanceVersion =
+				_getLatestApprovedDDMFormInstanceVersion();
+
+			String settings =
+				latestApprovedDDMFormInstanceVersion.getSettings();
+
+			if (Validator.isNull(settings)) {
+				return _ddmFormInstance;
+			}
+
+			DDMStructureVersion ddmStructureVersion =
+				latestApprovedDDMFormInstanceVersion.getStructureVersion();
+
+			if (Objects.equals(_ddmFormInstance.getSettings(), settings) &&
+				(_ddmFormInstance.getStructureId() ==
+					ddmStructureVersion.getStructureId())) {
+
+				return _ddmFormInstance;
+			}
+
+			_ddmFormInstance = MVCCModel.scratchClone(_ddmFormInstance);
+
+			_ddmFormInstance.setStructureId(
+				ddmStructureVersion.getStructureId());
+			_ddmFormInstance.setSettings(settings);
 		}
 		catch (PortalException portalException) {
 

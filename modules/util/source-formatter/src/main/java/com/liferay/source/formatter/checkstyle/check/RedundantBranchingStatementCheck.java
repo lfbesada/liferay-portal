@@ -20,7 +20,7 @@ public class RedundantBranchingStatementCheck extends BaseCheck {
 	@Override
 	public int[] getDefaultTokens() {
 		return new int[] {
-			TokenTypes.CTOR_DEF, TokenTypes.LITERAL_FOR,
+			TokenTypes.CTOR_DEF, TokenTypes.LITERAL_DO, TokenTypes.LITERAL_FOR,
 			TokenTypes.LITERAL_WHILE, TokenTypes.METHOD_DEF
 		};
 	}
@@ -28,7 +28,8 @@ public class RedundantBranchingStatementCheck extends BaseCheck {
 	@Override
 	protected void doVisitToken(DetailAST detailAST) {
 		if (TokenUtil.isOfType(
-				detailAST, TokenTypes.LITERAL_FOR, TokenTypes.LITERAL_WHILE)) {
+				detailAST, TokenTypes.LITERAL_DO, TokenTypes.LITERAL_FOR,
+				TokenTypes.LITERAL_WHILE)) {
 
 			_checkRedundantBranchingStatements(
 				detailAST, TokenTypes.LITERAL_CONTINUE);
@@ -64,13 +65,15 @@ public class RedundantBranchingStatementCheck extends BaseCheck {
 			DetailAST firstChildDetailAST =
 				lastStatementDetailAST.getFirstChild();
 
-			if ((firstChildDetailAST != null) &&
-				(firstChildDetailAST.getType() == TokenTypes.SEMI)) {
+			if ((firstChildDetailAST == null) ||
+				(firstChildDetailAST.getType() != TokenTypes.SEMI)) {
 
-				log(
-					lastStatementDetailAST, _MSG_REDUNDANT_BRANCHING_STATEMENT,
-					lastStatementDetailAST.getText());
+				continue;
 			}
+
+			log(
+				lastStatementDetailAST, _MSG_REDUNDANT_BRANCHING_STATEMENT,
+				lastStatementDetailAST.getText());
 		}
 	}
 

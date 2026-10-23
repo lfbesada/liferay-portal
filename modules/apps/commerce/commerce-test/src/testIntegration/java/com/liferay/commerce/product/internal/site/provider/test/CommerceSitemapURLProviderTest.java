@@ -21,6 +21,7 @@ import com.liferay.commerce.product.model.CPInstance;
 import com.liferay.commerce.product.model.CProduct;
 import com.liferay.commerce.product.model.CommerceCatalog;
 import com.liferay.commerce.product.model.CommerceChannel;
+import com.liferay.commerce.product.service.CommerceChannelLocalService;
 import com.liferay.commerce.product.test.util.CPTestUtil;
 import com.liferay.commerce.product.url.CPFriendlyURL;
 import com.liferay.commerce.test.util.CommerceTestUtil;
@@ -53,6 +54,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PortalUtil;
@@ -63,6 +65,7 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.xml.Document;
 import com.liferay.portal.kernel.xml.Element;
 import com.liferay.portal.kernel.xml.SAXReader;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -76,6 +79,7 @@ import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Locale;
+import java.util.Objects;
 import java.util.TreeMap;
 
 import org.junit.Assert;
@@ -171,7 +175,7 @@ public class CommerceSitemapURLProviderTest {
 
 		Assert.assertTrue(element.hasContent());
 
-		List<String> sitemapURLs = _getSitemapURLs(element);
+		List<String> sitemapURLs = _getSitemapURLs(element.elements());
 
 		Assert.assertTrue(
 			sitemapURLs.toString(),
@@ -219,30 +223,34 @@ public class CommerceSitemapURLProviderTest {
 			_assetCategorySitemapURLProvider,
 			CPPortletKeys.CP_CATEGORY_CONTENT_WEB);
 
-		List<String> sitemapURLs = _getSitemapURLs(element);
-
-		Assert.assertEquals(sitemapURLs.toString(), 2, sitemapURLs.size());
-		Assert.assertTrue(
-			sitemapURLs.toString(),
-			sitemapURLs.remove(_getAssetCategoryFriendlyURL(assetCategory)));
-
-		String translatedAssetCategoryFriendlyURL = sitemapURLs.get(0);
-
-		Assert.assertNotEquals(
-			_getAssetCategoryFriendlyURL(translatedURLTitle),
-			translatedAssetCategoryFriendlyURL);
-
+		String assetCategoryFriendlyURL = _getAssetCategoryFriendlyURL(
+			assetCategory);
 		String assetCategoryURLSeparator =
 			_cpFriendlyURL.getAssetCategoryURLSeparator(
 				_themeDisplay.getCompanyId());
 
-		Assert.assertTrue(
-			translatedAssetCategoryFriendlyURL,
-			translatedAssetCategoryFriendlyURL.endsWith(
-				assetCategoryURLSeparator + translatedURLTitle));
+		List<Element> elements = ListUtil.filter(
+			element.elements(),
+			curElement -> {
+				String locString = curElement.elementText("loc");
 
-		for (Element urlElement : element.elements()) {
-			List<String> hrefLangs = _getHrefLangs(urlElement);
+				return Objects.equals(locString, assetCategoryFriendlyURL) ||
+					   locString.endsWith(
+						   assetCategoryURLSeparator + translatedURLTitle);
+			});
+
+		List<String> sitemapURLs = _getSitemapURLs(elements);
+
+		Assert.assertEquals(sitemapURLs.toString(), 2, sitemapURLs.size());
+		Assert.assertTrue(
+			sitemapURLs.toString(),
+			sitemapURLs.remove(assetCategoryFriendlyURL));
+		Assert.assertNotEquals(
+			_getAssetCategoryFriendlyURL(translatedURLTitle),
+			sitemapURLs.get(0));
+
+		for (Element curElement : elements) {
+			List<String> hrefLangs = _getHrefLangs(curElement);
 
 			Assert.assertTrue(
 				hrefLangs.toString(),
@@ -274,7 +282,7 @@ public class CommerceSitemapURLProviderTest {
 			_assetCategorySitemapURLProvider,
 			CPPortletKeys.CP_CATEGORY_CONTENT_WEB);
 
-		List<String> sitemapURLs = _getSitemapURLs(element);
+		List<String> sitemapURLs = _getSitemapURLs(element.elements());
 
 		Assert.assertTrue(
 			sitemapURLs.toString(),
@@ -350,6 +358,36 @@ public class CommerceSitemapURLProviderTest {
 		String xml = element.asXML();
 
 		Assert.assertTrue(xml, xml.contains(translatedURLTitle));
+	}
+
+	@FeatureFlag("LPD-109588")
+	@Test
+	public void testCPDefinitionSitemapURLProviderWhenGuestBrowsingIsDisabled()
+		throws Exception {
+
+		CPDefinition cpDefinition = _addCPDefinition();
+
+		FriendlyURLEntry friendlyURLEntry =
+			_friendlyURLEntryLocalService.getMainFriendlyURLEntry(
+				_portal.getClassNameId(CProduct.class),
+				cpDefinition.getCProductId());
+
+		CommerceTestUtil.runWithGuestBrowsingDisabled(
+			_commerceChannelLocalService.getCommerceChannelGroupIdBySiteGroupId(
+				_group.getGroupId()),
+			() -> {
+				Element element = _visitLayout(
+					_cpDefinitionSitemapURLProvider,
+					CPPortletKeys.CP_CONTENT_WEB);
+
+				String xml = element.asXML();
+
+				Assert.assertFalse(
+					xml,
+					xml.contains(
+						friendlyURLEntry.getUrlTitle(
+							_themeDisplay.getLanguageId())));
+			});
 	}
 
 	@Test
@@ -479,9 +517,9 @@ public class CommerceSitemapURLProviderTest {
 			});
 	}
 
-	private List<String> _getSitemapURLs(Element element) {
+	private List<String> _getSitemapURLs(List<Element> elements) {
 		return TransformUtil.transform(
-			element.elements(), urlElement -> urlElement.elementText("loc"));
+			elements, element -> element.elementText("loc"));
 	}
 
 	private Element _visitLayout(
@@ -526,6 +564,9 @@ public class CommerceSitemapURLProviderTest {
 		type = SitemapURLProvider.class
 	)
 	private SitemapURLProvider _assetCategorySitemapURLProvider;
+
+	@Inject
+	private CommerceChannelLocalService _commerceChannelLocalService;
 
 	private CommerceCurrency _commerceCurrency;
 	private Company _company;

@@ -12,7 +12,7 @@ import {
 	ObjectFolderAPI,
 	ObjectRelationship,
 	ObjectRelationshipAPI,
-} from '@liferay/object-admin-rest-client-js';
+} from '@liferay/object-admin-rest-client-js/v1_0';
 import {expect} from '@playwright/test';
 
 import {getRandomInt} from '../utils/getRandomInt';
@@ -96,6 +96,16 @@ export class ObjectAdminApiHelper {
 			);
 
 		return body;
+	}
+
+	async postObjectDefinitionObjectField(
+		objectDefinitionId: number,
+		objectField: Partial<ObjectField>
+	): Promise<ObjectField> {
+		return this.apiHelpers.post(
+			`${this.apiHelpers.baseUrl}${this.basePath}/object-definitions/${objectDefinitionId}/object-fields`,
+			{data: objectField}
+		);
 	}
 
 	async postObjectDefinitionObjectFieldBatch(

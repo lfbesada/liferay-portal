@@ -235,9 +235,11 @@ public class BatchEnginePortletDataHandler extends BasePortletDataHandler {
 				exportImportDescriptor =
 					registration.getExportImportDescriptor();
 
-			if (exportImportDescriptor.getRank() < rank) {
-				rank = exportImportDescriptor.getRank();
+			if (exportImportDescriptor.getRank() >= rank) {
+				continue;
 			}
+
+			rank = exportImportDescriptor.getRank();
 		}
 
 		return rank;
@@ -483,8 +485,9 @@ public class BatchEnginePortletDataHandler extends BasePortletDataHandler {
 
 	@Override
 	protected String doExportData(
-		PortletDataContext portletDataContext, String portletId,
-		PortletPreferences portletPreferences) {
+			PortletDataContext portletDataContext, String portletId,
+			PortletPreferences portletPreferences)
+		throws Exception {
 
 		try (SafeCloseable safeCloseable1 =
 				PortletDataContextThreadLocal.
@@ -522,6 +525,14 @@ public class BatchEnginePortletDataHandler extends BasePortletDataHandler {
 
 					BatchEngineExportTask batchEngineExportTask =
 						result.getBatchEngineExportTask();
+
+					if (_isFailedBatchEngineExportTask(batchEngineExportTask)) {
+						throw new PortletDataException(
+							StringBundler.concat(
+								"Unable to export batch data for ",
+								exportImportDescriptor.getKey(), ": ",
+								batchEngineExportTask.getErrorMessage()));
+					}
 
 					if (batchEngineExportTask.getTotalItemsCount() == 0) {
 						continue;
@@ -670,6 +681,18 @@ public class BatchEnginePortletDataHandler extends BasePortletDataHandler {
 						registration.getExportImportDescriptor();
 				BatchEngineExportTask batchEngineExportTask =
 					result.getBatchEngineExportTask();
+
+				if (_isFailedBatchEngineExportTask(batchEngineExportTask)) {
+					if (_log.isWarnEnabled()) {
+						_log.warn(
+							StringBundler.concat(
+								"Unable to prepare manifest summary for ",
+								exportImportDescriptor.getKey(), ": ",
+								batchEngineExportTask.getErrorMessage()));
+					}
+
+					continue;
+				}
 
 				manifestSummary.addModelAdditionCount(
 					exportImportDescriptor.getKey(),
@@ -836,9 +859,11 @@ public class BatchEnginePortletDataHandler extends BasePortletDataHandler {
 
 			String modelClassName = exportImportDescriptor.getModelClassName();
 
-			if (!classNames.add(modelClassName)) {
-				sharedClassNames.add(modelClassName);
+			if (classNames.add(modelClassName)) {
+				continue;
 			}
+
+			sharedClassNames.add(modelClassName);
 		}
 
 		return sharedClassNames;
@@ -906,6 +931,22 @@ public class BatchEnginePortletDataHandler extends BasePortletDataHandler {
 			PermissionThreadLocal.getPermissionChecker();
 
 		return permissionChecker.getUserId();
+	}
+
+	private boolean _isFailedBatchEngineExportTask(
+		BatchEngineExportTask batchEngineExportTask) {
+
+		BatchEngineTaskExecuteStatus batchEngineTaskExecuteStatus =
+			BatchEngineTaskExecuteStatus.valueOf(
+				batchEngineExportTask.getExecuteStatus());
+
+		if (batchEngineTaskExecuteStatus ==
+				BatchEngineTaskExecuteStatus.FAILED) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private String _normalize(String fileName, long groupId) {

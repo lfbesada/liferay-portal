@@ -118,7 +118,13 @@ definition {
 
 			WebContentNavigator.gotoEditCP(webContentTitle = "Web Content Complex Title 1");
 
-			PortletEntry.changeLocale(locale = "en-US");
+			Portlet.waitForForm();
+
+			Click.clickNoMouseOver(locator1 = "Button#LOCALIZATION_GENERIC");
+
+			Click(
+				key_locale = "en-US",
+				locator1 = "Translation#DROPDOWN_MENU_ITEM");
 
 			AssertVisible(
 				key_fieldFieldLabel = "Label UF Release",
@@ -388,7 +394,7 @@ definition {
 			AssertTextEquals(
 				key_fieldFieldLabel = ${fieldName},
 				locator1 = "WCEditWebContent#FIELD_REQUIRED_ALERT",
-				value1 = "Este campo é obrigatório.");
+				value1 = "This field is required.");
 		}
 	}
 
@@ -425,6 +431,10 @@ definition {
 				templateName = "WC Template Name");
 
 			Button.clickSaveAsDraft();
+
+			Alert.viewSuccessMessage();
+
+			Alert.closeMessage(messageType = "SUCCESS");
 
 			WebContent.publishExistingWCArticleWithPermissions();
 		}

@@ -679,6 +679,11 @@ public class LayoutLocalServiceWrapper
 	}
 
 	@Override
+	public Layout fetchDraftLayout(long plid, long launchSetId) {
+		return _layoutLocalService.fetchDraftLayout(plid, launchSetId);
+	}
+
+	@Override
 	public java.util.Map<Layout, Layout> fetchDraftLayouts(
 		java.util.List<Layout> layouts) {
 
@@ -790,6 +795,12 @@ public class LayoutLocalServiceWrapper
 	@Override
 	public Layout getBrowsableLayout(Layout layout) {
 		return _layoutLocalService.getBrowsableLayout(layout);
+	}
+
+	@Override
+	public long[] getClassPKsByLaunchSetId(long groupId, long launchSetId) {
+		return _layoutLocalService.getClassPKsByLaunchSetId(
+			groupId, launchSetId);
 	}
 
 	/**
@@ -2319,4 +2330,4 @@ public class LayoutLocalServiceWrapper
 	private LayoutLocalService _layoutLocalService;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:1295318816
+// LIFERAY-SERVICE-BUILDER-HASH:-288805393

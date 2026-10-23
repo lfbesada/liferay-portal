@@ -109,6 +109,44 @@ public class ExportImportStyleBookEntriesMVCResourceCommandTest {
 	}
 
 	@Test
+	public void testExportImportDefaultStyleBookEntry() throws Exception {
+		String styleBookEntryKey = RandomTestUtil.randomString();
+
+		StyleBookEntry styleBookEntry1 =
+			_styleBookEntryLocalService.addStyleBookEntry(
+				null, TestPropsValues.getUserId(), _sourceGroup.getGroupId(),
+				true, StringPool.BLANK, _read("frontend-tokens-values.json"),
+				RandomTestUtil.randomString(), styleBookEntryKey,
+				_THEME_ID_CLASSIC,
+				ServiceContextTestUtil.getServiceContext(
+					_sourceGroup, TestPropsValues.getUserId()));
+
+		StyleBookEntry styleBookEntry2 =
+			_styleBookEntryLocalService.addStyleBookEntry(
+				null, TestPropsValues.getUserId(), _targetGroup.getGroupId(),
+				true, StringPool.BLANK, _read("frontend-tokens-values.json"),
+				RandomTestUtil.randomString(), RandomTestUtil.randomString(),
+				_THEME_ID_CLASSIC,
+				ServiceContextTestUtil.getServiceContext(
+					_targetGroup, TestPropsValues.getUserId()));
+
+		_importStyleBookEntry(
+			_exportStyleBookEntry(styleBookEntry1.getStyleBookEntryId()),
+			false);
+
+		styleBookEntry2 = _styleBookEntryLocalService.getStyleBookEntry(
+			styleBookEntry2.getStyleBookEntryId());
+
+		Assert.assertFalse(styleBookEntry2.isDefaultStyleBookEntry());
+
+		StyleBookEntry targetGroupStyleBookEntry =
+			_styleBookEntryLocalService.fetchStyleBookEntry(
+				_targetGroup.getGroupId(), styleBookEntryKey);
+
+		Assert.assertTrue(targetGroupStyleBookEntry.isDefaultStyleBookEntry());
+	}
+
+	@Test
 	public void testExportImportMultipleStyleBookEntries() throws Exception {
 		String styleBookEntryKey1 = RandomTestUtil.randomString();
 
@@ -487,11 +525,13 @@ public class ExportImportStyleBookEntriesMVCResourceCommandTest {
 			while (enumeration.hasMoreElements()) {
 				ZipEntry zipEntry = enumeration.nextElement();
 
-				if (!zipEntry.isDirectory()) {
-					_validateZipEntry(styleBookEntry, zipEntry, zipFile);
-
-					count++;
+				if (zipEntry.isDirectory()) {
+					continue;
 				}
+
+				_validateZipEntry(styleBookEntry, zipEntry, zipFile);
+
+				count++;
 			}
 
 			Assert.assertEquals(3, count);
@@ -517,11 +557,13 @@ public class ExportImportStyleBookEntriesMVCResourceCommandTest {
 			while (enumeration.hasMoreElements()) {
 				ZipEntry zipEntry = enumeration.nextElement();
 
-				if (!zipEntry.isDirectory()) {
-					_validateZipEntry(styleBookEntry, zipEntry, zipFile);
-
-					count++;
+				if (zipEntry.isDirectory()) {
+					continue;
 				}
+
+				_validateZipEntry(styleBookEntry, zipEntry, zipFile);
+
+				count++;
 			}
 
 			Assert.assertEquals(4, count);

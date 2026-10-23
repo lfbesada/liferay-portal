@@ -23,9 +23,7 @@ import BrokenLinksFDSPropsTransformer from '../../src/main/resources/META-INF/re
 import BulkActionTaskReportFDSPropsTransformer from '../../src/main/resources/META-INF/resources/js/main_view/props_transformer/BulkActionTaskReportFDSPropsTransformer';
 import CategoryFDSPropsTransformer from '../../src/main/resources/META-INF/resources/js/main_view/props_transformer/CategoryFDSPropsTransformer';
 import CategoryUsagesFDSPropsTransformer from '../../src/main/resources/META-INF/resources/js/main_view/props_transformer/CategoryUsagesFDSPropsTransformer';
-import ExpiredAssetsFDSPropsTransformer from '../../src/main/resources/META-INF/resources/js/main_view/props_transformer/ExpiredAssetsFDSPropsTransformer';
-import OverdueReviewsFDSPropsTransformer from '../../src/main/resources/META-INF/resources/js/main_view/props_transformer/OverdueReviewsFDSPropsTransformer';
-import PendingWorkflowsFDSPropsTransformer from '../../src/main/resources/META-INF/resources/js/main_view/props_transformer/PendingWorkflowsFDSPropsTransformer';
+import MissingRequiredFieldsFDSPropsTransformer from '../../src/main/resources/META-INF/resources/js/main_view/props_transformer/MissingRequiredFieldsFDSPropsTransformer';
 import RecycleBinFDSPropsTransformer from '../../src/main/resources/META-INF/resources/js/main_view/props_transformer/RecycleBinFDSPropsTransformer';
 import SharedWithMeFDSPropsTransformer from '../../src/main/resources/META-INF/resources/js/main_view/props_transformer/SharedWithMeFDSPropsTransformer';
 import StructureUsagesFDSPropsTransformer from '../../src/main/resources/META-INF/resources/js/main_view/props_transformer/StructureUsagesFDSPropsTransformer';
@@ -89,9 +87,7 @@ const TRANSFORMERS: Array<[string, (props: any) => any]> = [
 	['Categories', CategoryFDSPropsTransformer],
 	['Category Usages', CategoryUsagesFDSPropsTransformer],
 	['Contents', AssetsFDSPropsTransformer],
-	['Expired Assets', ExpiredAssetsFDSPropsTransformer],
-	['Overdue Reviews', OverdueReviewsFDSPropsTransformer],
-	['Pending Workflows', PendingWorkflowsFDSPropsTransformer],
+	['Missing Required Data', MissingRequiredFieldsFDSPropsTransformer],
 	['Recycle Bin', RecycleBinFDSPropsTransformer],
 	['Shared With Me', SharedWithMeFDSPropsTransformer],
 	['Structure Usages', StructureUsagesFDSPropsTransformer],
@@ -107,10 +103,8 @@ const TRANSFORMERS: Array<[string, (props: any) => any]> = [
 const SYSTEM_DATA_SET_TRANSFORMERS: Array<[string, (props: any) => any]> = [
 	['All', AssetsFilesDropFDSPropsTransformer],
 	['Broken Links', BrokenLinksFDSPropsTransformer],
-	['Expired Assets', ExpiredAssetsFDSPropsTransformer],
 	['Files', AssetsFilesDropFDSPropsTransformer],
-	['Overdue Reviews', OverdueReviewsFDSPropsTransformer],
-	['Pending Workflows', PendingWorkflowsFDSPropsTransformer],
+	['Missing Required Data', MissingRequiredFieldsFDSPropsTransformer],
 ];
 
 // The Data Sets the CMS renders as React instead, paired with the mock that
@@ -214,6 +208,17 @@ const VISITED_RENDERERS: Array<
 		BrokenLinksFDSPropsTransformer,
 		'listSection',
 		'brokenLinkAssetTitle',
+		{
+			actions: [EDIT_ACTION],
+			itemData: {actions: {update: {}}, id: 7},
+			value: 'Marketing',
+		},
+	],
+	[
+		'Missing Required Data',
+		MissingRequiredFieldsFDSPropsTransformer,
+		'listSection',
+		'missingRequiredFieldsAssetTitle',
 		{
 			actions: [EDIT_ACTION],
 			itemData: {actions: {update: {}}, id: 7},

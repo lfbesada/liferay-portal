@@ -184,7 +184,6 @@ import com.liferay.portal.kernel.service.ThemeLocalService;
 import com.liferay.portal.kernel.service.UserGroupLocalService;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.WorkflowDefinitionLinkLocalService;
-import com.liferay.portal.kernel.settings.ArchivedSettingsFactory;
 import com.liferay.portal.kernel.template.TemplateConstants;
 import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.CalendarFactoryUtil;
@@ -287,7 +286,6 @@ public class BundleSiteInitializer implements SiteInitializer {
 		AccountResource.Factory accountResourceFactory,
 		AccountRoleLocalService accountRoleLocalService,
 		AccountRoleResource.Factory accountRoleResourceFactory,
-		ArchivedSettingsFactory archivedSettingsFactory,
 		AssetCategoryLocalService assetCategoryLocalService,
 		AssetEntryLocalService assetEntryLocalService,
 		AssetLinkLocalService assetLinkLocalService,
@@ -382,7 +380,6 @@ public class BundleSiteInitializer implements SiteInitializer {
 		_accountResourceFactory = accountResourceFactory;
 		_accountRoleLocalService = accountRoleLocalService;
 		_accountRoleResourceFactory = accountRoleResourceFactory;
-		_archivedSettingsFactory = archivedSettingsFactory;
 		_assetCategoryLocalService = assetCategoryLocalService;
 		_assetEntryLocalService = assetEntryLocalService;
 		_assetLinkLocalService = assetLinkLocalService;
@@ -656,12 +653,14 @@ public class BundleSiteInitializer implements SiteInitializer {
 						AccountEntry.class.getName(),
 						accountEntry.getAccountEntryId());
 
-				if (accountGroupRel == null) {
-					_accountGroupRelService.addAccountGroupRel(
-						accountGroup.getAccountGroupId(),
-						AccountEntry.class.getName(),
-						accountEntry.getAccountEntryId());
+				if (accountGroupRel != null) {
+					continue;
 				}
+
+				_accountGroupRelService.addAccountGroupRel(
+					accountGroup.getAccountGroupId(),
+					AccountEntry.class.getName(),
+					accountEntry.getAccountEntryId());
 			}
 		}
 	}
@@ -2202,12 +2201,14 @@ public class BundleSiteInitializer implements SiteInitializer {
 
 			Group scopeGroup = serviceContext.getScopeGroup();
 
-			if (scopeGroup.isSite()) {
-				_depotEntryGroupRelLocalService.addDepotEntryGroupRel(
-					(group != null) ? group.getClassPK() :
-						depotEntry.getDepotEntryId(),
-					serviceContext.getScopeGroupId());
+			if (!scopeGroup.isSite()) {
+				continue;
 			}
+
+			_depotEntryGroupRelLocalService.addDepotEntryGroupRel(
+				(group != null) ? group.getClassPK() :
+					depotEntry.getDepotEntryId(),
+				serviceContext.getScopeGroupId());
 		}
 	}
 
@@ -2498,24 +2499,25 @@ public class BundleSiteInitializer implements SiteInitializer {
 					_getExpandoAttributeValue(jsonObject));
 			}
 
-			if (jsonObject.has("properties")) {
-				UnicodeProperties unicodeProperties = new UnicodeProperties(
-					true);
-
-				JSONObject propertiesJSONObject = jsonObject.getJSONObject(
-					"properties");
-
-				Map<String, Object> map = propertiesJSONObject.toMap();
-
-				for (Map.Entry<String, Object> entry : map.entrySet()) {
-					unicodeProperties.setProperty(
-						TextFormatter.format(entry.getKey(), TextFormatter.K),
-						String.valueOf(entry.getValue()));
-				}
-
-				expandoBridge.setAttributeProperties(
-					jsonObject.getString("name"), unicodeProperties);
+			if (!jsonObject.has("properties")) {
+				continue;
 			}
+
+			UnicodeProperties unicodeProperties = new UnicodeProperties(true);
+
+			JSONObject propertiesJSONObject = jsonObject.getJSONObject(
+				"properties");
+
+			Map<String, Object> map = propertiesJSONObject.toMap();
+
+			for (Map.Entry<String, Object> entry : map.entrySet()) {
+				unicodeProperties.setProperty(
+					TextFormatter.format(entry.getKey(), TextFormatter.K),
+					String.valueOf(entry.getValue()));
+			}
+
+			expandoBridge.setAttributeProperties(
+				jsonObject.getString("name"), unicodeProperties);
 		}
 	}
 
@@ -2969,12 +2971,14 @@ public class BundleSiteInitializer implements SiteInitializer {
 		resourcePaths = sortedResourcePaths;
 
 		for (String resourcePath : resourcePaths) {
-			if (resourcePath.endsWith("/")) {
-				layoutsMap.putAll(
-					_addOrUpdateLayout(
-						layout.getLayoutId(), resourcePath, serviceContext,
-						stringUtilReplaceValues));
+			if (!resourcePath.endsWith("/")) {
+				continue;
 			}
+
+			layoutsMap.putAll(
+				_addOrUpdateLayout(
+					layout.getLayoutId(), resourcePath, serviceContext,
+					stringUtilReplaceValues));
 		}
 
 		return layoutsMap;
@@ -3133,12 +3137,14 @@ public class BundleSiteInitializer implements SiteInitializer {
 		resourcePaths = sortedResourcePaths;
 
 		for (String resourcePath : resourcePaths) {
-			if (resourcePath.endsWith("/")) {
-				layoutsMap.putAll(
-					_addOrUpdateLayout(
-						LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, resourcePath,
-						serviceContext, stringUtilReplaceValues));
+			if (!resourcePath.endsWith("/")) {
+				continue;
 			}
+
+			layoutsMap.putAll(
+				_addOrUpdateLayout(
+					LayoutConstants.DEFAULT_PARENT_LAYOUT_ID, resourcePath,
+					serviceContext, stringUtilReplaceValues));
 		}
 	}
 
@@ -4094,6 +4100,8 @@ public class BundleSiteInitializer implements SiteInitializer {
 			Map<String, String> stringUtilReplaceValues)
 		throws Exception {
 
+		_languageKeyResolver.expand(serviceContext.getCompanyId(), jsonObject);
+
 		SiteNavigationMenu siteNavigationMenu =
 			_siteNavigationMenuLocalService.
 				fetchSiteNavigationMenuByExternalReferenceCode(
@@ -4796,12 +4804,14 @@ public class BundleSiteInitializer implements SiteInitializer {
 				parentResourcePath);
 
 			for (String resourcePath : resourcePaths) {
-				if (resourcePath.endsWith("/")) {
-					_addOrUpdateLayoutContent(
-						layout, resourcePath,
-						segmentsExperience.getSegmentsExperienceId(),
-						serviceContext, stringUtilReplaceValues);
+				if (!resourcePath.endsWith("/")) {
+					continue;
 				}
+
+				_addOrUpdateLayoutContent(
+					layout, resourcePath,
+					segmentsExperience.getSegmentsExperienceId(),
+					serviceContext, stringUtilReplaceValues);
 			}
 		}
 	}
@@ -5204,13 +5214,15 @@ public class BundleSiteInitializer implements SiteInitializer {
 						rolesJSONArray.getString(j)));
 			}
 
-			if (ListUtil.isNotEmpty(roles)) {
-				User user = _userLocalService.fetchUserByEmailAddress(
-					serviceContext.getCompanyId(),
-					jsonObject.getString("emailAddress"));
-
-				_roleLocalService.addUserRoles(user.getUserId(), roles);
+			if (ListUtil.isEmpty(roles)) {
+				continue;
 			}
+
+			User user = _userLocalService.fetchUserByEmailAddress(
+				serviceContext.getCompanyId(),
+				jsonObject.getString("emailAddress"));
+
+			_roleLocalService.addUserRoles(user.getUserId(), roles);
 		}
 	}
 
@@ -5768,9 +5780,11 @@ public class BundleSiteInitializer implements SiteInitializer {
 					fetchAssetCategoryByExternalReferenceCode(
 						externalReferenceCode, groupId);
 
-			if (assetCategory != null) {
-				assetCategoryIds.add(assetCategory.getCategoryId());
+			if (assetCategory == null) {
+				continue;
 			}
+
+			assetCategoryIds.add(assetCategory.getCategoryId());
 		}
 
 		return ArrayUtil.toLongArray(assetCategoryIds);
@@ -6262,11 +6276,13 @@ public class BundleSiteInitializer implements SiteInitializer {
 					LayoutUtilityPageEntryTypeConverter.convertToInternalValue(
 						type));
 
-			if (layoutUtilityPageEntry != null) {
-				_layoutUtilityPageEntryLocalService.
-					setDefaultLayoutUtilityPageEntry(
-						layoutUtilityPageEntry.getLayoutUtilityPageEntryId());
+			if (layoutUtilityPageEntry == null) {
+				continue;
 			}
+
+			_layoutUtilityPageEntryLocalService.
+				setDefaultLayoutUtilityPageEntry(
+					layoutUtilityPageEntry.getLayoutUtilityPageEntryId());
 		}
 	}
 
@@ -6505,7 +6521,6 @@ public class BundleSiteInitializer implements SiteInitializer {
 	private final AccountResource.Factory _accountResourceFactory;
 	private final AccountRoleLocalService _accountRoleLocalService;
 	private final AccountRoleResource.Factory _accountRoleResourceFactory;
-	private final ArchivedSettingsFactory _archivedSettingsFactory;
 	private final AssetCategoryLocalService _assetCategoryLocalService;
 	private final AssetEntryLocalService _assetEntryLocalService;
 	private final AssetLinkLocalService _assetLinkLocalService;

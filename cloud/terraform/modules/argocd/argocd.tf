@@ -116,7 +116,7 @@ resource "helm_release" "argocd" {
 								])
 						}
 						params={
-							"controller.sync.timeout.seconds"="900"
+							"controller.sync.timeout.seconds"="3600"
 							"server.insecure"="true"
 						}
 					}
@@ -127,7 +127,7 @@ resource "helm_release" "argocd" {
 							}
 							requests={
 								cpu="109m"
-								memory="1.5Gi"
+								memory="2Gi"
 							}
 						}
 					}

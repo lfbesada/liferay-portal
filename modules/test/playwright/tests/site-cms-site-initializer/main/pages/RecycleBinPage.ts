@@ -14,6 +14,7 @@ export class RecycleBinPage {
 	readonly deleteButton: Locator;
 	readonly deleteItemConfirmationText: Locator;
 	readonly emptyRecycleBinButton: Locator;
+	readonly modalCancelButton: Locator;
 	readonly modalDeleteEntriesButton: Locator;
 	readonly selectAllItemsCheckbox: Locator;
 	readonly tableActions: Locator;
@@ -28,6 +29,9 @@ export class RecycleBinPage {
 		this.emptyRecycleBinButton = page.getByRole('menuitem', {
 			name: 'Empty Recycle Bin',
 		});
+		this.modalCancelButton = page
+			.locator('div.modal-content')
+			.getByRole('button', {name: 'Cancel'});
 		this.modalDeleteEntriesButton = page
 			.locator('div.modal-content')
 			.getByRole('button', {name: 'Delete'});
@@ -64,7 +68,9 @@ export class RecycleBinPage {
 			.getByRole('link')
 			.click();
 
-		await this.page.getByPlaceholder('Search').waitFor({state: 'visible'});
+		await this.page
+			.getByRole('searchbox', {name: 'Search'})
+			.waitFor({state: 'visible'});
 	}
 
 	async selectItems(titles: string[]) {

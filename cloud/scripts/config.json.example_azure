@@ -12,15 +12,15 @@
 				"repository": {
 					"url": "https://github.com/example/liferay-gitops.git"
 				}
-			},
-			"operatorApplications": {
-				"keda": {
-					"enabled": true
-				}
 			}
 		}
 	},
 	"region": "eastus2",
+	"setup": {
+		"database": {
+			"engine": "postgresql"
+		}
+	},
 	"subscription_id": "your-azure-subscription-id",
 	"tenant_id": "your-azure-tenant-id",
 	"terraform": {

@@ -5,6 +5,7 @@ import {fireEvent, render, screen} from '@testing-library/react';
 import {Map} from 'immutable';
 import {MemoryRouter} from 'react-router';
 import {Provider} from 'react-redux';
+import {resetBodyWidth, setBodyWidth} from 'test/body-width';
 
 const defaultProps = {
 	activePathname: '',
@@ -27,7 +28,7 @@ jest.unmock('react-dom');
 
 describe('Sidebar', () => {
 	afterEach(() => {
-		delete document.body.clientWidth;
+		resetBodyWidth();
 	});
 
 	it('should render', () => {
@@ -222,10 +223,7 @@ describe('Sidebar', () => {
 	});
 
 	it('should keep its state and have no close button on desktop', () => {
-		Object.defineProperty(document.body, 'clientWidth', {
-			configurable: true,
-			value: 1024
-		});
+		setBodyWidth(1024);
 
 		const onCollapsedChange = jest.fn();
 
@@ -233,5 +231,38 @@ describe('Sidebar', () => {
 
 		expect(onCollapsedChange).not.toHaveBeenCalled();
 		expect(screen.queryByRole('button', {name: 'Close'})).toBeNull();
+	});
+
+	it('should close from its backdrop on mobile', () => {
+		const onCollapsedChange = jest.fn();
+
+		renderSidebar({onCollapsedChange});
+
+		onCollapsedChange.mockClear();
+
+		fireEvent.click(screen.getByTestId('side-panel-backdrop'));
+
+		expect(onCollapsedChange).toHaveBeenCalledWith(true);
+	});
+
+	it('should have no backdrop on mobile once collapsed', () => {
+		renderSidebar({collapsed: true});
+
+		expect(screen.queryByTestId('side-panel-backdrop')).toBeNull();
+	});
+
+	it('should close from its backdrop where Clay overlays it above mobile', () => {
+		Object.defineProperty(document.body, 'clientWidth', {
+			configurable: true,
+			value: 800
+		});
+
+		const onCollapsedChange = jest.fn();
+
+		renderSidebar({onCollapsedChange});
+
+		fireEvent.click(screen.getByTestId('side-panel-backdrop'));
+
+		expect(onCollapsedChange).toHaveBeenCalledWith(true);
 	});
 });

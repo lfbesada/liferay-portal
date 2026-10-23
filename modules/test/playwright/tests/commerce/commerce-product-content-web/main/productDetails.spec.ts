@@ -981,7 +981,7 @@ test('LPD-39598 Can view SKU UOM discount is applied on product details page', a
 
 	await expect(
 		await productDetailsPage.priceField(
-			'$ 10.00',
+			`$ 10.00 / ${uom1.name['en_US']}`,
 			productDetailsPage.priceContainer
 		)
 	).toBeVisible();
@@ -1004,7 +1004,7 @@ test('LPD-39598 Can view SKU UOM discount is applied on product details page', a
 
 	await expect(
 		await productDetailsPage.priceField(
-			'$ 20.00',
+			`$ 20.00 / ${uom2.name['en_US']}`,
 			productDetailsPage.priceContainer
 		)
 	).toBeVisible();
@@ -1041,7 +1041,7 @@ test('LPD-39598 Can view SKU UOM discount is applied on product details page', a
 
 	await expect(
 		await productDetailsPage.priceField(
-			'$ 10.00',
+			`$ 10.00 / ${uom1.name['en_US']}`,
 			productDetailsPage.priceContainer
 		)
 	).toBeVisible();
@@ -1055,7 +1055,7 @@ test('LPD-39598 Can view SKU UOM discount is applied on product details page', a
 
 	await expect(
 		await productDetailsPage.priceField(
-			'$ 10.00',
+			'$ 5.00',
 			productDetailsPage.priceContainer
 		)
 	).toBeVisible();
@@ -1064,7 +1064,7 @@ test('LPD-39598 Can view SKU UOM discount is applied on product details page', a
 
 	await expect(
 		await productDetailsPage.priceField(
-			'$ 20.00',
+			`$ 20.00 / ${uom2.name['en_US']}`,
 			productDetailsPage.priceContainer
 		)
 	).toBeVisible();
@@ -1483,6 +1483,7 @@ test(
 	{tag: '@LPD-85260'},
 	async ({
 		apiHelpers,
+		commerceAdminProductDetailsSkusPage,
 		commerceAdminProductPage,
 		page,
 		productDetailsPage,
@@ -1554,18 +1555,9 @@ test(
 			await productDetailsPage.optionSelector('Color')
 		).toBeVisible();
 
-		await productDetailsPage.optionSelector('Color').click();
-
-		let optionSelectorOptionValues = await productDetailsPage
-			.optionSelector('Color')
-			.locator('option')
-			.allTextContents();
-
-		expect(optionSelectorOptionValues).toEqual([
-			'Choose an Option',
-			'Black',
-			'White',
-		]);
+		await expect(
+			productDetailsPage.optionSelectorValues('Color')
+		).toHaveText(['Choose an Option']);
 
 		await commerceAdminProductPage.gotoProduct(product.name['en_US']);
 
@@ -1575,12 +1567,26 @@ test(
 			page.getByText('Showing 1 to 3 of 3 entries.')
 		).toBeVisible();
 
-		const blackSku =
-			await apiHelpers.headlessCommerceAdminCatalog.getSkuByName('BLACK');
-
-		await apiHelpers.headlessCommerceAdminCatalog.patchSku(blackSku.id, {
-			expirationDate: '2020-01-01T00:00:00Z',
+		await page.goto(`/web/${site.name}/p/${product.name['en_US']}`, {
+			waitUntil: 'networkidle',
 		});
+
+		await expect(
+			productDetailsPage.optionSelectorValues('Color')
+		).toHaveText(['Choose an Option', 'Black', 'White']);
+
+		await commerceAdminProductPage.gotoProduct(product.name['en_US']);
+
+		await commerceAdminProductPage.productSkusLink.click();
+
+		await commerceAdminProductDetailsSkusPage
+			.skusTableRowLink('BLACK')
+			.click();
+
+		await commerceAdminProductDetailsSkusPage.neverExpireCheckbox.uncheck();
+		await commerceAdminProductDetailsSkusPage.sidePanelSaveAsDraftButton.click();
+
+		await waitForAlert(commerceAdminProductDetailsSkusPage.sidePanelFrame);
 
 		await page.goto(`/web/${site.name}/p/${product.name['en_US']}`, {
 			waitUntil: 'networkidle',
@@ -1590,15 +1596,9 @@ test(
 			await productDetailsPage.optionSelector('Color')
 		).toBeVisible();
 
-		optionSelectorOptionValues = await productDetailsPage
-			.optionSelector('Color')
-			.locator('option')
-			.allTextContents();
-
-		expect(optionSelectorOptionValues).toEqual([
-			'Choose an Option',
-			'White',
-		]);
+		await expect(
+			productDetailsPage.optionSelectorValues('Color')
+		).toHaveText(['Choose an Option', 'White']);
 	}
 );
 

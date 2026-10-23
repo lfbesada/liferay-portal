@@ -711,9 +711,11 @@ public class LiferayDynamicRegistrationService
 				responseGrantType = OAuthConstants.AUTHORIZATION_CODE_GRANT;
 			}
 
-			if (!responseGrantTypes.contains(responseGrantType)) {
-				responseGrantTypes.add(responseGrantType);
+			if (responseGrantTypes.contains(responseGrantType)) {
+				continue;
 			}
+
+			responseGrantTypes.add(responseGrantType);
 		}
 
 		return responseGrantTypes;
@@ -726,6 +728,22 @@ public class LiferayDynamicRegistrationService
 
 		if (allowedGrantTypes == null) {
 			return;
+		}
+
+		for (String allowedGrantType : allowedGrantTypes) {
+			if (!StringUtil.equalsIgnoreCase(
+					allowedGrantType,
+					OAuthConstants.CLIENT_CREDENTIALS_GRANT)) {
+
+				continue;
+			}
+
+			OAuth2ErrorUtil.reportInvalidRequestError(
+				"Grant type client_credentials is not allowed for dynamic " +
+					"registration",
+				OAuth2ProviderRESTEndpointConstants.
+					ERROR_INVALID_CLIENT_METADATA,
+				Response.Status.BAD_REQUEST);
 		}
 
 		List<String> redirectURIs = clientRegistration.getRedirectUris();
@@ -770,13 +788,15 @@ public class LiferayDynamicRegistrationService
 
 		if (responseTypes != null) {
 			for (String responseType : responseTypes) {
-				if (!allowedResponseTypes.contains(responseType)) {
-					OAuth2ErrorUtil.reportInvalidRequestError(
-						"Invalid response type " + responseType,
-						OAuth2ProviderRESTEndpointConstants.
-							ERROR_INVALID_CLIENT_METADATA,
-						Response.Status.BAD_REQUEST);
+				if (allowedResponseTypes.contains(responseType)) {
+					continue;
 				}
+
+				OAuth2ErrorUtil.reportInvalidRequestError(
+					"Invalid response type " + responseType,
+					OAuth2ProviderRESTEndpointConstants.
+						ERROR_INVALID_CLIENT_METADATA,
+					Response.Status.BAD_REQUEST);
 			}
 		}
 
@@ -802,13 +822,15 @@ public class LiferayDynamicRegistrationService
 		}
 
 		for (String requestedValue : requestedValues) {
-			if (!allowedValuesSet.contains(requestedValue)) {
-				OAuth2ErrorUtil.reportInvalidRequestError(
-					StringBundler.concat(
-						label, StringPool.SPACE, requestedValue,
-						" is not allowed for open registration"),
-					error, Response.Status.BAD_REQUEST);
+			if (allowedValuesSet.contains(requestedValue)) {
+				continue;
 			}
+
+			OAuth2ErrorUtil.reportInvalidRequestError(
+				StringBundler.concat(
+					label, StringPool.SPACE, requestedValue,
+					" is not allowed for open registration"),
+				error, Response.Status.BAD_REQUEST);
 		}
 	}
 
@@ -900,11 +922,13 @@ public class LiferayDynamicRegistrationService
 				}
 			}
 
-			if (!matched) {
-				_reportInvalidRedirectURIError(
-					"Redirect URI " + redirectURI +
-						" is not allowed for open registration");
+			if (matched) {
+				continue;
 			}
+
+			_reportInvalidRedirectURIError(
+				"Redirect URI " + redirectURI +
+					" is not allowed for open registration");
 		}
 	}
 

@@ -2,6 +2,41 @@ defaults:
     run:
         shell: bash
 jobs:
+    test-client-extension:
+        runs-on: ubuntu-latest
+        steps:
+            -   name: Checkout code
+                uses: actions/checkout@v4
+            -   name: Create kind cluster
+                uses: helm/kind-action@v1
+            -   name: Install Helm
+                uses: azure/setup-helm@v4
+                with:
+                    version: 4.2.4
+            -   name: Install CRDs
+                run: kubectl apply --filename ./cloud/helm/dxp-operator/crds --force-conflicts --server-side
+            -   name: Validate ClientExtension against its CRD
+                run: |
+                    set -o errexit
+                    set -o nounset
+                    set -o pipefail
+
+                    function main {
+                        kubectl wait --for condition=Established --timeout 1m crd/clientextensions.cx.liferay.com
+
+                        helm \
+                            template \
+                            liferay \
+                            . \
+                            --show-only \
+                            templates/clientextension.yaml \
+                            --values \
+                            ../../scripts/tests/render-values/client-extension.yaml \
+                            | kubectl apply --dry-run=server --filename - --server-side
+                    }
+
+                    main "${@}"
+                working-directory: ./cloud/helm/client-extension
     test-default:
         runs-on: ubuntu-latest
         steps:
@@ -39,6 +74,31 @@ jobs:
             -   name: Install Helm chart
                 run: helm install liferay-dxp-operator . --create-namespace --namespace dxp-operator-system --set image.pullPolicy=Never --set image.repository=liferay-dxp-operator --set image.tag=smoke --timeout 5m --wait
                 working-directory: ./cloud/helm/dxp-operator
+            -   name: Check the operator can manage its workloads
+                run: |
+                    set -o errexit
+                    set -o nounset
+                    set -o pipefail
+
+                    function main {
+                        local resource
+                        local verb
+
+                        for resource in deployments.apps statefulsets.apps
+                        do
+                            for verb in get list update watch
+                            do
+                                if ! kubectl auth can-i "${verb}" "${resource}" --all-namespaces --as system:serviceaccount:dxp-operator-system:liferay-dxp-operator > /dev/null
+                                then
+                                    echo "The operator is unable to ${verb} ${resource}." >&2
+
+                                    exit 1
+                                fi
+                            done
+                        done
+                    }
+
+                    main "${@}"
             -   name: Create LiferayEnvironment
                 run: |
                     set -o errexit
@@ -85,6 +145,33 @@ jobs:
                         fi
 
                         kubectl get secret liferay-identity --namespace liferay
+                    }
+
+                    main "${@}"
+            -   name: Check ClientExtension controller is disabled
+                run: |
+                    set -o errexit
+                    set -o nounset
+                    set -o pipefail
+
+                    function main {
+                        local logs
+
+                        logs=$(kubectl logs deployment/liferay-dxp-operator --namespace dxp-operator-system)
+
+                        if [[ ${logs} == *cx.ClientExtensionReconciler* ]]
+                        then
+                            echo "The operator started the ClientExtension controller although it is disabled." >&2
+
+                            exit 1
+                        fi
+
+                        if [[ ${logs} != *licensing.LiferayEnvironmentReconciler* ]]
+                        then
+                            echo "The operator did not start the LiferayEnvironment controller." >&2
+
+                            exit 1
+                        fi
                     }
 
                     main "${@}"

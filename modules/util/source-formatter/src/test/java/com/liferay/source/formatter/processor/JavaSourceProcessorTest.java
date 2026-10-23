@@ -186,6 +186,44 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
+	public void testEarlyLoopExit() throws Exception {
+		test(
+			SourceProcessorTestParameters.create(
+				"EarlyLoopExit.testjava"
+			).addExpectedMessage(
+				"Invert the condition and use \"continue\" as early as " +
+					"possible instead of nesting the rest of the loop body " +
+						"in the if-statement",
+				25
+			).addExpectedMessage(
+				"Invert the condition and use \"continue\" as early as " +
+					"possible instead of nesting the rest of the loop body " +
+						"in the if-statement",
+				33
+			).addExpectedMessage(
+				"Invert the condition and use \"continue\" as early as " +
+					"possible instead of nesting the rest of the loop body " +
+						"in the if-statement",
+				43
+			).addExpectedMessage(
+				"Invert the condition and use \"break\" as early as possible " +
+					"instead of nesting the rest of the loop body in the " +
+						"if-statement",
+				54
+			).addExpectedMessage(
+				"Invert the condition and use \"return\" as early as " +
+					"possible instead of nesting the rest of the loop body " +
+						"in the if-statement",
+				143
+			).addExpectedMessage(
+				"Invert the condition and use \"throw\" as early as possible " +
+					"instead of nesting the rest of the loop body in the " +
+						"if-statement",
+				156
+			));
+	}
+
+	@Test
 	public void testElseStatement() throws Exception {
 		test("ElseStatement1.testjava");
 		test(
@@ -315,10 +353,28 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
-	public void testFeatureFlagsAnnotationTest() throws Exception {
+	public void testFeatureFlagAnnotation() throws Exception {
 		test(
 			SourceProcessorTestParameters.create(
-				"FeatureFlagsAnnotationTest.testjava"
+				"FeatureFlagAnnotation.testjava"
+			).addExpectedMessage(
+				"Declare the feature flag with \"x-feature-flag\" in " +
+					"\"rest-openapi.yaml\" instead of using the annotation " +
+						"\"@FeatureFlag\"",
+				13
+			).addExpectedMessage(
+				"Declare the feature flag with \"x-feature-flag\" in " +
+					"\"rest-openapi.yaml\" instead of using the annotation " +
+						"\"@FeatureFlag\"",
+				16
+			));
+	}
+
+	@Test
+	public void testFeatureFlagsAnnotationInTest() throws Exception {
+		test(
+			SourceProcessorTestParameters.create(
+				"FeatureFlagsAnnotationInTest.testjava"
 			).addExpectedMessage(
 				"Use annotation \"@FeatureFlags\" instead of \"PropsUtil." +
 					"addProperties\" for feature flag",
@@ -999,6 +1055,28 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
+	public void testRedundantBranchingStatement() throws Exception {
+		test(
+			SourceProcessorTestParameters.create(
+				"RedundantBranchingStatement.testjava"
+			).addExpectedMessage(
+				"Redundant \"return\" statement", 19
+			).addExpectedMessage(
+				"Redundant \"return\" statement", 26
+			).addExpectedMessage(
+				"Redundant \"return\" statement", 36
+			).addExpectedMessage(
+				"Redundant \"return\" statement", 47
+			).addExpectedMessage(
+				"Redundant \"continue\" statement", 57
+			).addExpectedMessage(
+				"Redundant \"continue\" statement", 71
+			).addExpectedMessage(
+				"Redundant \"continue\" statement", 125
+			));
+	}
+
+	@Test
 	public void testRedundantCommas() throws Exception {
 		test("RedundantCommas.testjava");
 	}
@@ -1189,7 +1267,7 @@ public class JavaSourceProcessorTest extends BaseSourceProcessorTestCase {
 	}
 
 	@Test
-	public void testSizeIsZeroCheck() throws Exception {
+	public void testSizeIsZero() throws Exception {
 		test(
 			SourceProcessorTestParameters.create(
 				"SizeIsZero.testjava"

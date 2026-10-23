@@ -19,6 +19,7 @@ import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 import java.util.function.Function;
@@ -26,6 +27,7 @@ import java.util.function.Function;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
+import org.jsoup.select.Elements;
 
 /**
  * @author Víctor Galán
@@ -45,9 +47,11 @@ public class StaticSiteExportDocument {
 			for (Element element :
 					_document.select("[" + attributeName + "]")) {
 
-				if (_isEmbedded(attributeName, element)) {
-					embeddedURLs.add(element.attr(attributeName));
+				if (!_isEmbedded(attributeName, element)) {
+					continue;
 				}
+
+				embeddedURLs.add(element.attr(attributeName));
 			}
 		}
 
@@ -69,9 +73,11 @@ public class StaticSiteExportDocument {
 			while (iterator.hasNext()) {
 				String url = importsJSONObject.getString(iterator.next());
 
-				if (!url.endsWith(StringPool.SLASH)) {
-					embeddedURLs.add(url);
+				if (url.endsWith(StringPool.SLASH)) {
+					continue;
 				}
+
+				embeddedURLs.add(url);
 			}
 		}
 
@@ -92,6 +98,61 @@ public class StaticSiteExportDocument {
 		return urls;
 	}
 
+	public void replaceLinks(
+		Map<String, String> alternatePaths, String canonicalPath) {
+
+		Elements elements = _document.select(
+			"link[rel=alternate][hreflang], link[rel=canonical]");
+
+		elements.remove();
+
+		Element headElement = _document.head();
+
+		Element canonicalElement = headElement.appendElement("link");
+
+		canonicalElement.attr("href", canonicalPath);
+		canonicalElement.attr("rel", "canonical");
+
+		for (Map.Entry<String, String> entry : alternatePaths.entrySet()) {
+			Element alternateElement = headElement.appendElement("link");
+
+			alternateElement.attr("href", entry.getValue());
+			alternateElement.attr("hreflang", entry.getKey());
+			alternateElement.attr("rel", "alternate");
+		}
+	}
+
+	public void replaceOpenGraphMetaTags(
+		String canonicalPath, List<String> openGraphLocaleAlternates) {
+
+		for (Element element :
+				_document.select(
+					"meta[name=\"twitter:url\"], meta[property=\"og:url\"]")) {
+
+			element.attr("content", canonicalPath);
+		}
+
+		Elements elements = _document.select(
+			"meta[property=\"og:locale:alternate\"]");
+
+		if (elements.isEmpty()) {
+			return;
+		}
+
+		Element firstElement = elements.first();
+
+		for (String openGraphLocaleAlternate : openGraphLocaleAlternates) {
+			Element element = new Element("meta");
+
+			element.attr("content", openGraphLocaleAlternate);
+			element.attr("property", "og:locale:alternate");
+
+			firstElement.before(element);
+		}
+
+		elements.remove();
+	}
+
 	public void rewrite(Function<String, String> pathFunction) {
 		for (String attributeName : _ATTRIBUTE_NAMES) {
 			for (Element element :
@@ -101,9 +162,11 @@ public class StaticSiteExportDocument {
 
 				String path = pathFunction.apply(url);
 
-				if (path != null) {
-					element.attr(attributeName, path);
+				if (path == null) {
+					continue;
 				}
+
+				element.attr(attributeName, path);
 			}
 		}
 
@@ -146,9 +209,11 @@ public class StaticSiteExportDocument {
 				String path = pathFunction.apply(
 					importsJSONObject.getString(specifier));
 
-				if (path != null) {
-					importsJSONObject.put(specifier, path);
+				if (path == null) {
+					continue;
 				}
+
+				importsJSONObject.put(specifier, path);
 			}
 
 			element.text(jsonObject.toString());

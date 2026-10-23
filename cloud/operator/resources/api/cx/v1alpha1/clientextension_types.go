@@ -10,8 +10,6 @@ import (
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const AnnotationAllowedClientExtensionNamespaces = "cx.liferay.com/allowed-client-extension-namespaces"
-
 const (
 	ConditionConfigurationAccepted = "ConfigurationAccepted"
 	ConditionDelivered             = "Delivered"
@@ -19,6 +17,11 @@ const (
 	ConditionProvisioned           = "Provisioned"
 	ConditionReady                 = "Ready"
 	ConditionWorkloadAccepted      = "WorkloadAccepted"
+)
+
+const (
+	ConfigMapKeyAllowedNamespaces      = "allowedNamespaces"
+	ConfigMapNameClientExtensionPolicy = "client-extension-policy"
 )
 
 const (
@@ -84,7 +87,7 @@ type ClientExtensionSpec struct {
 	Configs map[string]Configuration `json:"configs"`
 
 	// +kubebuilder:validation:MaxLength=253
-	// +kubebuilder:validation:Pattern=`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*(:[0-9]{1,5})?$`
+	// +kubebuilder:validation:Pattern=`^[a-z0-9]([-a-z0-9]*[a-z0-9])?(\.[a-z0-9]([-a-z0-9]*[a-z0-9])?)*$`
 	// +optional
 	Domain string `json:"domain,omitempty"`
 

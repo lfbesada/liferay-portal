@@ -269,44 +269,4 @@ definition {
 		}
 	}
 
-	@priority = 4
-	test PrefilteringWorksWithMainObjectFieldsThatAreNotPartOfSchemaProperties {
-		task ("When setting the Filters to 'externalReferenceCode eq 'abc''") {
-			APIBuilderUI.addAndPublishEndpointConfiguration(
-				editValue = "externalReferenceCode eq 'abc'",
-				entity = "Endpoints",
-				fieldName = "filter",
-				name = "testendpoint",
-				title = "My-app");
-		}
-
-		task ("Then endpoint returns student 'abc'") {
-			APIApplicationEndpoint.assertCorrectItemInResponse(
-				baseURL = "my-app",
-				expectedValue = "abc",
-				jsonObject = "student_name",
-				path = "/testendpoint");
-		}
-	}
-
-	@priority = 4
-	test PrefilteringWorksWithSchemaPropertiesMadeOfObjectFieldsRelatedWithOneToManyRelationship {
-		task ("When setting the Filters to 'contains(studentSubjects/name,'abc')'") {
-			APIBuilderUI.addAndPublishEndpointConfiguration(
-				editValue = "contains(studentSubjects/name,'abc')",
-				entity = "Endpoints",
-				fieldName = "filter",
-				name = "testendpoint",
-				title = "My-app");
-		}
-
-		task ("Then students 'abc', 'zzzz' are listed in the endpoint response") {
-			APIApplicationEndpoint.assertCorrectItemInResponse(
-				baseURL = "my-app",
-				expectedValue = "abc,zzzz",
-				jsonObject = "student_name",
-				path = "/testendpoint");
-		}
-	}
-
 }

@@ -265,11 +265,13 @@ public class PortalRequestProcessor {
 		for (Map.Entry<String, String[]> entry : parameterMap.entrySet()) {
 			String key = entry.getKey();
 
-			if (key.startsWith(namespace)) {
-				key = key.substring(namespace.length());
-
-				portletURL.setParameter(key, entry.getValue());
+			if (!key.startsWith(namespace)) {
+				continue;
 			}
+
+			key = key.substring(namespace.length());
+
+			portletURL.setParameter(key, entry.getValue());
 		}
 
 		String portletFriendlyURL = friendlyURLMapper.buildPath(portletURL);
@@ -689,12 +691,17 @@ public class PortalRequestProcessor {
 			return _PATH_PORTAL_LOGIN;
 		}
 
-		// Authenticated users must have access to at least one layout
-
 		if (SessionErrors.contains(
 				httpSession, LayoutPermissionException.class.getName())) {
 
-			return _PATH_PORTAL_ERROR;
+			ActionMapping actionMapping = _moduleConfig.getActionMapping(path);
+
+			if ((actionMapping == null) || actionMapping.isLayoutRequired()) {
+				return _PATH_PORTAL_ERROR;
+			}
+
+			SessionErrors.remove(
+				httpServletRequest, LayoutPermissionException.class.getName());
 		}
 
 		return path;

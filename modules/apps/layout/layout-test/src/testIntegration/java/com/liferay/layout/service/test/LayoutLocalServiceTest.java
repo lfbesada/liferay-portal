@@ -77,6 +77,7 @@ import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.sites.kernel.util.Sites;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -499,6 +500,58 @@ public class LayoutLocalServiceTest {
 			layout2,
 			_layoutLocalService.getFriendlyURLLayout(
 				_group.getGroupId(), true, friendlyURL1));
+	}
+
+	@Test
+	@TestInfo("LPD-111077")
+	public void testFetchDraftLayout() throws Exception {
+		Layout layout = LayoutTestUtil.addTypeContentPublishedLayout(
+			_group, RandomTestUtil.randomString(),
+			WorkflowConstants.STATUS_APPROVED);
+
+		Layout mainDraftLayout = _layoutLocalService.fetchDraftLayout(
+			layout.getPlid());
+
+		Assert.assertNotNull(mainDraftLayout);
+		Assert.assertEquals(0, mainDraftLayout.getLaunchSetId());
+
+		Assert.assertEquals(
+			mainDraftLayout,
+			_layoutLocalService.fetchDraftLayout(layout.getPlid(), 0));
+
+		long launchSetId = RandomTestUtil.randomLong();
+
+		Assert.assertNull(
+			_layoutLocalService.fetchDraftLayout(
+				layout.getPlid(), launchSetId));
+
+		long[] classPKs = _layoutLocalService.getClassPKsByLaunchSetId(
+			layout.getGroupId(), launchSetId);
+
+		Assert.assertEquals(Arrays.toString(classPKs), 0, classPKs.length);
+
+		Layout launchDraftLayout = _addLaunchDraftLayout(launchSetId, layout);
+
+		Assert.assertEquals(
+			launchDraftLayout,
+			_layoutLocalService.fetchDraftLayout(
+				layout.getPlid(), launchSetId));
+
+		classPKs = _layoutLocalService.getClassPKsByLaunchSetId(
+			layout.getGroupId(), launchSetId);
+
+		Assert.assertEquals(layout.getPlid(), classPKs[0]);
+		Assert.assertEquals(Arrays.toString(classPKs), 1, classPKs.length);
+
+		Assert.assertEquals(
+			mainDraftLayout,
+			_layoutLocalService.fetchDraftLayout(layout.getPlid()));
+		Assert.assertEquals(
+			mainDraftLayout,
+			_layoutLocalService.fetchDraftLayout(layout.getPlid(), 0));
+		Assert.assertNull(
+			_layoutLocalService.fetchDraftLayout(
+				layout.getPlid(), RandomTestUtil.randomLong()));
 	}
 
 	@Test
@@ -1251,6 +1304,26 @@ public class LayoutLocalServiceTest {
 				RandomTestUtil.randomString(), TestPropsValues.getUserId(),
 				_group.getGroupId(), false, _serviceContext);
 		}
+	}
+
+	private Layout _addLaunchDraftLayout(long launchSetId, Layout layout)
+		throws Exception {
+
+		Layout launchDraftLayout = _layoutLocalService.addLayout(
+			StringBundler.concat(
+				layout.getExternalReferenceCode(), "-launch-", launchSetId),
+			TestPropsValues.getUserId(), layout.getGroupId(),
+			layout.isPrivateLayout(), layout.getParentLayoutId(),
+			_portal.getClassNameId(Layout.class), layout.getPlid(),
+			layout.getNameMap(), layout.getTitleMap(),
+			layout.getDescriptionMap(), layout.getKeywordsMap(),
+			layout.getRobotsMap(), layout.getType(), layout.getTypeSettings(),
+			true, true, Collections.emptyMap(),
+			layout.getMasterLayoutPageTemplateEntryERC(), _serviceContext);
+
+		launchDraftLayout.setLaunchSetId(launchSetId);
+
+		return _layoutLocalService.updateLayout(launchDraftLayout);
 	}
 
 	private void _assertExternalReferenceCodes(

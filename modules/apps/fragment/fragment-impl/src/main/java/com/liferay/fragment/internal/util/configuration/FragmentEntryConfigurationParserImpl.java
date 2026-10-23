@@ -119,44 +119,40 @@ public class FragmentEntryConfigurationParserImpl
 			JSONObject editableValuesJSONObject, Locale locale)
 		throws JSONException {
 
-		JSONObject configurationDefaultValuesJSONObject =
-			getConfigurationDefaultValuesJSONObject(configurationJSONObject);
-
-		if (configurationDefaultValuesJSONObject == null) {
-			return _jsonFactory.createJSONObject();
-		}
+		List<FragmentConfigurationField> fragmentConfigurationFields =
+			getFragmentConfigurationFields(configurationJSONObject);
 
 		JSONObject configurationValuesJSONObject =
 			editableValuesJSONObject.getJSONObject(
 				FragmentEntryProcessorConstants.
 					KEY_FREEMARKER_FRAGMENT_ENTRY_PROCESSOR);
 
-		if (configurationValuesJSONObject == null) {
-			return configurationDefaultValuesJSONObject;
-		}
-
-		List<FragmentConfigurationField> fragmentConfigurationFields =
-			getFragmentConfigurationFields(configurationJSONObject);
+		JSONObject jsonObject = _jsonFactory.createJSONObject();
 
 		for (FragmentConfigurationField fragmentConfigurationField :
 				fragmentConfigurationFields) {
 
 			String name = fragmentConfigurationField.getName();
 
-			Object object = configurationValuesJSONObject.get(name);
+			if ((configurationValuesJSONObject == null) ||
+				(configurationValuesJSONObject.get(name) == null)) {
 
-			if (object == null) {
-				continue;
+				jsonObject.put(
+					name,
+					_getFieldValue(
+						fragmentConfigurationField,
+						LocaleUtil.getMostRelevantLocale(), null));
 			}
-
-			configurationDefaultValuesJSONObject.put(
-				name,
-				_getFieldValue(
-					fragmentConfigurationField, locale,
-					configurationValuesJSONObject.getString(name)));
+			else {
+				jsonObject.put(
+					name,
+					_getFieldValue(
+						fragmentConfigurationField, locale,
+						configurationValuesJSONObject.getString(name)));
+			}
 		}
 
-		return configurationDefaultValuesJSONObject;
+		return jsonObject;
 	}
 
 	@Override
@@ -222,18 +218,21 @@ public class FragmentEntryConfigurationParserImpl
 				}
 			}
 
-			if (StringUtil.equalsIgnoreCase(
+			if (!StringUtil.equalsIgnoreCase(
 					fragmentConfigurationField.getType(),
 					"navigationMenuSelector")) {
 
-				Object contextObject = _getNavItemsContextObject(
-					configurationValuesJSONObject.getString(name));
-
-				if (contextObject != null) {
-					contextObjects.put(
-						name + _CONTEXT_OBJECT_SUFFIX, contextObject);
-				}
+				continue;
 			}
+
+			Object contextObject = _getNavItemsContextObject(
+				configurationValuesJSONObject.getString(name));
+
+			if (contextObject == null) {
+				continue;
+			}
+
+			contextObjects.put(name + _CONTEXT_OBJECT_SUFFIX, contextObject);
 		}
 
 		return contextObjects;

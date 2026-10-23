@@ -8,10 +8,12 @@ package com.liferay.portal.search.web.internal.search.results.portlet;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.search.Document;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.search.hits.TotalHitsRelation;
 import com.liferay.portal.search.web.internal.result.display.context.SearchResultSummaryDisplayContext;
 import com.liferay.portal.search.web.internal.search.results.configuration.SearchResultsPortletInstanceConfiguration;
 import com.liferay.portal.search.web.internal.util.DisplayContextHelperUtil;
@@ -86,6 +88,20 @@ public class SearchResultsPortletDisplayContext implements Serializable {
 		return _totalHits;
 	}
 
+	public boolean isLimitResultCountAccuracy() {
+		if (!isLimitResultCountAccuracyFeatureFlagEnabled()) {
+			return false;
+		}
+
+		return _searchResultsPortletInstanceConfiguration.
+			limitResultCountAccuracy();
+	}
+
+	public boolean isLimitResultCountAccuracyFeatureFlagEnabled() {
+		return FeatureFlagManagerUtil.isEnabled(
+			_themeDisplay.getCompanyId(), "LPD-98858");
+	}
+
 	public boolean isRenderNothing() {
 		return _renderNothing;
 	}
@@ -96,6 +112,14 @@ public class SearchResultsPortletDisplayContext implements Serializable {
 
 	public boolean isShowPagination() {
 		return _showPagination;
+	}
+
+	public boolean isTotalHitsExact() {
+		if (_totalHitsRelation == TotalHitsRelation.EQ) {
+			return true;
+		}
+
+		return false;
 	}
 
 	public void setDocuments(List<Document> documents) {
@@ -140,6 +164,10 @@ public class SearchResultsPortletDisplayContext implements Serializable {
 		_totalHits = totalHits;
 	}
 
+	public void setTotalHitsRelation(TotalHitsRelation totalHitsRelation) {
+		_totalHitsRelation = totalHitsRelation;
+	}
+
 	public List<SearchResultSummaryDisplayContext>
 		translateSearchResultSummaryDisplayContexts(List<Document> documents) {
 
@@ -162,5 +190,6 @@ public class SearchResultsPortletDisplayContext implements Serializable {
 	private boolean _showPagination;
 	private final ThemeDisplay _themeDisplay;
 	private int _totalHits;
+	private TotalHitsRelation _totalHitsRelation;
 
 }

@@ -11,20 +11,27 @@
 		width: 120px;
 	}
 
-	.form-body {
-		flex: 1;
-		min-height: 0;
-		position: relative;
+	.segment-details-row {
+		align-items: center;
+		display: flex;
+		flex-wrap: wrap;
+		gap: 0.5rem 1rem;
 	}
-}
 
-@media (max-width: $maxPageWidth + $sidebarOpenWidth) {
-	body.open .segments-root {
-		.contributor-builder-root.editing
-			.criteria-builder-section-main
-			.contributor-container
-			.container-fluid {
-			padding-left: $criteriaSidebarWidth;
+	.segment-details-label {
+		align-items: center;
+		display: flex;
+		max-width: 100%;
+		min-width: min(10rem, 100%);
+
+		.lexicon-icon {
+			flex-shrink: 0;
 		}
+	}
+
+	.segment-details-value {
+		flex: 1 1 12rem;
+		max-width: 20rem;
+		min-width: 0;
 	}
 }

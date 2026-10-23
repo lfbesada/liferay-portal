@@ -40,6 +40,8 @@ clusterSecretStore:
     enabled: false
     name: ""
     provider: {}
+database:
+    engine: ""
 deploymentContext:
     deploymentName: ""
 gateway:
@@ -273,7 +275,11 @@ operatorApplications:
         repoURL: oci://us-central1-docker.pkg.dev/external-assets-prd/liferay-helm-chart/liferay-dxp-operator
         targetRevision: 0.1.2
         values:
+            clientExtensions:
+                enabled: true
             fullnameOverride: dxp-operator
+            onlineActivationWorkflow:
+                enabled: true
     eckOperator:
         chart: eck-operator
         enabled: true

@@ -8,6 +8,7 @@ package com.liferay.comment.taglib.internal.struts;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.struts.StrutsAction;
 import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.servlet.NamespaceServletRequest;
 
@@ -23,7 +24,9 @@ import org.osgi.service.component.annotations.Reference;
  * @author Alejandro Tardín
  */
 @Component(
-	property = "path=/portal/comment/discussion/get_editor",
+	property = {
+		"layout.required=false", "path=/portal/comment/discussion/get_editor"
+	},
 	service = StrutsAction.class
 )
 public class GetEditorStrutsAction implements StrutsAction {
@@ -35,6 +38,12 @@ public class GetEditorStrutsAction implements StrutsAction {
 		throws Exception {
 
 		String namespace = ParamUtil.getString(httpServletRequest, "namespace");
+
+		if (!_isNamespace(namespace)) {
+			httpServletResponse.sendError(HttpServletResponse.SC_BAD_REQUEST);
+
+			return null;
+		}
 
 		HttpServletRequest namespacedHttpServletRequest =
 			new NamespaceServletRequest(
@@ -74,6 +83,16 @@ public class GetEditorStrutsAction implements StrutsAction {
 			namespacedHttpServletRequest, httpServletResponse);
 
 		return null;
+	}
+
+	private boolean _isNamespace(String namespace) {
+		if (Validator.isNull(namespace) ||
+			Validator.isVariableName(namespace)) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	@Reference(target = "(osgi.web.symbolicname=com.liferay.comment.taglib)")

@@ -307,24 +307,32 @@ public class JobFactory {
 
 		String key = null;
 
-		if ((jsonObject == null) &&
-			JenkinsResultsParserUtil.isBuildCachingEnabled(
-				jobName, testSuiteName)) {
+		if (jsonObject == null) {
+			key = getKey(
+				buildProfile, jobName, portalGitWorkingDirectory,
+				portalUpstreamBranchName, projectNames, repositoryName,
+				testSuiteName, upstreamBranchName);
 
-			jsonObject = JobCacheUtil.getCachedJobJSONObject(
-				jobName, portalGitWorkingDirectory, testSuiteName);
+			Job job = _jobs.get(key);
+
+			if (job != null) {
+				return job;
+			}
+
+			if (JenkinsResultsParserUtil.isBuildCachingEnabled(
+					jobName, testSuiteName)) {
+
+				jsonObject = JobCacheUtil.getCachedJobJSONObject(
+					jobName, portalGitWorkingDirectory, testSuiteName);
+			}
 		}
 
 		if (jsonObject != null) {
 			jobName = jsonObject.getString("job_name");
 
-			key = getKey(jsonObject);
-		}
-		else {
-			key = getKey(
-				buildProfile, jobName, portalGitWorkingDirectory,
-				portalUpstreamBranchName, projectNames, repositoryName,
-				testSuiteName, upstreamBranchName);
+			if (key == null) {
+				key = getKey(jsonObject);
+			}
 		}
 
 		if (jsonObject == null) {

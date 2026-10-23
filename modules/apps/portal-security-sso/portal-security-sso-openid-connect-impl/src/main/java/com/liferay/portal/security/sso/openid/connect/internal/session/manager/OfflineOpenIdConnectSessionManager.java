@@ -103,29 +103,23 @@ public class OfflineOpenIdConnectSessionManager {
 			return true;
 		}
 
-		Date accessTokenExpirationDate =
-			openIdConnectSession.getAccessTokenExpirationDate();
+		if (!_isAccessTokenExpiringSoon(openIdConnectSession)) {
+			return false;
+		}
 
-		long currentTime = System.currentTimeMillis();
+		Message message = new Message();
 
-		if (currentTime >
-				(accessTokenExpirationDate.getTime() -
-					_tokenRefreshOffsetMillis)) {
+		message.put("openIdConnectSessionId", openIdConnectSessionId);
 
-			Message message = new Message();
+		if (!_clusterMasterExecutor.isEnabled() ||
+			_clusterMasterExecutor.isMaster()) {
 
-			message.put("openIdConnectSessionId", openIdConnectSessionId);
-
-			if (!_clusterMasterExecutor.isEnabled() ||
-				_clusterMasterExecutor.isMaster()) {
-
-				_messageBus.sendMessage(
-					OpenIdConnectDestinationNames.OPENID_CONNECT_TOKEN_REFRESH,
-					message);
-			}
-			else {
-				_executeOnMaster(message);
-			}
+			_messageBus.sendMessage(
+				OpenIdConnectDestinationNames.OPENID_CONNECT_TOKEN_REFRESH,
+				message);
+		}
+		else {
+			_executeOnMaster(message);
 		}
 
 		return false;
@@ -267,11 +261,36 @@ public class OfflineOpenIdConnectSessionManager {
 				_log.debug(exception);
 			}
 
-			_openIdConnectSessionLocalService.deleteOpenIdConnectSession(
-				openIdConnectSession);
+			OpenIdConnectSession currentOpenIdConnectSession =
+				_openIdConnectSessionLocalService.fetchOpenIdConnectSession(
+					openIdConnectSession.getOpenIdConnectSessionId());
+
+			if ((currentOpenIdConnectSession != null) &&
+				(currentOpenIdConnectSession.getMvccVersion() ==
+					openIdConnectSession.getMvccVersion())) {
+
+				_openIdConnectSessionLocalService.deleteOpenIdConnectSession(
+					currentOpenIdConnectSession);
+			}
 		}
 
 		return null;
+	}
+
+	private boolean _isAccessTokenExpiringSoon(
+		OpenIdConnectSession openIdConnectSession) {
+
+		Date accessTokenExpirationDate =
+			openIdConnectSession.getAccessTokenExpirationDate();
+
+		if (System.currentTimeMillis() >
+				(accessTokenExpirationDate.getTime() -
+					_tokenRefreshOffsetMillis)) {
+
+			return true;
+		}
+
+		return false;
 	}
 
 	private void _registerServices(BundleContext bundleContext) {
@@ -455,6 +474,12 @@ public class OfflineOpenIdConnectSessionManager {
 		implements SchedulerJobConfiguration {
 
 		@Override
+		public String getDestinationName() {
+			return OpenIdConnectDestinationNames.
+				OPENID_CONNECT_TOKEN_REFRESH_BATCH;
+		}
+
+		@Override
 		public UnsafeRunnable<Exception> getJobExecutorUnsafeRunnable() {
 			return () -> {
 				List<OpenIdConnectSession> openIdConnectSessions =
@@ -468,7 +493,20 @@ public class OfflineOpenIdConnectSessionManager {
 				for (OpenIdConnectSession openIdConnectSession :
 						openIdConnectSessions) {
 
-					_extendOpenIdConnectSession(openIdConnectSession);
+					OpenIdConnectSession currentOpenIdConnectSession =
+						_openIdConnectSessionLocalService.
+							fetchOpenIdConnectSession(
+								openIdConnectSession.
+									getOpenIdConnectSessionId());
+
+					if ((currentOpenIdConnectSession == null) ||
+						!_isAccessTokenExpiringSoon(
+							currentOpenIdConnectSession)) {
+
+						continue;
+					}
+
+					_extendOpenIdConnectSession(currentOpenIdConnectSession);
 				}
 			};
 		}

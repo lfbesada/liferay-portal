@@ -5,14 +5,18 @@
 
 package com.liferay.portlet.documentlibrary.service.impl;
 
+import com.liferay.document.library.kernel.model.DLFileEntryType;
 import com.liferay.document.library.kernel.model.DLFolder;
+import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.model.DLFolderTable;
+import com.liferay.document.library.kernel.service.DLFileEntryTypeLocalService;
 import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
 import com.liferay.portal.kernel.bean.BeanReference;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.lock.Lock;
 import com.liferay.portal.kernel.lock.LockManagerUtil;
+import com.liferay.portal.kernel.lock.NoSuchLockException;
 import com.liferay.portal.kernel.security.auth.PrincipalException;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.InlineSQLHelperUtil;
@@ -22,6 +26,8 @@ import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermi
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionUtil;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.OrderByComparator;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portlet.documentlibrary.DLGroupServiceSettings;
@@ -32,6 +38,7 @@ import com.liferay.ratings.kernel.model.RatingsEntryTable;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 
 /**
  * @author Brian Wing Shun Chan
@@ -646,11 +653,13 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 
 			folderIds.add(dlFolder.getFolderId());
 
-			if (recurse) {
-				getSubfolderIds(
-					folderIds, dlFolder.getGroupId(), dlFolder.getFolderId(),
-					recurse);
+			if (!recurse) {
+				continue;
 			}
+
+			getSubfolderIds(
+				folderIds, dlFolder.getGroupId(), dlFolder.getFolderId(),
+				recurse);
 		}
 	}
 
@@ -725,8 +734,7 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 
 		ModelResourcePermissionUtil.check(
 			dlFolderModelResourcePermission, permissionChecker,
-			serviceContext.getScopeGroupId(), parentFolderId,
-			ActionKeys.ADD_FOLDER);
+			dlFolder.getGroupId(), parentFolderId, ActionKeys.ADD_FOLDER);
 
 		return dlFolderLocalService.moveFolder(
 			getUserId(), folderId, parentFolderId, serviceContext);
@@ -736,6 +744,30 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 	public Lock refreshFolderLock(
 			String lockUuid, long companyId, long expirationTime)
 		throws PortalException {
+
+		Lock lock = LockManagerUtil.getLockByUuidAndCompanyId(
+			lockUuid, companyId);
+
+		if (!Objects.equals(lock.getClassName(), DLFolder.class.getName())) {
+			throw new NoSuchLockException(
+				"No folder lock exists with UUID " + lockUuid);
+		}
+
+		ModelResourcePermission<DLFolder> dlFolderModelResourcePermission =
+			ModelResourcePermissionRegistryUtil.getModelResourcePermission(
+				DLFolder.class.getName());
+
+		DLFolder dlFolder = dlFolderPersistence.findByPrimaryKey(
+			GetterUtil.getLong(lock.getKey()));
+
+		dlFolderModelResourcePermission.check(
+			getPermissionChecker(), dlFolder, ActionKeys.UPDATE);
+
+		if ((expirationTime <= 0) ||
+			(expirationTime > DLFolderImpl.LOCK_EXPIRATION_TIME)) {
+
+			expirationTime = DLFolderImpl.LOCK_EXPIRATION_TIME;
+		}
 
 		return LockManagerUtil.refresh(lockUuid, companyId, expirationTime);
 	}
@@ -780,14 +812,48 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 				<DLFolder>getModelResourcePermission(DLFolder.class.getName());
 		PermissionChecker permissionChecker = getPermissionChecker();
 
-		if (ModelResourcePermissionUtil.contains(
-				modelResourcePermission, permissionChecker,
-				serviceContext.getScopeGroupId(), folderId,
-				ActionKeys.ADVANCED_UPDATE) ||
+		boolean hasAdvancedUpdatePermission =
 			ModelResourcePermissionUtil.contains(
 				modelResourcePermission, permissionChecker,
 				serviceContext.getScopeGroupId(), folderId,
-				ActionKeys.UPDATE)) {
+				ActionKeys.ADVANCED_UPDATE);
+		boolean hasUpdatePermission = ModelResourcePermissionUtil.contains(
+			modelResourcePermission, permissionChecker,
+			serviceContext.getScopeGroupId(), folderId, ActionKeys.UPDATE);
+
+		if (hasAdvancedUpdatePermission || hasUpdatePermission) {
+			if (folderId != DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
+				DLFolder dlFolder = dlFolderPersistence.findByPrimaryKey(
+					folderId);
+
+				if (!hasAdvancedUpdatePermission) {
+					defaultFileEntryTypeId =
+						dlFolder.getDefaultFileEntryTypeId();
+
+					fileEntryTypeIds = ListUtil.toList(
+						_dlFileEntryTypeLocalService.getFolderFileEntryTypes(
+							new long[] {dlFolder.getGroupId()}, folderId, true),
+						DLFileEntryType.FILE_ENTRY_TYPE_ID_ACCESSOR);
+
+					restrictionType = dlFolder.getRestrictionType();
+
+					serviceContext.setAttribute(
+						"updateWorkflowDefinitionLinks", Boolean.FALSE);
+				}
+
+				if (!hasUpdatePermission) {
+					description = dlFolder.getDescription();
+					name = dlFolder.getName();
+					parentFolderId = dlFolder.getParentFolderId();
+				}
+
+				if (parentFolderId != dlFolder.getParentFolderId()) {
+					ModelResourcePermissionUtil.check(
+						modelResourcePermission, permissionChecker,
+						dlFolder.getGroupId(), parentFolderId,
+						ActionKeys.ADD_FOLDER);
+				}
+			}
 
 			serviceContext.setUserId(getUserId());
 
@@ -809,30 +875,17 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 			int restrictionType, ServiceContext serviceContext)
 		throws PortalException {
 
-		ModelResourcePermission<DLFolder> modelResourcePermission =
-			ModelResourcePermissionRegistryUtil.
-				<DLFolder>getModelResourcePermission(DLFolder.class.getName());
-		PermissionChecker permissionChecker = getPermissionChecker();
+		long parentFolderId = DLFolderConstants.DEFAULT_PARENT_FOLDER_ID;
 
-		if (ModelResourcePermissionUtil.contains(
-				modelResourcePermission, permissionChecker,
-				serviceContext.getScopeGroupId(), folderId,
-				ActionKeys.ADVANCED_UPDATE) ||
-			ModelResourcePermissionUtil.contains(
-				modelResourcePermission, permissionChecker,
-				serviceContext.getScopeGroupId(), folderId,
-				ActionKeys.UPDATE)) {
+		if (folderId != DLFolderConstants.DEFAULT_PARENT_FOLDER_ID) {
+			DLFolder dlFolder = dlFolderPersistence.findByPrimaryKey(folderId);
 
-			serviceContext.setUserId(getUserId());
-
-			return dlFolderLocalService.updateFolder(
-				folderId, name, description, defaultFileEntryTypeId,
-				fileEntryTypeIds, restrictionType, serviceContext);
+			parentFolderId = dlFolder.getParentFolderId();
 		}
 
-		throw new PrincipalException.MustHavePermission(
-			permissionChecker, DLFolder.class.getName(), folderId,
-			ActionKeys.ADVANCED_UPDATE, ActionKeys.UPDATE);
+		return updateFolder(
+			folderId, parentFolderId, name, description, defaultFileEntryTypeId,
+			fileEntryTypeIds, restrictionType, serviceContext);
 	}
 
 	@Override
@@ -844,5 +897,8 @@ public class DLFolderServiceImpl extends DLFolderServiceBaseImpl {
 
 	@BeanReference(type = ClassNameLocalService.class)
 	private ClassNameLocalService _classNameLocalService;
+
+	@BeanReference(type = DLFileEntryTypeLocalService.class)
+	private DLFileEntryTypeLocalService _dlFileEntryTypeLocalService;
 
 }

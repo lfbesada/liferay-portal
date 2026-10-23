@@ -13,6 +13,7 @@ import React from 'react';
 import DataSelection from '../../components/DataSelection';
 import Footer from '../../components/Footer';
 import {PageTreeModalConfiguration} from '../../components/PageTreeModal';
+import ScopeSection from '../../components/ScopeSection';
 import Setup from '../../components/Setup';
 import {DateFilterValues, Range} from '../../components/date_filter';
 import {ContentSelection} from '../../components/forms/content_selector/ContentSelector';
@@ -136,9 +137,23 @@ export function NewExport({
 							)}
 							title={sub(
 								Liferay.Language.get('x-details'),
-								Liferay.Language.get('export')
+								Liferay.Language.get('export[noun]')
 							)}
 						/>
+
+						{siteSelectionEnabled && exportPreviewSitesAPIURL && (
+							<ScopeSection
+								subtitle={Liferay.Language.get(
+									'export-complete-sites,-including-all-their-pages,-content,-and-settings'
+								)}
+							>
+								<SiteSelection
+									exportPreviewSitesAPIURL={
+										exportPreviewSitesAPIURL
+									}
+								/>
+							</ScopeSection>
+						)}
 
 						<DataSelection
 							commentsAndRatingsEnabled={
@@ -176,16 +191,6 @@ export function NewExport({
 								previewPortletDataHandlerSections,
 								contentSelection
 							)}
-							sitesSelection={
-								siteSelectionEnabled &&
-								exportPreviewSitesAPIURL && (
-									<SiteSelection
-										exportPreviewSitesAPIURL={
-											exportPreviewSitesAPIURL
-										}
-									/>
-								)
-							}
 							subtitle={Liferay.Language.get(
 								'select-and-filter-the-data-you-want-to-include-in-your-export'
 							)}

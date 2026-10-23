@@ -7,14 +7,7 @@
 
 <%@ include file="/revamp/init.jsp" %>
 
-<liferay-staging:defineObjects />
-
 <%
-if (liveGroup == null) {
-	liveGroup = group;
-	liveGroupId = groupId;
-}
-
 ExportImportProcessDisplayContext exportImportProcessDisplayContext = (ExportImportProcessDisplayContext)request.getAttribute(ExportImportWebKeys.EXPORT_IMPORT_PROCESS_DISPLAY_CONTEXT);
 
 portletDisplay.setShowBackIcon(true);
@@ -25,6 +18,7 @@ renderResponse.setTitle(exportImportProcessDisplayContext.getExportTitle());
 
 <clay:container-fluid
 	cssClass="container-form-lg"
+	size="lg"
 >
 	<div class="sheet">
 		<span aria-hidden="true" class="loading-animation mb-9 mt-8"></span>
@@ -36,18 +30,15 @@ renderResponse.setTitle(exportImportProcessDisplayContext.getExportTitle());
 				module="{NewStaticSiteExport} from exportimport-web"
 				props='<%=
 					HashMapBuilder.<String, Object>put(
+						"availableLanguages", exportImportProcessDisplayContext.getAvailableLanguagesJSONArray()
+					).put(
 						"backURL", exportImportProcessDisplayContext.getBackURL()
+					).put(
+						"defaultLanguageId", exportImportProcessDisplayContext.getDefaultLanguageId()
 					).put(
 						"exportProcessAPIURL", exportImportProcessDisplayContext.getExportProcessAPIURL()
 					).put(
-						"pageTreeModalConfiguration",
-						HashMapBuilder.<String, Object>put(
-							"groupId", liveGroupId
-						).put(
-							"pageSize", PropsValues.LAYOUT_MANAGE_PAGES_INITIAL_CHILDREN
-						).put(
-							"privateLayoutsAvailable", false
-						).build()
+						"pageTreeModalConfiguration", exportImportProcessDisplayContext.getPageTreeModalConfiguration()
 					).build()
 				%>'
 			/>
@@ -71,14 +62,7 @@ renderResponse.setTitle(exportImportProcessDisplayContext.getExportTitle());
 					).put(
 						"lookAndFeelEnabled", exportImportProcessDisplayContext.isLookAndFeelEnabled()
 					).put(
-						"pageTreeModalConfiguration",
-						HashMapBuilder.<String, Object>put(
-							"groupId", liveGroupId
-						).put(
-							"pageSize", PropsValues.LAYOUT_MANAGE_PAGES_INITIAL_CHILDREN
-						).put(
-							"privateLayoutsAvailable", liveGroup.isPrivateLayoutsEnabled() && liveGroup.hasPrivateLayouts()
-						).build()
+						"pageTreeModalConfiguration", exportImportProcessDisplayContext.getPageTreeModalConfiguration()
 					).put(
 						"siteSelectionEnabled", exportImportProcessDisplayContext.isSiteSelectionEnabled()
 					).put(

@@ -894,8 +894,10 @@ public class MainServlet extends HttpServlet {
 				}
 
 				ActionMapping actionMapping = new ActionMapping(
-					moduleConfig, actionElement.attributeValue("forward"),
-					actionElement.attributeValue("path"), action);
+					action, actionElement.attributeValue("forward"),
+					GetterUtil.getBoolean(
+						actionElement.attributeValue("layout-required"), true),
+					moduleConfig, actionElement.attributeValue("path"));
 
 				for (Element forwardElement :
 						actionElement.elements("forward")) {
@@ -966,9 +968,11 @@ public class MainServlet extends HttpServlet {
 
 			portletBagFactory.create(portlet);
 
-			if (i == 0) {
-				_initPortletApp(portlet, servletContext);
+			if (i != 0) {
+				continue;
 			}
+
+			_initPortletApp(portlet, servletContext);
 		}
 
 		servletContext.setAttribute(WebKeys.PLUGIN_PORTLETS, portlets);

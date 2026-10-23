@@ -21,6 +21,9 @@ import com.liferay.asset.kernel.service.AssetTagGroupRelLocalService;
 import com.liferay.asset.kernel.service.AssetVocabularyGroupRelLocalService;
 import com.liferay.asset.link.constants.AssetLinkConstants;
 import com.liferay.asset.link.service.AssetLinkLocalService;
+import com.liferay.depot.constants.DepotConstants;
+import com.liferay.depot.model.DepotEntry;
+import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.depot.util.DepotRoleUtil;
 import com.liferay.document.library.kernel.model.DLFileEntry;
 import com.liferay.document.library.kernel.model.DLFolder;
@@ -188,10 +191,12 @@ import com.liferay.portal.kernel.dao.orm.Session;
 import com.liferay.portal.kernel.encryptor.Encryptor;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.exception.SystemException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.launch.LaunchPreviewThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.BaseModel;
@@ -809,10 +814,10 @@ public class ObjectEntryLocalServiceImpl
 				objectEntry.getObjectDefinitionId());
 
 		_removeInvalidAssetCategories(
-			groupId, objectDefinition.getClassName(), objectEntryId,
+			objectDefinition.getClassName(), groupId, objectEntryId,
 			serviceContext);
 		_removeInvalidAssetTags(
-			groupId, objectDefinition.getClassName(), objectEntryId,
+			objectDefinition.getClassName(), groupId, objectEntryId,
 			serviceContext);
 
 		List<ObjectField> objectFields =
@@ -820,11 +825,13 @@ public class ObjectEntryLocalServiceImpl
 				objectDefinition.getObjectDefinitionId());
 
 		for (ObjectField objectField : objectFields) {
-			if (ObjectFieldUtil.isReadOnly(
+			if (!ObjectFieldUtil.isReadOnly(
 					_ddmExpressionFactory, objectEntry, objectField, userId)) {
 
-				values.remove(objectField.getName());
+				continue;
 			}
+
+			values.remove(objectField.getName());
 		}
 
 		if (objectDefinition.isEnableObjectEntryDraft()) {
@@ -1805,6 +1812,23 @@ public class ObjectEntryLocalServiceImpl
 			(BaseModel<?>)systemObjectDefinitionManager.getPersistedModel(
 				primaryKey);
 
+		Map<String, Function<Object, Object>> functions =
+			(Map<String, Function<Object, Object>>)
+				(Map<String, ?>)baseModel.getAttributeGetterFunctions();
+
+		Function<Object, Object> function = functions.get(
+			titleObjectField.getDBColumnName());
+
+		if ((function != null) && !titleObjectField.isLocalized()) {
+			Object titleFieldValue = function.apply(baseModel);
+
+			if (titleFieldValue == null) {
+				return null;
+			}
+
+			return String.valueOf(titleFieldValue);
+		}
+
 		Map<String, Object> modelAttributes = baseModel.getModelAttributes();
 
 		Object titleFieldValue = modelAttributes.get(
@@ -2093,10 +2117,10 @@ public class ObjectEntryLocalServiceImpl
 				objectEntry.getObjectDefinitionId());
 
 		_removeInvalidAssetCategories(
-			objectEntryFolder.getGroupId(), objectDefinition.getClassName(),
+			objectDefinition.getClassName(), objectEntryFolder.getGroupId(),
 			objectEntryId, serviceContext);
 		_removeInvalidAssetTags(
-			objectEntryFolder.getGroupId(), objectDefinition.getClassName(),
+			objectDefinition.getClassName(), objectEntryFolder.getGroupId(),
 			objectEntryId, serviceContext);
 
 		return _updateObjectEntry(
@@ -3096,9 +3120,11 @@ public class ObjectEntryLocalServiceImpl
 				long primaryKey = GetterUtil.getLong(
 					values.get(objectField.getName()));
 
-				if (primaryKey != 0) {
-					primaryKeys.add(primaryKey);
+				if (primaryKey == 0) {
+					continue;
 				}
+
+				primaryKeys.add(primaryKey);
 			}
 
 			if (primaryKeys.isEmpty()) {
@@ -3142,11 +3168,13 @@ public class ObjectEntryLocalServiceImpl
 					String externalReferenceCode = externalReferenceCodes.get(
 						GetterUtil.getLong(values.get(objectField.getName())));
 
-					if (externalReferenceCode != null) {
-						values.put(
-							objectRelationshipERCObjectFieldName,
-							externalReferenceCode);
+					if (externalReferenceCode == null) {
+						continue;
 					}
+
+					values.put(
+						objectRelationshipERCObjectFieldName,
+						externalReferenceCode);
 				}
 
 				continue;
@@ -3159,10 +3187,12 @@ public class ObjectEntryLocalServiceImpl
 					objectField.getObjectDefinitionId()) {
 
 				for (ObjectEntry objectEntry : objectEntries) {
-					if (primaryKeys.remove(objectEntry.getObjectEntryId())) {
-						relatedObjectEntries.put(
-							objectEntry.getObjectEntryId(), objectEntry);
+					if (!primaryKeys.remove(objectEntry.getObjectEntryId())) {
+						continue;
 					}
+
+					relatedObjectEntries.put(
+						objectEntry.getObjectEntryId(), objectEntry);
 				}
 			}
 
@@ -3243,9 +3273,11 @@ public class ObjectEntryLocalServiceImpl
 
 			comments.put(comment.getExternalReferenceCode(), comment);
 
-			if (!comment.isRoot()) {
-				deleteCommentIds.add(comment.getCommentId());
+			if (comment.isRoot()) {
+				continue;
 			}
+
+			deleteCommentIds.add(comment.getCommentId());
 		}
 
 		User user = _userLocalService.getUser(userId);
@@ -3555,12 +3587,14 @@ public class ObjectEntryLocalServiceImpl
 						objectEntryReviewNotificationContributor :
 							_objectEntryReviewNotificationContributors) {
 
-					if (objectEntryReviewNotificationContributor.isApplicable(
+					if (!objectEntryReviewNotificationContributor.isApplicable(
 							objectEntry)) {
 
-						objectEntryReviewNotificationContributor.contribute(
-							objectEntry, payloadJSONObject);
+						continue;
 					}
+
+					objectEntryReviewNotificationContributor.contribute(
+						objectEntry, payloadJSONObject);
 				}
 
 				ObjectDefinition objectDefinition =
@@ -4602,6 +4636,18 @@ public class ObjectEntryLocalServiceImpl
 		return joinStep.where(predicate);
 	}
 
+	private long[] _getAssetTagIds(int depotEntryType, long groupId) {
+		if (depotEntryType == DepotConstants.TYPE_ANY) {
+			depotEntryType = DepotConstants.TYPE_SPACE;
+		}
+
+		return TransformUtil.transformToLongArray(
+			_assetTagGroupRelLocalService.
+				getAssetTagGroupRelsByGroupIdAndDepotEntryType(
+					groupId, depotEntryType),
+			AssetTagGroupRel::getTagId);
+	}
+
 	private String _getAutoIncrementSortableValue(
 		String prefix, String suffix, String value) {
 
@@ -4712,6 +4758,29 @@ public class ObjectEntryLocalServiceImpl
 
 		throw new ObjectEntryDefaultLanguageIdException(
 			"Language ID " + defaultLanguageId + " is not available");
+	}
+
+	private int _getDepotEntryType(long companyId, long groupId) {
+		if (!FeatureFlagManagerUtil.isEnabled(companyId, "LPD-99403")) {
+			return DepotConstants.TYPE_ANY;
+		}
+
+		DepotEntry depotEntry = _depotEntryLocalService.fetchGroupDepotEntry(
+			groupId);
+
+		if (depotEntry == null) {
+			return DepotConstants.TYPE_ANY;
+		}
+
+		int depotEntryType = depotEntry.getType();
+
+		if ((depotEntryType != DepotConstants.TYPE_PROJECT) &&
+			(depotEntryType != DepotConstants.TYPE_SPACE)) {
+
+			return DepotConstants.TYPE_ANY;
+		}
+
+		return depotEntryType;
 	}
 
 	private Map<String, Object> _getDynamicObjectDefinitionTableValues(
@@ -4939,6 +5008,73 @@ public class ObjectEntryLocalServiceImpl
 		return new SecretKeySpec(
 			Base64.decode(PropsValues.OBJECT_ENCRYPTION_KEY),
 			PropsValues.OBJECT_ENCRYPTION_ALGORITHM);
+	}
+
+	private Predicate _getLaunchAwareHeadPredicate(
+			ObjectDefinition objectDefinition, boolean preferApproved)
+		throws PortalException {
+
+		Predicate headPredicate = _getHeadObjectEntryPredicate(preferApproved);
+
+		long launchSetId = LaunchPreviewThreadLocal.getLaunchSetId();
+
+		if (launchSetId <= 0) {
+			return headPredicate;
+		}
+
+		long[] launchDraftClassPKs = _getLaunchDraftClassPKs(
+			launchSetId, objectDefinition);
+
+		if (ArrayUtil.isEmpty(launchDraftClassPKs)) {
+			return headPredicate;
+		}
+
+		return headPredicate.or(
+			ObjectEntryTable.INSTANCE.objectEntryId.in(
+				ArrayUtil.toArray(launchDraftClassPKs)));
+	}
+
+	private long[] _getLaunchDraftClassPKs(
+			long launchSetId, ObjectDefinition targetObjectDefinition)
+		throws PortalException {
+
+		ObjectDefinition launchEntryObjectDefinition =
+			_objectDefinitionPersistence.fetchByC_N(
+				targetObjectDefinition.getCompanyId(), "LaunchEntry");
+
+		if (launchEntryObjectDefinition == null) {
+			return new long[0];
+		}
+
+		DynamicObjectDefinitionTable launchEntryTable =
+			DynamicObjectDefinitionTableUtil.getDynamicObjectDefinitionTable(
+				false, launchEntryObjectDefinition, _objectFieldLocalService);
+
+		Column<DynamicObjectDefinitionTable, String> classNameColumn =
+			(Column<DynamicObjectDefinitionTable, String>)
+				launchEntryTable.getColumn("className");
+		Column<DynamicObjectDefinitionTable, Long> classPKColumn =
+			(Column<DynamicObjectDefinitionTable, Long>)
+				launchEntryTable.getColumn("classPK");
+		Column<DynamicObjectDefinitionTable, Long> launchSetIdColumn =
+			(Column<DynamicObjectDefinitionTable, Long>)
+				launchEntryTable.getColumn(
+					"r_launchSetToLaunchEntries_c_launchSetId");
+
+		List<Long> classPKs = dslQuery(
+			DSLQueryFactoryUtil.select(
+				classPKColumn
+			).from(
+				launchEntryTable
+			).where(
+				classNameColumn.eq(
+					targetObjectDefinition.getClassName()
+				).and(
+					launchSetIdColumn.eq(launchSetId)
+				)
+			));
+
+		return ArrayUtil.toLongArray(classPKs);
 	}
 
 	private Predicate _getLeftJoinRootObjectDefinitionTablePredicate(
@@ -5263,7 +5399,7 @@ public class ObjectEntryLocalServiceImpl
 				ObjectEntryTable.INSTANCE.status.neq(
 					WorkflowConstants.STATUS_IN_TRASH)
 			).and(
-				_getHeadObjectEntryPredicate(preferApproved)
+				_getLaunchAwareHeadPredicate(objectDefinition, preferApproved)
 			).and(
 				_getPermissionWherePredicate(
 					dynamicObjectDefinitionTable, groupIds)
@@ -6172,6 +6308,15 @@ public class ObjectEntryLocalServiceImpl
 			new ValidationError(objectEntryValuesException.getMessage()));
 	}
 
+	private boolean _hasAssetTagGroupRels(long assetTagId, int depotEntryType) {
+		List<AssetTagGroupRel> assetTagGroupRels =
+			_assetTagGroupRelLocalService.
+				getAssetTagGroupRelsByTagIdAndDepotEntryType(
+					assetTagId, depotEntryType);
+
+		return ListUtil.isNotEmpty(assetTagGroupRels);
+	}
+
 	private boolean _hasFormulaObjectField(List<ObjectField> objectFields) {
 		for (ObjectField objectField : objectFields) {
 			if (objectField.compareBusinessType(
@@ -6725,12 +6870,14 @@ public class ObjectEntryLocalServiceImpl
 					_getValues(objectFieldBag, row, selectExpressions));
 			}
 
-			if (dynamicObjectDefinitionLocalizationTable != null) {
-				localizedRowsMap.putAll(
-					_getLocalizedRowsMap(
-						dynamicObjectDefinitionLocalizationTable,
-						objectFieldBag, primaryKeysBatch));
+			if (dynamicObjectDefinitionLocalizationTable == null) {
+				continue;
 			}
+
+			localizedRowsMap.putAll(
+				_getLocalizedRowsMap(
+					dynamicObjectDefinitionLocalizationTable, objectFieldBag,
+					primaryKeysBatch));
 		}
 
 		for (ObjectEntry objectEntry : objectEntries) {
@@ -7044,7 +7191,7 @@ public class ObjectEntryLocalServiceImpl
 	}
 
 	private void _removeInvalidAssetCategories(
-			long groupId, String className, long objectEntryId,
+			String className, long groupId, long objectEntryId,
 			ServiceContext serviceContext)
 		throws PortalException {
 
@@ -7065,26 +7212,29 @@ public class ObjectEntryLocalServiceImpl
 					AssetVocabularyGroupRel::getVocabularyId),
 				TransformUtil.transformToLongArray(
 					_assetVocabularyGroupRelLocalService.
-						getAssetVocabularyGroupRelsByGroupId(-1),
+						getAssetVocabularyGroupRelsByGroupId(
+							GroupConstants.ANY_PARENT_GROUP_ID),
 					AssetVocabularyGroupRel::getVocabularyId)));
 
 		for (long assetCategoryId : assetEntry.getCategoryIds()) {
 			AssetCategory assetCategory =
 				_assetCategoryLocalService.getAssetCategory(assetCategoryId);
 
-			if (!ArrayUtil.contains(
+			if (ArrayUtil.contains(
 					assetVocabularyIds, assetCategory.getVocabularyId())) {
 
-				assetCategoryIds = ArrayUtil.remove(
-					assetCategoryIds, assetCategory.getCategoryId());
+				continue;
 			}
+
+			assetCategoryIds = ArrayUtil.remove(
+				assetCategoryIds, assetCategory.getCategoryId());
 		}
 
 		serviceContext.setAssetCategoryIds(assetCategoryIds);
 	}
 
 	private void _removeInvalidAssetTags(
-			long groupId, String className, long objectEntryId,
+			String className, long groupId, long objectEntryId,
 			ServiceContext serviceContext)
 		throws PortalException {
 
@@ -7095,24 +7245,26 @@ public class ObjectEntryLocalServiceImpl
 			return;
 		}
 
+		int depotEntryType = _getDepotEntryType(
+			assetEntry.getCompanyId(), groupId);
+
+		long[] assetTagIds = ArrayUtil.unique(
+			ArrayUtil.append(
+				_getAssetTagIds(depotEntryType, groupId),
+				_getAssetTagIds(
+					depotEntryType, GroupConstants.ANY_PARENT_GROUP_ID)));
+
 		String[] assetTagNames = assetEntry.getTagNames();
 
-		long[] tagIds = ArrayUtil.unique(
-			ArrayUtil.append(
-				TransformUtil.transformToLongArray(
-					_assetTagGroupRelLocalService.getAssetTagGroupRelsByGroupId(
-						groupId),
-					AssetTagGroupRel::getTagId),
-				TransformUtil.transformToLongArray(
-					_assetTagGroupRelLocalService.getAssetTagGroupRelsByGroupId(
-						-1),
-					AssetTagGroupRel::getTagId)));
-
 		for (AssetTag assetTag : assetEntry.getTags()) {
-			if (!ArrayUtil.contains(tagIds, assetTag.getTagId())) {
-				assetTagNames = ArrayUtil.remove(
-					assetTagNames, assetTag.getName());
+			if (ArrayUtil.contains(assetTagIds, assetTag.getTagId()) ||
+				((depotEntryType == DepotConstants.TYPE_SPACE) &&
+				 !_hasAssetTagGroupRels(assetTag.getTagId(), depotEntryType))) {
+
+				continue;
 			}
+
+			assetTagNames = ArrayUtil.remove(assetTagNames, assetTag.getName());
 		}
 
 		serviceContext.setAssetTagNames(assetTagNames);
@@ -7449,26 +7601,28 @@ public class ObjectEntryLocalServiceImpl
 		ObjectEntry objectEntry, Map<String, Serializable> values) {
 
 		for (Map.Entry<String, Serializable> entry : values.entrySet()) {
-			if (StringUtil.equals(entry.getKey(), "externalReferenceCode")) {
-				String externalReferenceCode = String.valueOf(entry.getValue());
-
-				if (Validator.isNull(externalReferenceCode)) {
-					externalReferenceCode = objectEntry.getUuid();
-				}
-
-				if (!Objects.equals(
-						externalReferenceCode,
-						objectEntry.getExternalReferenceCode())) {
-
-					_validateExternalReferenceCode(
-						externalReferenceCode, objectEntry.getGroupId(),
-						objectEntry.getCompanyId(),
-						objectEntry.getObjectDefinitionId(),
-						objectEntry.getObjectEntryId());
-				}
-
-				objectEntry.setExternalReferenceCode(externalReferenceCode);
+			if (!StringUtil.equals(entry.getKey(), "externalReferenceCode")) {
+				continue;
 			}
+
+			String externalReferenceCode = String.valueOf(entry.getValue());
+
+			if (Validator.isNull(externalReferenceCode)) {
+				externalReferenceCode = objectEntry.getUuid();
+			}
+
+			if (!Objects.equals(
+					externalReferenceCode,
+					objectEntry.getExternalReferenceCode())) {
+
+				_validateExternalReferenceCode(
+					externalReferenceCode, objectEntry.getGroupId(),
+					objectEntry.getCompanyId(),
+					objectEntry.getObjectDefinitionId(),
+					objectEntry.getObjectEntryId());
+			}
+
+			objectEntry.setExternalReferenceCode(externalReferenceCode);
 		}
 	}
 
@@ -8585,11 +8739,13 @@ public class ObjectEntryLocalServiceImpl
 				_objectStateLocalService.getNextObjectStates(
 					sourceObjectState.getObjectStateId())) {
 
-			if (nextObjectState.getListTypeEntryId() ==
+			if (nextObjectState.getListTypeEntryId() !=
 					targetObjectState.getListTypeEntryId()) {
 
-				invalidObjectStateTransition = false;
+				continue;
 			}
+
+			invalidObjectStateTransition = false;
 		}
 
 		if (invalidObjectStateTransition) {
@@ -9476,6 +9632,9 @@ public class ObjectEntryLocalServiceImpl
 
 	@Reference
 	private DDMExpressionFactory _ddmExpressionFactory;
+
+	@Reference
+	private DepotEntryLocalService _depotEntryLocalService;
 
 	@Reference
 	private DiscussionPermission _discussionPermission;

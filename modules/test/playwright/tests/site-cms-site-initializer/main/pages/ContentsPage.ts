@@ -277,7 +277,9 @@ export class ContentsPage {
 			.getByRole('link')
 			.click();
 
-		await this.page.getByPlaceholder('Search').waitFor({state: 'visible'});
+		await this.page
+			.getByRole('searchbox', {name: 'Search'})
+			.waitFor({state: 'visible'});
 	}
 
 	async openSchedulePublication() {
@@ -375,6 +377,12 @@ export class ContentsPage {
 			'aria-selected',
 			'true'
 		);
+
+		await expect(
+			this.page.locator(
+				'.content-editor__side-panel .sidebar-header .component-title'
+			)
+		).toHaveText([panelName]);
 	}
 
 	async viewShowDetails(title: string) {

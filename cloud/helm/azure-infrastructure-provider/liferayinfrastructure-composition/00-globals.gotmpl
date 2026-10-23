@@ -7,6 +7,16 @@
 {{- fail "Azure has no managed OpenSearch, so search.engine must be elasticsearch" -}}
 {{- end -}}
 
+{{- if not $env.databaseEngine -}}
+{{- fail "Property \"database.engine\" must be set" -}}
+{{- end -}}
+
+{{- $observedDatabaseEngine := coalesce (dig "database-primary-blue" "resource" "metadata" "labels" "databaseEngine" "" $observedResources) (dig "database-primary-green" "resource" "metadata" "labels" "databaseEngine" "" $observedResources) -}}
+
+{{- if and $observedDatabaseEngine (ne $observedDatabaseEngine $env.databaseEngine) -}}
+{{- fail (printf "Unable to change the database engine of the environment from %q to %q. Create a new deployment to use another database engine." $observedDatabaseEngine $env.databaseEngine) -}}
+{{- end -}}
+
 {{- $backup := $xr.spec.backup -}}
 {{- $cmkEnabled := $xr.spec.cmk.enabled -}}
 {{- $environmentId := $xr.spec.environmentId -}}
@@ -23,6 +33,7 @@
 {{- $activeDataPlane := $targetActiveDataPlane -}}
 {{- $backupRetentionDays := max 7 (min 35 (int $backup.retentionDays)) -}}
 {{- $dataPlanes := list $targetActiveDataPlane -}}
+{{- $databaseServerType := get (dict "mysql" "Microsoft.DBforMySQL/flexibleServers" "postgresql" "Microsoft.DBforPostgreSQL/flexibleServers") $env.databaseEngine -}}
 {{- $overlayStorageAccountName := printf "%.9s%.6sovl%s" ($env.deploymentName | replace "-" "" | lower) ($projectId | replace "-" "" | lower) (printf "%s-%s" $env.deploymentName $projectId | sha256sum | trunc 6) -}}
 {{- $projectIdFull := printf "%s-%s" $projectId $environmentId -}}
 {{- $targetInactiveDataPlane := (eq $targetActiveDataPlane "blue") | ternary "green" "blue" -}}

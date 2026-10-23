@@ -6,6 +6,8 @@
 package com.liferay.headless.admin.site.internal.resource.v1_0;
 
 import com.liferay.depot.constants.DepotConstants;
+import com.liferay.depot.model.DepotEntry;
+import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.exportimport.constants.ExportImportConstants;
 import com.liferay.exportimport.vulcan.batch.engine.ExportImportVulcanBatchEngineTaskItemDelegate;
 import com.liferay.headless.admin.site.dto.v1_0.PageTemplateSet;
@@ -74,8 +76,6 @@ public class PageTemplateSetResourceImpl
 			String pageTemplateSetExternalReferenceCode)
 		throws Exception {
 
-		EnabledUtil.checkDesignLibrariesEnabled(contextCompany);
-
 		_layoutPageTemplateCollectionService.deleteLayoutPageTemplateCollection(
 			pageTemplateSetExternalReferenceCode,
 			_getDesignLibraryGroupId(designLibraryExternalReferenceCode));
@@ -99,8 +99,6 @@ public class PageTemplateSetResourceImpl
 			String pageTemplateSetExternalReferenceCode)
 		throws Exception {
 
-		EnabledUtil.checkDesignLibrariesEnabled(contextCompany);
-
 		return _toDesignLibraryPageTemplateSet(
 			designLibraryExternalReferenceCode,
 			_layoutPageTemplateCollectionService.
@@ -115,8 +113,6 @@ public class PageTemplateSetResourceImpl
 			String designLibraryExternalReferenceCode,
 			String pageTemplateSetExternalReferenceCode, String roleNames)
 		throws Exception {
-
-		EnabledUtil.checkDesignLibrariesEnabled(contextCompany);
 
 		long groupId = _getDesignLibraryGroupId(
 			designLibraryExternalReferenceCode);
@@ -139,8 +135,6 @@ public class PageTemplateSetResourceImpl
 			Aggregation aggregation, Filter filter, Pagination pagination,
 			Sort[] sorts)
 		throws Exception {
-
-		EnabledUtil.checkDesignLibrariesEnabled(contextCompany);
 
 		long groupId = _getDesignLibraryGroupId(
 			designLibraryExternalReferenceCode);
@@ -205,6 +199,22 @@ public class PageTemplateSetResourceImpl
 			}
 
 			@Override
+			public boolean isScopeSupported(long companyId, long groupId) {
+				DepotEntry depotEntry =
+					_depotEntryLocalService.fetchGroupDepotEntry(groupId);
+
+				if ((depotEntry != null) &&
+					(depotEntry.getType() ==
+						DepotConstants.TYPE_DESIGN_LIBRARY)) {
+
+					return true;
+				}
+
+				return ExportImportDescriptor.super.isScopeSupported(
+					companyId, groupId);
+			}
+
+			@Override
 			public boolean isStagingSupported() {
 				return true;
 			}
@@ -245,8 +255,6 @@ public class PageTemplateSetResourceImpl
 			String pageTemplateSetExternalReferenceCode,
 			Permission[] permissions)
 		throws Exception {
-
-		EnabledUtil.checkDesignLibrariesEnabled(contextCompany);
 
 		super.putSitePageTemplateSetPermissionsPage(
 			designLibraryExternalReferenceCode,
@@ -459,6 +467,9 @@ public class PageTemplateSetResourceImpl
 
 	private static final EntityModel _entityModel =
 		new PageTemplateSetEntityModel();
+
+	@Reference
+	private DepotEntryLocalService _depotEntryLocalService;
 
 	@Reference
 	private DTOConverterRegistry _dtoConverterRegistry;

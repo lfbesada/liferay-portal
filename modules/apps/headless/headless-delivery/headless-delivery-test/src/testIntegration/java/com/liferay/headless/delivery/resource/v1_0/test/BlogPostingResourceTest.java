@@ -19,6 +19,8 @@ import com.liferay.headless.delivery.client.pagination.Pagination;
 import com.liferay.headless.delivery.client.resource.v1_0.BlogPostingResource;
 import com.liferay.headless.delivery.resource.v1_0.test.util.DisplayPageTestUtil;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
+import com.liferay.portal.kernel.json.JSONFactoryUtil;
+import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -155,6 +157,7 @@ public class BlogPostingResourceTest extends BaseBlogPostingResourceTestCase {
 	public void testPutBlogPosting() throws Exception {
 		super.testPutBlogPosting();
 
+		_testPutBlogPostingBatch();
 		_testPutBlogPostingSuccessTaxonomyCategoryBriefNonexisting();
 		_testPutBlogPostingSuccessTaxonomyCategoryBriefCategorySiteKeyNull();
 		_testPutBlogPostingSuccessTaxonomyCategoryBriefCategorySiteKeyNonnull();
@@ -296,6 +299,36 @@ public class BlogPostingResourceTest extends BaseBlogPostingResourceTestCase {
 
 		return testGetSiteBlogPostingsPage_addBlogPosting(
 			testGroup.getGroupId(), randomBlogPosting);
+	}
+
+	private void _testPutBlogPostingBatch() throws Exception {
+		BlogPosting postBlogPosting = testPutBlogPosting_addBlogPosting();
+
+		BlogPosting randomBlogPosting = randomBlogPosting();
+
+		randomBlogPosting.setId(postBlogPosting.getId());
+
+		waitForFinish(
+			"COMPLETED",
+			JSONFactoryUtil.createJSONObject(
+				blogPostingResource.putBlogPostingBatchHttpResponse(
+					null,
+					JSONUtil.putAll(
+						JSONFactoryUtil.createJSONObject(
+							randomBlogPosting.toString()))
+				).getContent()));
+
+		BlogPosting getBlogPosting = blogPostingResource.getBlogPosting(
+			postBlogPosting.getId());
+
+		Assert.assertEquals(
+			randomBlogPosting.getArticleBody(),
+			getBlogPosting.getArticleBody());
+		Assert.assertEquals(
+			postBlogPosting.getExternalReferenceCode(),
+			getBlogPosting.getExternalReferenceCode());
+		Assert.assertEquals(
+			randomBlogPosting.getHeadline(), getBlogPosting.getHeadline());
 	}
 
 	private void _testPutBlogPostingSuccessTaxonomyCategoryBriefCategoryNamei18n()

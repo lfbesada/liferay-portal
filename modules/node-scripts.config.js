@@ -10,7 +10,7 @@
  */
 
 module.exports = {
-	hash: 'ec71090165593bf951a9d87018e966c8e1536fe46226be6fd1ce8dc68a2ff7f6',
+	hash: '6f1fe54d27472833e7ffed23e089532da55ad56da961c18cc2b0d55455a9702b',
 	imports: {
 		'@liferay/accessibility-menu-web': [],
 		'@liferay/accessibility-settings-state-web': [],
@@ -70,6 +70,7 @@ module.exports = {
 		'@liferay/cookies-sample-web': [],
 		'@liferay/design-library-web': [],
 		'@liferay/dialect-theme': [],
+		'@liferay/digital-sales-room-web': [],
 		'@liferay/digital-signature-web': [],
 		'@liferay/dispatch-web': [],
 		'@liferay/document-library-opener-google-drive-web': [],
@@ -172,6 +173,7 @@ module.exports = {
 			'dagre',
 			'date-fns',
 			'dom-align',
+			'dompurify',
 			'fuzzy',
 			'highlight.js',
 			'highlight.js/lib/core',
@@ -275,7 +277,6 @@ module.exports = {
 		'@liferay/search-experiences-web': [],
 		'@liferay/site-cms-site-initializer': [],
 		'@liferay/site-cms-standalone-site-initializer': [],
-		'@liferay/site-dsr-site-initializer': [],
 		'@liferay/site-navigation-menu-item-display-page': [],
 		'@liferay/site-navigation-menu-item-vocabulary': [],
 		'@liferay/site-navigation-taglib': [],
@@ -588,6 +589,7 @@ module.exports = {
 		'@codemirror/state': ['*'],
 		'@codemirror/theme-one-dark': ['*'],
 		'@codemirror/view': ['*'],
+		'dompurify': ['default'],
 		'frontend-editor-ckeditor-web/plugins/DocumentLinkSelector': [
 			'default',
 		],

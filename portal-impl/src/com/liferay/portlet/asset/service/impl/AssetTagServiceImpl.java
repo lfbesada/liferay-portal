@@ -261,10 +261,16 @@ public class AssetTagServiceImpl extends AssetTagServiceBaseImpl {
 
 	@Override
 	public void mergeTags(long fromTagId, long toTagId) throws PortalException {
-		AssetTag tag = assetTagPersistence.findByPrimaryKey(fromTagId);
+		AssetTag fromTag = assetTagPersistence.findByPrimaryKey(fromTagId);
 
 		AssetTagsPermission.check(
-			getPermissionChecker(), tag.getGroupId(), ActionKeys.MANAGE_TAG);
+			getPermissionChecker(), fromTag.getGroupId(),
+			ActionKeys.MANAGE_TAG);
+
+		AssetTag toTag = assetTagPersistence.findByPrimaryKey(toTagId);
+
+		AssetTagsPermission.check(
+			getPermissionChecker(), toTag.getGroupId(), ActionKeys.MANAGE_TAG);
 
 		assetTagLocalService.mergeTags(fromTagId, toTagId);
 	}
@@ -297,6 +303,8 @@ public class AssetTagServiceImpl extends AssetTagServiceBaseImpl {
 		AssetTagsPermission.check(
 			getPermissionChecker(), groupId, ActionKeys.SUBSCRIBE);
 
+		_checkUserId(userId);
+
 		assetTagLocalService.subscribeTag(userId, groupId, tagId);
 	}
 
@@ -306,6 +314,8 @@ public class AssetTagServiceImpl extends AssetTagServiceBaseImpl {
 
 		AssetTagsPermission.check(
 			getPermissionChecker(), tag.getGroupId(), ActionKeys.SUBSCRIBE);
+
+		_checkUserId(userId);
 
 		assetTagLocalService.unsubscribeTag(userId, tagId);
 	}
@@ -356,6 +366,12 @@ public class AssetTagServiceImpl extends AssetTagServiceBaseImpl {
 		}
 
 		return tags;
+	}
+
+	private void _checkUserId(long userId) throws PortalException {
+		if (userId != getUserId()) {
+			throw new PrincipalException();
+		}
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

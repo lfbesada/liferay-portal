@@ -12,6 +12,8 @@ import org.junit.Rule;
 import org.junit.Test;
 import org.junit.rules.TemporaryFolder;
 
+import org.mockito.InOrder;
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 /**
@@ -76,6 +78,97 @@ public class SourceFormatBuildTest
 	@Test
 	public void testGetSourceFormatterVersionWithoutVersion() throws Exception {
 		Assert.assertNull(_getSourceFormatterVersion(""));
+	}
+
+	@Test
+	public void testGetWorkspace() throws Exception {
+		String gitHubURL = RandomTestUtil.randomString();
+		String ownerUsername = RandomTestUtil.randomString();
+
+		PullRequest pullRequest = Mockito.mock(PullRequest.class);
+
+		Mockito.doReturn(
+			RandomTestUtil.randomString()
+		).when(
+			pullRequest
+		).getGitRepositoryName();
+
+		Mockito.doReturn(
+			gitHubURL
+		).when(
+			pullRequest
+		).getHtmlURL();
+
+		Mockito.doReturn(
+			ownerUsername
+		).when(
+			pullRequest
+		).getOwnerUsername();
+
+		Mockito.doReturn(
+			RandomTestUtil.randomString()
+		).when(
+			pullRequest
+		).getUpstreamRemoteGitBranchName();
+
+		SourceFormatBuild sourceFormatBuild = Mockito.mock(
+			SourceFormatBuild.class);
+
+		Mockito.doReturn(
+			RandomTestUtil.randomString()
+		).when(
+			sourceFormatBuild
+		).getJobName();
+
+		Mockito.doReturn(
+			pullRequest
+		).when(
+			sourceFormatBuild
+		).getPullRequest();
+
+		Mockito.doCallRealMethod(
+		).when(
+			sourceFormatBuild
+		).getWorkspace();
+
+		WorkspaceGitRepository workspaceGitRepository = Mockito.mock(
+			WorkspaceGitRepository.class);
+
+		Workspace workspace = Mockito.mock(Workspace.class);
+
+		Mockito.doReturn(
+			workspaceGitRepository
+		).when(
+			workspace
+		).getPrimaryWorkspaceGitRepository();
+
+		try (MockedStatic<WorkspaceFactory> workspaceFactoryMockedStatic =
+				Mockito.mockStatic(WorkspaceFactory.class)) {
+
+			workspaceFactoryMockedStatic.when(
+				() -> WorkspaceFactory.newWorkspace(
+					Mockito.anyString(), Mockito.anyString(),
+					Mockito.anyString())
+			).thenReturn(
+				workspace
+			);
+
+			sourceFormatBuild.getWorkspace();
+		}
+
+		InOrder inOrder = Mockito.inOrder(workspaceGitRepository);
+
+		inOrder.verify(
+			workspaceGitRepository
+		).setBaseBranchUsername(
+			ownerUsername
+		);
+
+		inOrder.verify(
+			workspaceGitRepository
+		).setGitHubURL(
+			gitHubURL
+		);
 	}
 
 	@Rule

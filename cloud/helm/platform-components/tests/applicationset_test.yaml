@@ -96,6 +96,68 @@ tests:
             liferay:
                 repoURL: oci://example-registry/liferay-azure
     -   asserts:
+            -   failedTemplate:
+                    errorMessage: The value "operatorApplications.dxpOperator.values.fullnameOverride" must not be empty when "operatorApplications.dxpOperator.values.clientExtensions.enabled" is true
+                template: templates/applicationset-liferay.yaml
+        it: Fails without the name the DXP operator runs as
+        set:
+            operatorApplications:
+                dxpOperator:
+                    values:
+                        fullnameOverride: ""
+    -   asserts:
+            -   notContains:
+                    any: true
+                    content:
+                        name: liferay-default.clientExtensions.delivery.enabled
+                    path: spec.template.spec.sources[0].helm.parameters
+                template: templates/applicationset-liferay.yaml
+        it: Grants no delivery access when the DXP operator does not deliver client extensions
+        set:
+            operatorApplications:
+                dxpOperator:
+                    values:
+                        clientExtensions:
+                            enabled: false
+    -   asserts:
+            -   notContains:
+                    any: true
+                    content:
+                        name: liferay-default.clientExtensions.delivery.enabled
+                    path: spec.template.spec.sources[0].helm.parameters
+                template: templates/applicationset-liferay.yaml
+        it: Grants no delivery access when the DXP operator is disabled
+        set:
+            operatorApplications:
+                dxpOperator:
+                    enabled: false
+    -   asserts:
+            -   contains:
+                    content:
+                        name: liferay-default.clientExtensions.delivery.enabled
+                        value: "true"
+                    path: spec.template.spec.sources[0].helm.parameters
+                template: templates/applicationset-liferay.yaml
+            -   contains:
+                    content:
+                        name: liferay-default.clientExtensions.delivery.operatorServiceAccount.name
+                        value: liferay-dxp-operator
+                    path: spec.template.spec.sources[0].helm.parameters
+                template: templates/applicationset-liferay.yaml
+            -   contains:
+                    content:
+                        name: liferay-default.clientExtensions.delivery.operatorServiceAccount.namespace
+                        value: liferay-operators
+                    path: spec.template.spec.sources[0].helm.parameters
+                template: templates/applicationset-liferay.yaml
+        it: Grants the DXP operator delivery access to the Liferay namespace
+        set:
+            operatorApplications:
+                dxpOperator:
+                    namespace: liferay-operators
+                    values:
+                        fullnameOverride: liferay-dxp-operator
+    -   asserts:
             -   equal:
                     path: spec.template.spec.syncPolicy.managedNamespaceMetadata.labels
                     value:
@@ -158,6 +220,32 @@ tests:
                 template: templates/applicationset-liferay.yaml
         it: Leaves the Liferay service account to the infrastructure composition
     -   asserts:
+            -   notContains:
+                    any: true
+                    content:
+                        name: liferay-default.licensing.onlineActivationWorkflow.enabled
+                    path: spec.template.spec.sources[0].helm.parameters
+                template: templates/applicationset-liferay.yaml
+        it: Leaves the online activation workflow off when the DXP operator does not run it
+        set:
+            operatorApplications:
+                dxpOperator:
+                    values:
+                        onlineActivationWorkflow:
+                            enabled: false
+    -   asserts:
+            -   notContains:
+                    any: true
+                    content:
+                        name: liferay-default.licensing.onlineActivationWorkflow.enabled
+                    path: spec.template.spec.sources[0].helm.parameters
+                template: templates/applicationset-liferay.yaml
+        it: Leaves the online activation workflow off when the DXP operator is disabled
+        set:
+            operatorApplications:
+                dxpOperator:
+                    enabled: false
+    -   asserts:
             -   contains:
                     content:
                         namespace: argocd-system
@@ -168,6 +256,20 @@ tests:
         set:
             infrastructureProvider:
                 repoURL: oci://example-registry/liferay-aws-infrastructure-provider
+    -   asserts:
+            -   contains:
+                    content:
+                        name: liferay-default.clientExtensions.delivery.operatorServiceAccount.name
+                        value: operator-account
+                    path: spec.template.spec.sources[0].helm.parameters
+                template: templates/applicationset-liferay.yaml
+        it: Names the DXP operator by its service account name over its full name
+        set:
+            operatorApplications:
+                dxpOperator:
+                    values:
+                        serviceAccount:
+                            name: operator-account
     -   asserts:
             -   hasDocuments:
                     count: 0
@@ -215,6 +317,17 @@ tests:
                     -   name: persistence.storageClassName
                         value: managed-csi-premium-v2
                 repoURL: oci://example-registry/liferay-azure-infrastructure
+    -   asserts:
+            -   contains:
+                    content:
+                        name: database.engine
+                        value: postgresql
+                    path: spec.sources[0].helm.parameters
+                template: templates/application-infrastructure-provider.yaml
+        it: Passes the database engine to the infrastructure provider application
+        set:
+            database:
+                engine: postgresql
     -   asserts:
             -   contains:
                     content:
@@ -468,6 +581,20 @@ tests:
         set:
             liferay:
                 valuesPrefix: liferay-aws.liferay-default.
+    -   asserts:
+            -   contains:
+                    content:
+                        name: liferay-default.licensing.onlineActivationWorkflow.enabled
+                        value: "true"
+                    path: spec.template.spec.sources[0].helm.parameters
+                template: templates/applicationset-liferay.yaml
+        it: Turns the online activation workflow on when the DXP operator runs it
+        set:
+            operatorApplications:
+                dxpOperator:
+                    values:
+                        onlineActivationWorkflow:
+                            enabled: true
     -   asserts:
             -   equal:
                     path: spec.generators[0].git.repoURL

@@ -2,7 +2,7 @@ import * as API from 'shared/api';
 import Card from 'shared/components/Card';
 import classNames from 'classnames';
 import ClayEmptyState from '@clayui/empty-state';
-import ClayIcon from '@clayui/icon';
+import ClayIcon from 'shared/components/Icon';
 import ClaySticker from '@clayui/sticker';
 import MultiStepNav from '@clayui/multi-step-nav';
 import React from 'react';
@@ -32,14 +32,19 @@ const getStageLabel = (stage: IAccountLifecycleStageStatus) => {
 };
 
 const LifecycleStatus: React.FC<LifecycleStatusProps> = ({className}) => {
-	const {groupId = '', id: accountId = ''} = useParams<{
+	const {
+		channelId,
+		groupId = '',
+		id: accountId = '',
+	} = useParams<{
+		channelId: string;
 		groupId: string;
 		id: string;
 	}>();
 
 	const {data: lifecyclesData, loading: lifecyclesLoading} = useRequest({
 		dataSourceFn: API.lifecycle.fetchAccountLifecycles,
-		variables: {groupId},
+		variables: {channelId, groupId},
 	});
 
 	const accountLifecycle = lifecyclesData?.[0];

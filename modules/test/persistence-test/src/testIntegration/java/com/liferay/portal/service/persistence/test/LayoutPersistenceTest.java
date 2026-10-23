@@ -147,6 +147,8 @@ public class LayoutPersistenceTest {
 
 		newLayout.setClassPK(RandomTestUtil.nextLong());
 
+		newLayout.setLaunchSetId(RandomTestUtil.nextLong());
+
 		newLayout.setName(RandomTestUtil.randomString());
 
 		newLayout.setTitle(RandomTestUtil.randomString());
@@ -252,6 +254,8 @@ public class LayoutPersistenceTest {
 			existingLayout.getClassNameId(), newLayout.getClassNameId());
 		Assert.assertEquals(
 			existingLayout.getClassPK(), newLayout.getClassPK());
+		Assert.assertEquals(
+			existingLayout.getLaunchSetId(), newLayout.getLaunchSetId());
 		Assert.assertEquals(existingLayout.getName(), newLayout.getName());
 		Assert.assertEquals(existingLayout.getTitle(), newLayout.getTitle());
 		Assert.assertEquals(
@@ -383,26 +387,10 @@ public class LayoutPersistenceTest {
 	}
 
 	@Test
-	public void testCountByParentPlid() throws Exception {
-		_persistence.countByParentPlid(RandomTestUtil.nextLong());
-
-		_persistence.countByParentPlid(0L);
-	}
-
-	@Test
 	public void testCountByIconImageId() throws Exception {
 		_persistence.countByIconImageId(RandomTestUtil.nextLong());
 
 		_persistence.countByIconImageId(0L);
-	}
-
-	@Test
-	public void testCountByLayoutSetPrototypeLayoutERC() throws Exception {
-		_persistence.countByLayoutSetPrototypeLayoutERC("");
-
-		_persistence.countByLayoutSetPrototypeLayoutERC("null");
-
-		_persistence.countByLayoutSetPrototypeLayoutERC((String)null);
 	}
 
 	@Test
@@ -530,18 +518,6 @@ public class LayoutPersistenceTest {
 	}
 
 	@Test
-	public void testCountByG_P_LSPLE() throws Exception {
-		_persistence.countByG_P_LSPLE(
-			RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean(), "");
-
-		_persistence.countByG_P_LSPLE(
-			0L, RandomTestUtil.randomBoolean(), "null");
-
-		_persistence.countByG_P_LSPLE(
-			0L, RandomTestUtil.randomBoolean(), (String)null);
-	}
-
-	@Test
 	public void testCountByG_P_ST() throws Exception {
 		_persistence.countByG_P_ST(
 			RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean(),
@@ -555,6 +531,23 @@ public class LayoutPersistenceTest {
 		_persistence.countByG_P_ST(
 			RandomTestUtil.nextLong(), RandomTestUtil.randomBoolean(),
 			new int[] {RandomTestUtil.nextInt(), 0});
+	}
+
+	@Test
+	public void testCountByC_C_L() throws Exception {
+		_persistence.countByC_C_L(
+			RandomTestUtil.nextLong(), RandomTestUtil.nextLong(),
+			RandomTestUtil.nextLong());
+
+		_persistence.countByC_C_L(0L, 0L, 0L);
+	}
+
+	@Test
+	public void testCountByC_C_LArrayable() throws Exception {
+		_persistence.countByC_C_L(
+			RandomTestUtil.nextLong(),
+			new long[] {RandomTestUtil.nextLong(), 0L},
+			RandomTestUtil.nextLong());
 	}
 
 	@Test
@@ -668,12 +661,12 @@ public class LayoutPersistenceTest {
 			"companyId", true, "userId", true, "userName", true, "createDate",
 			true, "modifiedDate", true, "parentPlid", true, "privateLayout",
 			true, "layoutId", true, "parentLayoutId", true, "classNameId", true,
-			"classPK", true, "name", true, "keywords", true, "robots", true,
-			"type", true, "hidden", true, "system", true, "friendlyURL", true,
-			"iconImageId", true, "themeId", true, "colorSchemeId", true,
-			"styleBookEntryERC", true, "styleBookEntryScopeERC", true,
-			"priority", true, "faviconFileEntryERC", true,
-			"faviconFileEntryScopeERC", true,
+			"classPK", true, "launchSetId", true, "name", true, "keywords",
+			true, "robots", true, "type", true, "hidden", true, "system", true,
+			"friendlyURL", true, "iconImageId", true, "themeId", true,
+			"colorSchemeId", true, "styleBookEntryERC", true,
+			"styleBookEntryScopeERC", true, "priority", true,
+			"faviconFileEntryERC", true, "faviconFileEntryScopeERC", true,
 			"masterLayoutPageTemplateEntryERC", true,
 			"portletLayoutPageTemplateEntryERC", true,
 			"portletLayoutPageTemplateEntryScopeERC", true,
@@ -1027,6 +1020,8 @@ public class LayoutPersistenceTest {
 
 		layout.setClassPK(RandomTestUtil.nextLong());
 
+		layout.setLaunchSetId(RandomTestUtil.nextLong());
+
 		layout.setName(RandomTestUtil.randomString());
 
 		layout.setTitle(RandomTestUtil.randomString());
@@ -1101,4 +1096,4 @@ public class LayoutPersistenceTest {
 	private ClassLoader _dynamicQueryClassLoader;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-19188678
+// LIFERAY-SERVICE-BUILDER-HASH:2105995314

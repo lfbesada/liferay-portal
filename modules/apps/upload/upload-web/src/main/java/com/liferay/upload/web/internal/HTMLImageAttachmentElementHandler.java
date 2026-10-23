@@ -7,23 +7,21 @@ package com.liferay.upload.web.internal;
 
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.petra.function.UnsafeFunction;
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.editor.constants.EditorConstants;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.portletfilerepository.PortletFileRepository;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.upload.AttachmentElementHandler;
-import com.liferay.upload.AttachmentElementReplacer;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
 
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
-import org.osgi.service.component.annotations.ReferencePolicy;
-import org.osgi.service.component.annotations.ReferencePolicyOption;
 
 /**
  * @author Alejandro Tardín
@@ -43,60 +41,95 @@ public class HTMLImageAttachmentElementHandler
 				saveTempFileUnsafeFunction)
 		throws PortalException {
 
-		StringBuffer sb = new StringBuffer(content.length());
+		int index = content.indexOf(_ATTRIBUTE_DATA_IMAGE_ID_PREFIX);
 
-		Map<String, FileEntry> fileEntries = new HashMap<>();
+		if (index == -1) {
+			return content;
+		}
 
-		Matcher matcher = _tempAttachmentPattern.matcher(content);
+		StringBundler sb = new StringBundler();
 
-		while (matcher.find()) {
-			String fileName = matcher.group(0);
+		Map<Long, FileEntry> fileEntries = new HashMap<>();
+		int lastIndex = 0;
 
-			FileEntry fileEntry = fileEntries.get(fileName);
+		while (index != -1) {
+			int startIndex = content.lastIndexOf(CharPool.LESS_THAN, index);
+			int endIndex = content.indexOf(CharPool.GREATER_THAN, index) + 1;
+
+			if (!_isImgTag(content, startIndex, index, endIndex)) {
+				index = content.indexOf(
+					_ATTRIBUTE_DATA_IMAGE_ID_PREFIX, index + 1);
+
+				continue;
+			}
+
+			String imgTag = content.substring(startIndex, endIndex);
+
+			long fileEntryId = _getFileEntryId(content, index);
+
+			FileEntry fileEntry = fileEntries.get(fileEntryId);
 
 			if (fileEntry == null) {
 				fileEntry = saveTempFileUnsafeFunction.apply(
-					_getFileEntry(matcher));
+					_dlAppService.getFileEntry(fileEntryId));
 
-				fileEntries.put(fileName, fileEntry);
+				fileEntries.put(fileEntryId, fileEntry);
 			}
 
-			matcher.appendReplacement(
-				sb,
-				Matcher.quoteReplacement(
-					_attachmentElementReplacer.replace(fileName, fileEntry)));
+			sb.append(content.substring(lastIndex, startIndex));
+			sb.append(
+				_htmlImageAttachmentElementReplacer.replace(imgTag, fileEntry));
+
+			lastIndex = endIndex;
+
+			index = content.indexOf(_ATTRIBUTE_DATA_IMAGE_ID_PREFIX, endIndex);
 		}
 
-		matcher.appendTail(sb);
+		sb.append(content.substring(lastIndex));
 
 		return sb.toString();
 	}
 
-	private FileEntry _getFileEntry(Matcher matcher) throws PortalException {
-		return _dlAppService.getFileEntry(GetterUtil.getLong(matcher.group(1)));
+	@Activate
+	protected void activate() {
+		_htmlImageAttachmentElementReplacer =
+			new HTMLImageAttachmentElementReplacer(_portletFileRepository);
 	}
 
-	private static final String _ATTRIBUTE_LIST_REGEXP =
-		"(?:\\s*?\\w+\\s*?=\\s*?\"[^\"]*\")*?\\s*?";
+	private long _getFileEntryId(String content, int index) {
+		int beginIndex = index + _ATTRIBUTE_DATA_IMAGE_ID_PREFIX.length();
 
-	private static final Pattern _tempAttachmentPattern;
-
-	static {
-		_tempAttachmentPattern = Pattern.compile(
-			StringBundler.concat(
-				"<\\s*?img", _ATTRIBUTE_LIST_REGEXP,
-				EditorConstants.ATTRIBUTE_DATA_IMAGE_ID, "\\s*?=\\s*?\"",
-				"([^\"]*)\"", _ATTRIBUTE_LIST_REGEXP, "/>"));
+		return GetterUtil.getLong(
+			content.substring(
+				beginIndex, content.indexOf(CharPool.QUOTE, beginIndex)));
 	}
 
-	@Reference(
-		policy = ReferencePolicy.DYNAMIC,
-		policyOption = ReferencePolicyOption.GREEDY,
-		target = "(&(format=html)(html.tag.name=img))"
-	)
-	private volatile AttachmentElementReplacer _attachmentElementReplacer;
+	private boolean _isImgTag(
+		String content, int startIndex, int index, int endIndex) {
+
+		if ((endIndex == 0) ||
+			(content.lastIndexOf(CharPool.GREATER_THAN, index) > startIndex) ||
+			!content.startsWith("<img", startIndex) ||
+			(content.charAt(startIndex + 4) > CharPool.SPACE) ||
+			(content.charAt(index - 1) > CharPool.SPACE) ||
+			(content.charAt(endIndex - 2) != CharPool.FORWARD_SLASH)) {
+
+			return false;
+		}
+
+		return true;
+	}
+
+	private static final String _ATTRIBUTE_DATA_IMAGE_ID_PREFIX =
+		EditorConstants.ATTRIBUTE_DATA_IMAGE_ID + "=\"";
 
 	@Reference
 	private DLAppService _dlAppService;
+
+	private HTMLImageAttachmentElementReplacer
+		_htmlImageAttachmentElementReplacer;
+
+	@Reference
+	private PortletFileRepository _portletFileRepository;
 
 }

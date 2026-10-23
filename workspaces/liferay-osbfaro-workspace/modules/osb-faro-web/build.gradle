@@ -22,6 +22,7 @@ dependencies {
 	compileOnly group: "com.liferay.portal", name: "release.dxp.api", version: "2026.q3.2"
 	compileOnly group: "commons-codec", name: "commons-codec", version: "1.15"
 	compileOnly group: "jakarta.annotation", name: "jakarta.annotation-api", version: "2.1.1"
+	compileOnly group: "jakarta.servlet.jsp", name: "jakarta.servlet.jsp-api", version: "3.1.1"
 	compileOnly group: "org.apache.commons", name: "commons-collections4", version: "4.5.0"
 	compileOnly group: "org.apache.commons", name: "commons-lang3", version: "3.18.0"
 	compileOnly project(":modules:osb-faro-api")
@@ -51,7 +52,7 @@ dependencies {
 	testImplementation group: "org.jodd", name: "jodd-json", version: "6.0.3"
 	testImplementation group: "org.mockito", name: "mockito-core", version: "5.14.2"
 	testImplementation group: "org.slf4j", name: "slf4j-api", version: "1.7.26"
-	testImplementation group: "org.skyscreamer", name: "jsonassert", version: "1.5.0"
+	testImplementation group: "org.skyscreamer", name: "jsonassert", version: "1.2.3"
 	testImplementation group: "org.springframework", name: "spring-core", version: "6.2.19"
 	testImplementation group: "org.springframework", name: "spring-test", version: "6.2.19"
 	testImplementation project(":modules:osb-faro-api")
@@ -74,7 +75,7 @@ generateJSPJava {
 
 node {
 	global = false
-	nodeVersion = "20.12.2"
+	nodeVersion = "22.23.3"
 	useNpm = false
 	yarnVersion = "1.22.19"
 }

@@ -80,6 +80,7 @@ import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
+import com.liferay.portal.kernel.launch.LaunchPreviewThreadLocal;
 import com.liferay.portal.kernel.license.util.LicenseManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -1253,7 +1254,8 @@ public class ContentPageEditorDisplayContext {
 			return StringPool.BLANK;
 		}
 
-		return infoItemSelectorURL.toString();
+		return _withPreviewLaunchSetIdParameters(
+			infoItemSelectorURL.toString());
 	}
 
 	private String _getAssetCategoryTreeNodeItemSelectorURL() {
@@ -1718,7 +1720,8 @@ public class ContentPageEditorDisplayContext {
 			return StringPool.BLANK;
 		}
 
-		return infoItemSelectorURL.toString();
+		return _withPreviewLaunchSetIdParameters(
+			infoItemSelectorURL.toString());
 	}
 
 	private String _getInfoListSelectorURL() {
@@ -1762,11 +1765,13 @@ public class ContentPageEditorDisplayContext {
 			new UUIDItemSelectorReturnType());
 		layoutItemSelectorCriterion.setMultiSelection(false);
 
-		return String.valueOf(
-			_itemSelector.getItemSelectorURL(
-				RequestBackedPortletURLFactoryUtil.create(httpServletRequest),
-				renderResponse.getNamespace() + "selectLayout",
-				layoutItemSelectorCriterion));
+		return _withPreviewLaunchSetIdParameters(
+			String.valueOf(
+				_itemSelector.getItemSelectorURL(
+					RequestBackedPortletURLFactoryUtil.create(
+						httpServletRequest),
+					renderResponse.getNamespace() + "selectLayout",
+					layoutItemSelectorCriterion)));
 	}
 
 	private LayoutStructure _getLayoutStructure() throws Exception {
@@ -2289,6 +2294,17 @@ public class ContentPageEditorDisplayContext {
 		}
 
 		return false;
+	}
+
+	private String _withPreviewLaunchSetIdParameters(String url) {
+		long launchSetId = LaunchPreviewThreadLocal.getLaunchSetId();
+
+		if (launchSetId <= 0) {
+			return url;
+		}
+
+		return HttpComponentsUtil.addParameters(
+			url, "p_l_mode", Constants.EDIT, "previewLaunchSetId", launchSetId);
 	}
 
 	private static final Log _log = LogFactoryUtil.getLog(

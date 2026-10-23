@@ -15,7 +15,7 @@ import {getCatalogFieldLabel, ICatalogField} from 'shared/api/catalog';
 import {IStageCondition} from 'lifecycle/utils/stageConfiguration';
 import {Option, Picker, Text} from '@clayui/core';
 import {
-	OPERATORS_BY_TYPE,
+	conditionOperatorOptions,
 	OperatorType,
 	VALUELESS_OPERATORS,
 	isConditionComplete,
@@ -31,12 +31,6 @@ const conditionLabel = (label: string, index: number) =>
 
 const conditionOperatorType = (condition: IStageCondition) =>
 	resolveOperatorType(condition.fieldDataCategory, condition.fieldDataType);
-
-const conditionOperatorOptions = (condition: IStageCondition) => {
-	const operatorType = conditionOperatorType(condition);
-
-	return operatorType ? OPERATORS_BY_TYPE[operatorType] : [];
-};
 
 interface IStageConditionRowProps {
 	condition: IStageCondition;
@@ -221,7 +215,7 @@ const StageConditionRow: React.FC<IStageConditionRowProps> = ({
 	return (
 		<div
 			className={getCN(
-				'align-items-center bg-white c-gap-2 d-flex p-3 rounded stage-configuration-panel__condition',
+				'align-items-center bg-white c-gap-2 d-flex flex-wrap p-3 rounded stage-configuration-panel__condition',
 				{'has-error': incomplete}
 			)}
 		>

@@ -3,13 +3,12 @@ import classNames from 'classnames';
 import ClayBadge from '@clayui/badge';
 import ClayButton from '@clayui/button';
 import ClayDropDown, {Align} from '@clayui/drop-down';
-import ClayIcon from '@clayui/icon';
+import ClayIcon from 'shared/components/Icon';
 import ClayLabel from '@clayui/label';
 import ClayLink from '@clayui/link';
 import ClayNavigationBar from '@clayui/navigation-bar';
 import ClayToolbar from '@clayui/toolbar';
 import getCN from 'classnames';
-import Label from 'shared/components/Label';
 import NotificationAlertList, {
 	useNotificationsAPI,
 } from '../NotificationAlertList';
@@ -103,6 +102,7 @@ interface IPageActionsProps {
 	actionsDisplayLimit?: number;
 	disabled?: boolean;
 	label?: string;
+	triggerAriaLabel?: string;
 }
 
 const renderActionItems = (actions: Action[]) =>
@@ -138,6 +138,7 @@ const PageActions: React.FC<IPageActionsProps> = ({
 	actionsDisplayLimit = 1,
 	disabled = false,
 	label = '',
+	triggerAriaLabel,
 }) => (
 	<>
 		{actions.length <= actionsDisplayLimit &&
@@ -172,7 +173,8 @@ const PageActions: React.FC<IPageActionsProps> = ({
 				trigger={
 					<ClayButton
 						aria-label={
-							label ? undefined : Liferay.Language.get('menu')
+							triggerAriaLabel ??
+							(label ? undefined : Liferay.Language.get('menu'))
 						}
 						borderless={!label}
 						disabled={disabled}
@@ -251,6 +253,7 @@ const Section: React.FC<React.HTMLAttributes<HTMLDivElement>> = ({
 
 interface ITitleSectionProps extends React.HTMLAttributes<HTMLDivElement> {
 	label?: boolean;
+	sticker?: React.ReactNode;
 	subtitle?: React.ReactNode | string;
 	title?: string;
 	topLabel?: string;
@@ -271,6 +274,7 @@ const TitleSection: React.FC<ITitleSectionProps> = ({
 	children,
 	className,
 	label = false,
+	sticker,
 	subtitle,
 	title,
 	topLabel,
@@ -278,13 +282,15 @@ const TitleSection: React.FC<ITitleSectionProps> = ({
 	<Section className={getCN('title-section', className, {subtitle})}>
 		{topLabel && (
 			<div className="mb-1">
-				<Label display="secondary" size="lg" uppercase>
+				<ClayLabel displayType="secondary" inverse size="lg">
 					{topLabel}
-				</Label>
+				</ClayLabel>
 			</div>
 		)}
 
 		<span className="align-items-center d-flex">
+			{sticker}
+
 			<h1 className="title text-truncate">
 				<TextTruncate title={title} />
 			</h1>
@@ -294,7 +300,7 @@ const TitleSection: React.FC<ITitleSectionProps> = ({
 
 		{subtitle &&
 			(label ? (
-				<ClayLabel className="mb-4" displayType="info">
+				<ClayLabel className="mb-4" displayType="info" inverse>
 					{subtitle}
 				</ClayLabel>
 			) : (

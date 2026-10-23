@@ -3,7 +3,7 @@
  * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
  */
 
-import {ObjectFolder} from '@liferay/object-admin-rest-client-js';
+import {ObjectFolder} from '@liferay/object-admin-rest-client-js/v1_0';
 import {Locator, Page, Request, Response, expect} from '@playwright/test';
 import {readFile} from 'fs/promises';
 import path from 'path';
@@ -219,11 +219,7 @@ export class ViewObjectDefinitionsPage {
 	async exportObjectDefinition(objectDefinitionLabel: string) {
 		await this.goto();
 
-		await this.searchInput.fill(objectDefinitionLabel);
-
-		await waitForSearchToBeReady(this.page);
-
-		await this._submitSearch(objectDefinitionLabel);
+		await this.searchObjectDefinition(objectDefinitionLabel);
 
 		const downloadPromise = this.page.waitForEvent('download');
 
@@ -323,6 +319,14 @@ export class ViewObjectDefinitionsPage {
 			.getByRole('listitem')
 			.filter({hasText: objectFolderLabel})
 			.click({timeout: options?.timeout});
+	}
+
+	async searchObjectDefinition(objectDefinitionLabel: string) {
+		await this.searchInput.fill(objectDefinitionLabel);
+
+		await waitForSearchToBeReady(this.page);
+
+		await this._submitSearch(objectDefinitionLabel);
 	}
 
 	private async _submitSearch(objectDefinitionLabel: string) {

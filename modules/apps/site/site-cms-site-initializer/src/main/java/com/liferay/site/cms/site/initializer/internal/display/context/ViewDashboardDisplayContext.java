@@ -11,6 +11,8 @@ import com.liferay.depot.model.DepotEntry;
 import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.depot.service.DepotEntryService;
 import com.liferay.document.library.configuration.DLConfiguration;
+import com.liferay.frontend.data.set.action.FDSItemsActions;
+import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
 import com.liferay.learn.LearnMessageUtil;
 import com.liferay.object.constants.ObjectEntryFolderConstants;
 import com.liferay.object.constants.ObjectFolderConstants;
@@ -63,7 +65,9 @@ public class ViewDashboardDisplayContext {
 		ObjectDefinitionService objectDefinitionService,
 		RoleLocalService roleLocalService, ThemeDisplay themeDisplay,
 		TranslationInfoItemFieldValuesExporterRegistry
-			translationInfoItemFieldValuesExporterRegistry) {
+			translationInfoItemFieldValuesExporterRegistry,
+		FDSItemsActions viewBrokenLinksSectionFDSItemsActions,
+		FDSItemsActions viewMissingRequiredFieldsSectionFDSItemsActions) {
 
 		_analyticsSettingsManager = analyticsSettingsManager;
 		_depotEntryLocalService = depotEntryLocalService;
@@ -76,6 +80,10 @@ public class ViewDashboardDisplayContext {
 		_themeDisplay = themeDisplay;
 		_translationInfoItemFieldValuesExporterRegistry =
 			translationInfoItemFieldValuesExporterRegistry;
+		_viewBrokenLinksSectionFDSItemsActions =
+			viewBrokenLinksSectionFDSItemsActions;
+		_viewMissingRequiredFieldsSectionFDSItemsActions =
+			viewMissingRequiredFieldsSectionFDSItemsActions;
 	}
 
 	public Map<String, Object> getConstants() {
@@ -168,6 +176,11 @@ public class ViewDashboardDisplayContext {
 			GetterUtil.getBoolean(
 				PropsUtil.get(PropsKeys.CMS_BROKEN_LINKS_CHECKER_ENABLED))
 		).put(
+			"brokenLinksFDSActionDropdownItems",
+			() ->
+				_viewBrokenLinksSectionFDSItemsActions.
+					getFDSActionDropdownItems(_httpServletRequest)
+		).put(
 			"candidateAssetLibraries",
 			SectionDisplayContextUtil.getDepotEntriesJSONArray(
 				_httpServletRequest)
@@ -213,8 +226,16 @@ public class ViewDashboardDisplayContext {
 				_httpServletRequest, _themeDisplay)
 		).put(
 			"fdsActionDropdownItems",
-			() -> SectionDisplayContextUtil.getFDSActionDropdownItems(
-				_httpServletRequest)
+			() -> {
+				List<FDSActionDropdownItem> fdsActionDropdownItems =
+					SectionDisplayContextUtil.getFDSActionDropdownItems(
+						_httpServletRequest);
+
+				SectionDisplayContextUtil.addScheduleDateFDSActionDropdownItems(
+					fdsActionDropdownItems, _httpServletRequest);
+
+				return fdsActionDropdownItems;
+			}
 		).put(
 			"fileMimeTypeCssClasses",
 			() -> {
@@ -235,6 +256,11 @@ public class ViewDashboardDisplayContext {
 				return SectionDisplayContextUtil.getFileMimeTypeIcons(
 					_dlConfiguration);
 			}
+		).put(
+			"missingRequiredFieldsFDSActionDropdownItems",
+			() ->
+				_viewMissingRequiredFieldsSectionFDSItemsActions.
+					getFDSActionDropdownItems(_httpServletRequest)
 		).put(
 			"objectDefinitionCssClasses",
 			SectionDisplayContextUtil.getObjectDefinitionCssClasses()
@@ -305,5 +331,8 @@ public class ViewDashboardDisplayContext {
 	private final ThemeDisplay _themeDisplay;
 	private final TranslationInfoItemFieldValuesExporterRegistry
 		_translationInfoItemFieldValuesExporterRegistry;
+	private final FDSItemsActions _viewBrokenLinksSectionFDSItemsActions;
+	private final FDSItemsActions
+		_viewMissingRequiredFieldsSectionFDSItemsActions;
 
 }

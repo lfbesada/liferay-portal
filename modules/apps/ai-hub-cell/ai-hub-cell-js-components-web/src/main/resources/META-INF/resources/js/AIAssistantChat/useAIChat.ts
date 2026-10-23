@@ -40,6 +40,7 @@ export interface AIChat {
 	getContextRef: React.MutableRefObject<(() => ChatContext) | undefined>;
 	giveThumbsUp: (index: number, item: Message) => void;
 	isGenerating: boolean;
+	lastMessageRef: React.RefObject<HTMLDivElement>;
 	markFeedbackGiven: (index: number) => void;
 	message: string;
 	messages: Message[];
@@ -111,6 +112,7 @@ export default function useAIChat({
 	const chatbotExternalReferenceCodeRef = useRef<string | undefined>(
 		chatbotExternalReferenceCode
 	);
+	const lastMessageRef = useRef<HTMLDivElement | null>(null);
 	const messagesContainerRef = useRef<HTMLDivElement | null>(null);
 	const sourceLanguageIdRef = useRef<string>(
 		Liferay.ThemeDisplay.getLanguageId()
@@ -206,9 +208,58 @@ export default function useAIChat({
 		});
 	}, []);
 
+	const scrollToMessage = useCallback((element?: Element | null) => {
+		const container = messagesContainerRef.current;
+
+		if (!container || !element) {
+			return;
+		}
+
+		container.scrollTo?.({
+			behavior: 'smooth',
+			top:
+				element.getBoundingClientRect().top -
+				container.getBoundingClientRect().top +
+				container.scrollTop,
+		});
+	}, []);
+
 	useEffect(() => {
-		scrollToBottom();
-	}, [generatingBalloons, isGenerating, messages, scrollToBottom]);
+		const lastMessage = messages.at(-1);
+
+		if (
+			isGenerating ||
+			generatingBalloons.length ||
+			!lastMessage ||
+			lastMessage.sender === 'user'
+		) {
+			scrollToBottom();
+
+			return;
+		}
+
+		if (lastMessage.images?.length) {
+			const previousMessage = messages.at(-2);
+
+			if (previousMessage?.sender === 'user' || !previousMessage?.text) {
+				scrollToBottom();
+
+				return;
+			}
+
+			scrollToMessage(lastMessageRef.current?.previousElementSibling);
+
+			return;
+		}
+
+		scrollToMessage(lastMessageRef.current);
+	}, [
+		generatingBalloons,
+		isGenerating,
+		messages,
+		scrollToBottom,
+		scrollToMessage,
+	]);
 
 	useEffect(() => {
 		const onLocaleChanged = ({languageId}: {languageId: string}) => {
@@ -606,6 +657,7 @@ export default function useAIChat({
 		getContextRef,
 		giveThumbsUp,
 		isGenerating: isGenerating || !!generatingBalloons.length,
+		lastMessageRef,
 		markFeedbackGiven,
 		message,
 		messages,

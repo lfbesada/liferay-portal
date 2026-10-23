@@ -1,5 +1,6 @@
 import ClayLink from '@clayui/link';
 import {ClayIconSpriteContext as PortalClayIconSpriteContext} from '@clayui/icon-runtime';
+import {CLAY_ICONS_SPRITEMAP} from 'shared/components/Icon';
 import FaroConstants, {RangeKeyTimeRanges} from 'shared/util/constants';
 import Label from '@clayui/label';
 import Loading from 'shared/components/Loading';
@@ -39,6 +40,11 @@ const BaseFrontendDataSet = lazy(() =>
 const CONFIG_IN_URL_OFF = 'off' as EConfigInURLBehavior;
 
 const {cur, delta, deltaValues} = FaroConstants.pagination;
+
+export const EMPTY_STATE_IMAGE = '/states/empty_state.svg';
+
+export const EMPTY_STATE_REDUCED_MOTION_IMAGE =
+	'/states/empty_state_reduced_motion.svg';
 
 export const rangeSelectors = [
 	{
@@ -109,8 +115,9 @@ export const columns = {
 		label: React.ReactNode;
 	}) => (
 		<Label
-			className="fds-label font-weight-semi-bold rounded"
+			className="font-weight-semi-bold rounded"
 			displayType={displayType}
+			inverse
 		>
 			{label}
 		</Label>
@@ -156,14 +163,12 @@ export const columns = {
 };
 
 export function useSnapshots(fdsName: string, enabled = true) {
-	const fetchSnapshots = enabled && Liferay.FeatureFlags['LPS-164563'];
-
 	const [snapshots, setSnapshots] = useState<
 		IFrontendDataSetProps['snapshots'] | null
-	>(fetchSnapshots ? null : []);
+	>(enabled ? null : []);
 
 	useEffect(() => {
-		if (!fetchSnapshots) {
+		if (!enabled) {
 			return;
 		}
 
@@ -205,7 +210,7 @@ export function useSnapshots(fdsName: string, enabled = true) {
 
 				setSnapshots([]);
 			});
-	}, [fetchSnapshots, fdsName]);
+	}, [enabled, fdsName]);
 
 	return snapshots;
 }
@@ -233,10 +238,11 @@ const FrontendDataSet = ({
 
 	// The bundled @clayui/icon context (provided in App.tsx) does not reach the
 	// FrontendDataSet, which renders with the DXP's runtime @clayui/icon. Feed
-	// that runtime context the same sprite so the data set's icons resolve.
+	// that runtime context the same Clay sprite so the data set's icons
+	// resolve.
 
 	return (
-		<PortalClayIconSpriteContext.Provider value="/o/osb-faro-web/dist/sprite.svg">
+		<PortalClayIconSpriteContext.Provider value={CLAY_ICONS_SPRITEMAP}>
 			<Suspense fallback={<Loading />}>
 				<BaseFrontendDataSet
 					{...props}
