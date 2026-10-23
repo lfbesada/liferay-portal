@@ -1254,7 +1254,8 @@ public class ContentPageEditorDisplayContext {
 			return StringPool.BLANK;
 		}
 
-		return infoItemSelectorURL.toString();
+		return _withPreviewLaunchSetIdParameters(
+			infoItemSelectorURL.toString());
 	}
 
 	private String _getAssetCategoryTreeNodeItemSelectorURL() {
@@ -1719,7 +1720,8 @@ public class ContentPageEditorDisplayContext {
 			return StringPool.BLANK;
 		}
 
-		return infoItemSelectorURL.toString();
+		return _withPreviewLaunchSetIdParameters(
+			infoItemSelectorURL.toString());
 	}
 
 	private String _getInfoListSelectorURL() {
