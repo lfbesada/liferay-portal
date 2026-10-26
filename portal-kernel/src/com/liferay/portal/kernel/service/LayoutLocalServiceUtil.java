@@ -1605,12 +1605,32 @@ public class LayoutLocalServiceUtil {
 	}
 
 	public static int searchCount(
+			com.liferay.portal.kernel.model.Group group, boolean privateLayout,
+			String keywords, boolean searchOnlyByTitle, String[] types,
+			int[] statuses)
+		throws PortalException {
+
+		return getService().searchCount(
+			group, privateLayout, keywords, searchOnlyByTitle, types, statuses);
+	}
+
+	public static int searchCount(
 			long groupId, long userId, boolean privateLayout, String keywords,
 			boolean searchOnlyByTitle, String[] types)
 		throws PortalException {
 
 		return getService().searchCount(
 			groupId, userId, privateLayout, keywords, searchOnlyByTitle, types);
+	}
+
+	public static int searchCount(
+			long groupId, long userId, boolean privateLayout, String keywords,
+			boolean searchOnlyByTitle, String[] types, int[] statuses)
+		throws PortalException {
+
+		return getService().searchCount(
+			groupId, userId, privateLayout, keywords, searchOnlyByTitle, types,
+			statuses);
 	}
 
 	/**
@@ -2119,4 +2139,4 @@ public class LayoutLocalServiceUtil {
 	private static volatile LayoutLocalService _service;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-103385663
+// LIFERAY-SERVICE-BUILDER-HASH:488690095
