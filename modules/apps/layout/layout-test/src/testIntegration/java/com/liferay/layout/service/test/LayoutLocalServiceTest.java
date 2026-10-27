@@ -77,6 +77,7 @@ import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.sites.kernel.util.Sites;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -523,12 +524,23 @@ public class LayoutLocalServiceTest {
 			_layoutLocalService.fetchDraftLayout(
 				layout.getPlid(), launchSetId));
 
+		long[] classPKs = _layoutLocalService.getClassPKsByLaunchSetId(
+			layout.getGroupId(), launchSetId);
+
+		Assert.assertEquals(Arrays.toString(classPKs), 0, classPKs.length);
+
 		Layout launchDraftLayout = _addLaunchDraftLayout(launchSetId, layout);
 
 		Assert.assertEquals(
 			launchDraftLayout,
 			_layoutLocalService.fetchDraftLayout(
 				layout.getPlid(), launchSetId));
+
+		classPKs = _layoutLocalService.getClassPKsByLaunchSetId(
+			layout.getGroupId(), launchSetId);
+
+		Assert.assertEquals(layout.getPlid(), classPKs[0]);
+		Assert.assertEquals(Arrays.toString(classPKs), 1, classPKs.length);
 
 		Assert.assertEquals(
 			mainDraftLayout,

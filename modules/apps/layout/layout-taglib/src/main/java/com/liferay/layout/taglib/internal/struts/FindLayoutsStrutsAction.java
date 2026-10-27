@@ -71,6 +71,8 @@ public class FindLayoutsStrutsAction implements StrutsAction {
 			httpServletRequest, "privateLayout");
 		boolean searchOnlyByTitle = ParamUtil.getBoolean(
 			httpServletRequest, "searchOnlyByTitle");
+		int[] statuses = ParamUtil.getIntegerValues(
+			httpServletRequest, "statuses");
 
 		int layoutsCount = _layoutLocalService.searchCount(
 			group, privateLayout, keywords, searchOnlyByTitle,
@@ -79,7 +81,8 @@ public class FindLayoutsStrutsAction implements StrutsAction {
 				LayoutConstants.TYPE_FULL_PAGE_APPLICATION,
 				LayoutConstants.TYPE_LINK_TO_LAYOUT, LayoutConstants.TYPE_PANEL,
 				LayoutConstants.TYPE_PORTLET, LayoutConstants.TYPE_URL
-			});
+			},
+			statuses);
 
 		boolean hasMoreElements = false;
 
@@ -111,7 +114,7 @@ public class FindLayoutsStrutsAction implements StrutsAction {
 			}
 
 			List<Layout> layouts = _layoutLocalService.search(
-				groupId, privateLayout, keywords, searchOnlyByTitle,
+				groupId, 0, privateLayout, keywords, searchOnlyByTitle,
 				new String[] {
 					LayoutConstants.TYPE_CONTENT, LayoutConstants.TYPE_EMBEDDED,
 					LayoutConstants.TYPE_FULL_PAGE_APPLICATION,
@@ -119,7 +122,7 @@ public class FindLayoutsStrutsAction implements StrutsAction {
 					LayoutConstants.TYPE_PANEL, LayoutConstants.TYPE_PORTLET,
 					LayoutConstants.TYPE_URL
 				},
-				start, end, null);
+				statuses, start, end, null);
 
 			boolean checkDisplayPage = ParamUtil.getBoolean(
 				httpServletRequest, "checkDisplayPage");
