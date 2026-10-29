@@ -189,9 +189,9 @@ public class GetLayoutsStrutsActionTest {
 				TestPropsValues.getGroupId(), TestPropsValues.getUserId()));
 
 		_assertLayoutInTree(
-			true, approvedLayout, WorkflowConstants.STATUS_APPROVED);
-		_assertLayoutInTree(
 			false, draftLayout, WorkflowConstants.STATUS_APPROVED);
+		_assertLayoutInTree(
+			true, approvedLayout, WorkflowConstants.STATUS_APPROVED);
 
 		_assertLayoutInTree(
 			true, approvedLayout, WorkflowConstants.STATUS_APPROVED,
