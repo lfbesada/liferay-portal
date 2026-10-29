@@ -101,9 +101,8 @@ public class LayoutModelPreFilterContributor
 
 		statusesTermsFilter.addValues(ArrayUtil.toStringArray(statuses));
 
-		long launchSetId = LaunchPreviewThreadLocal.getLaunchSetId();
-
 		long[] classPKs = new long[0];
+		long launchSetId = LaunchPreviewThreadLocal.getLaunchSetId();
 
 		if (ArrayUtil.isNotEmpty(groupIds) && (launchSetId > 0)) {
 			classPKs = _layoutLocalService.getClassPKsByLaunchSetId(
@@ -115,23 +114,20 @@ public class LayoutModelPreFilterContributor
 		}
 
 		BooleanFilter booleanFilter = new BooleanFilter();
-
-		booleanFilter.add(statusesTermsFilter, BooleanClauseOccur.SHOULD);
-
 		BooleanFilter launchDraftFilter = new BooleanFilter();
-
-		launchDraftFilter.add(
-			new TermFilter(
-				Field.STATUS, String.valueOf(WorkflowConstants.STATUS_DRAFT)),
-			BooleanClauseOccur.MUST);
 
 		TermsFilter classPKsTermsFilter = new TermsFilter(Field.ENTRY_CLASS_PK);
 
 		classPKsTermsFilter.addValues(ArrayUtil.toStringArray(classPKs));
 
+		launchDraftFilter.add(
+			new TermFilter(
+				Field.STATUS, String.valueOf(WorkflowConstants.STATUS_DRAFT)),
+			BooleanClauseOccur.MUST);
 		launchDraftFilter.add(classPKsTermsFilter, BooleanClauseOccur.MUST);
 
 		booleanFilter.add(launchDraftFilter, BooleanClauseOccur.SHOULD);
+		booleanFilter.add(statusesTermsFilter, BooleanClauseOccur.SHOULD);
 
 		return booleanFilter;
 	}
