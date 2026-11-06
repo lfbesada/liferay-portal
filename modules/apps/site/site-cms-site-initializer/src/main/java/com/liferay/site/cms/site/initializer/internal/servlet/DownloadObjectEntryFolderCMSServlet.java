@@ -31,16 +31,16 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionRegistryUtil;
+import com.liferay.portal.kernel.servlet.ContentDispositionUtil;
 import com.liferay.portal.kernel.servlet.HttpHeaders;
-import com.liferay.portal.kernel.servlet.ServletResponseUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ContentTypes;
+import com.liferay.portal.kernel.util.FileUtil;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
+import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.portal.kernel.zip.ZipWriter;
-import com.liferay.portal.kernel.zip.ZipWriterFactory;
 import com.liferay.portal.search.document.Document;
 import com.liferay.portal.search.hits.SearchHit;
 import com.liferay.portal.search.hits.SearchHits;
@@ -50,14 +50,16 @@ import jakarta.servlet.ServletException;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
-import java.io.File;
-import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.Serializable;
 
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.zip.ZipEntry;
+import java.util.zip.ZipOutputStream;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -141,7 +143,13 @@ public class DownloadObjectEntryFolderCMSServlet extends BaseCMSServlet {
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		ZipWriter zipWriter = _zipWriterFactory.getZipWriter();
+		_setHeaders(
+			httpServletResponse, "download-" + Time.getTimestamp() + ".zip");
+
+		ZipOutputStream zipOutputStream = new ZipOutputStream(
+			httpServletResponse.getOutputStream());
+
+		Set<String> fileNames = new HashSet<>();
 
 		JSONObject selectionScopeJSONObject = jsonObject.getJSONObject(
 			"selectionScope");
@@ -149,36 +157,24 @@ public class DownloadObjectEntryFolderCMSServlet extends BaseCMSServlet {
 		if ((selectionScopeJSONObject != null) &&
 			selectionScopeJSONObject.getBoolean("selectAll")) {
 
-			_selectAllDownload(httpServletRequest, themeDisplay, zipWriter);
+			_selectAllDownload(
+				fileNames, httpServletRequest, themeDisplay, zipOutputStream);
 		}
 		else {
 			JSONArray jsonArray = jsonObject.getJSONArray("bulkActionItems");
 
 			for (int i = 0; i < jsonArray.length(); i++) {
-				jsonObject = jsonArray.getJSONObject(i);
+				JSONObject bulkActionItemJSONObject = jsonArray.getJSONObject(
+					i);
 
 				_zipEntry(
-					jsonObject.getString("className"),
-					jsonObject.getLong("classPK"), themeDisplay, zipWriter);
+					bulkActionItemJSONObject.getString("className"),
+					bulkActionItemJSONObject.getLong("classPK"), fileNames,
+					themeDisplay, zipOutputStream);
 			}
 		}
 
-		try (InputStream inputStream = new FileInputStream(
-				zipWriter.getFile())) {
-
-			ServletResponseUtil.sendFile(
-				httpServletRequest, httpServletResponse,
-				"download-" + Time.getTimestamp() + ".zip", inputStream, 0,
-				ContentTypes.APPLICATION_ZIP,
-				HttpHeaders.CONTENT_DISPOSITION_ATTACHMENT);
-		}
-		finally {
-			File file = zipWriter.getFile();
-
-			if ((file != null) && file.exists()) {
-				file.delete();
-			}
-		}
+		zipOutputStream.finish();
 	}
 
 	private void _downloadObjectEntryFolder(
@@ -197,39 +193,23 @@ public class DownloadObjectEntryFolderCMSServlet extends BaseCMSServlet {
 
 		long objectEntryFolderId = GetterUtil.getLong(pathArray[1]);
 
-		ZipWriter zipWriter = _zipWriterFactory.getZipWriter();
+		ObjectEntryFolder objectEntryFolder =
+			_objectEntryFolderService.getObjectEntryFolder(objectEntryFolderId);
 
-		try {
-			ObjectEntryFolder objectEntryFolder =
-				_objectEntryFolderService.getObjectEntryFolder(
-					objectEntryFolderId);
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
 
-			String zipFileName = objectEntryFolder.getName() + ".zip";
+		_setHeaders(httpServletResponse, objectEntryFolder.getName() + ".zip");
 
-			ThemeDisplay themeDisplay =
-				(ThemeDisplay)httpServletRequest.getAttribute(
-					WebKeys.THEME_DISPLAY);
+		ZipOutputStream zipOutputStream = new ZipOutputStream(
+			httpServletResponse.getOutputStream());
 
-			_zipObjectEntryFolder(
-				objectEntryFolder.getGroupId(), objectEntryFolderId,
-				objectEntryFolder.getName(), themeDisplay, zipWriter);
+		_zipObjectEntryFolder(
+			objectEntryFolder.getGroupId(), objectEntryFolderId,
+			objectEntryFolder.getName(), themeDisplay, zipOutputStream);
 
-			try (InputStream inputStream = new FileInputStream(
-					zipWriter.getFile())) {
-
-				ServletResponseUtil.sendFile(
-					httpServletRequest, httpServletResponse, zipFileName,
-					inputStream, 0, ContentTypes.APPLICATION_ZIP,
-					HttpHeaders.CONTENT_DISPOSITION_ATTACHMENT);
-			}
-		}
-		finally {
-			File file = zipWriter.getFile();
-
-			if ((file != null) && file.exists()) {
-				file.delete();
-			}
-		}
+		zipOutputStream.finish();
 	}
 
 	private String _getObjectEntryFolderPath(
@@ -244,9 +224,34 @@ public class DownloadObjectEntryFolderCMSServlet extends BaseCMSServlet {
 		return requestURI.substring(path.length() + 1);
 	}
 
+	private String _getPath(String path, String name) {
+		if (Validator.isNull(path)) {
+			return name;
+		}
+
+		return StringBundler.concat(path, StringPool.SLASH, name);
+	}
+
+	private String _getUniqueFileName(Set<String> fileNames, String fileName) {
+		if (fileNames.add(fileName)) {
+			return fileName;
+		}
+
+		int i = 1;
+
+		while (true) {
+			String uniqueFileName = FileUtil.appendParentheticalSuffix(
+				fileName, String.valueOf(i++));
+
+			if (fileNames.add(uniqueFileName)) {
+				return uniqueFileName;
+			}
+		}
+	}
+
 	private void _selectAllDownload(
-			HttpServletRequest httpServletRequest, ThemeDisplay themeDisplay,
-			ZipWriter zipWriter)
+			Set<String> fileNames, HttpServletRequest httpServletRequest,
+			ThemeDisplay themeDisplay, ZipOutputStream zipOutputStream)
 		throws IOException, PortalException {
 
 		SearchHits searchHits = getSelectAllSearchHits(httpServletRequest);
@@ -256,13 +261,24 @@ public class DownloadObjectEntryFolderCMSServlet extends BaseCMSServlet {
 
 			_zipEntry(
 				document.getString("entryClassName"),
-				document.getLong("entryClassPK"), themeDisplay, zipWriter);
+				document.getLong("entryClassPK"), fileNames, themeDisplay,
+				zipOutputStream);
 		}
 	}
 
+	private void _setHeaders(
+		HttpServletResponse httpServletResponse, String zipFileName) {
+
+		httpServletResponse.setContentType(ContentTypes.APPLICATION_ZIP);
+		httpServletResponse.setHeader(
+			HttpHeaders.CONTENT_DISPOSITION,
+			ContentDispositionUtil.getContentDispositionHeaderValue(
+				zipFileName));
+	}
+
 	private void _zipEntry(
-			String className, long classPK, ThemeDisplay themeDisplay,
-			ZipWriter zipWriter)
+			String className, long classPK, Set<String> fileNames,
+			ThemeDisplay themeDisplay, ZipOutputStream zipOutputStream)
 		throws IOException, PortalException {
 
 		if (StringUtil.equalsIgnoreCase(
@@ -284,19 +300,20 @@ public class DownloadObjectEntryFolderCMSServlet extends BaseCMSServlet {
 
 			_zipObjectEntryFolder(
 				objectEntryFolder.getGroupId(), classPK,
-				objectEntryFolder.getName(), themeDisplay, zipWriter);
+				objectEntryFolder.getName(), themeDisplay, zipOutputStream);
 		}
 		else {
 			_zipObjectEntry(
-				_objectEntryLocalService.getObjectEntry(classPK),
-				StringPool.SLASH, themeDisplay.getPermissionChecker(),
-				zipWriter);
+				fileNames, _objectEntryLocalService.getObjectEntry(classPK),
+				StringPool.BLANK, themeDisplay.getPermissionChecker(),
+				zipOutputStream);
 		}
 	}
 
 	private void _zipObjectEntry(
-			ObjectEntry objectEntry, String path,
-			PermissionChecker permissionChecker, ZipWriter zipWriter)
+			Set<String> fileNames, ObjectEntry objectEntry, String path,
+			PermissionChecker permissionChecker,
+			ZipOutputStream zipOutputStream)
 		throws IOException, PortalException {
 
 		ObjectField attachmentObjectField = null;
@@ -350,19 +367,35 @@ public class DownloadObjectEntryFolderCMSServlet extends BaseCMSServlet {
 
 		FileEntry fileEntry = _dlAppLocalService.getFileEntry(fileEntryId);
 
-		if (fileEntry.containsPermission(
+		if (!fileEntry.containsPermission(
 				permissionChecker, ActionKeys.DOWNLOAD)) {
 
-			zipWriter.addEntry(
-				path + StringPool.SLASH + fileEntry.getFileName(),
-				fileEntry.getContentStream());
+			return;
+		}
+
+		try (InputStream inputStream = fileEntry.getContentStream()) {
+			if (inputStream == null) {
+				return;
+			}
+
+			String fileName = _getUniqueFileName(
+				fileNames, fileEntry.getFileName());
+
+			zipOutputStream.putNextEntry(
+				new ZipEntry(_getPath(path, fileName)));
+
+			StreamUtil.transfer(inputStream, zipOutputStream, false);
+
+			zipOutputStream.closeEntry();
 		}
 	}
 
 	private void _zipObjectEntryFolder(
 			long groupId, long objectEntryFolderId, String path,
-			ThemeDisplay themeDisplay, ZipWriter zipWriter)
+			ThemeDisplay themeDisplay, ZipOutputStream zipOutputStream)
 		throws IOException, PortalException {
+
+		Set<String> fileNames = new HashSet<>();
 
 		List<ObjectEntry> objectEntryFolderObjectEntries =
 			_objectEntryLocalService.getObjectEntryFolderObjectEntries(
@@ -371,8 +404,8 @@ public class DownloadObjectEntryFolderCMSServlet extends BaseCMSServlet {
 
 		for (ObjectEntry objectEntry : objectEntryFolderObjectEntries) {
 			_zipObjectEntry(
-				objectEntry, path, themeDisplay.getPermissionChecker(),
-				zipWriter);
+				fileNames, objectEntry, path,
+				themeDisplay.getPermissionChecker(), zipOutputStream);
 		}
 
 		List<ObjectEntryFolder> objectEntryFolders =
@@ -390,9 +423,8 @@ public class DownloadObjectEntryFolderCMSServlet extends BaseCMSServlet {
 
 			_zipObjectEntryFolder(
 				groupId, objectEntryFolder.getObjectEntryFolderId(),
-				StringBundler.concat(
-					path, StringPool.SLASH, objectEntryFolder.getName()),
-				themeDisplay, zipWriter);
+				_getPath(path, objectEntryFolder.getName()), themeDisplay,
+				zipOutputStream);
 		}
 	}
 
@@ -422,8 +454,5 @@ public class DownloadObjectEntryFolderCMSServlet extends BaseCMSServlet {
 
 	@Reference
 	private ObjectFieldLocalService _objectFieldLocalService;
-
-	@Reference
-	private ZipWriterFactory _zipWriterFactory;
 
 }
