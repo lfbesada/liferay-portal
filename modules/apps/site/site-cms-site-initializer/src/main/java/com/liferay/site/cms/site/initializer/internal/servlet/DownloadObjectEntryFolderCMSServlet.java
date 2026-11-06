@@ -254,15 +254,26 @@ public class DownloadObjectEntryFolderCMSServlet extends BaseCMSServlet {
 			ThemeDisplay themeDisplay, ZipOutputStream zipOutputStream)
 		throws IOException, PortalException {
 
-		SearchHits searchHits = getSelectAllSearchHits(httpServletRequest);
+		int start = 0;
 
-		for (SearchHit searchHit : searchHits.getSearchHits()) {
-			Document document = searchHit.getDocument();
+		while (true) {
+			SearchHits searchHits = getSelectAllSearchHits(
+				httpServletRequest, start, start + _BATCH_SIZE);
 
-			_zipEntry(
-				document.getString("entryClassName"),
-				document.getLong("entryClassPK"), fileNames, themeDisplay,
-				zipOutputStream);
+			for (SearchHit searchHit : searchHits.getSearchHits()) {
+				Document document = searchHit.getDocument();
+
+				_zipEntry(
+					document.getString("entryClassName"),
+					document.getLong("entryClassPK"), fileNames, themeDisplay,
+					zipOutputStream);
+			}
+
+			start += _BATCH_SIZE;
+
+			if (start >= searchHits.getTotalHits()) {
+				return;
+			}
 		}
 	}
 

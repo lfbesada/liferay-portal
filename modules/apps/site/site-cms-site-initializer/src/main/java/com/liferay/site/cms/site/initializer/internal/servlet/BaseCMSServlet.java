@@ -88,6 +88,14 @@ public abstract class BaseCMSServlet extends HttpServlet {
 			HttpServletRequest httpServletRequest)
 		throws PortalException {
 
+		return getSelectAllSearchHits(
+			httpServletRequest, QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+	}
+
+	protected SearchHits getSelectAllSearchHits(
+			HttpServletRequest httpServletRequest, int start, int end)
+		throws PortalException {
+
 		User user = portal.getUser(httpServletRequest);
 
 		String search = ParamUtil.getString(httpServletRequest, "search");
@@ -98,10 +106,11 @@ public abstract class BaseCMSServlet extends HttpServlet {
 				true
 			).withSearchContext(
 				searchContext -> _populateSearchContext(
+					end,
 					_toFilter(
 						ParamUtil.getString(httpServletRequest, "filter"),
 						user.getLocale()),
-					search, searchContext, user)
+					search, searchContext, start, user)
 			);
 
 		if (!Validator.isBlank(search)) {
@@ -178,7 +187,8 @@ public abstract class BaseCMSServlet extends HttpServlet {
 	}
 
 	private void _populateSearchContext(
-		Filter filter, String search, SearchContext searchContext, User user) {
+		int end, Filter filter, String search, SearchContext searchContext,
+		int start, User user) {
 
 		int[] statuses = FilterUtil.getStatuses(filter);
 
@@ -197,10 +207,10 @@ public abstract class BaseCMSServlet extends HttpServlet {
 		}
 
 		searchContext.setCompanyId(user.getCompanyId());
-		searchContext.setEnd(QueryUtil.ALL_POS);
+		searchContext.setEnd(end);
 		searchContext.setKeywords(search);
 		searchContext.setLocale(user.getLocale());
-		searchContext.setStart(QueryUtil.ALL_POS);
+		searchContext.setStart(start);
 		searchContext.setTimeZone(user.getTimeZone());
 		searchContext.setUserId(user.getUserId());
 	}
