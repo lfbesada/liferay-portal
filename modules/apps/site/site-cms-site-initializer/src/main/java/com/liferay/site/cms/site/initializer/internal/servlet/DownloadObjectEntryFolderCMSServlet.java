@@ -17,8 +17,8 @@ import com.liferay.object.service.ObjectFieldLocalService;
 import com.liferay.petra.io.StreamUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.interval.IntervalActionProcessor;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONFactory;
@@ -393,40 +393,86 @@ public class DownloadObjectEntryFolderCMSServlet extends BaseCMSServlet {
 	private void _zipObjectEntryFolder(
 			long groupId, long objectEntryFolderId, String path,
 			ThemeDisplay themeDisplay, ZipOutputStream zipOutputStream)
-		throws IOException, PortalException {
+		throws PortalException {
 
 		Set<String> fileNames = new HashSet<>();
 
-		List<ObjectEntry> objectEntryFolderObjectEntries =
-			_objectEntryLocalService.getObjectEntryFolderObjectEntries(
-				groupId, objectEntryFolderId, QueryUtil.ALL_POS,
-				QueryUtil.ALL_POS);
+		IntervalActionProcessor<Void> objectEntriesIntervalActionProcessor =
+			new IntervalActionProcessor<>(
+				_objectEntryLocalService.getObjectEntryFolderObjectEntriesCount(
+					groupId, objectEntryFolderId),
+				_BATCH_SIZE);
 
-		for (ObjectEntry objectEntry : objectEntryFolderObjectEntries) {
-			_zipObjectEntry(
-				fileNames, objectEntry, path,
-				themeDisplay.getPermissionChecker(), zipOutputStream);
-		}
+		objectEntriesIntervalActionProcessor.setPerformIntervalActionMethod(
+			(start, end) -> {
+				List<ObjectEntry> objectEntryFolderObjectEntries =
+					_objectEntryLocalService.getObjectEntryFolderObjectEntries(
+						groupId, objectEntryFolderId, start, end);
 
-		List<ObjectEntryFolder> objectEntryFolders =
-			_objectEntryFolderLocalService.getObjectEntryFolders(
-				groupId, themeDisplay.getCompanyId(), objectEntryFolderId,
-				QueryUtil.ALL_POS, QueryUtil.ALL_POS);
+				try {
+					for (ObjectEntry objectEntry :
+							objectEntryFolderObjectEntries) {
 
-		for (ObjectEntryFolder objectEntryFolder : objectEntryFolders) {
-			if (!_objectEntryFolderModelResourcePermission.contains(
-					themeDisplay.getPermissionChecker(), objectEntryFolder,
-					ActionKeys.VIEW)) {
+						_zipObjectEntry(
+							fileNames, objectEntry, path,
+							themeDisplay.getPermissionChecker(),
+							zipOutputStream);
+					}
+				}
+				catch (IOException ioException) {
+					throw new PortalException(ioException);
+				}
 
-				continue;
-			}
+				objectEntriesIntervalActionProcessor.incrementStart(
+					objectEntryFolderObjectEntries.size());
 
-			_zipObjectEntryFolder(
-				groupId, objectEntryFolder.getObjectEntryFolderId(),
-				_getPath(path, objectEntryFolder.getName()), themeDisplay,
-				zipOutputStream);
-		}
+				return null;
+			});
+
+		objectEntriesIntervalActionProcessor.performIntervalActions();
+
+		IntervalActionProcessor<Void>
+			objectEntryFoldersIntervalActionProcessor =
+				new IntervalActionProcessor<>(
+					_objectEntryFolderLocalService.getObjectEntryFoldersCount(
+						groupId, themeDisplay.getCompanyId(),
+						objectEntryFolderId),
+					_BATCH_SIZE);
+
+		objectEntryFoldersIntervalActionProcessor.
+			setPerformIntervalActionMethod(
+				(start, end) -> {
+					List<ObjectEntryFolder> objectEntryFolders =
+						_objectEntryFolderLocalService.getObjectEntryFolders(
+							groupId, themeDisplay.getCompanyId(),
+							objectEntryFolderId, start, end);
+
+					for (ObjectEntryFolder objectEntryFolder :
+							objectEntryFolders) {
+
+						if (!_objectEntryFolderModelResourcePermission.contains(
+								themeDisplay.getPermissionChecker(),
+								objectEntryFolder, ActionKeys.VIEW)) {
+
+							continue;
+						}
+
+						_zipObjectEntryFolder(
+							groupId, objectEntryFolder.getObjectEntryFolderId(),
+							_getPath(path, objectEntryFolder.getName()),
+							themeDisplay, zipOutputStream);
+					}
+
+					objectEntryFoldersIntervalActionProcessor.incrementStart(
+						objectEntryFolders.size());
+
+					return null;
+				});
+
+		objectEntryFoldersIntervalActionProcessor.performIntervalActions();
 	}
+
+	private static final int _BATCH_SIZE = 1000;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		DownloadObjectEntryFolderCMSServlet.class);
