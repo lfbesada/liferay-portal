@@ -13,6 +13,7 @@ Immutable.Record {
   "name": "",
   "ownerEmailAddress": "",
   "recommendationsEnabled": false,
+  "salesforceAccountId": null,
   "serverLocation": null,
   "state": null,
   "stateStartDate": null,
@@ -42,6 +43,7 @@ Immutable.Record {
   "individualCount": 0,
   "knownIndividualCount": 0,
   "lastActivityDate": null,
+  "lastMembershipUpdateDate": null,
   "name": "",
   "properties": Immutable.Map {},
   "referencedObjects": Immutable.Map {

@@ -168,6 +168,7 @@ JavaReturnStatementCheck | [Styling](styling_checks.md#styling-checks) | Finds u
 JavaRunSQLCheck | [Styling](styling_checks.md#styling-checks) | Applies rules to enforce consistency in code style. |
 JavaSQLStatementCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | Perform several checks in SQL statements. |
 [JavaSeeAnnotationCheck](check/java_see_annotation_check.md#javaseeannotationcheck) | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | Checks for nested annotations inside `@see`. |
+JavaServiceHopCheck | [Performance](performance_checks.md#performance-checks) | Flags a service method that delegates to a passthrough service method in the same bundle, so it can call persistence directly and skip the AOP proxy hop. |
 JavaServiceImplCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | Ensures that `afterPropertiesSet` and `destroy` methods in `*ServiceImpl` always call the method with the same name in the superclass. |
 JavaServiceImplErcUsageCheck | [Productivity](productivity_checks.md#productivity-checks) | Automatically generates and ensures that `externalReferenceCode` is properly used in remote `*ServiceImpl` add method. |
 JavaServiceImplGetFetchCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | Flags a get-prefixed service method that returns a nullable fetch result, violating the non-null promise its name implies. |
@@ -325,9 +326,11 @@ TextBlockCheck | [Styling](styling_checks.md#styling-checks) | Finds usage of te
 ThreadLocalUtilCheck | [Performance](performance_checks.md#performance-checks) | Finds new instances of `java.lang.Thread` (use `ThreadLocalUtil.create` instead). |
 ThreadLocalVariableNameCheck | [Naming Conventions](naming_conventions_checks.md#naming-conventions-checks) | Checks for consistent naming on variables of type '*ThreadLocal'. |
 ThreadNameCheck | [Naming Conventions](naming_conventions_checks.md#naming-conventions-checks) | Checks that names of threads follow naming conventions. |
+[ToSQLCallCheck](check/to_sql_call_check.md#tosqlcallcheck) | [Performance](performance_checks.md#performance-checks) | Finds `toSQL(ASTNodeListener)` calls whose SQL string is unused, which should pass a consumer that ignores the text to `toSQL(Consumer, ASTNodeListener)` instead. |
 TransactionalTestRuleCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | Finds usage of `TransactionalTestRule` in `*StagedModelDataHandlerTest`. |
 TryWithResourcesCheck | [Performance](performance_checks.md#performance-checks) | Ensures using Try-With-Resources statement to properly close the resource. |
 [TypeNameCheck](https://checkstyle.sourceforge.io/checks/naming/typename.html) | [Naming Conventions](naming_conventions_checks.md#naming-conventions-checks) | Checks that type names conform to a specified pattern. |
+[TypedPropertyKeyCheck](check/typed_property_key_check.md#typedpropertykeycheck) | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | Checks that a typed property key such as `service.ranking:Integer` is not used outside component property strings. |
 URLInputStreamCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | Checks usages of `URL.openStream()`. |
 [UnicodePropertiesBuilderCheck](check/builder_check.md#buildercheck) | [Miscellaneous](miscellaneous_checks.md#miscellaneous-checks) | Checks that `UnicodePropertiesBuilder` is used when possible. |
 [UnnecessaryAssignCheck](check/unnecessary_assign_check.md#unnecessaryassigncheck) | [Performance](performance_checks.md#performance-checks) | Finds unnecessary assign statements (when it is either reassigned or returned right after). |

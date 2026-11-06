@@ -44,6 +44,7 @@ jest.mock('lifecycle/hooks/useLifecycleAccountData', () => ({
 }));
 
 jest.mock('shared/actions/alerts', () => ({
+	...jest.requireActual('shared/actions/alerts'),
 	addAlert: jest.fn((alert) => alert),
 }));
 
@@ -430,15 +431,15 @@ describe('CreateLifecycle', () => {
 
 		const nameInput = screen.getByLabelText(/^name/i);
 
-		expect(nameInput).toHaveAttribute('maxLength', '24');
+		expect(nameInput).toHaveAttribute('maxLength', '50');
 
-		fireEvent.change(nameInput, {target: {value: 'a'.repeat(23)}});
+		fireEvent.change(nameInput, {target: {value: 'a'.repeat(49)}});
 
 		expect(
 			screen.queryByText(/the character limit has been reached/i)
 		).toBeNull();
 
-		fireEvent.change(nameInput, {target: {value: 'a'.repeat(24)}});
+		fireEvent.change(nameInput, {target: {value: 'a'.repeat(50)}});
 
 		expect(
 			screen.getByText(/the character limit has been reached/i)
@@ -450,10 +451,10 @@ describe('CreateLifecycle', () => {
 
 		const descriptionInput = screen.getByLabelText(/^description/i);
 
-		expect(descriptionInput).toHaveAttribute('maxLength', '120');
+		expect(descriptionInput).toHaveAttribute('maxLength', '255');
 
 		fireEvent.change(descriptionInput, {
-			target: {value: 'a'.repeat(120)},
+			target: {value: 'a'.repeat(255)},
 		});
 
 		expect(
@@ -704,7 +705,7 @@ describe('CreateLifecycle', () => {
 			})
 		);
 		expect(payload.stages).toEqual([
-			expect.objectContaining({priority: 1, stageName: 'Aware'}),
+			expect.objectContaining({name: 'Aware', position: 1}),
 		]);
 		expect(payload.stages[0]).not.toHaveProperty('stageType');
 		expect(payload.stages[0].accountLifecycleStageRule.name).toBe(
@@ -768,7 +769,9 @@ describe('CreateLifecycle', () => {
 
 		expect(mockPush).not.toHaveBeenCalled();
 		expect(mockReplace).not.toHaveBeenCalled();
-		expect(screen.getByLabelText(/^name/i)).toHaveValue('My Lifecycle');
+		expect(
+			screen.getByRole('group', {name: /configuration summary/i})
+		).toHaveTextContent(/my lifecycle/i);
 	});
 
 	describe('when the name is already used in the channel', () => {
@@ -776,7 +779,13 @@ describe('CreateLifecycle', () => {
 			mockedCreateStageConfig.mockReturnValue(buildStage(true));
 
 			(API.lifecycle.fetchLifecyclesPage as jest.Mock).mockResolvedValue({
-				items: [{id: '5', name: '  my LIFECYCLE '}],
+				items: [
+					{
+						externalReferenceCode: 'erc-5',
+						id: '5',
+						name: '  my LIFECYCLE ',
+					},
+				],
 			});
 		});
 

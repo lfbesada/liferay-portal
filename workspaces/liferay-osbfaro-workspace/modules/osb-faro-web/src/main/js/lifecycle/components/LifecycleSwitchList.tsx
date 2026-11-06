@@ -40,13 +40,14 @@ const LifecycleRowActions: React.FC<ILifecycleRowActionsProps> = ({
 	onShowDetails,
 	onView,
 }) => {
-	const {actions, manageNotificationsModal} = useLifecycleActions({
-		lifecycle,
-		onDefaultChange,
-		onDelete,
-		onShowDetails,
-		onView,
-	});
+	const {actions, deleteLifecycleModal, manageNotificationsModal} =
+		useLifecycleActions({
+			lifecycle,
+			onDefaultChange,
+			onDelete,
+			onShowDetails,
+			onView,
+		});
 
 	return (
 		<>
@@ -59,6 +60,8 @@ const LifecycleRowActions: React.FC<ILifecycleRowActionsProps> = ({
 					]) as string
 				}
 			/>
+
+			{deleteLifecycleModal}
 
 			{manageNotificationsModal}
 		</>
@@ -214,7 +217,7 @@ const LifecycleSwitchList: React.FC<ILifecycleSwitchListProps> = ({
 									</ClayList.ItemText>
 								)}
 
-								{!!lifecycle.stages?.length && (
+								{!!lifecycle.accountLifecycleStages?.length && (
 									<div className="mt-2">
 										<ClayLabel
 											displayType="info"
@@ -223,7 +226,9 @@ const LifecycleSwitchList: React.FC<ILifecycleSwitchListProps> = ({
 										>
 											<strong>
 												{getStageCountLabel(
-													lifecycle.stages.length
+													lifecycle
+														.accountLifecycleStages
+														.length
 												)}
 											</strong>
 										</ClayLabel>

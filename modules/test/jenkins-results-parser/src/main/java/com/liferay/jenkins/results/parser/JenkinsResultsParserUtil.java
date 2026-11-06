@@ -725,7 +725,8 @@ public class JenkinsResultsParserUtil {
 			try (OutputStream outputStream =
 					httpURLConnection.getOutputStream()) {
 
-				String post = "script=" + URLEncoder.encode(script, "UTF-8");
+				String post = buildFormContent(
+					Collections.singletonMap("script", script));
 
 				outputStream.write(post.getBytes("UTF-8"));
 
@@ -1403,11 +1404,14 @@ public class JenkinsResultsParserUtil {
 		}
 
 		if (jsonObject == null) {
-			String buildParametersURL = getLocalURL(
-				buildURL + "api/json?tree=actions[parameters[name,value]]");
-
 			try {
-				jsonObject = toJSONObject(buildParametersURL);
+				URIBuilder uriBuilder = newURIBuilder(
+					getLocalURL(buildURL + "api/json"));
+
+				uriBuilder.addParameter(
+					"tree", "actions[parameters[name,value]]");
+
+				jsonObject = toJSONObject(uriBuilder.toString());
 			}
 			catch (IOException ioException) {
 				throw new RuntimeException(ioException);
@@ -2095,8 +2099,12 @@ public class JenkinsResultsParserUtil {
 	}
 
 	public static String getGitHubApiSearchUrl(List<String> filters) {
-		return combine(
-			"https://api.github.com/search/issues?q=", join("+", filters));
+		URIBuilder uriBuilder = newURIBuilder(
+			"https://api.github.com/search/issues");
+
+		uriBuilder.addParameter("q", join(" ", filters));
+
+		return uriBuilder.toString();
 	}
 
 	public static List<String> getGitHubCacheHostnames() {
@@ -2422,8 +2430,11 @@ public class JenkinsResultsParserUtil {
 
 	public static String getJenkinsBuildResult(String buildURL) {
 		try {
-			JSONObject jsonObject = toJSONObject(
-				buildURL + "/api/json?tree=result", false);
+			URIBuilder uriBuilder = newURIBuilder(buildURL + "/api/json");
+
+			uriBuilder.addParameter("tree", "result");
+
+			JSONObject jsonObject = toJSONObject(uriBuilder.toString(), false);
 
 			if (!jsonObject.has("result") || jsonObject.isNull("result")) {
 				return null;
@@ -3027,29 +3038,25 @@ public class JenkinsResultsParserUtil {
 		String baseInvocationURL, String blacklist, int invokedBatchSize,
 		String jobName) {
 
-		StringBuilder sb = new StringBuilder();
-
-		sb.append(getJenkinsLoadBalancerURL());
-		sb.append("?baseInvocationURL=");
-		sb.append(baseInvocationURL);
-
-		if (blacklist != null) {
-			sb.append("&blacklist=");
-			sb.append(blacklist);
-		}
-
-		if (invokedBatchSize > 0) {
-			sb.append("&invokedJobBatchSize=");
-			sb.append(invokedBatchSize);
-		}
-
-		if (!isNullOrEmpty(jobName)) {
-			sb.append("&jobName=");
-			sb.append(fixURL(jobName));
-		}
-
 		try {
-			JSONObject jsonObject = toJSONObject(sb.toString(), false);
+			URIBuilder uriBuilder = newURIBuilder(getJenkinsLoadBalancerURL());
+
+			uriBuilder.addParameter("baseInvocationURL", baseInvocationURL);
+
+			if (blacklist != null) {
+				uriBuilder.addParameter("blacklist", blacklist);
+			}
+
+			if (invokedBatchSize > 0) {
+				uriBuilder.addParameter(
+					"invokedJobBatchSize", String.valueOf(invokedBatchSize));
+			}
+
+			if (!isNullOrEmpty(jobName)) {
+				uriBuilder.addParameter("jobName", jobName);
+			}
+
+			JSONObject jsonObject = toJSONObject(uriBuilder.toString(), false);
 
 			return jsonObject.getString("mostAvailableMasterURL");
 		}
@@ -3980,9 +3987,9 @@ public class JenkinsResultsParserUtil {
 		String jenkinsJobURL, Map<String, String> buildParameters,
 		int timeout) {
 
-		StringBuilder sb = new StringBuilder();
-
 		try {
+			Map<String, String> parameters = new HashMap<>();
+
 			if (buildParameters != null) {
 				for (Map.Entry<String, String> buildParameter :
 						buildParameters.entrySet()) {
@@ -3993,16 +4000,8 @@ public class JenkinsResultsParserUtil {
 						continue;
 					}
 
-					sb.append(
-						URLEncoder.encode(buildParameter.getKey(), "UTF-8"));
-					sb.append("=");
-					sb.append(URLEncoder.encode(value, "UTF-8"));
-					sb.append("&");
+					parameters.put(buildParameter.getKey(), value);
 				}
-			}
-
-			if (sb.length() > 0) {
-				sb.deleteCharAt(sb.length() - 1);
 			}
 
 			Map<String, String> requestHeaders = new HashMap<>();
@@ -4013,8 +4012,8 @@ public class JenkinsResultsParserUtil {
 			return getJenkinsBuildQueueId(
 				StreamURLReader.getResponseHeader(
 					"Location", getJenkinsHTTPAuthorization(),
-					HttpRequestMethod.POST, sb.toString(), requestHeaders,
-					timeout,
+					HttpRequestMethod.POST, buildFormContent(parameters),
+					requestHeaders, timeout,
 					combine(
 						getLocalURL(jenkinsJobURL), "/buildWithParameters")));
 		}
@@ -4391,9 +4390,14 @@ public class JenkinsResultsParserUtil {
 				JSONObject topLevelBuildsJSONObject;
 
 				try {
-					topLevelBuildsJSONObject = toJSONObject(
+					URIBuilder uriBuilder = newURIBuilder(
 						jenkinsMaster.getRemoteURL() +
-							"/view/Top%20Level/api/json?tree=jobs[name]");
+							"/view/Top%20Level/api/json");
+
+					uriBuilder.addParameter("tree", "jobs[name]");
+
+					topLevelBuildsJSONObject = toJSONObject(
+						uriBuilder.toString());
 				}
 				catch (IOException ioException) {
 					throw new RuntimeException(ioException);
@@ -6203,16 +6207,15 @@ public class JenkinsResultsParserUtil {
 				return;
 			}
 
-			StringBuilder sb = new StringBuilder();
-
-			sb.append("grant_type=client_credentials&client_id=");
-			sb.append(_clientId);
-			sb.append("&client_secret=");
-			sb.append(_clientSecret);
-
 			try {
+				Map<String, String> parameters = new HashMap<>();
+
+				parameters.put("client_id", _clientId);
+				parameters.put("client_secret", _clientSecret);
+				parameters.put("grant_type", "client_credentials");
+
 				JSONObject jsonObject = toJSONObject(
-					String.valueOf(_tokenURL), sb.toString());
+					String.valueOf(_tokenURL), buildFormContent(parameters));
 
 				_token = jsonObject.getString("access_token");
 				_tokenExpirationDate = new Date(

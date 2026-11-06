@@ -93,8 +93,7 @@ public class CommerceOrderItemServiceImpl
 		_commerceOrderModelResourcePermission.check(
 			getPermissionChecker(), commerceOrderId, ActionKeys.VIEW);
 
-		return commerceOrderItemLocalService.
-			countSubscriptionCommerceOrderItems(commerceOrderId);
+		return commerceOrderItemPersistence.countByC_S(commerceOrderId, true);
 	}
 
 	@Override
@@ -175,9 +174,8 @@ public class CommerceOrderItemServiceImpl
 		throws PortalException {
 
 		CommerceOrderItem commerceOrderItem =
-			commerceOrderItemLocalService.
-				fetchCommerceOrderItemByExternalReferenceCode(
-					externalReferenceCode, companyId);
+			commerceOrderItemPersistence.fetchByERC_C(
+				externalReferenceCode, companyId);
 
 		if (commerceOrderItem != null) {
 			_commerceOrderModelResourcePermission.check(
@@ -652,6 +650,26 @@ public class CommerceOrderItemServiceImpl
 			discountPercentageLevel4, discountPercentageLevel4WithTaxAmount,
 			finalPrice, finalPriceWithTaxAmount, promoPrice,
 			promoPriceWithTaxAmount, unitPrice, unitPriceWithTaxAmount);
+	}
+
+	@Override
+	public CommerceOrderItem updateCommerceOrderItemUnitOfMeasure(
+			long commerceOrderItemId, BigDecimal quantity,
+			String unitOfMeasureKey, CommerceContext commerceContext,
+			ServiceContext serviceContext)
+		throws PortalException {
+
+		CommerceOrderItem commerceOrderItem =
+			commerceOrderItemPersistence.findByPrimaryKey(commerceOrderItemId);
+
+		_commerceOrderModelResourcePermission.check(
+			getPermissionChecker(), commerceOrderItem.getCommerceOrderId(),
+			ActionKeys.UPDATE);
+
+		return commerceOrderItemLocalService.
+			updateCommerceOrderItemUnitOfMeasure(
+				getUserId(), commerceOrderItemId, quantity, unitOfMeasureKey,
+				commerceContext, serviceContext);
 	}
 
 	/**

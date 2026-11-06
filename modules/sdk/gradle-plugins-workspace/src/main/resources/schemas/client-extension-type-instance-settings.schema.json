@@ -4484,6 +4484,12 @@
 		},
 		{
 			"properties": {
+				"graphQLBatchOperationLimit": {
+					"default": 1,
+					"description": "Set the maximum number of operations that can be sent in a single batched GraphQL request. Enter a negative number or zero for an unlimited number of operations.",
+					"title": "GraphQL Batch Operation Limit",
+					"type": "number"
+				},
 				"pageSizeLimit": {
 					"default": 500,
 					"description": "Set the page size limit of elements that can be recovered through REST. Enter a negative number or zero for unlimited page size.",
@@ -5130,6 +5136,14 @@
 					"description": "Uncheck to avoid deleting the temporary LAR during a successful staging publish process. In remote staging contexts, this only applies for the staging environment.",
 					"title": "Delete temporary LAR during a successful staging publish process.",
 					"type": "boolean"
+				},
+				"stagingRemoteHostsAllowed": {
+					"description": "List the host names and IP addresses of the remote live servers that remote staging may connect to. A host must match an entry exactly. Leave the list blank for any host.",
+					"items": {
+						"type": "string"
+					},
+					"title": "Remote Hosts Allowed",
+					"type": "array"
 				},
 				"stagingUseVirtualHostForRemoteSite": {
 					"default": false,

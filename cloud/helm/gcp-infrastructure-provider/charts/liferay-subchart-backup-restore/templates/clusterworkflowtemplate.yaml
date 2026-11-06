@@ -83,9 +83,6 @@ spec:
                     -   name: liferay-workload-name
                         valueFrom:
                             path: /tmp/liferay-workload-name.txt
-                    -   name: root-password-secret-name
-                        valueFrom:
-                            path: /tmp/root-password-secret-name.txt
                     -   name: vault-bucket
                         valueFrom:
                             path: /tmp/vault-bucket.txt
@@ -185,8 +182,6 @@ spec:
                                     value: "{{ "{{" }}tasks.get-current-infrastructure-state.outputs.parameters.data-inactive}}"
                                 -   name: liferay-infrastructure-name
                                     value: "{{ "{{" }}tasks.get-current-infrastructure-state.outputs.parameters.liferay-infrastructure-name}}"
-                                -   name: root-password-secret-name
-                                    value: "{{ "{{" }}tasks.get-current-infrastructure-state.outputs.parameters.root-password-secret-name}}"
                                 -   name: vault-bucket
                                     value: "{{ "{{" }}tasks.get-current-infrastructure-state.outputs.parameters.vault-bucket}}"
                                 -   name: vault-path
@@ -263,7 +258,7 @@ spec:
                                     value: provisioning-database-user
                                 -   name: target-active-data-plane
                                     value: "{{ "{{" }}inputs.parameters.data-inactive}}"
-                        depends: reset-postgres-password && restore-dl-bucket
+                        depends: restore-cloudsql-backup && restore-dl-bucket
                         name: provision-database-user
                         template: apply-wait-infrastructure
                     -   arguments:
@@ -276,15 +271,6 @@ spec:
                                     value: "{{ "{{" }}inputs.parameters.data-inactive}}"
                         name: provision-target-data-plane
                         template: apply-wait-infrastructure
-                    -   arguments:
-                            parameters:
-                                -   name: restore-instance
-                                    value: "{{ "{{" }}tasks.get-inactive-cloudsql-instance.outputs.result}}"
-                                -   name: root-password-secret-name
-                                    value: "{{ "{{" }}inputs.parameters.root-password-secret-name}}"
-                        depends: restore-cloudsql-backup
-                        name: reset-postgres-password
-                        template: reset-postgres-password
                     -   arguments:
                             parameters:
                                 -   name: database-snapshot-uuid
@@ -317,36 +303,9 @@ spec:
                     -   name: database-snapshot-uuid
                     -   name: data-inactive
                     -   name: liferay-infrastructure-name
-                    -   name: root-password-secret-name
                     -   name: vault-bucket
                     -   name: vault-path
             name: prepare-target-data-plane
-        -   container:
-                args:
-                    -   sql
-                    -   users
-                    -   set-password
-                    -   postgres
-                    -   --instance={{ "{{" }}inputs.parameters.restore-instance}}
-                    -   --password=$(PGPASSWORD)
-                    -   --quiet
-                command: [gcloud]
-                env:
-                    -   name: CLOUDSDK_CONFIG
-                        value: /tmp/gcloud
-                    -   name: PGPASSWORD
-                        valueFrom:
-                            secretKeyRef:
-                                key: password
-                                name: "{{ "{{" }}inputs.parameters.root-password-secret-name}}"
-                image: "{{ .Values.images.gcloud.repository }}:{{ .Values.images.gcloud.tag }}"
-                resources:
-                    {{- .Values.resources.default | toYaml | nindent 20 }}
-            inputs:
-                parameters:
-                    -   name: restore-instance
-                    -   name: root-password-secret-name
-            name: reset-postgres-password
         -   name: reset-restore-phase
             script:
                 command: [sh]
