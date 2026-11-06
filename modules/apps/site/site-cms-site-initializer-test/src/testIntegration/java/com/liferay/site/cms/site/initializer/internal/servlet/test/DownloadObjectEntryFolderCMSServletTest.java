@@ -101,6 +101,7 @@ public class DownloadObjectEntryFolderCMSServletTest
 	@Test
 	public void testDownloadBulkAction() throws Exception {
 		_testDownloadBulkActionWithBulkActionItems();
+		_testDownloadBulkActionWithCollidingFileNames();
 		_testDownloadBulkActionWithMultipleAttachmentObjectFields();
 		_testDownloadBulkActionWithObjectEntryDownloadPermission();
 		_testDownloadBulkActionWithSelectAll();
@@ -131,7 +132,7 @@ public class DownloadObjectEntryFolderCMSServletTest
 	}
 
 	private ObjectEntry _addObjectEntry(
-			long objectDefinitionId, long objectEntryFolderId,
+			long fileEntryId, long objectDefinitionId, long objectEntryFolderId,
 			ServiceContext serviceContext)
 		throws Exception {
 
@@ -139,13 +140,23 @@ public class DownloadObjectEntryFolderCMSServletTest
 			depotEntry.getGroupId(), depotEntry.getUserId(), objectDefinitionId,
 			objectEntryFolderId, "en_US",
 			HashMapBuilder.<String, Serializable>put(
-				"file", String.valueOf(_addFileEntry())
+				"file", String.valueOf(fileEntryId)
 			).put(
 				"title_i18n",
 				HashMapBuilder.put(
 					"en_US", RandomTestUtil.randomString()
 				).build()
 			).build(),
+			serviceContext);
+	}
+
+	private ObjectEntry _addObjectEntry(
+			long objectDefinitionId, long objectEntryFolderId,
+			ServiceContext serviceContext)
+		throws Exception {
+
+		return _addObjectEntry(
+			_addFileEntry(), objectDefinitionId, objectEntryFolderId,
 			serviceContext);
 	}
 
@@ -405,6 +416,87 @@ public class DownloadObjectEntryFolderCMSServletTest
 			mockHttpServletResponse.getContentType());
 		Assert.assertEquals(
 			HttpServletResponse.SC_OK, mockHttpServletResponse.getStatus());
+	}
+
+	private void _testDownloadBulkActionWithCollidingFileNames()
+		throws Exception {
+
+		ObjectDefinition objectDefinition =
+			_objectDefinitionLocalService.
+				getObjectDefinitionByExternalReferenceCode(
+					"L_CMS_BASIC_DOCUMENT", group.getCompanyId());
+		ObjectEntryFolder parentObjectEntryFolder =
+			_objectEntryFolderLocalService.
+				getObjectEntryFolderByExternalReferenceCode(
+					"L_FILES", depotEntry.getGroupId(),
+					depotEntry.getCompanyId());
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext();
+
+		serviceContext.setAttribute(
+			"friendlyUrlMap", new HashMap<String, String>());
+
+		long fileEntryId = _addFileEntry();
+
+		ObjectEntry firstObjectEntry = _addObjectEntry(
+			fileEntryId, objectDefinition.getObjectDefinitionId(),
+			parentObjectEntryFolder.getObjectEntryFolderId(), serviceContext);
+		ObjectEntry secondObjectEntry = _addObjectEntry(
+			fileEntryId, objectDefinition.getObjectDefinitionId(),
+			parentObjectEntryFolder.getObjectEntryFolderId(), serviceContext);
+
+		MockHttpServletRequest mockHttpServletRequest =
+			_getMockHttpServletRequest(
+				JSONUtil.put(
+					"bulkActionItems",
+					JSONUtil.putAll(
+						JSONUtil.put(
+							"className", firstObjectEntry.getModelClassName()
+						).put(
+							"classPK", firstObjectEntry.getObjectEntryId()
+						),
+						JSONUtil.put(
+							"className", secondObjectEntry.getModelClassName()
+						).put(
+							"classPK", secondObjectEntry.getObjectEntryId()
+						))
+				).put(
+					"selectionScope", JSONUtil.put("selectAll", false)
+				).put(
+					"type", "DownloadBulkAction"
+				).toString(
+				).getBytes(),
+				HttpMethods.POST, 0, TestPropsValues.getUser());
+
+		MockHttpServletResponse mockHttpServletResponse =
+			new MockHttpServletResponse();
+
+		_servlet.service(mockHttpServletRequest, mockHttpServletResponse);
+
+		Assert.assertEquals(
+			ContentTypes.APPLICATION_ZIP,
+			mockHttpServletResponse.getContentType());
+		Assert.assertEquals(
+			HttpServletResponse.SC_OK, mockHttpServletResponse.getStatus());
+
+		try (ZipReader zipReader = _zipReaderFactory.getZipReader(
+				new ByteArrayInputStream(
+					mockHttpServletResponse.getContentAsByteArray()))) {
+
+			List<String> zipEntryNames = zipReader.getEntries();
+
+			Assert.assertTrue(
+				zipEntryNames.toString(),
+				zipEntryNames.contains(_getFileName(firstObjectEntry)));
+			Assert.assertTrue(
+				zipEntryNames.toString(),
+				ListUtil.exists(
+					zipEntryNames,
+					zipEntryName -> zipEntryName.contains(" (1)")));
+			Assert.assertEquals(
+				zipEntryNames.toString(), 2, zipEntryNames.size());
+		}
 	}
 
 	private void _testDownloadBulkActionWithMultipleAttachmentObjectFields()
