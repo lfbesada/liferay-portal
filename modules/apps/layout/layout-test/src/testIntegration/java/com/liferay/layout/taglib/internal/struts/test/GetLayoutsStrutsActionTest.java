@@ -46,6 +46,7 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.search.test.rule.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -104,6 +105,23 @@ public class GetLayoutsStrutsActionTest {
 			_layoutLocalService.getLayout(
 				_portal.getControlPanelPlid(_group.getCompanyId())));
 		_user = UserTestUtil.addGroupUser(_group, RoleConstants.SITE_MEMBER);
+	}
+
+	@Test
+	@TestInfo("LPD-112154")
+	public void testGetLayoutsStrutsActionWithDraftStatus() throws Exception {
+		Layout approvedLayout = LayoutTestUtil.addTypeContentLayout(_group);
+
+		ContentLayoutTestUtil.publishLayout(
+			approvedLayout.fetchDraftLayout(), approvedLayout);
+
+		_assertLayoutInSearchResults(
+			true, approvedLayout, WorkflowConstants.STATUS_APPROVED);
+
+		_assertLayoutInSearchResults(
+			false, approvedLayout, WorkflowConstants.STATUS_DRAFT);
+		_assertLayoutInTree(
+			false, approvedLayout, WorkflowConstants.STATUS_DRAFT);
 	}
 
 	@Test
@@ -200,6 +218,9 @@ public class GetLayoutsStrutsActionTest {
 			WorkflowConstants.STATUS_DRAFT);
 	}
 
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
 	private void _assertGetLayoutsStrutsAction(
 			int count, boolean hasMoreElements,
 			Map<Long, List<Long>> layoutIdsMap, int start, int end)
@@ -235,6 +256,24 @@ public class GetLayoutsStrutsActionTest {
 					PropsValues.LAYOUT_MANAGE_PAGES_INITIAL_CHILDREN),
 				layoutJSONObject.getBoolean("paginated"));
 		}
+	}
+
+	private void _assertLayoutInSearchResults(
+			boolean expected, Layout layout, int... statuses)
+		throws Exception {
+
+		MockHttpServletRequest mockHttpServletRequest =
+			_getMockHttpServletRequest(0, _PAGE_SIZE, statuses);
+
+		mockHttpServletRequest.addParameter(
+			"keywords", layout.getName(_themeDisplay.getLocale()));
+
+		JSONObject jsonObject = _execute(
+			_findLayoutsStrutsAction, mockHttpServletRequest);
+
+		Assert.assertEquals(
+			expected,
+			_isLayoutPresent(jsonObject.getJSONArray("layouts"), layout));
 	}
 
 	private void _assertLayoutInTree(
@@ -400,6 +439,9 @@ public class GetLayoutsStrutsActionTest {
 
 	@Inject
 	private EntityCache _entityCache;
+
+	@Inject(filter = "path=/portal/find_layouts")
+	private StrutsAction _findLayoutsStrutsAction;
 
 	@Inject(filter = "path=/portal/get_layouts")
 	private StrutsAction _getLayoutsStrutsAction;
