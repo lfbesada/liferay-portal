@@ -46,6 +46,7 @@ import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.search.test.rule.SearchTestRule;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -104,6 +105,23 @@ public class GetLayoutsStrutsActionTest {
 			_layoutLocalService.getLayout(
 				_portal.getControlPanelPlid(_group.getCompanyId())));
 		_user = UserTestUtil.addGroupUser(_group, RoleConstants.SITE_MEMBER);
+	}
+
+	@Test
+	@TestInfo("LPD-112154")
+	public void testGetLayoutsStrutsActionWithDraftStatus() throws Exception {
+		Layout approvedLayout = LayoutTestUtil.addTypeContentLayout(_group);
+
+		ContentLayoutTestUtil.publishLayout(
+			approvedLayout.fetchDraftLayout(), approvedLayout);
+
+		_assertLayoutInSearchResults(
+			true, approvedLayout, WorkflowConstants.STATUS_APPROVED);
+
+		_assertLayoutInSearchResults(
+			false, approvedLayout, WorkflowConstants.STATUS_DRAFT);
+		_assertLayoutInTree(
+			false, approvedLayout, WorkflowConstants.STATUS_DRAFT);
 	}
 
 	@Test
@@ -200,6 +218,9 @@ public class GetLayoutsStrutsActionTest {
 			WorkflowConstants.STATUS_DRAFT);
 	}
 
+	@Rule
+	public SearchTestRule searchTestRule = new SearchTestRule();
+
 	private void _assertGetLayoutsStrutsAction(
 			int count, boolean hasMoreElements,
 			Map<Long, List<Long>> layoutIdsMap, int start, int end)
@@ -237,6 +258,24 @@ public class GetLayoutsStrutsActionTest {
 		}
 	}
 
+	private void _assertLayoutInSearchResults(
+			boolean expected, Layout layout, int... statuses)
+		throws Exception {
+
+		MockHttpServletRequest mockHttpServletRequest =
+			_getMockHttpServletRequest(0, _PAGE_SIZE, statuses);
+
+		mockHttpServletRequest.addParameter(
+			"keywords", layout.getName(_themeDisplay.getLocale()));
+
+		JSONObject jsonObject = _execute(
+			_findLayoutsStrutsAction, mockHttpServletRequest);
+
+		Assert.assertEquals(
+			expected,
+			_isLayoutPresent(jsonObject.getJSONArray("layouts"), layout));
+	}
+
 	private void _assertLayoutInTree(
 			boolean expected, Layout layout, int... statuses)
 		throws Exception {
@@ -244,21 +283,36 @@ public class GetLayoutsStrutsActionTest {
 		JSONObject jsonObject = _getLayoutsStrutsActionResponseJSONObject(
 			0, _PAGE_SIZE, statuses);
 
-		JSONArray jsonArray = jsonObject.getJSONArray("items");
+		Assert.assertEquals(
+			expected,
+			_isLayoutPresent(jsonObject.getJSONArray("items"), layout));
+	}
 
-		boolean present = false;
+	private JSONObject _execute(
+			StrutsAction strutsAction,
+			MockHttpServletRequest mockHttpServletRequest)
+		throws Exception {
 
-		for (int i = 0; i < jsonArray.length(); i++) {
-			JSONObject layoutJSONObject = jsonArray.getJSONObject(i);
+		MockHttpServletResponse mockHttpServletResponse =
+			new MockHttpServletResponse();
 
-			if (layoutJSONObject.getLong("layoutId") == layout.getLayoutId()) {
-				present = true;
+		try {
+			UserTestUtil.setUser(_user);
 
-				break;
+			_entityCache.clearCache();
+			_multiVMPool.clear();
+
+			try (LoggingTimer loggingTimer = new LoggingTimer()) {
+				strutsAction.execute(
+					mockHttpServletRequest, mockHttpServletResponse);
 			}
 		}
+		finally {
+			UserTestUtil.setUser(TestPropsValues.getUser());
+		}
 
-		Assert.assertEquals(expected, present);
+		return _jsonFactory.createJSONObject(
+			mockHttpServletResponse.getContentAsString());
 	}
 
 	private Map<Long, List<Long>> _getLayoutIdsMap(
@@ -317,28 +371,9 @@ public class GetLayoutsStrutsActionTest {
 			int start, int end, int... statuses)
 		throws Exception {
 
-		MockHttpServletRequest mockHttpServletRequest =
-			_getMockHttpServletRequest(start, end, statuses);
-		MockHttpServletResponse mockHttpServletResponse =
-			new MockHttpServletResponse();
-
-		try {
-			UserTestUtil.setUser(_user);
-
-			_entityCache.clearCache();
-			_multiVMPool.clear();
-
-			try (LoggingTimer loggingTimer = new LoggingTimer()) {
-				_getLayoutsStrutsAction.execute(
-					mockHttpServletRequest, mockHttpServletResponse);
-			}
-		}
-		finally {
-			UserTestUtil.setUser(TestPropsValues.getUser());
-		}
-
-		return _jsonFactory.createJSONObject(
-			mockHttpServletResponse.getContentAsString());
+		return _execute(
+			_getLayoutsStrutsAction,
+			_getMockHttpServletRequest(start, end, statuses));
 	}
 
 	private MockHttpServletRequest _getMockHttpServletRequest(
@@ -363,6 +398,18 @@ public class GetLayoutsStrutsActionTest {
 			WebKeys.THEME_DISPLAY, _themeDisplay);
 
 		return mockHttpServletRequest;
+	}
+
+	private boolean _isLayoutPresent(JSONArray jsonArray, Layout layout) {
+		for (int i = 0; i < jsonArray.length(); i++) {
+			JSONObject jsonObject = jsonArray.getJSONObject(i);
+
+			if (jsonObject.getLong("layoutId") == layout.getLayoutId()) {
+				return true;
+			}
+		}
+
+		return false;
 	}
 
 	private boolean _randomBooleanWithProbability(int probability) {
@@ -392,6 +439,9 @@ public class GetLayoutsStrutsActionTest {
 
 	@Inject
 	private EntityCache _entityCache;
+
+	@Inject(filter = "path=/portal/find_layouts")
+	private StrutsAction _findLayoutsStrutsAction;
 
 	@Inject(filter = "path=/portal/get_layouts")
 	private StrutsAction _getLayoutsStrutsAction;
