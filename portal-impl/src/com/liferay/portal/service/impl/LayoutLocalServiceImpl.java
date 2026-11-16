@@ -1315,6 +1315,12 @@ public class LayoutLocalServiceImpl extends LayoutLocalServiceBaseImpl {
 	}
 
 	@Override
+	public List<Layout> fetchDraftLayouts(long plid) {
+		return layoutPersistence.findByC_C(
+			_classNameLocalService.getClassNameId(Layout.class), plid);
+	}
+
+	@Override
 	public Layout fetchFirstLayout(
 		long groupId, boolean privateLayout, long parentLayoutId) {
 
