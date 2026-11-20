@@ -96,20 +96,6 @@ public class AccountResourceTest extends BaseAccountResourceTestCase {
 		super.testGetWorkspaceGroupChannelAccountsPageWithSortString();
 	}
 
-	@Ignore
-	@Override
-	@Test
-	public void testGraphQLGetWorkspaceGroupAccount() throws Exception {
-		super.testGraphQLGetWorkspaceGroupAccount();
-	}
-
-	@Ignore
-	@Override
-	@Test
-	public void testGraphQLGetWorkspaceGroupAccountNotFound() throws Exception {
-		super.testGraphQLGetWorkspaceGroupAccountNotFound();
-	}
-
 	private AccountLifecycle _addAccountLifecycle(
 		String accountLifecycleId,
 		Map<String, AccountLifecycle> accountLifecycles) {
@@ -209,7 +195,7 @@ public class AccountResourceTest extends BaseAccountResourceTestCase {
 
 		Assert.assertEquals("2", objects[1]);
 		Assert.assertEquals(
-			"(lifecycleStatus@lifecycle-2 in ('stage-2'))", objects[3]);
+			"(lifecycleStatus@lifecycle-2 in ('stage-2'))", objects[4]);
 	}
 
 	private void _testGetWorkspaceGroupChannelAccountsPageWithLifecycleStage()
@@ -220,7 +206,7 @@ public class AccountResourceTest extends BaseAccountResourceTestCase {
 
 		Assert.assertNull(objects[1]);
 		Assert.assertEquals(
-			"(lifecycleStatus@lifecycle-1 in ('stage-1'))", objects[3]);
+			"(lifecycleStatus@lifecycle-1 in ('stage-1'))", objects[4]);
 	}
 
 	private void _testGetWorkspaceGroupChannelAccountsPageWithUnknownLifecycleStage()
@@ -234,7 +220,7 @@ public class AccountResourceTest extends BaseAccountResourceTestCase {
 		catch (BadRequestException badRequestException) {
 			Assert.assertEquals(
 				"No account lifecycle stage was found with the name " +
-					"\"PIPELINE\"",
+					"\"PIPELINE\". Valid stages: At Risk.",
 				badRequestException.getMessage());
 		}
 	}
@@ -245,7 +231,7 @@ public class AccountResourceTest extends BaseAccountResourceTestCase {
 		Object[] objects = _getWorkspaceGroupChannelAccountsPage(null, null);
 
 		Assert.assertNull(objects[1]);
-		Assert.assertNull(objects[3]);
+		Assert.assertNull(objects[4]);
 	}
 
 }

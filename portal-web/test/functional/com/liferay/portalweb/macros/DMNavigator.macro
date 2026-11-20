@@ -3,17 +3,6 @@ definition {
 	var dmDocumentTypeName = "File Upload";
 
 	@summary = "Default summary"
-	macro gotoAddCategoriesPG(dmDocumentTitleList = null) {
-		for (var key_dmDocumentTitle : list ${dmDocumentTitleList}) {
-			Check(locator1 = "DocumentsAndMedia#DESCRIPTIVE_LIST_DOCUMENT_CHECKBOX");
-		}
-
-		Click(
-			key_text = "Edit Categories",
-			locator1 = "Button#ANY");
-	}
-
-	@summary = "Default summary"
 	macro gotoAddDocumentTypeCP(dmDocumentTypeName = null) {
 		LexiconEntry.gotoAdd();
 
@@ -138,28 +127,6 @@ definition {
 		AssertClick(
 			locator1 = "NavTab#TAB_LINK",
 			value1 = "Versions");
-	}
-
-	@summary = "Default summary"
-	macro gotoDocumentVersionsPage(dmDocumentTitle = null) {
-		if (isSet(navigateByViewHistory)) {
-			LexiconEntry.gotoEntryMenuItem(
-				menuItem = "View History",
-				rowEntry = ${dmDocumentTitle});
-		}
-		else {
-			LexiconCard.checkCardCheckbox(card = ${dmDocumentTitle});
-
-			DMDocument.expandInfo();
-
-			Navigator.gotoNavTab(navTab = "Versions");
-
-			Button.click(button = "View More");
-		}
-
-		AssertVisible(
-			key_text = "Versions",
-			locator1 = "Button#ANY");
 	}
 
 	@summary = "Default summary"
@@ -524,10 +491,6 @@ definition {
 		else {
 			if (${portlet} == "AWS Translator") {
 				var portletId = "com.liferay.translation.translator.aws.internal.configuration.AWSTranslatorConfiguration";
-			}
-
-			if (${portlet} == "Azure Translator") {
-				var portletId = "com.liferay.translation.translator.azure.internal.configuration.AzureTranslatorConfiguration";
 			}
 
 			if (${portlet} == "Documents and Media Size Limits") {

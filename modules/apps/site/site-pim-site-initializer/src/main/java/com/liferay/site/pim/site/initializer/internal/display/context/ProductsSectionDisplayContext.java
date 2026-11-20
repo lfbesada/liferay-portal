@@ -8,11 +8,10 @@ package com.liferay.site.pim.site.initializer.internal.display.context;
 import com.liferay.depot.constants.DepotConstants;
 import com.liferay.depot.service.DepotEntryServiceUtil;
 import com.liferay.frontend.data.set.model.FDSActionDropdownItem;
-import com.liferay.frontend.data.set.model.FDSActionDropdownItemBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
-import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemBuilder;
 import com.liferay.object.constants.ObjectDefinitionSettingConstants;
+import com.liferay.object.constants.ObjectEntryFolderConstants;
 import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectDefinitionSetting;
 import com.liferay.object.model.ObjectEntryFolder;
@@ -25,11 +24,9 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONUtil;
-import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
-import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionRegistryUtil;
@@ -45,8 +42,8 @@ import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.site.cms.site.initializer.constants.CMSWorkflowConstants;
-import com.liferay.site.pim.site.initializer.constants.PIMObjectEntryFolderConstants;
 import com.liferay.site.pim.site.initializer.constants.PIMObjectFolderConstants;
+import com.liferay.site.pim.site.initializer.internal.util.PIMProductsSectionUtil;
 
 import jakarta.servlet.http.HttpServletRequest;
 
@@ -73,7 +70,8 @@ public class ProductsSectionDisplayContext {
 					"cmsSection eq 'products' and status in (",
 					StringUtil.merge(CMSWorkflowConstants.STATUSES, ", "),
 					")")),
-			"&nestedFields=embedded,systemProperties.objectDefinitionBrief");
+			"&nestedFields=embedded,embedded.images,",
+			"systemProperties.objectDefinitionBrief&nestedFieldsDepth=2");
 	}
 
 	public Map<String, Object> getAdditionalProps() {
@@ -94,15 +92,8 @@ public class ProductsSectionDisplayContext {
 		}
 
 		return ListUtil.fromArray(
-			FDSActionDropdownItemBuilder.setHref(
-				"#"
-			).setIcon(
-				"trash"
-			).setLabel(
-				LanguageUtil.get(_httpServletRequest, "delete")
-			).build(
-				"delete"
-			));
+			PIMProductsSectionUtil.getDeleteBulkActionDropdownItem(
+				_httpServletRequest));
 	}
 
 	public CreationMenu getCreationMenu() {
@@ -132,7 +123,7 @@ public class ProductsSectionDisplayContext {
 				ObjectEntryFolder objectEntryFolder =
 					ObjectEntryFolderLocalServiceUtil.
 						fetchObjectEntryFolderByExternalReferenceCode(
-							PIMObjectEntryFolderConstants.
+							ObjectEntryFolderConstants.
 								EXTERNAL_REFERENCE_CODE_PRODUCTS,
 							depotEntryGroupId, themeDisplay.getCompanyId());
 
@@ -195,8 +186,11 @@ public class ProductsSectionDisplayContext {
 				continue;
 			}
 
-			DropdownItem dropdownItem = _getDropdownItem(
-				objectDefinition, themeDisplay);
+			DropdownItem dropdownItem =
+				PIMProductsSectionUtil.getProductTypeDropdownItem(
+					objectDefinition,
+					ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_PRODUCTS,
+					themeDisplay);
 
 			dropdownItem.putData("assetLibraries", jsonArray);
 
@@ -207,15 +201,7 @@ public class ProductsSectionDisplayContext {
 	}
 
 	public Map<String, Object> getEmptyState() {
-		return HashMapBuilder.<String, Object>put(
-			"description",
-			LanguageUtil.get(
-				_httpServletRequest, "click-new-to-create-your-first-product")
-		).put(
-			"image", "/states/cms_empty_state_content.svg"
-		).put(
-			"title", LanguageUtil.get(_httpServletRequest, "no-products-yet")
-		).build();
+		return PIMProductsSectionUtil.getEmptyState(_httpServletRequest);
 	}
 
 	public List<FDSActionDropdownItem> getFDSActionDropdownItems() {
@@ -228,32 +214,10 @@ public class ProductsSectionDisplayContext {
 		}
 
 		return ListUtil.fromArray(
-			FDSActionDropdownItemBuilder.setHref(
-				StringBundler.concat(
-					themeDisplay.getPortalURL(), themeDisplay.getPathMain(),
-					GroupConstants.CMS_FRIENDLY_URL,
-					"/edit_content_item?objectEntryId={embedded.id}&redirect=",
-					themeDisplay.getURLCurrent())
-			).setIcon(
-				"pencil"
-			).setLabel(
-				LanguageUtil.get(_httpServletRequest, "edit")
-			).setMethod(
-				"get"
-			).setPermissionKey(
-				"update"
-			).build(
-				"edit"
-			),
-			FDSActionDropdownItemBuilder.setIcon(
-				"trash"
-			).setLabel(
-				LanguageUtil.get(_httpServletRequest, "delete")
-			).setPermissionKey(
-				"delete"
-			).build(
-				"delete"
-			));
+			PIMProductsSectionUtil.getEditFDSActionDropdownItem(
+				_httpServletRequest),
+			PIMProductsSectionUtil.getDeleteFDSActionDropdownItem(
+				_httpServletRequest));
 	}
 
 	private List<Long> _getAcceptedGroupIds(
@@ -293,34 +257,6 @@ public class ProductsSectionDisplayContext {
 
 				return null;
 			});
-	}
-
-	private DropdownItem _getDropdownItem(
-		ObjectDefinition objectDefinition, ThemeDisplay themeDisplay) {
-
-		return DropdownItemBuilder.putData(
-			"action", "createAsset"
-		).putData(
-			"objectDefinitionId",
-			String.valueOf(objectDefinition.getObjectDefinitionId())
-		).putData(
-			"redirect",
-			StringBundler.concat(
-				themeDisplay.getPortalURL(), themeDisplay.getPathMain(),
-				GroupConstants.CMS_FRIENDLY_URL,
-				"/add_structured_content_item?objectDefinitionId=",
-				objectDefinition.getObjectDefinitionId(),
-				"&objectEntryFolderExternalReferenceCode=",
-				PIMObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_PRODUCTS,
-				"&plid=", themeDisplay.getPlid(), "&redirect=",
-				themeDisplay.getURLCurrent())
-		).putData(
-			"title", objectDefinition.getLabel(themeDisplay.getLocale())
-		).setIcon(
-			"cards2"
-		).setLabel(
-			objectDefinition.getLabel(themeDisplay.getLocale())
-		).build();
 	}
 
 	private ThemeDisplay _getThemeDisplay() {

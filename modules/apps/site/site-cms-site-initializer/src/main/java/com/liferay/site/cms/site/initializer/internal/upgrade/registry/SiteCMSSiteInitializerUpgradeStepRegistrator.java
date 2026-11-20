@@ -35,6 +35,9 @@ import com.liferay.site.cms.site.initializer.internal.upgrade.v3_0_2.CMSAdminist
 import com.liferay.site.cms.site.initializer.internal.upgrade.v3_0_3.CMSFileTypeDisplayPageUpgradeProcess;
 import com.liferay.site.cms.site.initializer.internal.upgrade.v3_0_4.CMSFileTypeFriendlyURLUpgradeProcess;
 import com.liferay.site.cms.site.initializer.internal.upgrade.v3_0_5.CMSSpaceAdministratorRoleUpgradeProcess;
+import com.liferay.site.cms.site.initializer.internal.upgrade.v3_0_6.CMSPlanningAndTasksPagesUpgradeProcess;
+import com.liferay.site.navigation.service.SiteNavigationMenuItemLocalService;
+import com.liferay.site.navigation.service.SiteNavigationMenuLocalService;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -103,6 +106,18 @@ public class SiteCMSSiteInitializerUpgradeStepRegistrator
 				_companyLocalService, _groupLocalService, _layoutLocalService,
 				_resourcePermissionLocalService, _roleLocalService,
 				_userLocalService));
+
+		registry.register(
+			"3.0.5", "3.0.6",
+			new CMSPlanningAndTasksPagesUpgradeProcess(
+				_companyLocalService, _fragmentEntryLinkLocalService,
+				_groupLocalService, _layoutLocalService,
+				_layoutPageTemplateEntryLocalService,
+				_layoutPageTemplateStructureLocalService,
+				_resourcePermissionLocalService, _roleLocalService,
+				_segmentsExperienceLocalService,
+				_siteNavigationMenuItemLocalService,
+				_siteNavigationMenuLocalService, _userLocalService));
 	}
 
 	@Reference
@@ -162,6 +177,13 @@ public class SiteCMSSiteInitializerUpgradeStepRegistrator
 
 	@Reference
 	private SegmentsExperienceLocalService _segmentsExperienceLocalService;
+
+	@Reference
+	private SiteNavigationMenuItemLocalService
+		_siteNavigationMenuItemLocalService;
+
+	@Reference
+	private SiteNavigationMenuLocalService _siteNavigationMenuLocalService;
 
 	@Reference
 	private UserLocalService _userLocalService;

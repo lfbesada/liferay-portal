@@ -178,8 +178,8 @@ public class PortletDataHandlerUtil {
 				_addLayoutSetPortletDataHandler(
 					group.getCompanyId(), locale, portlet, portletDataHandler,
 					portletDataHandlers, privateDeletionSystemEventsCount,
-					privateLayoutsEnabled, privateManifestSummary,
-					publicDeletionSystemEventsCount,
+					group.hasPrivateLayouts(), privateLayoutsEnabled,
+					privateManifestSummary, publicDeletionSystemEventsCount,
 					!group.isLayoutSetPrototype(),
 					group.isLayoutSetPrototype() ? null :
 						portletDataContext.getManifestSummary());
@@ -230,7 +230,7 @@ public class PortletDataHandlerUtil {
 			if (_isLayoutSetScoped(portlet)) {
 				_addLayoutSetPortletDataHandler(
 					group.getCompanyId(), locale, portlet, portletDataHandler,
-					portletDataHandlers, 0,
+					portletDataHandlers, 0, group.hasPrivateLayouts(),
 					_isPrivateLayoutsEnabled(group, portletScoped), null, 0,
 					!group.isLayoutSetPrototype(), null);
 
@@ -284,7 +284,7 @@ public class PortletDataHandlerUtil {
 			if (_isLayoutSetScoped(portlet)) {
 				_addLayoutSetPortletDataHandler(
 					group.getCompanyId(), locale, portlet, portletDataHandler,
-					portletDataHandlers, 0, false, null, 0, true,
+					portletDataHandlers, 0, false, false, null, 0, true,
 					counted ? manifestSummary : null);
 
 				continue;
@@ -356,9 +356,10 @@ public class PortletDataHandlerUtil {
 		com.liferay.exportimport.kernel.lar.PortletDataHandler
 			portletDataHandler,
 		List<PortletDataHandler> portletDataHandlers,
-		long privateLayoutDeletionCount, boolean privateLayoutsEnabled,
-		ManifestSummary privateManifestSummary, long publicLayoutDeletionCount,
-		boolean publicLayoutsEnabled, ManifestSummary publicManifestSummary) {
+		long privateLayoutDeletionCount, boolean privateLayouts,
+		boolean privateLayoutsEnabled, ManifestSummary privateManifestSummary,
+		long publicLayoutDeletionCount, boolean publicLayoutsEnabled,
+		ManifestSummary publicManifestSummary) {
 
 		if (!portletDataHandler.isEnabled(companyId)) {
 			return;
@@ -431,7 +432,7 @@ public class PortletDataHandlerUtil {
 									locale,
 									pagesPortletDataHandlerTreeSelection,
 									privateLayoutAdditionCount,
-									privateLayoutDeletionCount,
+									privateLayoutDeletionCount, privateLayouts,
 									publicLayoutAdditionCount,
 									publicLayoutDeletionCount,
 									publicLayoutsEnabled)
@@ -460,19 +461,31 @@ public class PortletDataHandlerUtil {
 					setLabel(() -> LanguageUtil.get(locale, "look-and-feel"));
 					setName(() -> PORTLET_DATA_HANDLER_NAME_LOOK_AND_FEEL);
 					setPortletDataHandlerControls(
-						() -> new PortletDataHandlerControl[] {
-							_toLookAndFeelPortletDataHandlerBoolean(
-								PortletDataHandlerKeys.THEME_REFERENCE,
-								"theme-settings", locale),
-							_toLookAndFeelPortletDataHandlerBoolean(
-								PortletDataHandlerKeys.LOGO, "logo", locale),
-							_toLookAndFeelPortletDataHandlerBoolean(
-								PortletDataHandlerKeys.LAYOUT_SET_SETTINGS,
-								"site-pages-settings", locale),
-							_toLookAndFeelPortletDataHandlerBoolean(
-								PortletDataHandlerKeys.
-									LAYOUT_SET_PROTOTYPE_SETTINGS,
-								"site-template-settings", locale)
+						() -> {
+							PortletDataHandlerControl[]
+								portletDataHandlerControls = {
+									_toLookAndFeelPortletDataHandlerBoolean(
+										PortletDataHandlerKeys.THEME_REFERENCE,
+										"theme-settings", locale),
+									_toLookAndFeelPortletDataHandlerBoolean(
+										PortletDataHandlerKeys.LOGO, "logo",
+										locale),
+									_toLookAndFeelPortletDataHandlerBoolean(
+										PortletDataHandlerKeys.
+											LAYOUT_SET_SETTINGS,
+										"site-pages-settings", locale)
+								};
+
+							if (group.isLayoutSetPrototype()) {
+								return portletDataHandlerControls;
+							}
+
+							return ArrayUtil.append(
+								portletDataHandlerControls,
+								_toLookAndFeelPortletDataHandlerBoolean(
+									PortletDataHandlerKeys.
+										LAYOUT_SET_PROTOTYPE_SETTINGS,
+									"site-template-settings", locale));
 						});
 					setSectionKey(
 						() -> ExportImportConstants.SECTION_KEY_SITE_BUILDER);
@@ -782,8 +795,8 @@ public class PortletDataHandlerUtil {
 			PortletDataHandlerTreeSelection
 				pagesPortletDataHandlerTreeSelection,
 			long privateLayoutAdditionCount, long privateLayoutDeletionCount,
-			long publicLayoutAdditionCount, long publicLayoutDeletionCount,
-			boolean publicLayoutsEnabled) {
+			boolean privateLayouts, long publicLayoutAdditionCount,
+			long publicLayoutDeletionCount, boolean publicLayoutsEnabled) {
 
 		return new PortletDataHandlerChoice() {
 			{
@@ -817,19 +830,23 @@ public class PortletDataHandlerUtil {
 								});
 						}
 
-						choices.add(
-							new Choice() {
-								{
-									setAdditionCount(
-										() -> privateLayoutAdditionCount);
-									setDeletionCount(
-										() -> privateLayoutDeletionCount);
-									setLabel(
-										() -> LanguageUtil.get(
-											locale, CHOICE_NAME_PRIVATE_PAGES));
-									setName(() -> CHOICE_NAME_PRIVATE_PAGES);
-								}
-							});
+						if (!publicLayoutsEnabled || privateLayouts) {
+							choices.add(
+								new Choice() {
+									{
+										setAdditionCount(
+											() -> privateLayoutAdditionCount);
+										setDeletionCount(
+											() -> privateLayoutDeletionCount);
+										setLabel(
+											() -> LanguageUtil.get(
+												locale,
+												CHOICE_NAME_PRIVATE_PAGES));
+										setName(
+											() -> CHOICE_NAME_PRIVATE_PAGES);
+									}
+								});
+						}
 
 						return choices.toArray(new Choice[0]);
 					});

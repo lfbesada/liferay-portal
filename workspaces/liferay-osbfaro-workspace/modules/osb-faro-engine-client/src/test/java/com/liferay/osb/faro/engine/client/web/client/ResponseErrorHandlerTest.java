@@ -61,32 +61,6 @@ public class ResponseErrorHandlerTest {
 	}
 
 	@Test
-	public void testHandleErrorWithHeadlessRejection() throws Exception {
-		String messageKey = "query-in-progress";
-		long retryAfterSeconds = RandomTestUtil.randomLong();
-
-		FaroEngineClientException faroEngineClientException = _handleError(
-			JSONUtil.put(
-				"errorAttributes", JSONUtil.put("messageKey", messageKey)
-			).toString(),
-			String.valueOf(retryAfterSeconds), 503);
-
-		Assert.assertTrue(
-			faroEngineClientException instanceof
-				HeadlessRequestRejectedException);
-
-		HeadlessRequestRejectedException headlessRequestRejectedException =
-			(HeadlessRequestRejectedException)faroEngineClientException;
-
-		Assert.assertNull(headlessRequestRejectedException.getLimit());
-		Assert.assertEquals(
-			messageKey, headlessRequestRejectedException.getMessageKey());
-		Assert.assertEquals(
-			Long.valueOf(retryAfterSeconds),
-			headlessRequestRejectedException.getRetryAfterSeconds());
-	}
-
-	@Test
 	public void testHandleErrorWithLimit() throws Exception {
 		long limit = RandomTestUtil.randomLong();
 		String messageKey = "page-size-limit-exceeded";
@@ -118,6 +92,35 @@ public class ResponseErrorHandlerTest {
 	}
 
 	@Test
+	public void testHandleErrorWithMCPCancelledByOperator() throws Exception {
+		_assertHeadlessRequestRejectedException(
+			"mcp-cancelled-by-operator", 503);
+	}
+
+	@Test
+	public void testHandleErrorWithMCPConcurrencyLimitExceeded()
+		throws Exception {
+
+		_assertHeadlessRequestRejectedException(
+			"mcp-concurrency-limit-exceeded", 429);
+	}
+
+	@Test
+	public void testHandleErrorWithMCPDisabled() throws Exception {
+		_assertHeadlessRequestRejectedException("mcp-disabled", 503);
+	}
+
+	@Test
+	public void testHandleErrorWithMCPRateLimitExceeded() throws Exception {
+		_assertHeadlessRequestRejectedException("mcp-rate-limit-exceeded", 429);
+	}
+
+	@Test
+	public void testHandleErrorWithMCPToolDisabled() throws Exception {
+		_assertHeadlessRequestRejectedException("mcp-tool-disabled", 503);
+	}
+
+	@Test
 	public void testHandleErrorWithOtherMessageKey() throws Exception {
 		String json = JSONUtil.put(
 			"errorAttributes",
@@ -134,6 +137,11 @@ public class ResponseErrorHandlerTest {
 	}
 
 	@Test
+	public void testHandleErrorWithQueryInProgress() throws Exception {
+		_assertHeadlessRequestRejectedException("query-in-progress", 503);
+	}
+
+	@Test
 	public void testHandleErrorWithoutJSON() throws Exception {
 		String content = RandomTestUtil.randomString();
 
@@ -144,6 +152,33 @@ public class ResponseErrorHandlerTest {
 			FaroEngineClientException.class,
 			faroEngineClientException.getClass());
 		Assert.assertEquals(content, faroEngineClientException.getMessage());
+	}
+
+	private void _assertHeadlessRequestRejectedException(
+			String messageKey, int statusCode)
+		throws Exception {
+
+		long retryAfterSeconds = RandomTestUtil.randomLong();
+
+		FaroEngineClientException faroEngineClientException = _handleError(
+			JSONUtil.put(
+				"errorAttributes", JSONUtil.put("messageKey", messageKey)
+			).toString(),
+			String.valueOf(retryAfterSeconds), statusCode);
+
+		Assert.assertTrue(
+			faroEngineClientException instanceof
+				HeadlessRequestRejectedException);
+
+		HeadlessRequestRejectedException headlessRequestRejectedException =
+			(HeadlessRequestRejectedException)faroEngineClientException;
+
+		Assert.assertNull(headlessRequestRejectedException.getLimit());
+		Assert.assertEquals(
+			messageKey, headlessRequestRejectedException.getMessageKey());
+		Assert.assertEquals(
+			Long.valueOf(retryAfterSeconds),
+			headlessRequestRejectedException.getRetryAfterSeconds());
 	}
 
 	private FaroEngineClientException _handleError(

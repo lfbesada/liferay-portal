@@ -5,13 +5,12 @@
 
 package com.liferay.frontend.js.bundle.config.extender.internal;
 
-import com.liferay.petra.string.StringBundler;
-import com.liferay.portal.kernel.log.Log;
-import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.servlet.HttpHeaders;
+import com.liferay.portal.kernel.servlet.PortalWebResourceConstants;
+import com.liferay.portal.kernel.servlet.PortalWebResources;
 import com.liferay.portal.kernel.util.ContentTypes;
-import com.liferay.portal.kernel.util.Portal;
-import com.liferay.portal.kernel.util.StringUtil;
-import com.liferay.portal.kernel.util.URLUtil;
+import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.servlet.delegate.ServletContextDelegate;
 
 import jakarta.servlet.Servlet;
 import jakarta.servlet.ServletConfig;
@@ -24,14 +23,10 @@ import jakarta.servlet.http.HttpServletResponse;
 import java.io.IOException;
 import java.io.PrintWriter;
 
-import java.util.Collection;
-import java.util.Map;
-
-import org.osgi.service.component.ComponentContext;
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Modified;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Carlos Sierra Andrés
@@ -48,20 +43,22 @@ import org.osgi.service.component.annotations.Reference;
 public class JSBundleConfigServlet extends HttpServlet {
 
 	@Override
+	public void destroy() {
+		_serviceRegistration.unregister();
+	}
+
+	@Override
 	public void init(ServletConfig config) throws ServletException {
 		super.init(config);
 
-		_componentContext.enableComponent(
-			JSBundleConfigPortalWebResources.class.getName());
+		_serviceRegistration = _bundleContext.registerService(
+			PortalWebResources.class,
+			new InternalPortalWebResources(config.getServletContext()), null);
 	}
 
 	@Activate
-	@Modified
-	protected void activate(
-			ComponentContext componentContext, Map<String, Object> properties)
-		throws Exception {
-
-		_componentContext = componentContext;
+	protected void activate(BundleContext bundleContext) {
+		_bundleContext = bundleContext;
 	}
 
 	@Override
@@ -70,52 +67,56 @@ public class JSBundleConfigServlet extends HttpServlet {
 			HttpServletResponse httpServletResponse)
 		throws IOException {
 
+		if (GetterUtil.getLong(httpServletRequest.getParameter("t")) ==
+				JSBundleConfigRegistryUtil.getLastModified()) {
+
+			httpServletResponse.setHeader(
+				HttpHeaders.CACHE_CONTROL,
+				"immutable, max-age=31536000, public");
+		}
+		else {
+			httpServletResponse.setHeader(
+				HttpHeaders.CACHE_CONTROL, "no-cache");
+		}
+
 		httpServletResponse.setContentType(ContentTypes.TEXT_JAVASCRIPT_UTF8);
 
 		PrintWriter printWriter = httpServletResponse.getWriter();
 
-		Collection<JSBundleConfigRegistryUtil.JSConfig> jsConfigs =
-			JSBundleConfigRegistryUtil.getJSConfigs();
-
-		if (!jsConfigs.isEmpty()) {
-			printWriter.print("(function() {");
-
-			for (JSBundleConfigRegistryUtil.JSConfig jsConfig : jsConfigs) {
-				try {
-					printWriter.print("try{");
-
-					ServletContext servletContext =
-						jsConfig.getServletContext();
-
-					printWriter.print(
-						StringBundler.concat(
-							"var MODULE_PATH='", _portal.getPathProxy(),
-							servletContext.getContextPath(), "';"));
-
-					printWriter.print(
-						StringUtil.removeSubstring(
-							URLUtil.toString(jsConfig.getURL()),
-							"//# sourceMappingURL=config.js.map"));
-
-					printWriter.print("}catch(error){console.error(error);}");
-				}
-				catch (Exception exception) {
-					_log.error("Unable to open resource", exception);
-				}
-			}
-
-			printWriter.print("}());");
-		}
-
-		printWriter.close();
+		printWriter.write(JSBundleConfigRegistryUtil.getJavaScript());
 	}
 
-	private static final Log _log = LogFactoryUtil.getLog(
-		JSBundleConfigServlet.class);
+	private BundleContext _bundleContext;
+	private ServiceRegistration<?> _serviceRegistration;
 
-	private volatile ComponentContext _componentContext;
+	private class InternalPortalWebResources implements PortalWebResources {
 
-	@Reference
-	private Portal _portal;
+		@Override
+		public String getContextPath() {
+			return _servletContext.getContextPath();
+		}
+
+		@Override
+		public long getLastModified() {
+			return JSBundleConfigRegistryUtil.getLastModified();
+		}
+
+		@Override
+		public String getResourceType() {
+			return PortalWebResourceConstants.RESOURCE_TYPE_JS_BUNDLE_CONFIG;
+		}
+
+		@Override
+		public ServletContext getServletContext() {
+			return _servletContext;
+		}
+
+		private InternalPortalWebResources(ServletContext servletContext) {
+			_servletContext = ServletContextDelegate.create(servletContext);
+		}
+
+		private final ServletContext _servletContext;
+
+	}
 
 }

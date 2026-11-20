@@ -12,6 +12,7 @@ import React, {useId, useState} from 'react';
 
 import {
 	LayoutSetSelection,
+	LayoutSetVisibility,
 	PortletDataHandlerSelection,
 	isAllLayoutsSelected,
 } from '../../../utils/contentSelection';
@@ -20,6 +21,7 @@ import SectionTags from './SectionTags';
 
 interface Props {
 	additionCount?: number;
+	availableLayoutSetVisibilities: LayoutSetVisibility[];
 	deletionCount?: number;
 	label: string;
 	onChange: (value: PortletDataHandlerSelection | undefined) => void;
@@ -94,18 +96,15 @@ function LayoutVisibilitySelector({
 
 export default function LayoutSetControl({
 	additionCount,
+	availableLayoutSetVisibilities,
 	deletionCount,
 	label,
 	onChange,
 	pageTreeModalConfiguration,
 	portletDataHandlerSelection,
 }: Props) {
-	const {
-		pageSize,
-		privateLayoutsAvailable,
-		siteExternalReferenceCode,
-		title,
-	} = pageTreeModalConfiguration;
+	const {pageSize, siteExternalReferenceCode, title} =
+		pageTreeModalConfiguration;
 
 	const checkboxId = useId();
 
@@ -117,9 +116,15 @@ export default function LayoutSetControl({
 			: {}
 	) as LayoutSetSelection;
 
-	const {privateLayout = false} = layoutSetSelection;
+	const [defaultLayoutSetVisibility] = availableLayoutSetVisibilities;
+
+	const {privateLayout = defaultLayoutSetVisibility === 'private'} =
+		layoutSetSelection;
 
 	const isAll = isAllLayoutsSelected(portletDataHandlerSelection);
+
+	const multipleLayoutSetVisibilities =
+		availableLayoutSetVisibilities.length > 1;
 
 	const selected = typeof portletDataHandlerSelection === 'object';
 
@@ -157,13 +162,17 @@ export default function LayoutSetControl({
 
 						<SelectPagesButton
 							onClick={() => setShowModal(true)}
-							privateLayout={privateLayout}
+							privateLayout={
+								multipleLayoutSetVisibilities
+									? privateLayout
+									: undefined
+							}
 						/>
 					</div>
 				</ClayLayout.ContentCol>
 			</ClayLayout.ContentRow>
 
-			{privateLayoutsAvailable && selected && (
+			{multipleLayoutSetVisibilities && selected && (
 				<LayoutVisibilitySelector
 					label={label}
 					onSetMode={(nextPrivateLayout) =>
@@ -190,6 +199,11 @@ export default function LayoutSetControl({
 					}}
 					pageSize={pageSize}
 					privateLayout={privateLayout}
+					rootLabel={
+						multipleLayoutSetVisibilities
+							? undefined
+							: Liferay.Language.get('pages')
+					}
 					siteExternalReferenceCode={siteExternalReferenceCode}
 					title={title}
 				/>

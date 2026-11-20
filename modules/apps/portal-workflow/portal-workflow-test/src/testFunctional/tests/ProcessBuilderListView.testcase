@@ -376,7 +376,7 @@ definition {
 
 		Workflow.unpublishWorkflowDefinition(workflowDefinitionTitle = "Single Approver");
 
-		Workflow.permissionsWorkflowDefinition(workflowDefinitionTitle = "Single Approver");
+		ProcessBuilderListView.gotoPermissions(workflowDefinitionTitle = "Single Approver");
 	}
 
 	@description = "Verify that the user can select View option in the kebab menu for a particular row"
@@ -497,6 +497,7 @@ definition {
 	@description = "Verify that the pagination component is displayed when the table has 5 items or more"
 	@priority = 3
 	test PaginationComponentIsDisplayed {
+		property custom.properties = "search.container.page.delta.values=4,8,20,40,60";
 		property test.liferay.virtual.instance = "false";
 		property test.run.type = "single";
 

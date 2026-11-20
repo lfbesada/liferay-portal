@@ -1,5 +1,10 @@
+import FaroConstants from 'shared/util/constants';
 import sendRequest from 'shared/util/request';
 import {Metric} from 'contacts/pages/account/utils/types';
+
+const {
+	pagination: {delta: DEFAULT_DELTA},
+} = FaroConstants;
 
 /**
  * Mirrors `CampaignDisplay` on the Faro BFF, whose de-underscored field names
@@ -16,6 +21,18 @@ export interface ICampaign {
 	origin?: string;
 	startDate: string | number;
 	status: string;
+}
+
+/**
+ * One value of one UTM parameter seen on the campaign's tagged website
+ * sessions. The API sends one item per value, ordered by name and then by
+ * usage, and `standard` marks the five standard `utm_*` parameters.
+ */
+export interface ICampaignAcquisitionParameter {
+	fieldName: string | null;
+	name: string;
+	standard: boolean;
+	value: string;
 }
 
 export enum CampaignMetricType {
@@ -47,6 +64,32 @@ export async function fetchCampaign({
 	});
 }
 
+interface IFetchCampaignAcquisitionParameters {
+	channelId: string;
+	groupId: string;
+	id: string;
+	rangeQueryValues?: {[key: string]: any};
+}
+
+/**
+ * Without range values the API answers for all time, unlike the campaign's
+ * other endpoints, so the selected range is always passed through.
+ */
+export async function fetchCampaignAcquisitionParameters({
+	channelId,
+	groupId,
+	id,
+	rangeQueryValues,
+}: IFetchCampaignAcquisitionParameters): Promise<
+	ICampaignAcquisitionParameter[]
+> {
+	return sendRequest({
+		data: {channelId, ...rangeQueryValues},
+		method: 'GET',
+		path: `contacts/${groupId}/campaigns/${id}/acquisition-parameters`,
+	});
+}
+
 interface IFetchCampaignMetrics {
 	accountId?: string;
 	channelId: string;
@@ -73,5 +116,34 @@ export async function fetchCampaignMetrics({
 		},
 		method: 'GET',
 		path: `contacts/${groupId}/campaigns/metrics`,
+	});
+}
+
+interface ISearchCampaignNames {
+	channelId?: string;
+	groupId: string;
+	page?: number;
+	pageSize?: number;
+	query?: string;
+}
+
+/**
+ * Feeds the campaign picker. The backend decides whether the names come from
+ * UTM or Salesforce.
+ */
+export async function searchCampaignNames({
+	channelId = '',
+	groupId,
+	page = 1,
+	pageSize = DEFAULT_DELTA,
+	query = '',
+}: ISearchCampaignNames): Promise<{
+	items: {id: string; name: string}[];
+	totalCount: number;
+}> {
+	return sendRequest({
+		data: {channelId, page, pageSize, search: query},
+		method: 'GET',
+		path: `contacts/${groupId}/campaigns/campaign-names`,
 	});
 }

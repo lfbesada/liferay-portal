@@ -45,7 +45,6 @@ import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.portal.db.partition.util.DBPartitionUtil;
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.ResourcePermission;
@@ -100,32 +99,38 @@ public class CommerceRoleHelperImpl implements CommerceRoleHelper {
 		_checkRole(
 			AccountRoleConstants.ROLE_NAME_ORDER_ADMINISTRATOR,
 			RoleConstants.TYPE_REGULAR, serviceContext);
-
-		if (FeatureFlagManagerUtil.isEnabled(
-				serviceContext.getCompanyId(), "LPD-10562")) {
-
-			_checkRole(
-				AccountRoleConstants.ROLE_NAME_RETURNS_MANAGER,
-				RoleConstants.TYPE_REGULAR, serviceContext);
-			_checkRole(
-				RoleConstants.USER, RoleConstants.TYPE_REGULAR, serviceContext);
-		}
-
+		_checkRole(
+			AccountRoleConstants.ROLE_NAME_RETURNS_MANAGER,
+			RoleConstants.TYPE_REGULAR, serviceContext);
 		_checkRole(
 			AccountRoleConstants.ROLE_NAME_SUPPLIER, RoleConstants.TYPE_REGULAR,
 			serviceContext);
+		_checkRole(
+			RoleConstants.USER, RoleConstants.TYPE_REGULAR, serviceContext);
+	}
+
+	@Override
+	public void checkCommerceReturnsRoles(ServiceContext serviceContext)
+		throws PortalException {
+
+		for (String name : _ROLE_NAMES_COMMERCE_RETURNS) {
+			Role role = _roleLocalService.fetchRole(
+				serviceContext.getCompanyId(), name);
+
+			if (role == null) {
+				continue;
+			}
+
+			_setRolePermissions(role, serviceContext);
+		}
 	}
 
 	@Override
 	public void checkCommerceUserRoles(ServiceContext serviceContext)
 		throws PortalException {
 
-		if (FeatureFlagManagerUtil.isEnabled(
-				serviceContext.getCompanyId(), "LPD-10562")) {
-
-			_checkRole(
-				RoleConstants.USER, RoleConstants.TYPE_REGULAR, serviceContext);
-		}
+		_checkRole(
+			RoleConstants.USER, RoleConstants.TYPE_REGULAR, serviceContext);
 	}
 
 	@Override
@@ -134,12 +139,13 @@ public class CommerceRoleHelperImpl implements CommerceRoleHelper {
 
 		Role role = _roleLocalService.fetchRole(companyId, RoleConstants.USER);
 
-		for (String objectDefinitionName :
-				_RETURNS_MANAGER_OBJECT_DEFINITION_NAMES) {
+		for (String externalReferenceCode :
+				_OBJECT_DEFINITION_EXTERNAL_REFERENCE_CODES_COMMERCE_RETURNS) {
 
 			ObjectDefinition objectDefinition =
-				_objectDefinitionLocalService.fetchObjectDefinition(
-					role.getCompanyId(), objectDefinitionName);
+				_objectDefinitionLocalService.
+					fetchObjectDefinitionByExternalReferenceCode(
+						externalReferenceCode, role.getCompanyId());
 
 			if (objectDefinition == null) {
 				continue;
@@ -155,7 +161,7 @@ public class CommerceRoleHelperImpl implements CommerceRoleHelper {
 		}
 
 		for (String externalReferenceCode :
-				_RETURNS_MANAGER_LIST_TYPE_DEFINITION_EXTERNAL_REFERENCE_CODES) {
+				_LIST_TYPE_DEFINITION_EXTERNAL_REFERENCE_CODES_COMMERCE_RETURNS) {
 
 			ListTypeDefinition listTypeDefinition =
 				_listTypeDefinitionLocalService.
@@ -564,12 +570,24 @@ public class CommerceRoleHelperImpl implements CommerceRoleHelper {
 				});
 		}
 		else if (name.equals(AccountRoleConstants.ROLE_NAME_SUPPLIER)) {
-			for (String portletId : _SUPPLIER_CONTROL_PANEL_PORTLET_IDS) {
-				companyResourceActionIds.put(
-					portletId,
-					new String[] {ActionKeys.ACCESS_IN_CONTROL_PANEL});
-			}
-
+			companyResourceActionIds.put(
+				CommercePortletKeys.COMMERCE_ORDER,
+				new String[] {ActionKeys.ACCESS_IN_CONTROL_PANEL});
+			companyResourceActionIds.put(
+				CommercePricingPortletKeys.COMMERCE_PRICE_LIST,
+				new String[] {ActionKeys.ACCESS_IN_CONTROL_PANEL});
+			companyResourceActionIds.put(
+				CommercePricingPortletKeys.COMMERCE_PROMOTION,
+				new String[] {ActionKeys.ACCESS_IN_CONTROL_PANEL});
+			companyResourceActionIds.put(
+				CPPortletKeys.COMMERCE_CATALOGS,
+				new String[] {ActionKeys.ACCESS_IN_CONTROL_PANEL});
+			companyResourceActionIds.put(
+				CPPortletKeys.COMMERCE_CHANNELS,
+				new String[] {ActionKeys.ACCESS_IN_CONTROL_PANEL});
+			companyResourceActionIds.put(
+				CPPortletKeys.CP_DEFINITIONS,
+				new String[] {ActionKeys.ACCESS_IN_CONTROL_PANEL});
 			companyResourceActionIds.put(
 				PortletKeys.PORTAL,
 				new String[] {ActionKeys.VIEW_CONTROL_PANEL});
@@ -662,14 +680,12 @@ public class CommerceRoleHelperImpl implements CommerceRoleHelper {
 				ExpandoColumn.class.getName(), new String[] {ActionKeys.VIEW});
 		}
 		else if (name.equals(AccountRoleConstants.ROLE_NAME_RETURNS_MANAGER)) {
-			for (String portletId :
-					_RETURNS_MANAGER_CONTROL_PANEL_PORTLET_IDS) {
-
-				companyResourceActionIds.put(
-					portletId,
-					new String[] {ActionKeys.ACCESS_IN_CONTROL_PANEL});
-			}
-
+			companyResourceActionIds.put(
+				CommercePortletKeys.COMMERCE_PAYMENT,
+				new String[] {ActionKeys.ACCESS_IN_CONTROL_PANEL});
+			companyResourceActionIds.put(
+				CommercePortletKeys.COMMERCE_RETURN,
+				new String[] {ActionKeys.ACCESS_IN_CONTROL_PANEL});
 			companyResourceActionIds.put(
 				CommerceChannel.class.getName(),
 				new String[] {ActionKeys.UPDATE, ActionKeys.VIEW});
@@ -694,12 +710,13 @@ public class CommerceRoleHelperImpl implements CommerceRoleHelper {
 				"com.liferay.commerce.return",
 				new String[] {CommerceActionKeys.MANAGE_RETURNS});
 
-			for (String objectDefinitionName :
-					_RETURNS_MANAGER_OBJECT_DEFINITION_NAMES) {
+			for (String externalReferenceCode :
+					_OBJECT_DEFINITION_EXTERNAL_REFERENCE_CODES_COMMERCE_RETURNS) {
 
 				ObjectDefinition objectDefinition =
-					_objectDefinitionLocalService.fetchObjectDefinition(
-						role.getCompanyId(), objectDefinitionName);
+					_objectDefinitionLocalService.
+						fetchObjectDefinitionByExternalReferenceCode(
+							externalReferenceCode, role.getCompanyId());
 
 				if (objectDefinition == null) {
 					continue;
@@ -722,12 +739,13 @@ public class CommerceRoleHelperImpl implements CommerceRoleHelper {
 			}
 		}
 		else if (name.equals(RoleConstants.USER)) {
-			for (String objectDefinitionName :
-					_RETURNS_MANAGER_OBJECT_DEFINITION_NAMES) {
+			for (String externalReferenceCode :
+					_OBJECT_DEFINITION_EXTERNAL_REFERENCE_CODES_COMMERCE_RETURNS) {
 
 				ObjectDefinition objectDefinition =
-					_objectDefinitionLocalService.fetchObjectDefinition(
-						role.getCompanyId(), objectDefinitionName);
+					_objectDefinitionLocalService.
+						fetchObjectDefinitionByExternalReferenceCode(
+							externalReferenceCode, role.getCompanyId());
 
 				if (objectDefinition == null) {
 					continue;
@@ -739,7 +757,7 @@ public class CommerceRoleHelperImpl implements CommerceRoleHelper {
 			}
 
 			for (String externalReferenceCode :
-					_RETURNS_MANAGER_LIST_TYPE_DEFINITION_EXTERNAL_REFERENCE_CODES) {
+					_LIST_TYPE_DEFINITION_EXTERNAL_REFERENCE_CODES_COMMERCE_RETURNS) {
 
 				ListTypeDefinition listTypeDefinition =
 					_listTypeDefinitionLocalService.
@@ -771,27 +789,22 @@ public class CommerceRoleHelperImpl implements CommerceRoleHelper {
 			ResourceConstants.SCOPE_GROUP_TEMPLATE);
 	}
 
-	private static final String[] _RETURNS_MANAGER_CONTROL_PANEL_PORTLET_IDS = {
-		CommercePortletKeys.COMMERCE_PAYMENT,
-		CommercePortletKeys.COMMERCE_RETURN
-	};
-
 	private static final String[]
-		_RETURNS_MANAGER_LIST_TYPE_DEFINITION_EXTERNAL_REFERENCE_CODES = {
+		_LIST_TYPE_DEFINITION_EXTERNAL_REFERENCE_CODES_COMMERCE_RETURNS = {
 			"L_COMMERCE_RETURN_ITEM_STATUSES", "L_COMMERCE_RETURN_REASONS",
 			"L_COMMERCE_RETURN_RESOLUTION_METHODS", "L_COMMERCE_RETURN_STATUSES"
 		};
 
-	private static final String[] _RETURNS_MANAGER_OBJECT_DEFINITION_NAMES = {
-		"CommerceReturn", "CommerceReturnItem"
-	};
+	private static final String[]
+		_OBJECT_DEFINITION_EXTERNAL_REFERENCE_CODES_COMMERCE_RETURNS = {
+			"L_COMMERCE_RETURN", "L_COMMERCE_RETURN_ITEM"
+		};
 
-	private static final String[] _SUPPLIER_CONTROL_PANEL_PORTLET_IDS = {
-		CommercePortletKeys.COMMERCE_ORDER,
-		CommercePricingPortletKeys.COMMERCE_PRICE_LIST,
-		CommercePricingPortletKeys.COMMERCE_PROMOTION,
-		CPPortletKeys.COMMERCE_CATALOGS, CPPortletKeys.COMMERCE_CHANNELS,
-		CPPortletKeys.CP_DEFINITIONS
+	private static final String[] _ROLE_NAMES_COMMERCE_RETURNS = {
+		AccountRoleConstants.REQUIRED_ROLE_NAME_ACCOUNT_ADMINISTRATOR,
+		AccountRoleConstants.ROLE_NAME_ACCOUNT_BUYER,
+		AccountRoleConstants.ROLE_NAME_ACCOUNT_ORDER_MANAGER,
+		AccountRoleConstants.ROLE_NAME_RETURNS_MANAGER, RoleConstants.USER
 	};
 
 	@Reference

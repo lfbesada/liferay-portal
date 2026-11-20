@@ -21,6 +21,7 @@ jest.mock('@liferay/frontend-data-set-web', () => ({
 	...jest.requireActual('@liferay/frontend-data-set-web'),
 	FrontendDataSet: ({
 		additionalAPIURLParametersTransformer,
+		customDataRenderers,
 		emptyState,
 		filters,
 		groupedFilters,
@@ -30,6 +31,7 @@ jest.mock('@liferay/frontend-data-set-web', () => ({
 		views,
 	}: {
 		additionalAPIURLParametersTransformer?: (loadDataArgs: any) => any;
+		customDataRenderers?: {[key: string]: (props: any) => React.ReactNode};
 		emptyState?: {
 			description?: React.ReactNode;
 			image?: string;
@@ -68,6 +70,23 @@ jest.mock('@liferay/frontend-data-set-web', () => ({
 
 				<div data-testid="fds-transformer-result">
 					{transformerResult}
+				</div>
+
+				<div data-testid="fds-asset-type-with-label">
+					{customDataRenderers?.assetTypeRenderer?.({
+						itemData: {
+							assetType: 'C_ProductSheet',
+							assetTypeLabel: 'Product Sheet',
+						},
+						value: 'C_ProductSheet',
+					})}
+				</div>
+
+				<div data-testid="fds-asset-type-without-label">
+					{customDataRenderers?.assetTypeRenderer?.({
+						itemData: {assetType: 'blog'},
+						value: 'blog',
+					})}
 				</div>
 
 				<div data-testid="fds-sorts">
@@ -399,7 +418,7 @@ describe('List', () => {
 
 			expect(
 				screen.getByTestId('fds-empty-state-title')
-			).toHaveTextContent('No assets were found.');
+			).toHaveTextContent(/no assets were found\./i);
 		});
 
 		it('should include the check-back-later text in the empty state description', async () => {
@@ -408,7 +427,7 @@ describe('List', () => {
 			expect(
 				screen.getByTestId('fds-empty-state-description')
 			).toHaveTextContent(
-				'Check back later to verify if data has been received from your data sources, or you can try a different date range.'
+				/check back later to verify if data has been received from your data sources, or you can try a different date range\./i
 			);
 		});
 
@@ -438,7 +457,7 @@ describe('List', () => {
 		it('should render the page title "Assets"', async () => {
 			await renderList();
 
-			expect(screen.getByText('Assets')).toBeInTheDocument();
+			expect(screen.getByText(/^assets$/i)).toBeInTheDocument();
 		});
 
 		it('should render the FrontendDataSet component', async () => {
@@ -479,6 +498,39 @@ describe('List', () => {
 			);
 
 			expect(groupedFilters[0].filters).toContain('cmpProjects/id');
+		});
+
+		it('should filter by the id of the asset type and show its name', async () => {
+			await renderList();
+
+			const filters = JSON.parse(
+				screen.getByTestId('fds-filters').textContent
+			);
+
+			const assetTypeFilter = filters.find(
+				(filter: {apiURL: string; id: string; label: string}) =>
+					filter.id === 'assetType'
+			);
+
+			expect(assetTypeFilter.apiURL).toContain('asset-summary-types');
+			expect(assetTypeFilter.itemKey).toBe('id');
+			expect(assetTypeFilter.itemLabel).toBe('name');
+		});
+
+		it('should render the label of the asset type when the asset has one', async () => {
+			await renderList();
+
+			expect(
+				screen.getByTestId('fds-asset-type-with-label')
+			).toHaveTextContent('Product Sheet');
+		});
+
+		it('should render the asset type when the asset has no label', async () => {
+			await renderList();
+
+			expect(
+				screen.getByTestId('fds-asset-type-without-label')
+			).toHaveTextContent('blog');
 		});
 
 		it('should pass the mimeType filter to FrontendDataSet', async () => {
@@ -845,20 +897,37 @@ describe('List', () => {
 		const getSorts = () =>
 			JSON.parse(screen.getByTestId('fds-sorts').textContent);
 
-		it('should not pass any sort when no orderBy is in the URL', async () => {
+		const getActiveSortKeys = () =>
+			getSorts()
+				.filter((sort: {active: boolean}) => sort.active)
+				.map((sort: {key: string}) => sort.key);
+
+		it('should sort by views when no orderBy is in the URL', async () => {
 			await renderList();
 
-			expect(getSorts()).toBeNull();
+			expect(getActiveSortKeys()).toEqual(['viewsMetric']);
 		});
 
-		it('should ignore an unknown orderBy value', async () => {
+		it('should fall back to views on an unknown orderBy value', async () => {
 			await renderList({queryString: '?orderBy=bogusMetric'});
 
-			expect(getSorts()).toBeNull();
+			expect(getActiveSortKeys()).toEqual(['viewsMetric']);
 		});
 
-		it('should offer every sortable column as a sort option', async () => {
-			await renderList({queryString: '?orderBy=viewsMetric'});
+		it('should keep views as the default sort whatever the orderBy', async () => {
+			await renderList({queryString: '?orderBy=impressionsMetric'});
+
+			const defaultSorts = getSorts().filter(
+				(sort: {default: boolean}) => sort.default
+			);
+
+			expect(defaultSorts.map((sort: {key: string}) => sort.key)).toEqual(
+				['viewsMetric']
+			);
+		});
+
+		it('should offer every sortable column as a sort option without an orderBy', async () => {
+			await renderList();
 
 			const sorts = getSorts();
 
@@ -866,10 +935,14 @@ describe('List', () => {
 				SORTABLE_KEYS
 			);
 
-			sorts.forEach((sort: {direction: string; label: string}) => {
-				expect(sort.direction).toBe('desc');
-				expect(sort.label).toBeTruthy();
-			});
+			sorts.forEach(
+				(sort: {direction: string; key: string; label: string}) => {
+					expect(sort.direction).toBe(
+						sort.key === 'viewsMetric' ? 'desc' : 'asc'
+					);
+					expect(sort.label).toBeTruthy();
+				}
+			);
 		});
 
 		['viewsMetric', 'impressionsMetric', 'downloadsMetric'].forEach(
@@ -1211,7 +1284,7 @@ describe('List', () => {
 
 			fireEvent.click(screen.getByTestId('trigger-info-panel'));
 
-			fireEvent.click(screen.getByRole('button', {name: 'Close'}));
+			fireEvent.click(screen.getByRole('button', {name: /^close$/i}));
 
 			await waitFor(() =>
 				expect(container.querySelector('.index-root')).not.toHaveClass(
@@ -1225,7 +1298,7 @@ describe('List', () => {
 
 			fireEvent.click(screen.getByTestId('trigger-info-panel'));
 
-			expect(screen.getByText('Categorization')).toBeInTheDocument();
+			expect(screen.getByText(/^categorization$/i)).toBeInTheDocument();
 		});
 	});
 
@@ -1234,7 +1307,7 @@ describe('List', () => {
 			await renderList();
 
 			fireEvent.click(screen.getByTestId('trigger-info-panel'));
-			fireEvent.click(screen.getByText('Categorization'));
+			fireEvent.click(screen.getByText(/^categorization$/i));
 
 			expect(
 				screen.getByText('No Categories were found for this asset.')
@@ -1247,9 +1320,9 @@ describe('List', () => {
 			fireEvent.click(
 				screen.getByTestId('trigger-info-panel-with-items')
 			);
-			fireEvent.click(screen.getByText('Categorization'));
+			fireEvent.click(screen.getByText(/^categorization$/i));
 
-			expect(screen.getByText('Topic')).toBeInTheDocument();
+			expect(screen.getByText(/^topic$/i)).toBeInTheDocument();
 			expect(screen.getByText('Category One')).toBeInTheDocument();
 			expect(screen.getByText('Category Two')).toBeInTheDocument();
 		});
@@ -1260,9 +1333,9 @@ describe('List', () => {
 			fireEvent.click(
 				screen.getByTestId('trigger-info-panel-empty-vocab')
 			);
-			fireEvent.click(screen.getByText('Categorization'));
+			fireEvent.click(screen.getByText(/^categorization$/i));
 
-			expect(screen.getByText('Topics')).toBeInTheDocument();
+			expect(screen.getByText(/^topics$/i)).toBeInTheDocument();
 			expect(screen.queryByText('Genres')).not.toBeInTheDocument();
 		});
 
@@ -1272,9 +1345,9 @@ describe('List', () => {
 			fireEvent.click(
 				screen.getByTestId('trigger-info-panel-with-items')
 			);
-			fireEvent.click(screen.getByText('Categorization'));
+			fireEvent.click(screen.getByText(/^categorization$/i));
 
-			expect(screen.getAllByText('Topic')).toHaveLength(1);
+			expect(screen.getAllByText(/^topic$/i)).toHaveLength(1);
 			expect(screen.getByText('Category One')).toBeInTheDocument();
 			expect(screen.getByText('Category Two')).toBeInTheDocument();
 		});
@@ -1285,7 +1358,7 @@ describe('List', () => {
 			fireEvent.click(
 				screen.getByTestId('trigger-info-panel-with-items')
 			);
-			fireEvent.click(screen.getByText('Categorization'));
+			fireEvent.click(screen.getByText(/^categorization$/i));
 
 			expect(
 				screen.queryByText('No Categories were found for this asset.')
@@ -1298,7 +1371,7 @@ describe('List', () => {
 			await renderList();
 
 			fireEvent.click(screen.getByTestId('trigger-info-panel'));
-			fireEvent.click(screen.getByText('Categorization'));
+			fireEvent.click(screen.getByText(/^categorization$/i));
 
 			expect(
 				screen.getByText('No Tags were found for this asset.')
@@ -1311,7 +1384,7 @@ describe('List', () => {
 			fireEvent.click(
 				screen.getByTestId('trigger-info-panel-with-items')
 			);
-			fireEvent.click(screen.getByText('Categorization'));
+			fireEvent.click(screen.getByText(/^categorization$/i));
 
 			expect(screen.getByText('Tag One')).toBeInTheDocument();
 		});
@@ -1322,7 +1395,7 @@ describe('List', () => {
 			fireEvent.click(
 				screen.getByTestId('trigger-info-panel-with-items')
 			);
-			fireEvent.click(screen.getByText('Categorization'));
+			fireEvent.click(screen.getByText(/^categorization$/i));
 
 			expect(
 				screen.queryByText('No Tags were found for this asset.')

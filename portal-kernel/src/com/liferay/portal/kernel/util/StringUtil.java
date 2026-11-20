@@ -1605,13 +1605,21 @@ public class StringUtil {
 	 * @return the string, with its first character converted to lower-case
 	 */
 	public static String lowerCaseFirstLetter(String s) {
-		char[] chars = s.toCharArray();
-
-		if ((chars[0] >= 65) && (chars[0] <= 90)) {
-			chars[0] = (char)(chars[0] + 32);
+		if ((s == null) || s.isEmpty()) {
+			return s;
 		}
 
-		return new String(chars);
+		char c = s.charAt(0);
+
+		if ((c >= 65) && (c <= 90)) {
+			char[] chars = s.toCharArray();
+
+			chars[0] = (char)(c + 32);
+
+			return new String(chars);
+		}
+
+		return s;
 	}
 
 	/**
@@ -2304,7 +2312,8 @@ public class StringUtil {
 			InputStream inputStream, Collection<String> lines)
 		throws IOException {
 
-		_splitLines(_read(inputStream), lines);
+		com.liferay.petra.string.StringUtil.forEachLine(
+			_read(inputStream), lines::add);
 	}
 
 	public static String removeChar(String s, char oldSub) {
@@ -3917,7 +3926,7 @@ public class StringUtil {
 
 		List<String> lines = new ArrayList<>();
 
-		_splitLines(s, lines);
+		com.liferay.petra.string.StringUtil.forEachLine(s, lines::add);
 
 		return lines.toArray(new String[0]);
 	}
@@ -4769,13 +4778,17 @@ public class StringUtil {
 			return s;
 		}
 
-		char[] chars = s.toCharArray();
+		char c = s.charAt(0);
 
-		if ((chars[0] >= 97) && (chars[0] <= 122)) {
-			chars[0] = (char)(chars[0] - 32);
+		if ((c >= 97) && (c <= 122)) {
+			char[] chars = s.toCharArray();
+
+			chars[0] = (char)(c - 32);
+
+			return new String(chars);
 		}
 
-		return new String(chars);
+		return s;
 	}
 
 	/**
@@ -5035,43 +5048,6 @@ public class StringUtil {
 
 		if (offset < s.length()) {
 			values.add(s.substring(offset));
-		}
-	}
-
-	private static void _splitLines(String s, Collection<String> lines) {
-		int lastIndex = 0;
-
-		while (true) {
-			int returnIndex = s.indexOf(CharPool.RETURN, lastIndex);
-
-			if (returnIndex == -1) {
-				_split(lines, s, lastIndex, CharPool.NEW_LINE);
-
-				return;
-			}
-
-			int newLineIndex = s.indexOf(CharPool.NEW_LINE, lastIndex);
-
-			if (newLineIndex == -1) {
-				_split(lines, s, lastIndex, CharPool.RETURN);
-
-				return;
-			}
-
-			if (newLineIndex < returnIndex) {
-				lines.add(s.substring(lastIndex, newLineIndex));
-
-				lastIndex = newLineIndex + 1;
-			}
-			else {
-				lines.add(s.substring(lastIndex, returnIndex));
-
-				lastIndex = returnIndex + 1;
-
-				if (lastIndex == newLineIndex) {
-					lastIndex++;
-				}
-			}
 		}
 	}
 

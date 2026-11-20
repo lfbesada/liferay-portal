@@ -21,7 +21,6 @@ import com.liferay.portal.kernel.dao.db.DBType;
 import com.liferay.portal.kernel.dao.jdbc.DataAccess;
 import com.liferay.portal.kernel.dependency.manager.DependencyManagerSyncUtil;
 import com.liferay.portal.kernel.encryptor.CompanyKeyResolverUtil;
-import com.liferay.portal.kernel.encryptor.EncryptorUtil;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
@@ -65,7 +64,6 @@ import java.io.InputStream;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;
-import java.sql.SQLException;
 
 import java.util.Collection;
 import java.util.Date;
@@ -86,8 +84,11 @@ public class DBUpgrader {
 
 	public static void checkReleaseState() throws Exception {
 		try (Connection connection = DataAccess.getConnection()) {
-			if (PortalUpgradeProcess.getCurrentState(connection) ==
-					ReleaseConstants.STATE_GOOD) {
+			int state = PortalUpgradeProcess.getCurrentState(connection);
+
+			if ((state == ReleaseConstants.STATE_GOOD) ||
+				((state == ReleaseConstants.STATE_IN_PROGRESS) &&
+				 !StartupHelperUtil.isUpgrading())) {
 
 				return;
 			}
@@ -95,7 +96,18 @@ public class DBUpgrader {
 			if (StartupHelperUtil.isUpgrading() &&
 				PortalUpgradeProcess.supportsRetry(connection)) {
 
-				System.out.println("Retrying upgrade");
+				if ((state != ReleaseConstants.STATE_IN_PROGRESS) &&
+					_log.isWarnEnabled()) {
+
+					_log.warn(
+						StringBundler.concat(
+							"Retrying the upgrade of ",
+							ReleaseConstants.DEFAULT_SERVLET_CONTEXT_NAME,
+							" from schema version ",
+							PortalUpgradeProcess.getCurrentSchemaVersion(
+								connection),
+							" after a failure"));
+				}
 
 				return;
 			}
@@ -294,9 +306,7 @@ public class DBUpgrader {
 		}
 	}
 
-	public static void updatePortalServiceComponent()
-		throws PortalException, SQLException {
-
+	public static void updatePortalServiceComponent() throws PortalException {
 		ServiceComponentConfiguration portalServiceComponentConfiguration =
 			new ServiceComponentConfiguration() {
 
@@ -486,14 +496,37 @@ public class DBUpgrader {
 			int buildNumber = _getBuildNumber();
 
 			try (Connection connection = DataAccess.getConnection()) {
+				int state = PortalUpgradeProcess.getCurrentState(connection);
+
 				if (PortalUpgradeProcess.isInCompatibleSchemaVersion(
 						connection) &&
 					(buildNumber == ReleaseInfo.getParentBuildNumber())) {
+
+					if (state == ReleaseConstants.STATE_IN_PROGRESS) {
+						PortalUpgradeProcess.updateState(
+							connection, ReleaseConstants.STATE_GOOD);
+					}
 
 					_checkClassNamesAndResourceActions();
 
 					return;
 				}
+
+				if ((state == ReleaseConstants.STATE_IN_PROGRESS) &&
+					_log.isWarnEnabled()) {
+
+					_log.warn(
+						StringBundler.concat(
+							"Resuming the upgrade of ",
+							ReleaseConstants.DEFAULT_SERVLET_CONTEXT_NAME,
+							" from schema version ",
+							PortalUpgradeProcess.getCurrentSchemaVersion(
+								connection),
+							" after an interruption"));
+				}
+
+				PortalUpgradeProcess.updateState(
+					connection, ReleaseConstants.STATE_IN_PROGRESS);
 			}
 
 			if (_log.isDebugEnabled()) {
@@ -656,16 +689,8 @@ public class DBUpgrader {
 			company -> {
 				long companyId = company.getCompanyId();
 
-				String keyString = CompanyKeyResolverUtil.wrapKey(
-					companyId, EncryptorUtil.generateKey());
-
-				if (CompanyKeyResolverUtil.isWrappedKey(company.getKey()) &&
-					!CompanyKeyResolverUtil.isWrappedKey(keyString)) {
-
-					throw new IllegalStateException(
-						"Unable to wrap the regenerated key for company " +
-							companyId);
-				}
+				String keyString = CompanyKeyResolverUtil.generateKey(
+					companyId, company.getKey());
 
 				try (Connection connection = DataAccess.getConnection();
 

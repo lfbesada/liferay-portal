@@ -40,9 +40,11 @@ import com.liferay.osb.faro.engine.client.model.AssetSummaryTag;
 import com.liferay.osb.faro.engine.client.model.AssetSummaryType;
 import com.liferay.osb.faro.engine.client.model.AssetSummaryVocabulary;
 import com.liferay.osb.faro.engine.client.model.Author;
+import com.liferay.osb.faro.engine.client.model.BigQueryPrice;
 import com.liferay.osb.faro.engine.client.model.BlockedKeyword;
 import com.liferay.osb.faro.engine.client.model.Campaign;
 import com.liferay.osb.faro.engine.client.model.CampaignMetric;
+import com.liferay.osb.faro.engine.client.model.CampaignName;
 import com.liferay.osb.faro.engine.client.model.CatalogField;
 import com.liferay.osb.faro.engine.client.model.Channel;
 import com.liferay.osb.faro.engine.client.model.ChannelDataSource;
@@ -471,6 +473,13 @@ public class ContactsEngineClientImpl
 				"userName", faroUser.getUserName()
 			).build(),
 			Void.class, getUriVariables(faroProject));
+	}
+
+	@Override
+	public void deleteAccountLifecycle(FaroProject faroProject, String id)
+		throws FaroEngineClientException {
+
+		delete(faroProject, Rels.ACCOUNT_LIFECYCLE, id);
 	}
 
 	@Override
@@ -972,9 +981,13 @@ public class ContactsEngineClientImpl
 
 	@Override
 	public List<AccountMetric> getAccountMetrics(
-		FaroProject faroProject, Long channelId) {
+		FaroProject faroProject, String campaignId, Long channelId) {
 
 		Map<String, Object> uriVariables = getUriVariables(faroProject);
+
+		if (Validator.isNotNull(campaignId)) {
+			uriVariables.put("campaignId", campaignId);
+		}
 
 		if (Validator.isNotNull(channelId)) {
 			uriVariables.put("channelId", channelId);
@@ -990,8 +1003,9 @@ public class ContactsEngineClientImpl
 	@Override
 	public Results<AccountName> getAccountNames(
 		FaroProject faroProject, String assetId, String assetTitle,
-		String assetType, Long channelId, String keywords, String rangeEnd,
-		Integer rangeKey, String rangeStart, int page, int pageSize) {
+		String assetType, Boolean campaignTouched, Long channelId,
+		String keywords, String rangeEnd, Integer rangeKey, String rangeStart,
+		int page, int pageSize) {
 
 		Map<String, Object> uriVariables = getUriVariables(faroProject);
 
@@ -1002,6 +1016,11 @@ public class ContactsEngineClientImpl
 		}
 
 		uriVariables.put("assetType", assetType);
+
+		if (campaignTouched != null) {
+			uriVariables.put("campaignTouched", campaignTouched);
+		}
+
 		uriVariables.put("channelId", channelId);
 
 		if (Validator.isNotNull(keywords)) {
@@ -1053,16 +1072,30 @@ public class ContactsEngineClientImpl
 
 	@Override
 	public Results<Account> getAccounts(
-		FaroProject faroProject, String accountLifecycleId, String channelId,
-		String filterString, boolean includeAnonymousUsers, String query,
-		String rangeEnd, Integer rangeKey, String rangeStart, String segmentId,
-		int cur, int delta, String sortString) {
+		FaroProject faroProject, String channelId, String filterString,
+		String query, int cur, int delta, String sortString) {
+
+		return getAccounts(
+			faroProject, null, null, channelId, filterString, true, query, null,
+			null, null, null, cur, delta, sortString);
+	}
+
+	@Override
+	public Results<Account> getAccounts(
+		FaroProject faroProject, String accountLifecycleId, String campaignId,
+		String channelId, String filterString, boolean includeAnonymousUsers,
+		String query, String rangeEnd, Integer rangeKey, String rangeStart,
+		String segmentId, int cur, int delta, String sortString) {
 
 		Map<String, Object> uriVariables = getUriVariables(
 			faroProject, cur, delta, null);
 
 		if (Validator.isNotNull(accountLifecycleId)) {
 			uriVariables.put("accountLifecycleId", accountLifecycleId);
+		}
+
+		if (Validator.isNotNull(campaignId)) {
+			uriVariables.put("campaignId", campaignId);
 		}
 
 		if (Validator.isNotNull(channelId)) {
@@ -1110,16 +1143,6 @@ public class ContactsEngineClientImpl
 			uriVariables);
 
 		return pagedModel.getResults();
-	}
-
-	@Override
-	public Results<Account> getAccounts(
-		FaroProject faroProject, String channelId, String filterString,
-		String query, int cur, int delta, String sortString) {
-
-		return getAccounts(
-			faroProject, null, channelId, filterString, true, query, null, null,
-			null, null, cur, delta, sortString);
 	}
 
 	@Override
@@ -1744,6 +1767,15 @@ public class ContactsEngineClientImpl
 	}
 
 	@Override
+	public BigQueryPrice getBigQueryPrice(FaroProject faroProject) {
+		return get(
+			faroProject, Rels.BIGQUERY_PRICES,
+			new ParameterizedTypeReference<BigQueryPrice>() {
+			},
+			getUriVariables(faroProject));
+	}
+
+	@Override
 	public BlockedKeyword getBlockedKeyword(
 		FaroProject faroProject, String id) {
 
@@ -1849,6 +1881,35 @@ public class ContactsEngineClientImpl
 	}
 
 	@Override
+	public List<AcquisitionParameter> getCampaignAcquisitionParameters(
+			FaroProject faroProject, long channelId, String id, String rangeEnd,
+			Integer rangeKey, String rangeStart)
+		throws FaroEngineClientException {
+
+		Map<String, Object> uriVariables = getUriVariables(faroProject, id);
+
+		uriVariables.put("channelId", channelId);
+
+		if (Validator.isNotNull(rangeEnd)) {
+			uriVariables.put("rangeEnd", rangeEnd);
+		}
+
+		if (rangeKey != null) {
+			uriVariables.put("rangeKey", rangeKey);
+		}
+
+		if (Validator.isNotNull(rangeStart)) {
+			uriVariables.put("rangeStart", rangeStart);
+		}
+
+		return get(
+			faroProject, Rels.CAMPAIGN_ACQUISITION_PROPERTIES,
+			new ParameterizedTypeReference<List<AcquisitionParameter>>() {
+			},
+			uriVariables);
+	}
+
+	@Override
 	public Results<Individual> getCampaignIndividuals(
 			FaroProject faroProject, long channelId, String id, String query,
 			String rangeEnd, Integer rangeKey, String rangeStart,
@@ -1926,6 +1987,30 @@ public class ContactsEngineClientImpl
 			new ParameterizedTypeReference<List<CampaignMetric>>() {
 			},
 			uriVariables);
+	}
+
+	@Override
+	public Results<CampaignName> getCampaignNames(
+		FaroProject faroProject, Long channelId, String query, int cur,
+		int delta) {
+
+		Map<String, Object> uriVariables = getUriVariables(
+			faroProject, cur, delta, null);
+
+		uriVariables.put("channelId", channelId);
+
+		if (Validator.isNotNull(query)) {
+			uriVariables.put("keywords", query);
+		}
+
+		PagedModel<?, CampaignName> pagedModel = get(
+			faroProject, Rels.CAMPAIGN_NAMES,
+			new ParameterizedTypeReference
+				<EntityModelPagedModel<CampaignName>>() {
+			},
+			uriVariables);
+
+		return pagedModel.getResults();
 	}
 
 	@Override
@@ -3132,12 +3217,13 @@ public class ContactsEngineClientImpl
 	@Override
 	public Results<Individual> getIndividuals(
 		FaroProject faroProject, String accountId, List<String> accountTypes,
-		String activityStatus, String channelId, String dataSourceId,
-		List<String> fields, String filterString, boolean includeAnonymousUsers,
-		String individualSegmentId, List<String> individualTypes,
-		String interestName, String notIndividualSegmentId, String query,
-		String rangeEnd, Integer rangeKey, String rangeStart, int cur,
-		int delta, List<OrderByField> orderByFields) {
+		String activityStatus, String campaignId, String channelId,
+		String dataSourceId, List<String> fields, String filterString,
+		boolean includeAnonymousUsers, String individualSegmentId,
+		List<String> individualTypes, String interestName,
+		String notIndividualSegmentId, String query, String rangeEnd,
+		Integer rangeKey, String rangeStart, int cur, int delta,
+		List<OrderByField> orderByFields) {
 
 		Map<String, Object> uriVariables = getUriVariables(
 			faroProject, cur, delta, orderByFields,
@@ -3154,6 +3240,10 @@ public class ContactsEngineClientImpl
 
 		if (Validator.isNotNull(activityStatus)) {
 			uriVariables.put("activityStatus", activityStatus);
+		}
+
+		if (Validator.isNotNull(campaignId)) {
+			uriVariables.put("campaignId", campaignId);
 		}
 
 		if (Validator.isNotNull(channelId)) {
@@ -3585,7 +3675,7 @@ public class ContactsEngineClientImpl
 			OutputStream outputStream)
 		throws Exception {
 
-		RestTemplate restTemplate = getRestTemplate(faroProject);
+		RestTemplate restTemplate = getBackgroundRestTemplate(faroProject);
 
 		RequestCallback requestCallback = clientHttpRequest -> {
 			HttpHeaders httpHeaders = clientHttpRequest.getHeaders();
@@ -3604,6 +3694,41 @@ public class ContactsEngineClientImpl
 		restTemplate.execute(
 			getUriString(faroProject, path, queryParameters), HttpMethod.GET,
 			requestCallback, responseExtractor, getUriVariables(faroProject));
+	}
+
+	@Override
+	public List<Campaign> getTopCampaigns(
+			FaroProject faroProject, long channelId, String filterString,
+			String rangeEnd, Integer rangeKey, String rangeStart, int size)
+		throws FaroEngineClientException {
+
+		Map<String, Object> uriVariables = getUriVariables(faroProject);
+
+		uriVariables.put("channelId", channelId);
+
+		if (Validator.isNotNull(filterString)) {
+			uriVariables.put("filter", filterString);
+		}
+
+		if (Validator.isNotNull(rangeEnd)) {
+			uriVariables.put("rangeEnd", rangeEnd);
+		}
+
+		if (rangeKey != null) {
+			uriVariables.put("rangeKey", rangeKey);
+		}
+
+		if (Validator.isNotNull(rangeStart)) {
+			uriVariables.put("rangeStart", rangeStart);
+		}
+
+		uriVariables.put("size", size);
+
+		return get(
+			faroProject, Rels.CAMPAIGNS_TOP,
+			new ParameterizedTypeReference<List<Campaign>>() {
+			},
+			uriVariables);
 	}
 
 	@Override

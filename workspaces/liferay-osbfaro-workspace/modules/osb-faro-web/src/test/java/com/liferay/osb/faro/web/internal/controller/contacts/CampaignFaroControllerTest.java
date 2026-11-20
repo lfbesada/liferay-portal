@@ -7,8 +7,10 @@ package com.liferay.osb.faro.web.internal.controller.contacts;
 
 import com.liferay.osb.faro.engine.client.ContactsEngineClient;
 import com.liferay.osb.faro.engine.client.model.Account;
+import com.liferay.osb.faro.engine.client.model.AcquisitionParameter;
 import com.liferay.osb.faro.engine.client.model.Campaign;
 import com.liferay.osb.faro.engine.client.model.CampaignMetric;
+import com.liferay.osb.faro.engine.client.model.CampaignName;
 import com.liferay.osb.faro.engine.client.model.Individual;
 import com.liferay.osb.faro.engine.client.model.Results;
 import com.liferay.osb.faro.model.FaroProject;
@@ -111,6 +113,37 @@ public class CampaignFaroControllerTest {
 	}
 
 	@Test
+	public void testGetCampaignAcquisitionParameters() throws Exception {
+		List<AcquisitionParameter> acquisitionParameters =
+			Collections.singletonList(new AcquisitionParameter());
+		long channelId = RandomTestUtil.randomLong();
+		String id = RandomTestUtil.randomString();
+		String rangeEnd = RandomTestUtil.randomString();
+		Integer rangeKey = RandomTestUtil.randomInt();
+		String rangeStart = RandomTestUtil.randomString();
+
+		Mockito.when(
+			_contactsEngineClient.getCampaignAcquisitionParameters(
+				_faroProject, channelId, id, rangeEnd, rangeKey, rangeStart)
+		).thenReturn(
+			acquisitionParameters
+		);
+
+		long groupId = RandomTestUtil.randomLong();
+
+		Assert.assertSame(
+			acquisitionParameters,
+			_campaignFaroController.getCampaignAcquisitionParameters(
+				groupId, id, channelId, rangeEnd, rangeKey, rangeStart));
+
+		Mockito.verify(
+			_faroProjectLocalService
+		).getFaroProjectByGroupId(
+			groupId
+		);
+	}
+
+	@Test
 	public void testGetCampaignDisplay() throws Exception {
 		String accountIds = RandomTestUtil.randomString();
 		long channelId = RandomTestUtil.randomLong();
@@ -188,6 +221,46 @@ public class CampaignFaroControllerTest {
 			_faroProjectLocalService
 		).getFaroProjectByGroupId(
 			groupId
+		);
+	}
+
+	@Test
+	public void testGetCampaignNamesFaroFDSResultsDisplay() throws Exception {
+		CampaignName campaignName = new CampaignName();
+
+		campaignName.setId(RandomTestUtil.randomString());
+
+		long channelId = RandomTestUtil.randomLong();
+		int page = RandomTestUtil.randomInt();
+		int pageSize = RandomTestUtil.randomInt();
+		String search = RandomTestUtil.randomString();
+		int total = RandomTestUtil.randomInt();
+
+		Mockito.when(
+			_contactsEngineClient.getCampaignNames(
+				_faroProject, channelId, search, page, pageSize)
+		).thenReturn(
+			new Results<>(Collections.singletonList(campaignName), total)
+		);
+
+		long groupId = RandomTestUtil.randomLong();
+
+		FaroFDSResultsDisplay<CampaignName> faroFDSResultsDisplay =
+			_campaignFaroController.getCampaignNamesFaroFDSResultsDisplay(
+				groupId, channelId, page, pageSize, search);
+
+		List<?> items = faroFDSResultsDisplay.getItems();
+
+		Assert.assertSame(campaignName, items.get(0));
+
+		Assert.assertEquals(page, faroFDSResultsDisplay.getPage());
+		Assert.assertEquals(pageSize, faroFDSResultsDisplay.getPageSize());
+		Assert.assertEquals(total, faroFDSResultsDisplay.getTotalCount());
+
+		Mockito.verify(
+			_contactsEngineClient
+		).getCampaignNames(
+			_faroProject, channelId, search, page, pageSize
 		);
 	}
 

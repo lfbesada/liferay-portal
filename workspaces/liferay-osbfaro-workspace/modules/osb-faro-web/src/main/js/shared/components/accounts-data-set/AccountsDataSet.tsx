@@ -1,4 +1,3 @@
-import * as API from 'shared/api';
 import Card from 'shared/components/Card';
 import DataValue from 'shared/components/DataValue';
 import Loading from 'shared/components/Loading';
@@ -13,18 +12,21 @@ import {
 } from 'shared/components/FrontendDataSet';
 import {
 	isLifecycleStage,
-	LifecycleStages,
 	lifecycleStagesLabelMap,
 } from 'contacts/pages/account/utils/constants';
 import {buildViews} from './utils';
+import {IAccountLifecycleStage} from 'shared/api/lifecycle';
 import {ICatalogField} from 'shared/api/catalog';
 import {RangeKeyTimeRanges} from 'shared/util/constants';
 import {Routes} from 'shared/util/router';
-import {useRequest} from 'shared/hooks/useRequest';
+import {useLifecycleStageFilterItems} from 'shared/hooks/useLifecycleStageFilterItems';
 
 interface IAccountsDataSetProps {
 	accountLifecycleId?: string;
+	allLifecycles?: boolean;
 	apiURL: string;
+	campaignId?: string;
+	campaignName?: string;
 	channelId: string;
 	countryFilter?: string;
 	dataSetId?: string;
@@ -38,13 +40,6 @@ interface IAccountsDataSetProps {
 	stageSelectionNonce?: number;
 }
 
-interface ILifecycleStageFieldValue {
-	externalReferenceCode: string;
-	id: string;
-	stageName?: string;
-	stageType?: LifecycleStages;
-}
-
 export const buildSelectionPreloadedData = (value?: string, label?: string) =>
 	value
 		? {
@@ -55,7 +50,10 @@ export const buildSelectionPreloadedData = (value?: string, label?: string) =>
 
 const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 	accountLifecycleId,
+	allLifecycles = false,
 	apiURL,
+	campaignId,
+	campaignName,
 	channelId,
 	countryFilter,
 	dataSetId = 'accounts-list-dataset',
@@ -68,29 +66,16 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 	segmentName,
 	stageSelectionNonce,
 }) => {
-	const {data: lifecycleStageFieldValues, loading: lifecycleStagesLoading} =
-		useRequest({
-			dataSourceFn: API.accounts.fetchLifecycleStageFieldValues,
-			skipRequest: !accountLifecycleId,
-			variables: {
-				accountLifecycleId,
-				channelId,
-				groupId,
-			},
-		});
-
-	const lifecycleStages: ILifecycleStageFieldValue[] =
-		lifecycleStageFieldValues?.items ?? [];
-
-	const lifecycleStageItems = lifecycleStages.map(
-		({externalReferenceCode, stageName, stageType}) => ({
-			label:
-				stageName ??
-				(stageType && lifecycleStagesLabelMap[stageType]?.label) ??
-				externalReferenceCode,
-			value: externalReferenceCode,
-		})
-	);
+	const {
+		items: lifecycleStageItems,
+		lifecycleStages,
+		loading: lifecycleStagesLoading,
+	} = useLifecycleStageFilterItems({
+		accountLifecycleId,
+		allLifecycles,
+		channelId,
+		groupId,
+	});
 
 	const preloadedRangeSelector = rangeSelectors.find(
 		({value}) => value === rangeKeyFilter
@@ -104,7 +89,7 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 	// mount, so hold it back until the lifecycle stage values are in. Mounting
 	// early and remounting once they arrive is what made the table flash.
 
-	if (accountLifecycleId && lifecycleStagesLoading) {
+	if ((accountLifecycleId || allLifecycles) && lifecycleStagesLoading) {
 		return (
 			<Card minHeight={300}>
 				<Loading />
@@ -118,24 +103,56 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 				apiURL={apiURL}
 				customDataRenderers={{
 					accountLifecycleStageRenderer: ({
+						itemData,
 						value,
 					}: {
+						itemData: {lifecycleStages?: IAccountLifecycleStage[]};
 						value: string;
-					}) => (
-						<DataValue
-							format={(stage: string) =>
-								columns.cmsLabelRenderer(
-									isLifecycleStage(stage)
-										? lifecycleStagesLabelMap[stage]
-										: {
-												displayType: 'secondary',
-												label: stage,
-											}
-								)
-							}
-							value={value}
-						/>
-					),
+					}) =>
+						allLifecycles ? (
+							<DataValue
+								format={(
+									accountLifecycleStages: IAccountLifecycleStage[]
+								) =>
+									accountLifecycleStages.map(
+										({
+											lifecycleName,
+											name,
+											stageExternalReferenceCode,
+										}) => (
+											<span
+												className="mr-1"
+												key={stageExternalReferenceCode}
+											>
+												{columns.cmsLabelRenderer({
+													displayType: 'secondary',
+													label: `${lifecycleName}: ${name}`,
+												})}
+											</span>
+										)
+									)
+								}
+								value={
+									itemData.lifecycleStages?.length
+										? itemData.lifecycleStages
+										: undefined
+								}
+							/>
+						) : (
+							<DataValue
+								format={(stage: string) =>
+									columns.cmsLabelRenderer(
+										isLifecycleStage(stage)
+											? lifecycleStagesLabelMap[stage]
+											: {
+													displayType: 'secondary',
+													label: stage,
+												}
+									)
+								}
+								value={value}
+							/>
+						),
 					accountNameRenderer: ({
 						itemData,
 						value,
@@ -160,13 +177,14 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 						columns.dateRenderer({itemData: {}, value}),
 					textRenderer: columns.textRenderer,
 				}}
+				defaultSort={{key: 'lastActive'}}
 				emptyState={{
 					description: Liferay.Language.get(
 						'no-accounts-were-synced-from-the-connected-data-sources'
 					),
 					image: EMPTY_STATE_IMAGE,
 					imageReducedMotion: EMPTY_STATE_REDUCED_MOTION_IMAGE,
-					title: Liferay.Language.get('no-accounts-found'),
+					title: Liferay.Language.get('no-accounts-were-found'),
 				}}
 				filters={[
 					{
@@ -180,13 +198,16 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 						),
 						type: 'selection',
 					},
-					...(accountLifecycleId
+					...(accountLifecycleId || allLifecycles
 						? [
 								{
+									autocompleteEnabled: true,
 									entityFieldType: 'string',
 									id: 'lifecycleStatus',
 									items: lifecycleStageItems,
-									label: Liferay.Language.get('status'),
+									label: Liferay.Language.get(
+										'lifecycle-stage'
+									),
 									multiple: true,
 									name: 'status',
 									preloadedData: buildSelectionPreloadedData(
@@ -201,8 +222,26 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 								},
 							]
 						: []),
+					...(campaignId
+						? [
+								{
+									apiURL: `/o/faro/contacts/${groupId}/campaigns/campaign-names?channelId=${channelId}`,
+									entityFieldType: 'string',
+									id: 'campaignId',
+									itemKey: 'id',
+									itemLabel: 'name',
+									label: Liferay.Language.get('campaign'),
+									preloadedData: buildSelectionPreloadedData(
+										campaignId,
+										campaignName
+									),
+									type: 'selection' as const,
+								},
+							]
+						: []),
 					{
 						apiURL: `/o/faro/contacts/${groupId}/account/fds_field_values?channelId=${channelId}&fieldMappingFieldName=industry`,
+						autocompleteEnabled: true,
 						entityFieldType: 'string',
 						id: 'industry',
 						itemKey: 'name',
@@ -215,6 +254,7 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 					},
 					{
 						apiURL: `/o/faro/contacts/${groupId}/account/fds_field_values?channelId=${channelId}&fieldMappingFieldName=country`,
+						autocompleteEnabled: true,
 						entityFieldType: 'string',
 						id: 'country',
 						itemKey: 'name',
@@ -227,6 +267,7 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 					},
 					{
 						apiURL: `/o/faro/contacts/${groupId}/individual_segment/search?channelId=${channelId}`,
+						autocompleteEnabled: true,
 						entityFieldType: 'string',
 						id: 'segmentId',
 						itemKey: 'id',
@@ -241,6 +282,7 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 				]}
 				id={dataSetId}
 				key={[
+					campaignId,
 					countryFilter,
 					industryFilter,
 					lifecycleStageFilter,
@@ -250,14 +292,6 @@ const AccountsDataSet: React.FC<IAccountsDataSetProps> = ({
 				pagination={pagination}
 				showPagination
 				snapshotsEnabled
-				sorts={[
-					{
-						active: true,
-						direction: 'desc',
-						key: 'lastActive',
-						label: Liferay.Language.get('last-active'),
-					},
-				]}
 				views={buildViews(fieldCatalog)}
 			/>
 		</Card>

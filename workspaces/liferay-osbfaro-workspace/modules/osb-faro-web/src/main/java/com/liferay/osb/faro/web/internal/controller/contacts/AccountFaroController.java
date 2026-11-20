@@ -6,15 +6,18 @@
 package com.liferay.osb.faro.web.internal.controller.contacts;
 
 import com.liferay.osb.faro.engine.client.constants.FieldMappingConstants;
+import com.liferay.osb.faro.engine.client.constants.FilterConstants;
 import com.liferay.osb.faro.engine.client.model.Account;
 import com.liferay.osb.faro.engine.client.model.AccountDetails;
 import com.liferay.osb.faro.engine.client.model.AccountLifecycle;
 import com.liferay.osb.faro.engine.client.model.AccountLifecycleStatus;
 import com.liferay.osb.faro.engine.client.model.AccountMetric;
 import com.liferay.osb.faro.engine.client.model.AccountName;
+import com.liferay.osb.faro.engine.client.model.Campaign;
 import com.liferay.osb.faro.engine.client.model.Individual;
 import com.liferay.osb.faro.engine.client.model.Metric;
 import com.liferay.osb.faro.engine.client.model.Results;
+import com.liferay.osb.faro.engine.client.util.FilterUtil;
 import com.liferay.osb.faro.model.FaroProject;
 import com.liferay.osb.faro.web.internal.constants.FaroConstants;
 import com.liferay.osb.faro.web.internal.controller.BaseFaroController;
@@ -22,6 +25,7 @@ import com.liferay.osb.faro.web.internal.controller.FaroController;
 import com.liferay.osb.faro.web.internal.model.display.FaroFDSResultsDisplay;
 import com.liferay.osb.faro.web.internal.model.display.FaroResultsDisplay;
 import com.liferay.osb.faro.web.internal.model.display.contacts.AccountDisplay;
+import com.liferay.osb.faro.web.internal.model.display.contacts.CampaignDisplay;
 import com.liferay.osb.faro.web.internal.model.display.contacts.IndividualDisplay;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
@@ -121,12 +125,13 @@ public class AccountFaroController extends BaseFaroController {
 	@RolesAllowed(RoleConstants.SITE_MEMBER)
 	public List<AccountMetric> getAccountMetrics(
 			@PathParam("groupId") long groupId,
+			@QueryParam("campaignId") String campaignId,
 			@QueryParam("channelId") long channelId)
 		throws Exception {
 
 		return contactsEngineClient.getAccountMetrics(
 			faroProjectLocalService.getFaroProjectByGroupId(groupId),
-			channelId);
+			campaignId, channelId);
 	}
 
 	@GET
@@ -138,6 +143,7 @@ public class AccountFaroController extends BaseFaroController {
 				@QueryParam("assetId") String assetId,
 				@QueryParam("assetTitle") String assetTitle,
 				@QueryParam("assetType") String assetType,
+				@QueryParam("campaignTouched") Boolean campaignTouched,
 				@QueryParam("channelId") Long channelId,
 				@QueryParam("keywords") String keywords,
 				@QueryParam("rangeEnd") String rangeEnd,
@@ -150,8 +156,8 @@ public class AccountFaroController extends BaseFaroController {
 		return new FaroFDSResultsDisplay<>(
 			contactsEngineClient.getAccountNames(
 				faroProjectLocalService.getFaroProjectByGroupId(groupId),
-				assetId, assetTitle, assetType, channelId, keywords, rangeEnd,
-				rangeKey, rangeStart, page, pageSize),
+				assetId, assetTitle, assetType, campaignTouched, channelId,
+				keywords, rangeEnd, rangeKey, rangeStart, page, pageSize),
 			page, pageSize);
 	}
 
@@ -166,6 +172,29 @@ public class AccountFaroController extends BaseFaroController {
 		return contactsEngineClient.getAccountOverviewMetrics(
 			faroProjectLocalService.getFaroProjectByGroupId(groupId), channelId,
 			id);
+	}
+
+	@GET
+	@Path("/{id}/campaigns")
+	@RolesAllowed(RoleConstants.SITE_MEMBER)
+	public FaroFDSResultsDisplay<Campaign> getCampaignsFaroFDSResultsDisplay(
+			@PathParam("groupId") long groupId, @PathParam("id") String id,
+			@QueryParam("channelId") long channelId,
+			@QueryParam("rangeEnd") String rangeEnd,
+			@QueryParam("rangeKey") Integer rangeKey,
+			@QueryParam("rangeStart") String rangeStart,
+			@QueryParam("page") int page, @QueryParam("pageSize") int pageSize)
+		throws Exception {
+
+		List<Campaign> campaigns = contactsEngineClient.getTopCampaigns(
+			faroProjectLocalService.getFaroProjectByGroupId(groupId), channelId,
+			FilterUtil.getFilter(
+				"accountId", FilterConstants.COMPARISON_OPERATOR_EQUALS, id),
+			rangeEnd, rangeKey, rangeStart, pageSize);
+
+		return new FaroFDSResultsDisplay<>(
+			new Results<>(campaigns, campaigns.size()), CampaignDisplay::new,
+			page, pageSize);
 	}
 
 	@Override
@@ -204,6 +233,7 @@ public class AccountFaroController extends BaseFaroController {
 	public FaroFDSResultsDisplay<Account> search(
 			@PathParam("groupId") long groupId,
 			@QueryParam("accountLifecycleId") String accountLifecycleId,
+			@QueryParam("campaignId") String campaignId,
 			@QueryParam("channelId") String channelId,
 			@QueryParam("filter") String filterString,
 			@QueryParam("includeAnonymousUsers") boolean includeAnonymousUsers,
@@ -220,7 +250,7 @@ public class AccountFaroController extends BaseFaroController {
 		return new FaroFDSResultsDisplay<>(
 			contactsEngineClient.getAccounts(
 				faroProjectLocalService.getFaroProjectByGroupId(groupId),
-				accountLifecycleId, channelId, filterString,
+				accountLifecycleId, campaignId, channelId, filterString,
 				includeAnonymousUsers, search, rangeEnd, rangeKey, rangeStart,
 				segmentId, page, pageSize, sortString),
 			AccountDisplay::new, page, pageSize);
@@ -234,7 +264,7 @@ public class AccountFaroController extends BaseFaroController {
 			@QueryParam("accountLifecycleId") String accountLifecycleId,
 			@QueryParam("channelId") long channelId,
 			@QueryParam("fieldMappingFieldName") String fieldMappingFieldName,
-			@QueryParam("query") String query,
+			@QueryParam("search") String search,
 			@DefaultValue("1") @QueryParam("page") int page,
 			@DefaultValue("20") @QueryParam("pageSize") int pageSize)
 		throws Exception {
@@ -243,7 +273,7 @@ public class AccountFaroController extends BaseFaroController {
 			return new FaroFDSResultsDisplay<>(
 				contactsEngineClient.getAccountFieldValues(
 					faroProjectLocalService.getFaroProjectByGroupId(groupId),
-					channelId, fieldMappingFieldName, query, page, pageSize),
+					channelId, fieldMappingFieldName, search, page, pageSize),
 				object -> Collections.singletonMap(
 					"name", String.valueOf(object)),
 				page, pageSize);

@@ -52,8 +52,8 @@ public class ProductsSectionDisplayContextTest {
 				"/o/search/v1.0/search?emptySearch=true&filter=",
 				URLCodec.encodeURL(
 					"cmsSection eq 'products' and status in (0, 2, 3, 1, 7)"),
-				"&nestedFields=embedded,systemProperties.",
-				"objectDefinitionBrief"),
+				"&nestedFields=embedded,embedded.images,systemProperties.",
+				"objectDefinitionBrief&nestedFieldsDepth=2"),
 			productsSectionDisplayContext.getAPIURL());
 	}
 
@@ -200,8 +200,7 @@ public class ProductsSectionDisplayContextTest {
 		Assert.assertEquals(
 			"Click \"New\" to create your first product.",
 			emptyState.get("description"));
-		Assert.assertEquals(
-			"/states/cms_empty_state_content.svg", emptyState.get("image"));
+		Assert.assertEquals("products", emptyState.get("symbol"));
 		Assert.assertEquals("No Products Yet", emptyState.get("title"));
 	}
 

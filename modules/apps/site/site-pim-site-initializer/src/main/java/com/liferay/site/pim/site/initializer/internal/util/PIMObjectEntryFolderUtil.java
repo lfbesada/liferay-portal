@@ -5,6 +5,9 @@
 
 package com.liferay.site.pim.site.initializer.internal.util;
 
+import com.liferay.depot.constants.DepotConstants;
+import com.liferay.depot.model.DepotEntry;
+import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.object.constants.ObjectEntryFolderConstants;
 import com.liferay.object.model.ObjectEntryFolder;
 import com.liferay.object.service.ObjectEntryFolderLocalService;
@@ -12,7 +15,6 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.service.ServiceContext;
-import com.liferay.site.pim.site.initializer.constants.PIMObjectEntryFolderConstants;
 
 import java.util.HashMap;
 import java.util.Locale;
@@ -23,6 +25,20 @@ import java.util.Map;
  */
 public class PIMObjectEntryFolderUtil {
 
+	public static void addProductsObjectEntryFolders(
+			long companyId, DepotEntryLocalService depotEntryLocalService,
+			ObjectEntryFolderLocalService objectEntryFolderLocalService)
+		throws PortalException {
+
+		for (DepotEntry depotEntry :
+				depotEntryLocalService.getDepotEntries(
+					companyId, DepotConstants.TYPE_SPACE)) {
+
+			getOrAddProductsObjectEntryFolder(
+				depotEntry.getGroup(), objectEntryFolderLocalService);
+		}
+	}
+
 	public static ObjectEntryFolder getOrAddProductsObjectEntryFolder(
 			Group group,
 			ObjectEntryFolderLocalService objectEntryFolderLocalService)
@@ -31,8 +47,7 @@ public class PIMObjectEntryFolderUtil {
 		ObjectEntryFolder objectEntryFolder =
 			objectEntryFolderLocalService.
 				fetchObjectEntryFolderByExternalReferenceCode(
-					PIMObjectEntryFolderConstants.
-						EXTERNAL_REFERENCE_CODE_PRODUCTS,
+					ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_PRODUCTS,
 					group.getGroupId(), group.getCompanyId());
 
 		if (objectEntryFolder != null) {
@@ -58,7 +73,7 @@ public class PIMObjectEntryFolderUtil {
 
 		try {
 			return objectEntryFolderLocalService.addObjectEntryFolder(
-				PIMObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_PRODUCTS,
+				ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_PRODUCTS,
 				group.getGroupId(), group.getCreatorUserId(),
 				ObjectEntryFolderConstants.
 					PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
@@ -68,7 +83,7 @@ public class PIMObjectEntryFolderUtil {
 			objectEntryFolder =
 				objectEntryFolderLocalService.
 					fetchObjectEntryFolderByExternalReferenceCode(
-						PIMObjectEntryFolderConstants.
+						ObjectEntryFolderConstants.
 							EXTERNAL_REFERENCE_CODE_PRODUCTS,
 						group.getGroupId(), group.getCompanyId());
 

@@ -4,9 +4,7 @@ definition {
 
 	@summary = "Default summary"
 	macro addParagraphLinkToAURL(paragraphLink = null) {
-		Click(
-			key_titleName = "Link",
-			locator1 = "FormFields#TOOLBAR_ANY_ITEM_BUTTON");
+		Click(locator1 = "CKEditor#TOOLBAR_HYPERLINK_BUTTON");
 
 		SelectFrame.selectFrameNoLoading(locator1 = "FormFields#PARAGRAPH_LINK_MODAL");
 
@@ -30,15 +28,9 @@ definition {
 
 	@summary = "Default summary"
 	macro addRichTextContent(fieldLabel = null, content = null) {
-		SelectFrame.selectFrameNoLoading(
-			key_fieldLabel = ${fieldLabel},
-			locator1 = "FormFields#RICH_TEXT_CONTENT");
-
-		Type(
-			locator1 = "FormFields#PREDEFINED_VALUE_BODY",
-			value1 = ${content});
-
-		SelectFrame(value1 = "relative=top");
+		CKEditor.addContentInWebContent(
+			content = ${content},
+			fieldLabel = ${fieldLabel});
 	}
 
 	@summary = "Default summary"
@@ -51,9 +43,7 @@ definition {
 
 	@summary = "Default summary"
 	macro addTableInBodyParagraph() {
-		Click.clickNoMouseOver(
-			key_titleName = "Table",
-			locator1 = "FormFields#TOOLBAR_ANY_ITEM_BUTTON");
+		Click.clickNoMouseOver(locator1 = "CKEditor#TOOLBAR_TABLE_BUTTON");
 
 		Click(locator1 = "CKEditor#OK_BUTTON");
 	}
@@ -345,15 +335,9 @@ definition {
 
 	@summary = "Default summary"
 	macro editFrameField(fielName = null, fieldLabel = null) {
-		SelectFrame.selectFrameNoLoading(
-			key_fieldLabel = ${fieldLabel},
-			locator1 = "Form#BODY_FIELD_FORM_IFRAME");
-
-		Type(
-			locator1 = "Form#BODY",
-			value1 = ${fielName});
-
-		SelectFrame(value1 = "relative=top");
+		FormFields.addRichTextContent(
+			content = ${fielName},
+			fieldLabel = ${fieldLabel});
 	}
 
 	@summary = "Default summary"
@@ -452,13 +436,28 @@ definition {
 
 	@summary = "Default summary"
 	macro editParagraphBody(content = null) {
-		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
+		WaitForVisible(locator1 = "CKEditor#BODY_FIELD_EITHER_EDITOR");
 
-		Type.clickAtType(
-			locator1 = "CKEditor#BODY",
-			value1 = ${content});
+		if (IsElementPresent(locator1 = "CKEditor#BODY_FIELD_IFRAME")) {
+			SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME");
 
-		SelectFrame(value1 = "relative=top");
+			Type.clickAtType(
+				locator1 = "CKEditor#BODY",
+				value1 = ${content});
+
+			SelectFrame(value1 = "relative=top");
+		}
+		else {
+			SelectFieldText(locator1 = "CKEditor#BODY_FIELD_CONTENTEDITABLE");
+
+			Type.sendKeys(
+				locator1 = "CKEditor#BODY_FIELD_CONTENTEDITABLE",
+				value1 = ${content});
+
+			WaitForElementPresent(
+				key_bodyName = ${content},
+				locator1 = "FormFields#PARAGRAPH_SPECIFIC_FIELD_BY_BODY");
+		}
 	}
 
 	@summary = "Default summary"
@@ -1247,13 +1246,11 @@ definition {
 
 		SelectFrame();
 
-		WaitForElementPresent(
-			key_titleName = ${optionTool},
-			locator1 = "FormFields#TOOLBAR_ANY_ITEM_BUTTON");
+		var optionToolUppercase = StringUtil.upperCase(${optionTool});
 
-		Click(
-			key_titleName = ${optionTool},
-			locator1 = "FormFields#TOOLBAR_ANY_ITEM_BUTTON");
+		WaitForElementPresent(locator1 = "CKEditor#TOOLBAR_${optionToolUppercase}_BUTTON");
+
+		Click(locator1 = "CKEditor#TOOLBAR_${optionToolUppercase}_BUTTON");
 	}
 
 	@summary = "Default summary"
@@ -2112,30 +2109,24 @@ definition {
 
 	@summary = "Default summary"
 	macro viewRichTextPredefinedValue(fieldValue = null) {
-		SelectFrame.selectFrameNoLoading(
-			key_fieldLabel = "Rich Text",
-			locator1 = "CKEditor#BODY_FIELD_IFRAME_WEB_CONTENT_ARTICLE");
-
-		AssertTextEquals(
-			key_fieldName = "Rich Text",
-			locator1 = "CKEditor#BODY",
-			value1 = ${fieldValue});
-
-		SelectFrame(value1 = "relative=top");
+		CKEditor.assertContentInWebContent(
+			content = ${fieldValue},
+			fieldLabel = "Rich Text");
 	}
 
 	@summary = "Default summary"
 	macro viewRichTextValue(fieldName = null, fieldValue = null) {
-		SelectFrame.selectFrameNoLoading(
-			key_fieldLabel = "Rich Text",
-			locator1 = "CKEditor#BODY_FIELD_IFRAME_WEB_CONTENT_ARTICLE");
-
-		AssertTextEquals(
-			key_fieldName = ${fieldName},
-			locator1 = "CKEditor#BODY",
-			value1 = ${fieldValue});
-
-		SelectFrame(value1 = "relative=top");
+		if (IsElementPresent(key_fieldLabel = ${fieldName}, locator1 = "CKEditor#BODY_FIELD_IFRAME_WEB_CONTENT_ARTICLE")) {
+			CKEditor.assertContentInWebContent(
+				content = ${fieldValue},
+				fieldLabel = ${fieldName});
+		}
+		else {
+			AssertTextEquals(
+				key_fieldLabel = ${fieldName},
+				locator1 = "FormFields#RICH_TEXT_EDITABLE_EXACT_LABEL",
+				value1 = ${fieldValue});
+		}
 	}
 
 	@summary = "Default summary"

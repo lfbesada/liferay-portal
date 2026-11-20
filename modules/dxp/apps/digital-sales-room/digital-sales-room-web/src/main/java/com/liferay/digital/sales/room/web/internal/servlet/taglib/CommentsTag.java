@@ -17,6 +17,7 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.editor.configuration.EditorConfiguration;
 import com.liferay.portal.kernel.editor.configuration.EditorConfigurationFactoryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
@@ -27,6 +28,7 @@ import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.taglib.util.IncludeTag;
 
@@ -141,25 +143,15 @@ public class CommentsTag extends IncludeTag {
 					URLEncoder.encode(
 						objectDefinition.getClassName(),
 						StandardCharsets.UTF_8),
-					"&classPK=", group.getClassPK());
+					"&classPK=", group.getClassPK(), "&p_l_id=",
+					themeDisplay.getPlid());
 			}
 
-			if (!readOnly &&
-				modelResourcePermission.contains(
-					permissionChecker, group.getClassPK(),
-					ActionKeys.DELETE_DISCUSSION)) {
-
+			if (!readOnly) {
 				deleteCommentURL = StringBundler.concat(
 					themeDisplay.getPortalURL(), themeDisplay.getPathMain(),
 					GroupConstants.CMS_FRIENDLY_URL,
 					"/delete_content_item_comment");
-			}
-
-			if (!readOnly &&
-				modelResourcePermission.contains(
-					permissionChecker, group.getClassPK(),
-					ActionKeys.UPDATE_DISCUSSION)) {
-
 				editCommentURL = StringBundler.concat(
 					themeDisplay.getPortalURL(), themeDisplay.getPathMain(),
 					GroupConstants.CMS_FRIENDLY_URL,
@@ -208,6 +200,37 @@ public class CommentsTag extends IncludeTag {
 				URLEncoder.encode(
 					objectDefinition.getClassName(), StandardCharsets.UTF_8),
 				"&classPK=", group.getClassPK()));
+
+		String getMentionUsersURL = null;
+
+		if (FeatureFlagManagerUtil.isEnabled(
+				themeDisplay.getCompanyId(), "LPD-104086")) {
+
+			getMentionUsersURL = StringBundler.concat(
+				themeDisplay.getPortalURL(), themeDisplay.getPathMain(),
+				GroupConstants.CMS_FRIENDLY_URL,
+				"/get_content_item_mention_users?className=",
+				URLEncoder.encode(
+					objectDefinition.getClassName(), StandardCharsets.UTF_8),
+				"&classPK=", group.getClassPK());
+		}
+
+		httpServletRequest.setAttribute(
+			"liferay-digital-sales-room-web:comments:getMentionUsersURL",
+			getMentionUsersURL);
+
+		String highlightedCommentId = null;
+
+		long messageId = ParamUtil.getLong(httpServletRequest, "messageId");
+
+		if (messageId > 0) {
+			highlightedCommentId = String.valueOf(messageId);
+		}
+
+		httpServletRequest.setAttribute(
+			"liferay-digital-sales-room-web:comments:highlightedCommentId",
+			highlightedCommentId);
+
 		httpServletRequest.setAttribute(
 			"liferay-digital-sales-room-web:comments:readOnly", readOnly);
 		httpServletRequest.setAttribute(

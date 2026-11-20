@@ -451,6 +451,25 @@ export class HeadlessDeliveryApiHelper {
 		);
 	}
 
+	async postMessageBoardThreadMessageBoardAttachment(
+		messageBoardThreadId: string,
+		file: TDocumentFile
+	): Promise<{id: number; title: string}> {
+		return this.apiHelpers.post(
+			`${this.apiHelpers.baseUrl}${this.basePath}/message-board-threads/${messageBoardThreadId}/message-board-attachments`,
+			{
+				failOnStatusCode: true,
+				headers: {
+					...(await this.apiHelpers.getCSRFTokenHeader()),
+				},
+				multipart: {
+					file,
+					messageBoardAttachment: JSON.stringify({}),
+				},
+			}
+		);
+	}
+
 	async postMessageBoardMessage({
 		articleBody,
 		messageBoardThreadId,
@@ -552,6 +571,19 @@ export class HeadlessDeliveryApiHelper {
 					title_i18n,
 					viewableBy,
 				},
+				failOnStatusCode: true,
+			}
+		);
+	}
+
+	async postStructuredContentComment(
+		structuredContentId: number,
+		text: string
+	) {
+		return this.apiHelpers.post(
+			`${this.apiHelpers.baseUrl}${this.basePath}/structured-contents/${structuredContentId}/comments`,
+			{
+				data: {text},
 				failOnStatusCode: true,
 			}
 		);

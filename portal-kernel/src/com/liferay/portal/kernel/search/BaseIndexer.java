@@ -1478,10 +1478,9 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 	}
 
 	private void _addPreFilters(
-			BooleanFilter queryBooleanFilter,
-			Map<String, Indexer<?>> entryClassNameIndexerMap,
-			SearchContext searchContext)
-		throws Exception {
+		BooleanFilter queryBooleanFilter,
+		Map<String, Indexer<?>> entryClassNameIndexerMap,
+		SearchContext searchContext) {
 
 		PreFilterContributor preFilterContributor =
 			_preFilterContributorSnapshot.get();
@@ -1546,9 +1545,8 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 	}
 
 	private void _postProcessSearchQuery(
-			BooleanQuery booleanQuery, BooleanFilter booleanFilter,
-			Collection<Indexer<?>> indexers, SearchContext searchContext)
-		throws Exception {
+		BooleanQuery booleanQuery, BooleanFilter booleanFilter,
+		Collection<Indexer<?>> indexers, SearchContext searchContext) {
 
 		PostProcessSearchQueryContributor postProcessSearchQueryContributor =
 			_postProcessSearchQueryContributorSnapshot.get();
@@ -1577,6 +1575,10 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 	private static final Snapshot<AddSearchKeywordsQueryContributor>
 		_addSearchKeywordsQueryContributorSnapshot = new Snapshot<>(
 			BaseIndexer.class, AddSearchKeywordsQueryContributor.class);
+	private static final ServiceTrackerList<DocumentContributor<?>>
+		_documentContributors = ServiceTrackerListFactory.open(
+			SystemBundleUtil.getBundleContext(),
+			(Class<DocumentContributor<?>>)(Class<?>)DocumentContributor.class);
 	private static final Snapshot<ExpandoQueryContributor>
 		_expandoQueryContributorSnapshot = new Snapshot<>(
 			BaseIndexer.class, ExpandoQueryContributor.class);
@@ -1594,10 +1596,6 @@ public abstract class BaseIndexer<T> implements Indexer<T> {
 	private String[] _defaultSelectedFieldNames;
 	private String[] _defaultSelectedLocalizedFieldNames;
 	private final Document _document = new DocumentImpl();
-	private final ServiceTrackerList<DocumentContributor<?>>
-		_documentContributors = ServiceTrackerListFactory.open(
-			SystemBundleUtil.getBundleContext(),
-			(Class<DocumentContributor<?>>)(Class<?>)DocumentContributor.class);
 	private boolean _filterSearch;
 	private Boolean _indexerEnabled;
 	private boolean _permissionAware;

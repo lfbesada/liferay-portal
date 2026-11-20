@@ -8,6 +8,7 @@ package com.liferay.sharepoint.rest.repository.internal.helper;
 import com.liferay.document.library.repository.external.ExtRepositoryFileEntry;
 import com.liferay.document.library.repository.external.ExtRepositoryObject;
 import com.liferay.document.library.repository.external.ExtRepositoryObjectType;
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.HttpComponentsUtil;
@@ -29,25 +30,21 @@ public class SharepointURLHelper {
 		return String.format(
 			"%s/_api/web/GetFolderByServerRelativePath(decodedUrl='%s')/Files" +
 				"/Add(overwrite=false,url='%s')",
-			_siteAbsoluteURL,
-			HttpComponentsUtil.encodePath(extRepositoryFolderKey),
-			HttpComponentsUtil.encodePath(name));
+			_siteAbsoluteURL, _encode(extRepositoryFolderKey), _encode(name));
 	}
 
 	public String getAddFolderURL(String extRepositoryFolderKey) {
 		return String.format(
 			"%s/_api/web/GetFolderByServerRelativePath(decodedUrl='%s')" +
 				"/Folders",
-			_siteAbsoluteURL,
-			HttpComponentsUtil.encodePath(extRepositoryFolderKey));
+			_siteAbsoluteURL, _encode(extRepositoryFolderKey));
 	}
 
 	public String getCancelCheckedOutFileURL(String extRepositoryFileEntryKey) {
 		return String.format(
 			"%s/_api/web/GetFileByServerRelativePath(decodedUrl='%s')" +
 				"/UndoCheckOut",
-			_siteAbsoluteURL,
-			HttpComponentsUtil.encodePath(extRepositoryFileEntryKey));
+			_siteAbsoluteURL, _encode(extRepositoryFileEntryKey));
 	}
 
 	public String getCheckInFileURL(
@@ -63,16 +60,14 @@ public class SharepointURLHelper {
 		return String.format(
 			"%s/_api/web/GetFileByServerRelativePath(decodedUrl='%s')" +
 				"/CheckIn(comment='%s',checkintype=%d)",
-			_siteAbsoluteURL,
-			HttpComponentsUtil.encodePath(extRepositoryFileEntryKey), changeLog,
-			checkInType);
+			_siteAbsoluteURL, _encode(extRepositoryFileEntryKey),
+			_encode(changeLog), checkInType);
 	}
 
 	public String getCheckOutFileURL(String extRepositoryFileEntryKey) {
 		return String.format(
 			"%s/_api/web/GetFileByServerRelativePath(decodedUrl='%s')/CheckOut",
-			_siteAbsoluteURL,
-			HttpComponentsUtil.encodePath(extRepositoryFileEntryKey));
+			_siteAbsoluteURL, _encode(extRepositoryFileEntryKey));
 	}
 
 	public String getCopyFileURL(
@@ -82,10 +77,9 @@ public class SharepointURLHelper {
 		return String.format(
 			"%s/_api/web/GetFileByServerRelativePath(decodedUrl='%s')" +
 				"/CopyTo(strnewurl='%s',boverwrite=false)",
-			_siteAbsoluteURL,
-			HttpComponentsUtil.encodePath(extRepositoryFileEntryKey),
-			HttpComponentsUtil.encodePath(newExtRepositoryFolderKey) +
-				StringPool.SLASH + HttpComponentsUtil.encodePath(newTitle));
+			_siteAbsoluteURL, _encode(extRepositoryFileEntryKey),
+			_encode(newExtRepositoryFolderKey) + StringPool.SLASH +
+				_encode(newTitle));
 	}
 
 	public <T extends ExtRepositoryObject> String getDeleteObjectURL(
@@ -95,14 +89,12 @@ public class SharepointURLHelper {
 		if (extRepositoryObjectType == ExtRepositoryObjectType.FILE) {
 			return String.format(
 				"%s/_api/web/GetFileByServerRelativePath(decodedUrl='%s')",
-				_siteAbsoluteURL,
-				HttpComponentsUtil.encodePath(extRepositoryObjectKey));
+				_siteAbsoluteURL, _encode(extRepositoryObjectKey));
 		}
 
 		return String.format(
 			"%s/_api/web/GetFolderByServerRelativePath(decodedUrl='%s')",
-			_siteAbsoluteURL,
-			HttpComponentsUtil.encodePath(extRepositoryObjectKey));
+			_siteAbsoluteURL, _encode(extRepositoryObjectKey));
 	}
 
 	public String getFileEntryContentURL(
@@ -112,8 +104,7 @@ public class SharepointURLHelper {
 			"%s/_api/web/GetFileByServerRelativePath(decodedUrl='%s')" +
 				"/OpenBinaryStream",
 			_siteAbsoluteURL,
-			HttpComponentsUtil.encodePath(
-				extRepositoryFileEntry.getExtRepositoryModelKey()));
+			_encode(extRepositoryFileEntry.getExtRepositoryModelKey()));
 	}
 
 	public String getFileVersionContentURL(
@@ -123,8 +114,7 @@ public class SharepointURLHelper {
 			"%s/_api/web/GetFileByServerRelativePath(decodedUrl='%s')" +
 				"/Versions(%s)",
 			_siteAbsoluteURL,
-			HttpComponentsUtil.encodePath(
-				extRepositoryFileEntry.getExtRepositoryModelKey()),
+			_encode(extRepositoryFileEntry.getExtRepositoryModelKey()),
 			versionId);
 	}
 
@@ -134,16 +124,14 @@ public class SharepointURLHelper {
 		return String.format(
 			"%s/_api/web/GetFileByServerRelativePath(decodedUrl='%s')/Versions",
 			_siteAbsoluteURL,
-			HttpComponentsUtil.encodePath(
-				extRepositoryFileEntry.getExtRepositoryModelKey()));
+			_encode(extRepositoryFileEntry.getExtRepositoryModelKey()));
 	}
 
 	public String getFilesURL(String extRepositoryFolderKey) {
 		return String.format(
 			"%s/_api/web/GetFolderByServerRelativePath(decodedUrl='%s')" +
 				"/Files?$select=%s&$expand=%s",
-			_siteAbsoluteURL,
-			HttpComponentsUtil.encodePath(extRepositoryFolderKey),
+			_siteAbsoluteURL, _encode(extRepositoryFolderKey),
 			_FIELDS_SELECTED_FILE, _FIELDS_EXPANDED_FILE);
 	}
 
@@ -151,8 +139,7 @@ public class SharepointURLHelper {
 		return String.format(
 			"%s/_api/web/GetFolderByServerRelativePath(decodedUrl='%s')" +
 				"/Folders?$select=%s&$expand=%s",
-			_siteAbsoluteURL,
-			HttpComponentsUtil.encodePath(extRepositoryFolderKey),
+			_siteAbsoluteURL, _encode(extRepositoryFolderKey),
 			_FIELDS_SELECTED_FOLDER, _FIELDS_EXPANDED_FOLDER);
 	}
 
@@ -163,10 +150,9 @@ public class SharepointURLHelper {
 		return String.format(
 			"%s/_api/web/GetFileByServerRelativePath(decodedUrl='%s')" +
 				"/MoveTo(newurl='%s',flags=1)",
-			_siteAbsoluteURL,
-			HttpComponentsUtil.encodePath(extRepositoryFileEntryKey),
-			HttpComponentsUtil.encodePath(extRepositoryFolderKey) +
-				StringPool.SLASH + HttpComponentsUtil.encodePath(title));
+			_siteAbsoluteURL, _encode(extRepositoryFileEntryKey),
+			_encode(extRepositoryFolderKey) + StringPool.SLASH +
+				_encode(title));
 	}
 
 	public <T extends ExtRepositoryObject> String getObjectURL(
@@ -177,16 +163,14 @@ public class SharepointURLHelper {
 			return String.format(
 				"%s/_api/web/GetFileByServerRelativePath(decodedUrl='%s')" +
 					"?$select=%s&$expand=%s",
-				_siteAbsoluteURL,
-				HttpComponentsUtil.encodePath(extRepositoryObjectKey),
+				_siteAbsoluteURL, _encode(extRepositoryObjectKey),
 				_FIELDS_SELECTED_FILE, _FIELDS_EXPANDED_FILE);
 		}
 
 		return String.format(
 			"%s/_api/web/GetFolderByServerRelativePath(decodedUrl='%s')" +
 				"?$select=%s&$expand=%s",
-			_siteAbsoluteURL,
-			HttpComponentsUtil.encodePath(extRepositoryObjectKey),
+			_siteAbsoluteURL, _encode(extRepositoryObjectKey),
 			_FIELDS_SELECTED_FOLDER, _FIELDS_EXPANDED_FOLDER);
 	}
 
@@ -198,38 +182,50 @@ public class SharepointURLHelper {
 			return String.format(
 				"%s/_api/web/GetFolderByServerRelativePath(decodedUrl='%s')" +
 					"/ItemCount",
-				_siteAbsoluteURL,
-				HttpComponentsUtil.encodePath(extRepositoryFolderKey));
+				_siteAbsoluteURL, _encode(extRepositoryFolderKey));
 		}
 
 		if (extRepositoryObjectType == ExtRepositoryObjectType.FOLDER) {
 			return String.format(
 				"%s/_api/web/GetFolderByServerRelativePath(decodedUrl='%s')" +
 					"/Folders?$select=ItemCount",
-				_siteAbsoluteURL,
-				HttpComponentsUtil.encodePath(extRepositoryFolderKey));
+				_siteAbsoluteURL, _encode(extRepositoryFolderKey));
 		}
 
 		return String.format(
 			"%s/_api/web/GetFolderByServerRelativePath(decodedUrl='%s')" +
 				"/Files?$select=Level",
-			_siteAbsoluteURL,
-			HttpComponentsUtil.encodePath(extRepositoryFolderKey));
+			_siteAbsoluteURL, _encode(extRepositoryFolderKey));
 	}
 
 	public String getSearchURL(String queryText, int start, int end) {
 		return String.format(
 			"%s/_api/search/query?QueryText='%s'&SourceID='%s'&StartRow=%d&" +
 				"RowsPerPage=%d",
-			_siteAbsoluteURL, HtmlUtil.escapeURL(queryText), _resultsSourceId,
-			start, end - start);
+			_siteAbsoluteURL,
+			HtmlUtil.escapeURL(
+				StringUtil.replace(
+					queryText, CharPool.APOSTROPHE,
+					StringPool.DOUBLE_APOSTROPHE)),
+			_resultsSourceId, start, end - start);
 	}
 
 	public String getUpdateFileURL(String extRepositoryFileEntryKey) {
 		return String.format(
 			"%s/_api/web/GetFileByServerRelativePath(decodedUrl='%s')/$value",
-			_siteAbsoluteURL,
-			HttpComponentsUtil.encodePath(extRepositoryFileEntryKey));
+			_siteAbsoluteURL, _encode(extRepositoryFileEntryKey));
+	}
+
+	private String _encode(String value) {
+		if (value == null) {
+			return StringPool.BLANK;
+		}
+
+		return StringUtil.replace(
+			HttpComponentsUtil.encodePath(
+				StringUtil.replace(
+					value, CharPool.APOSTROPHE, StringPool.DOUBLE_APOSTROPHE)),
+			CharPool.PLUS, "%2B");
 	}
 
 	private static final String _FIELDS_EXPANDED_FILE = StringUtil.merge(

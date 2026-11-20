@@ -21,15 +21,19 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
 import org.osgi.framework.Bundle;
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Deactivate;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Alejandro Tardín
  */
-@Component(service = MultiCompanyBatchEngineUnitProcessor.class)
 public class MultiCompanyBatchEngineUnitProcessor {
+
+	public MultiCompanyBatchEngineUnitProcessor(
+		BatchEngineUnitProcessor batchEngineUnitProcessor,
+		CompanyLocalService companyLocalService) {
+
+		_batchEngineUnitProcessor = batchEngineUnitProcessor;
+		_companyLocalService = companyLocalService;
+	}
 
 	public void processBatchEngineUnits(Company company) throws Exception {
 		Exception exception1 = null;
@@ -86,12 +90,6 @@ public class MultiCompanyBatchEngineUnitProcessor {
 		}
 	}
 
-	@Deactivate
-	protected void deactivate() {
-		_bundleBatchEngineUnits.clear();
-		_bundleProcessedCompanies.clear();
-	}
-
 	private void _processBatchEngineUnits(Bundle bundle, Company company)
 		throws Exception {
 
@@ -112,15 +110,11 @@ public class MultiCompanyBatchEngineUnitProcessor {
 	private static final Log _log = LogFactoryUtil.getLog(
 		MultiCompanyBatchEngineUnitProcessor.class);
 
-	@Reference
-	private BatchEngineUnitProcessor _batchEngineUnitProcessor;
-
+	private final BatchEngineUnitProcessor _batchEngineUnitProcessor;
 	private final Map<Bundle, List<BatchEngineUnit>> _bundleBatchEngineUnits =
 		new ConcurrentHashMap<>();
 	private final Map<Bundle, Set<Long>> _bundleProcessedCompanies =
 		new ConcurrentHashMap<>();
-
-	@Reference
-	private CompanyLocalService _companyLocalService;
+	private final CompanyLocalService _companyLocalService;
 
 }

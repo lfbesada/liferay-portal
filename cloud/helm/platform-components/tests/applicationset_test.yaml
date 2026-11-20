@@ -2,8 +2,8 @@ release:
     name: my-release
     namespace: argocd-system
 set:
-    clusterSecretStore:
-        name: liferay-test-secret-store
+    clusterSecretStores:
+        liferay-test-secret-store: {}
 suite: ApplicationSets and AppProjects
 templates:
     -   templates/application-infrastructure-provider.yaml
@@ -15,6 +15,16 @@ templates:
     -   templates/appproject-infrastructure.yaml
     -   templates/appproject-operator.yaml
 tests:
+    -   asserts:
+            -   contains:
+                    content: oci://docker.io/envoyproxy/gateway-crds-helm
+                    path: spec.sourceRepos
+                template: templates/appproject-operator.yaml
+            -   contains:
+                    content: oci://docker.io/envoyproxy/gateway-crds-helm/**
+                    path: spec.sourceRepos
+                template: templates/appproject-operator.yaml
+        it: Allows the Envoy Gateway CRD chart repository in the operator AppProject
     -   asserts:
             -   equal:
                     path: metadata.annotations["argocd.argoproj.io/sync-wave"]
@@ -97,14 +107,13 @@ tests:
                 repoURL: oci://example-registry/liferay-azure
     -   asserts:
             -   failedTemplate:
-                    errorMessage: The value "operatorApplications.dxpOperator.values.fullnameOverride" must not be empty when "operatorApplications.dxpOperator.values.clientExtensions.enabled" is true
+                    errorMessage: The value "dxpOperator.values.fullnameOverride" must not be empty when "dxpOperator.values.clientExtensions.enabled" is true
                 template: templates/applicationset-liferay.yaml
         it: Fails without the name the DXP operator runs as
         set:
-            operatorApplications:
-                dxpOperator:
-                    values:
-                        fullnameOverride: ""
+            dxpOperator:
+                values:
+                    fullnameOverride: ""
     -   asserts:
             -   notContains:
                     any: true
@@ -114,11 +123,10 @@ tests:
                 template: templates/applicationset-liferay.yaml
         it: Grants no delivery access when the DXP operator does not deliver client extensions
         set:
-            operatorApplications:
-                dxpOperator:
-                    values:
-                        clientExtensions:
-                            enabled: false
+            dxpOperator:
+                values:
+                    clientExtensions:
+                        enabled: false
     -   asserts:
             -   notContains:
                     any: true
@@ -128,9 +136,8 @@ tests:
                 template: templates/applicationset-liferay.yaml
         it: Grants no delivery access when the DXP operator is disabled
         set:
-            operatorApplications:
-                dxpOperator:
-                    enabled: false
+            dxpOperator:
+                enabled: false
     -   asserts:
             -   contains:
                     content:
@@ -152,11 +159,18 @@ tests:
                 template: templates/applicationset-liferay.yaml
         it: Grants the DXP operator delivery access to the Liferay namespace
         set:
-            operatorApplications:
-                dxpOperator:
-                    namespace: liferay-operators
-                    values:
-                        fullnameOverride: liferay-dxp-operator
+            dxpOperator:
+                namespace: liferay-operators
+                values:
+                    fullnameOverride: liferay-dxp-operator
+    -   asserts:
+            -   notContains:
+                    any: true
+                    content:
+                        name: liferay-default.network.sessionPersistence.enabled
+                    path: spec.template.spec.sources[0].helm.parameters
+                template: templates/applicationset-liferay.yaml
+        it: Keeps session persistence on with the experimental Gateway API CRDs
     -   asserts:
             -   equal:
                     path: spec.template.spec.syncPolicy.managedNamespaceMetadata.labels
@@ -228,11 +242,10 @@ tests:
                 template: templates/applicationset-liferay.yaml
         it: Leaves the online activation workflow off when the DXP operator does not run it
         set:
-            operatorApplications:
-                dxpOperator:
-                    values:
-                        onlineActivationWorkflow:
-                            enabled: false
+            dxpOperator:
+                values:
+                    onlineActivationWorkflow:
+                        enabled: false
     -   asserts:
             -   notContains:
                     any: true
@@ -242,9 +255,8 @@ tests:
                 template: templates/applicationset-liferay.yaml
         it: Leaves the online activation workflow off when the DXP operator is disabled
         set:
-            operatorApplications:
-                dxpOperator:
-                    enabled: false
+            dxpOperator:
+                enabled: false
     -   asserts:
             -   contains:
                     content:
@@ -265,11 +277,10 @@ tests:
                 template: templates/applicationset-liferay.yaml
         it: Names the DXP operator by its service account name over its full name
         set:
-            operatorApplications:
-                dxpOperator:
-                    values:
-                        serviceAccount:
-                            name: operator-account
+            dxpOperator:
+                values:
+                    serviceAccount:
+                        name: operator-account
     -   asserts:
             -   hasDocuments:
                     count: 0
@@ -289,6 +300,26 @@ tests:
             infrastructureProvider.enabled: false
             liferay.enabled: false
     -   asserts:
+            -   hasDocuments:
+                    count: 0
+                template: templates/appproject-application.yaml
+            -   hasDocuments:
+                    count: 1
+                template: templates/appproject-infrastructure.yaml
+        it: Omits the application AppProject when it is disabled
+        set:
+            appProjects.application.enabled: false
+    -   asserts:
+            -   hasDocuments:
+                    count: 1
+                template: templates/appproject-application.yaml
+            -   hasDocuments:
+                    count: 0
+                template: templates/appproject-infrastructure.yaml
+        it: Omits the infrastructure AppProject when it is disabled
+        set:
+            appProjects.infrastructure.enabled: false
+    -   asserts:
             -   isEmpty:
                     path: spec.sourceRepos
                 template: templates/appproject-application.yaml
@@ -297,6 +328,19 @@ tests:
                     path: spec.sourceRepos
                 template: templates/appproject-infrastructure.yaml
         it: Omits the unset repository URLs from the AppProject source repositories
+    -   asserts:
+            -   contains:
+                    content:
+                        name: gateway.className
+                        value: envoy-gateway-l4
+                    path: spec.template.spec.sources[0].helm.parameters
+                template: templates/applicationset-infrastructure.yaml
+        it: Passes the configured gateway class to the infrastructure ApplicationSet
+        set:
+            gateway:
+                className: envoy-gateway-l4
+            infrastructure:
+                repoURL: oci://example-registry/liferay-azure-infrastructure
     -   asserts:
             -   contains:
                     content:
@@ -344,19 +388,13 @@ tests:
     -   asserts:
             -   contains:
                     content:
-                        namespace: elastic-system
+                        namespace: kube-system
                         server: https://kubernetes.default.svc
                     path: spec.destinations
                 template: templates/appproject-operator.yaml
             -   contains:
                     content:
-                        namespace: monitoring
-                        server: https://kubernetes.default.svc
-                    path: spec.destinations
-                template: templates/appproject-operator.yaml
-            -   notContains:
-                    content:
-                        namespace: kube-system
+                        namespace: keda-system
                         server: https://kubernetes.default.svc
                     path: spec.destinations
                 template: templates/appproject-operator.yaml
@@ -364,11 +402,7 @@ tests:
                     count: 9
                     path: spec.destinations
                 template: templates/appproject-operator.yaml
-        it: Permits the extra destination namespaces declared by an operator application
-        set:
-            operatorApplications.eckOperator.extraDestinationNamespaces:
-                -   monitoring
-            operatorApplications.keda.extraDestinationNamespaces: null
+        it: Permits KEDA's extra destination namespace
     -   asserts:
             -   contains:
                     content: https://charts.example.com
@@ -384,7 +418,55 @@ tests:
                 template: templates/appproject-operator.yaml
         it: Reflects a repository URL override in the operator AppProject source repositories
         set:
-            operatorApplications.keda.repoURL: https://charts.example.com
+            keda.repoURL: https://charts.example.com
+    -   asserts:
+            -   hasDocuments:
+                    count: 0
+                template: templates/application-infrastructure-provider.yaml
+            -   hasDocuments:
+                    count: 0
+                template: templates/application-observability.yaml
+            -   hasDocuments:
+                    count: 0
+                template: templates/applicationset-infrastructure.yaml
+            -   hasDocuments:
+                    count: 0
+                template: templates/applicationset-liferay.yaml
+            -   hasDocuments:
+                    count: 0
+                template: templates/applicationset-resources.yaml
+            -   hasDocuments:
+                    count: 0
+                template: templates/appproject-application.yaml
+            -   hasDocuments:
+                    count: 0
+                template: templates/appproject-infrastructure.yaml
+            -   equal:
+                    path: metadata.name
+                    value: liferay-operator
+                template: templates/appproject-operator.yaml
+            -   equal:
+                    path: metadata.namespace
+                    value: argocd-system
+                template: templates/appproject-operator.yaml
+            -   hasDocuments:
+                    count: 1
+                template: templates/appproject-operator.yaml
+        it: Renders only the operator AppProject when every component is off
+        set:
+            appProjects.application.enabled: false
+            appProjects.infrastructure.enabled: false
+            argoWorkflows.enabled: false
+            crossplane.enabled: false
+            dxpOperator.enabled: false
+            eckOperator.enabled: false
+            envoyGateway.enabled: false
+            externalSecrets.enabled: false
+            infrastructure.enabled: false
+            infrastructureProvider.enabled: false
+            keda.enabled: false
+            liferay.enabled: false
+            observability.enabled: false
     -   asserts:
             -   hasDocuments:
                     count: 1
@@ -558,6 +640,8 @@ tests:
                         -   https://helm.elastic.co/**
                         -   oci://docker.io/envoyproxy/gateway-helm
                         -   oci://docker.io/envoyproxy/gateway-helm/**
+                        -   oci://docker.io/envoyproxy/gateway-crds-helm
+                        -   oci://docker.io/envoyproxy/gateway-crds-helm/**
                         -   https://charts.external-secrets.io
                         -   https://charts.external-secrets.io/**
                         -   https://kedacore.github.io/charts
@@ -584,17 +668,31 @@ tests:
     -   asserts:
             -   contains:
                     content:
+                        name: liferay-default.network.sessionPersistence.enabled
+                        value: "false"
+                    path: spec.template.spec.sources[0].helm.parameters
+                template: templates/applicationset-liferay.yaml
+        it: Turns session persistence off with the standard Gateway API CRDs
+        set:
+            envoyGateway:
+                crds:
+                    values:
+                        crds:
+                            gatewayAPI:
+                                channel: standard
+    -   asserts:
+            -   contains:
+                    content:
                         name: liferay-default.licensing.onlineActivationWorkflow.enabled
                         value: "true"
                     path: spec.template.spec.sources[0].helm.parameters
                 template: templates/applicationset-liferay.yaml
         it: Turns the online activation workflow on when the DXP operator runs it
         set:
-            operatorApplications:
-                dxpOperator:
-                    values:
-                        onlineActivationWorkflow:
-                            enabled: true
+            dxpOperator:
+                values:
+                    onlineActivationWorkflow:
+                        enabled: true
     -   asserts:
             -   equal:
                     path: spec.generators[0].git.repoURL

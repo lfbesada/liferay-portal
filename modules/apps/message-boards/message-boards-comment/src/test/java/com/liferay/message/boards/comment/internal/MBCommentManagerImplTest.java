@@ -83,6 +83,18 @@ public class MBCommentManagerImplTest extends Mockito {
 		throws Exception {
 
 		when(
+			_mbMessage.getClassName()
+		).thenReturn(
+			_CLASS_NAME
+		);
+
+		when(
+			_mbMessage.getClassPK()
+		).thenReturn(
+			_ENTRY_ID
+		);
+
+		when(
 			_mbMessage.getMessageId()
 		).thenReturn(
 			_MBMESSAGE_ID
@@ -104,6 +116,12 @@ public class MBCommentManagerImplTest extends Mockito {
 			_mbMessage.getParentMessageId()
 		).thenReturn(
 			_ROOT_MESSAGE_ID
+		);
+
+		when(
+			_mbMessage.isDiscussion()
+		).thenReturn(
+			true
 		);
 
 		Assert.assertEquals(
@@ -239,6 +257,12 @@ public class MBCommentManagerImplTest extends Mockito {
 
 	@Test
 	public void testDeleteComment() throws Exception {
+		when(
+			_mbMessage.isDiscussion()
+		).thenReturn(
+			true
+		);
+
 		_mbCommentManagerImpl.deleteComment(_MBMESSAGE_ID);
 
 		Mockito.verify(
@@ -276,15 +300,21 @@ public class MBCommentManagerImplTest extends Mockito {
 
 	@Test
 	public void testFetchCommentByGroupIdAndExternalReferenceCode() {
-		long groupId = RandomTestUtil.randomLong();
-		String externalReferenceCode = RandomTestUtil.randomString();
+		when(
+			_mbMessage.isDiscussion()
+		).thenReturn(
+			true
+		);
 
-		Mockito.when(
+		when(
 			_mbMessageLocalService.fetchMBMessageByExternalReferenceCode(
 				anyString(), anyLong())
 		).thenReturn(
 			_mbMessage
 		);
+
+		long groupId = RandomTestUtil.randomLong();
+		String externalReferenceCode = RandomTestUtil.randomString();
 
 		Comment comment = _mbCommentManagerImpl.fetchComment(
 			groupId, externalReferenceCode);
@@ -304,15 +334,15 @@ public class MBCommentManagerImplTest extends Mockito {
 
 	@Test
 	public void testFetchCommentByGroupIdAndExternalReferenceCodeNull() {
-		long groupId = RandomTestUtil.randomLong();
-		String externalReferenceCode = RandomTestUtil.randomString();
-
-		Mockito.when(
+		when(
 			_mbMessageLocalService.fetchMBMessageByExternalReferenceCode(
 				anyString(), anyLong())
 		).thenReturn(
 			null
 		);
+
+		long groupId = RandomTestUtil.randomLong();
+		String externalReferenceCode = RandomTestUtil.randomString();
 
 		Comment comment = _mbCommentManagerImpl.fetchComment(
 			groupId, externalReferenceCode);
@@ -330,15 +360,21 @@ public class MBCommentManagerImplTest extends Mockito {
 	public void testGetCommentByGroupIdAndExternalReferenceCode()
 		throws PortalException {
 
-		long groupId = RandomTestUtil.randomLong();
-		String externalReferenceCode = RandomTestUtil.randomString();
+		when(
+			_mbMessage.isDiscussion()
+		).thenReturn(
+			true
+		);
 
-		Mockito.when(
+		when(
 			_mbMessageLocalService.getMBMessageByExternalReferenceCode(
 				anyString(), anyLong())
 		).thenReturn(
 			_mbMessage
 		);
+
+		long groupId = RandomTestUtil.randomLong();
+		String externalReferenceCode = RandomTestUtil.randomString();
 
 		Comment comment = _mbCommentManagerImpl.getComment(
 			groupId, externalReferenceCode);
@@ -362,14 +398,14 @@ public class MBCommentManagerImplTest extends Mockito {
 		long classNameId = RandomTestUtil.randomLong();
 		int commentsCount = RandomTestUtil.randomInt();
 
-		Mockito.when(
+		when(
 			_mbMessageLocalService.getDiscussionMessagesCount(
 				classNameId, classPK, WorkflowConstants.STATUS_APPROVED)
 		).thenReturn(
 			commentsCount
 		);
 
-		Mockito.when(
+		when(
 			_portal.getClassNameId(_CLASS_NAME)
 		).thenReturn(
 			classNameId

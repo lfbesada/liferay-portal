@@ -5,8 +5,9 @@
 
 package com.liferay.depot.web.internal.item.selector;
 
+import com.liferay.depot.service.DepotEntryService;
 import com.liferay.depot.web.internal.application.list.DepotPanelAppController;
-import com.liferay.depot.web.internal.util.DepotEntryAdminSearchProvider;
+import com.liferay.depot.web.internal.dao.search.GroupSearchContainerFactory;
 import com.liferay.item.selector.ItemSelectorReturnType;
 import com.liferay.item.selector.ItemSelectorView;
 import com.liferay.item.selector.criteria.GroupItemSelectorReturnType;
@@ -16,7 +17,9 @@ import com.liferay.item.selector.criteria.group.criterion.GroupItemSelectorCrite
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.reflect.ReflectionUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.ListUtil;
@@ -72,6 +75,10 @@ public abstract class BaseDepotItemSelectorView
 	public boolean isVisible(
 		T groupItemSelectorCriterion, ThemeDisplay themeDisplay) {
 
+		if (_siteItemSelectorViewRendererSnapshot.get() == null) {
+			return false;
+		}
+
 		if (groupItemSelectorCriterion == null) {
 			return true;
 		}
@@ -98,6 +105,9 @@ public abstract class BaseDepotItemSelectorView
 					(HttpServletRequest)servletRequest, itemSelectedEventName,
 					portletURL, groupItemSelectorCriterion);
 
+		SiteItemSelectorViewRenderer siteItemSelectorViewRenderer =
+			_siteItemSelectorViewRendererSnapshot.get();
+
 		siteItemSelectorViewRenderer.renderHTML(
 			depotSitesItemSelectorViewDisplayContext);
 	}
@@ -108,17 +118,21 @@ public abstract class BaseDepotItemSelectorView
 	protected abstract String getTitleLanguageKey();
 
 	@Reference
-	protected DepotEntryAdminSearchProvider depotEntryAdminSearchProvider;
+	protected DepotEntryService depotEntryService;
 
 	@Reference
 	protected DepotPanelAppController depotPanelAppController;
 
 	@Reference
-	protected SiteItemSelectorViewRenderer siteItemSelectorViewRenderer;
+	protected Language language;
 
 	@Reference
 	protected StagingGroupHelper stagingGroupHelper;
 
+	private static final Snapshot<SiteItemSelectorViewRenderer>
+		_siteItemSelectorViewRendererSnapshot = new Snapshot<>(
+			BaseDepotItemSelectorView.class, SiteItemSelectorViewRenderer.class,
+			null, true);
 	private static final List<ItemSelectorReturnType>
 		_supportedItemSelectorReturnTypes = Collections.unmodifiableList(
 			ListUtil.fromArray(
@@ -166,10 +180,9 @@ public abstract class BaseDepotItemSelectorView
 				customizeGroupItemSelectorCriterion(
 					_groupItemSelectorCriterion);
 
-				GroupSearch groupSearch =
-					depotEntryAdminSearchProvider.getGroupSearch(
-						_groupItemSelectorCriterion, getPortletRequest(),
-						getPortletResponse(), getPortletURL());
+				GroupSearch groupSearch = GroupSearchContainerFactory.create(
+					depotEntryService, _groupItemSelectorCriterion, language,
+					getPortletRequest(), getPortletResponse(), getPortletURL());
 				ThemeDisplay themeDisplay =
 					(ThemeDisplay)_httpServletRequest.getAttribute(
 						WebKeys.THEME_DISPLAY);

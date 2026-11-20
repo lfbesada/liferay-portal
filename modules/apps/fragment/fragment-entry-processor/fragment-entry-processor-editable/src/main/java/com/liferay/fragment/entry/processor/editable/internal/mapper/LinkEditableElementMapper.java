@@ -9,12 +9,14 @@ import com.liferay.fragment.entry.processor.editable.mapper.EditableElementMappe
 import com.liferay.fragment.entry.processor.helper.FragmentEntryProcessorHelper;
 import com.liferay.fragment.entry.processor.helper.LayoutReferenceResolver;
 import com.liferay.fragment.processor.FragmentEntryProcessorContext;
+import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.StringUtil;
@@ -24,6 +26,7 @@ import com.liferay.portal.kernel.util.WebKeys;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.HashMap;
+import java.util.Objects;
 
 import org.jsoup.nodes.Element;
 import org.jsoup.select.Elements;
@@ -43,6 +46,7 @@ public class LinkEditableElementMapper implements EditableElementMapper {
 			FragmentEntryProcessorContext fragmentEntryProcessorContext)
 		throws PortalException {
 
+		boolean mapped = false;
 		boolean nofollow = false;
 		String href = null;
 
@@ -53,6 +57,8 @@ public class LinkEditableElementMapper implements EditableElementMapper {
 				configJSONObject) ||
 			_fragmentEntryProcessorHelper.isMappedDisplayPage(
 				configJSONObject)) {
+
+			mapped = true;
 
 			Object fieldValue = _fragmentEntryProcessorHelper.getFieldValue(
 				configJSONObject, new HashMap<>(),
@@ -148,6 +154,13 @@ public class LinkEditableElementMapper implements EditableElementMapper {
 
 		if (element.childNodeSize() == 0) {
 			empty = true;
+		}
+
+		if (mapped &&
+			!Objects.equals(
+				HtmlUtil.escapeHREF(href), HtmlUtil.escapeAttribute(href))) {
+
+			href = StringUtil.replaceFirst(href, CharPool.COLON, "%3a");
 		}
 
 		linkElement.attr("href", href);

@@ -38,9 +38,9 @@ public class ResourceThresholdMonitor extends BaseMonitor {
 
 		_masterName = getRequiredParameter("master.name", parameters);
 
-		JenkinsMaster jenkinsMaster = JenkinsMaster.getInstance(_masterName);
+		_jenkinsMaster = JenkinsMaster.getInstance(_masterName);
 
-		_masterRemoteURL = jenkinsMaster.getRemoteURL();
+		_masterRemoteURL = _jenkinsMaster.getRemoteURL();
 
 		if (_metric.equals("disk")) {
 			_device = getRequiredParameter("device", parameters);
@@ -73,10 +73,17 @@ public class ResourceThresholdMonitor extends BaseMonitor {
 
 	@Override
 	public MonitorResult execute() {
-		Double value = null;
-
 		long currentTimeMillis =
 			JenkinsResultsParserUtil.getCurrentTimeMillis();
+
+		if (_jenkinsMaster.isBlacklisted() && _jenkinsMaster.isWhitelisted()) {
+			return new MonitorResult(
+				JenkinsResultsParserUtil.combine(
+					_masterName, " is blacklisted"),
+				null, MonitorResult.Status.OK, currentTimeMillis);
+		}
+
+		Double value = null;
 
 		try {
 			MonitorResult monitorResult = _getFileStoreMonitorResult(
@@ -376,6 +383,7 @@ public class ResourceThresholdMonitor extends BaseMonitor {
 
 	private final long _criticalThreshold;
 	private final String _device;
+	private final JenkinsMaster _jenkinsMaster;
 	private final String _masterName;
 	private final String _masterRemoteURL;
 	private final String _metric;

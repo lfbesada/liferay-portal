@@ -7,6 +7,9 @@ package com.liferay.layout.service.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.counter.kernel.service.CounterLocalService;
+import com.liferay.depot.model.DepotEntry;
+import com.liferay.depot.service.DepotEntryGroupRelLocalService;
+import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.fragment.constants.FragmentConstants;
 import com.liferay.fragment.model.FragmentCollection;
 import com.liferay.fragment.model.FragmentEntry;
@@ -21,7 +24,9 @@ import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
 import com.liferay.layout.page.template.model.LayoutPageTemplateStructure;
 import com.liferay.layout.page.template.service.LayoutPageTemplateEntryLocalService;
 import com.liferay.layout.page.template.service.LayoutPageTemplateStructureLocalService;
+import com.liferay.layout.page.template.test.util.LayoutPageTemplateTestUtil;
 import com.liferay.layout.test.util.ContentLayoutTestUtil;
+import com.liferay.layout.test.util.DesignLibraryTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
 import com.liferay.petra.function.UnsafeBiFunction;
 import com.liferay.petra.lang.SafeCloseable;
@@ -33,6 +38,7 @@ import com.liferay.portal.kernel.exception.LayoutJavaScriptException;
 import com.liferay.portal.kernel.exception.LayoutTypeException;
 import com.liferay.portal.kernel.exception.MasterLayoutException;
 import com.liferay.portal.kernel.exception.NoSuchLayoutException;
+import com.liferay.portal.kernel.launch.LaunchPreviewThreadLocal;
 import com.liferay.portal.kernel.lazy.referencing.LazyReferencingThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -54,10 +60,12 @@ import com.liferay.portal.kernel.service.SystemEventLocalService;
 import com.liferay.portal.kernel.test.TestInfo;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
+import com.liferay.portal.kernel.test.util.FeatureFlagTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizer;
 import com.liferay.portal.kernel.util.FriendlyURLNormalizerUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
@@ -70,6 +78,7 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
@@ -77,6 +86,7 @@ import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.sites.kernel.util.Sites;
 
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Locale;
@@ -549,7 +559,8 @@ public class LayoutLocalServiceTest {
 			_layoutLocalService.fetchDraftLayout(
 				layout.getPlid(), launchSetId));
 
-		Layout launchDraftLayout = _addLaunchDraftLayout(launchSetId, layout);
+		Layout launchDraftLayout = LayoutTestUtil.addLaunchDraftLayout(
+			launchSetId, layout);
 
 		Assert.assertEquals(
 			launchDraftLayout,
@@ -565,6 +576,48 @@ public class LayoutLocalServiceTest {
 		Assert.assertNull(
 			_layoutLocalService.fetchDraftLayout(
 				layout.getPlid(), RandomTestUtil.randomLong()));
+	}
+
+	@Test
+	@TestInfo("LPD-112154")
+	public void testGetClassPKsByLaunchSetId() throws Exception {
+		long launchSetId = RandomTestUtil.randomLong();
+
+		long[] classPKs = _layoutLocalService.getClassPKsByLaunchSetId(
+			_group.getGroupId(), launchSetId);
+
+		Assert.assertEquals(Arrays.toString(classPKs), 0, classPKs.length);
+
+		Layout layout1 = LayoutTestUtil.addTypeContentPublishedLayout(
+			_group, RandomTestUtil.randomString(),
+			WorkflowConstants.STATUS_APPROVED);
+
+		LayoutTestUtil.addLaunchDraftLayout(launchSetId, layout1);
+
+		classPKs = _layoutLocalService.getClassPKsByLaunchSetId(
+			_group.getGroupId(), launchSetId);
+
+		Assert.assertEquals(layout1.getPlid(), classPKs[0]);
+		Assert.assertEquals(Arrays.toString(classPKs), 1, classPKs.length);
+
+		Layout layout2 = LayoutTestUtil.addTypeContentPublishedLayout(
+			_group, RandomTestUtil.randomString(),
+			WorkflowConstants.STATUS_APPROVED);
+
+		LayoutTestUtil.addLaunchDraftLayout(launchSetId, layout2);
+
+		classPKs = _layoutLocalService.getClassPKsByLaunchSetId(
+			_group.getGroupId(), launchSetId);
+
+		Assert.assertTrue(
+			ArrayUtil.containsAll(
+				classPKs, new long[] {layout1.getPlid(), layout2.getPlid()}));
+		Assert.assertEquals(Arrays.toString(classPKs), 2, classPKs.length);
+
+		classPKs = _layoutLocalService.getClassPKsByLaunchSetId(
+			_group.getGroupId(), RandomTestUtil.randomLong());
+
+		Assert.assertEquals(Arrays.toString(classPKs), 0, classPKs.length);
 	}
 
 	@Test
@@ -894,6 +947,72 @@ public class LayoutLocalServiceTest {
 	}
 
 	@Test
+	@TestInfo("LPD-112154")
+	public void testSearchCountWithLaunchPreviewThreadLocal() throws Exception {
+		String keyword = RandomTestUtil.randomString();
+
+		Layout layout = LayoutTestUtil.addTypeContentLayout(
+			_group, keyword + RandomTestUtil.randomString());
+
+		long launchSetId = RandomTestUtil.randomLong();
+
+		LayoutTestUtil.addLaunchDraftLayout(launchSetId, layout);
+
+		Assert.assertEquals(
+			0,
+			_layoutLocalService.searchCount(
+				_group, false, keyword, true,
+				new String[] {LayoutConstants.TYPE_CONTENT},
+				new int[] {WorkflowConstants.STATUS_APPROVED}));
+
+		try (SafeCloseable safeCloseable =
+				LaunchPreviewThreadLocal.setLaunchSetIdWithSafeCloseable(
+					launchSetId)) {
+
+			Assert.assertEquals(
+				1,
+				_layoutLocalService.searchCount(
+					_group, false, keyword, true,
+					new String[] {LayoutConstants.TYPE_CONTENT},
+					new int[] {WorkflowConstants.STATUS_APPROVED}));
+		}
+	}
+
+	@Test
+	@TestInfo("LPD-112154")
+	public void testSearchCountWithStatuses() throws Exception {
+		String keyword = RandomTestUtil.randomString();
+
+		LayoutTestUtil.addTypeContentLayout(
+			_group, keyword + RandomTestUtil.randomString());
+		LayoutTestUtil.addTypeContentPublishedLayout(
+			_group, keyword + RandomTestUtil.randomString(),
+			WorkflowConstants.STATUS_APPROVED);
+
+		Assert.assertEquals(
+			1,
+			_layoutLocalService.searchCount(
+				_group, false, keyword, true,
+				new String[] {LayoutConstants.TYPE_CONTENT},
+				new int[] {WorkflowConstants.STATUS_APPROVED}));
+		Assert.assertEquals(
+			1,
+			_layoutLocalService.searchCount(
+				_group, false, keyword, true,
+				new String[] {LayoutConstants.TYPE_CONTENT},
+				new int[] {WorkflowConstants.STATUS_DRAFT}));
+		Assert.assertEquals(
+			2,
+			_layoutLocalService.searchCount(
+				_group, false, keyword, true,
+				new String[] {LayoutConstants.TYPE_CONTENT},
+				new int[] {
+					WorkflowConstants.STATUS_APPROVED,
+					WorkflowConstants.STATUS_DRAFT
+				}));
+	}
+
+	@Test
 	public void testUpdateDraftLayoutAfterOriginalLayoutUpdatesWithNewFriendlyURL()
 		throws Exception {
 
@@ -1146,6 +1265,48 @@ public class LayoutLocalServiceTest {
 			"1_column", layoutTypePortlet.getLayoutTemplateId());
 	}
 
+	@FeatureFlag("LPD-57283")
+	@Test
+	@TestInfo("LPD-108822")
+	public void testUpdateMasterLayoutPageTemplateEntry() throws Exception {
+		FeatureFlagTestUtil.invokeFeatureFlagListeners(
+			_group.getCompanyId(), true, "LPD-57283");
+
+		Group designLibraryGroup = DesignLibraryTestUtil.addDesignLibraryGroup(
+			_group.getGroupId(), false);
+
+		LayoutPageTemplateEntry masterLayoutPageTemplateEntry =
+			LayoutPageTemplateTestUtil.addLayoutPageTemplateEntry(
+				designLibraryGroup.getGroupId(),
+				LayoutPageTemplateEntryTypeConstants.MASTER_LAYOUT,
+				WorkflowConstants.STATUS_APPROVED);
+
+		Layout layout = LayoutTestUtil.addTypeContentLayout(_group);
+
+		layout = _layoutLocalService.updateMasterLayoutPageTemplateEntry(
+			layout.getGroupId(), layout.isPrivateLayout(), layout.getLayoutId(),
+			masterLayoutPageTemplateEntry.getExternalReferenceCode(),
+			designLibraryGroup.getExternalReferenceCode());
+
+		Assert.assertEquals(
+			masterLayoutPageTemplateEntry.getExternalReferenceCode(),
+			layout.getMasterLayoutPageTemplateEntryERC());
+		Assert.assertEquals(
+			designLibraryGroup.getExternalReferenceCode(),
+			layout.getMasterLayoutPageTemplateEntryScopeERC());
+		Assert.assertEquals(0, layout.getMasterLayoutPlid());
+
+		DepotEntry depotEntry = _depotEntryLocalService.getGroupDepotEntry(
+			designLibraryGroup.getGroupId());
+
+		_depotEntryGroupRelLocalService.addDepotEntryGroupRel(
+			depotEntry.getDepotEntryId(), _group.getGroupId());
+
+		Assert.assertEquals(
+			masterLayoutPageTemplateEntry.getPlid(),
+			layout.getMasterLayoutPlid());
+	}
+
 	@Test(expected = MasterLayoutException.class)
 	public void testUpdateMasterLayoutPageTemplateEntryERCWithInvalidMasterLayoutPageTemplateEntryERC()
 		throws Exception {
@@ -1319,26 +1480,6 @@ public class LayoutLocalServiceTest {
 		}
 	}
 
-	private Layout _addLaunchDraftLayout(long launchSetId, Layout layout)
-		throws Exception {
-
-		Layout launchDraftLayout = _layoutLocalService.addLayout(
-			StringBundler.concat(
-				layout.getExternalReferenceCode(), "-launch-", launchSetId),
-			TestPropsValues.getUserId(), layout.getGroupId(),
-			layout.isPrivateLayout(), layout.getParentLayoutId(),
-			_portal.getClassNameId(Layout.class), layout.getPlid(),
-			layout.getNameMap(), layout.getTitleMap(),
-			layout.getDescriptionMap(), layout.getKeywordsMap(),
-			layout.getRobotsMap(), layout.getType(), layout.getTypeSettings(),
-			true, true, Collections.emptyMap(),
-			layout.getMasterLayoutPageTemplateEntryERC(), _serviceContext);
-
-		launchDraftLayout.setLaunchSetId(launchSetId);
-
-		return _layoutLocalService.updateLayout(launchDraftLayout);
-	}
-
 	private void _assertExternalReferenceCodes(
 			Layout draftLayout,
 			UnsafeBiFunction<String, String, Boolean, Exception>
@@ -1446,6 +1587,12 @@ public class LayoutLocalServiceTest {
 
 	@Inject
 	private CounterLocalService _counterLocalService;
+
+	@Inject
+	private DepotEntryGroupRelLocalService _depotEntryGroupRelLocalService;
+
+	@Inject
+	private DepotEntryLocalService _depotEntryLocalService;
 
 	@Inject
 	private FragmentCollectionLocalService _fragmentCollectionLocalService;

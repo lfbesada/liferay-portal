@@ -38,6 +38,8 @@ import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
+import com.liferay.portal.kernel.security.permission.resource.WorkflowedModelPermissionLogic;
+import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -408,10 +410,21 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 	public KBArticle getKBArticle(long resourcePrimKey, int version)
 		throws PortalException {
 
-		_kbArticleModelResourcePermission.check(
-			getPermissionChecker(), resourcePrimKey, KBActionKeys.VIEW);
+		PermissionChecker permissionChecker = getPermissionChecker();
 
-		return kbArticleLocalService.getKBArticle(resourcePrimKey, version);
+		_kbArticleModelResourcePermission.check(
+			permissionChecker, resourcePrimKey, KBActionKeys.VIEW);
+
+		KBArticle kbArticle = kbArticleLocalService.getKBArticle(
+			resourcePrimKey, version);
+
+		if (!_hasPermission(kbArticle, permissionChecker)) {
+			throw new PrincipalException.MustHavePermission(
+				permissionChecker, KBArticle.class.getName(), resourcePrimKey,
+				KBActionKeys.VIEW);
+		}
+
+		return kbArticle;
 	}
 
 	@Override
@@ -696,21 +709,28 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 	public KBArticle getLatestKBArticle(long resourcePrimKey)
 		throws PortalException {
 
-		_kbArticleModelResourcePermission.check(
-			getPermissionChecker(), resourcePrimKey, KBActionKeys.VIEW);
-
-		return kbArticleLocalService.getLatestKBArticle(resourcePrimKey);
+		return getLatestKBArticle(
+			resourcePrimKey, WorkflowConstants.STATUS_ANY);
 	}
 
 	@Override
 	public KBArticle getLatestKBArticle(long resourcePrimKey, int status)
 		throws PortalException {
 
+		PermissionChecker permissionChecker = getPermissionChecker();
+
 		_kbArticleModelResourcePermission.check(
-			getPermissionChecker(), resourcePrimKey, KBActionKeys.VIEW);
+			permissionChecker, resourcePrimKey, KBActionKeys.VIEW);
+
+		KBArticle kbArticle = kbArticleLocalService.getLatestKBArticle(
+			resourcePrimKey, status);
+
+		if (_hasPermission(kbArticle, permissionChecker)) {
+			return kbArticle;
+		}
 
 		return kbArticleLocalService.getLatestKBArticle(
-			resourcePrimKey, status);
+			resourcePrimKey, WorkflowConstants.STATUS_APPROVED);
 	}
 
 	@Override
@@ -1199,6 +1219,28 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 		return kbArticle;
 	}
 
+	private boolean _hasPermission(
+			KBArticle kbArticle, PermissionChecker permissionChecker)
+		throws PortalException {
+
+		WorkflowedModelPermissionLogic<KBArticle>
+			workflowedModelPermissionLogic =
+				new WorkflowedModelPermissionLogic<>(
+					_kbArticleModelResourcePermission, _groupLocalService,
+					KBArticle::getResourcePrimKey);
+
+		Boolean permission = workflowedModelPermissionLogic.contains(
+			permissionChecker, KBArticle.class.getName(), kbArticle,
+			ActionKeys.VIEW);
+
+		if (permission != null) {
+			return permission;
+		}
+
+		return _kbArticleModelResourcePermission.contains(
+			permissionChecker, kbArticle, KBActionKeys.VIEW);
+	}
+
 	private boolean _isAttachmentsFolder(Folder folder, KBArticle kbArticle) {
 		Repository repository = _portletFileRepository.fetchPortletRepository(
 			kbArticle.getGroupId(), KBConstants.SERVICE_NAME);
@@ -1224,6 +1266,9 @@ public class KBArticleServiceImpl extends KBArticleServiceBaseImpl {
 		target = "(resource.name=" + KBConstants.RESOURCE_NAME_DISPLAY + ")"
 	)
 	private PortletResourcePermission _displayPortletResourcePermission;
+
+	@Reference
+	private GroupLocalService _groupLocalService;
 
 	@Reference
 	private HtmlParser _htmlParser;

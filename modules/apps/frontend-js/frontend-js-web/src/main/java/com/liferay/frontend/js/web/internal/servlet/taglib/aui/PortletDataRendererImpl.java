@@ -39,14 +39,16 @@ public class PortletDataRendererImpl implements PortletDataRenderer {
 	public void write(Collection<PortletData> portletDatas, Writer writer)
 		throws IOException {
 
-		String rawCode = _computeRawCode(portletDatas);
+		StringBundler rawCodeSB = _computeRawCode(portletDatas);
 
-		if (!Validator.isBlank(rawCode)) {
+		if (rawCodeSB.index() > 0) {
 			writer.write("<script");
 			writer.write(
 				ContentSecurityPolicyNonceProviderUtil.getNonceAttribute(null));
 			writer.write(" type=\"text/javascript\">\n");
-			writer.write(rawCode);
+
+			rawCodeSB.writeTo(writer);
+
 			writer.write("\n</script>");
 		}
 
@@ -147,8 +149,7 @@ public class PortletDataRendererImpl implements PortletDataRenderer {
 
 		// Write actual JS code
 
-		writer.write(
-			_computeNonrawCode(amdRequiresMap, esImportsMap, portletDatas));
+		_writeNonrawCode(amdRequiresMap, esImportsMap, portletDatas, writer);
 
 		// Write AUI epilogue
 
@@ -267,12 +268,32 @@ public class PortletDataRendererImpl implements PortletDataRenderer {
 		return esImportsMap;
 	}
 
-	private String _computeNonrawCode(
-		Map<AMDRequire, AMDRequire> amdRequiresMap,
-		Map<ESImport, ESImport> esImportsMap,
+	private StringBundler _computeRawCode(
 		Collection<PortletData> portletDatas) {
 
 		StringBundler sb = new StringBundler();
+
+		for (PortletData portletData : portletDatas) {
+			for (JSFragment jsFragment : portletData.getJSFragments()) {
+				String code = jsFragment.getCode();
+
+				if (Validator.isNull(code) || !jsFragment.isRaw()) {
+					continue;
+				}
+
+				sb.append(code);
+				sb.append("\n");
+			}
+		}
+
+		return sb;
+	}
+
+	private void _writeNonrawCode(
+			Map<AMDRequire, AMDRequire> amdRequiresMap,
+			Map<ESImport, ESImport> esImportsMap,
+			Collection<PortletData> portletDatas, Writer writer)
+		throws IOException {
 
 		for (PortletData portletData : portletDatas) {
 			for (JSFragment jsFragment : portletData.getJSFragments()) {
@@ -292,10 +313,10 @@ public class PortletDataRendererImpl implements PortletDataRenderer {
 				}
 
 				if (legacyJSFragment) {
-					sb.append("(function() {\n");
+					writer.write("(function() {\n");
 				}
 				else {
-					sb.append("{\n");
+					writer.write("{\n");
 				}
 
 				// Map AMD requires to their requested aliases
@@ -314,11 +335,11 @@ public class PortletDataRendererImpl implements PortletDataRenderer {
 						continue;
 					}
 
-					sb.append("const ");
-					sb.append(fragmentAMDRequire.getAlias());
-					sb.append(" = ");
-					sb.append(amdRequire.getAlias());
-					sb.append(";\n");
+					writer.write("const ");
+					writer.write(fragmentAMDRequire.getAlias());
+					writer.write(" = ");
+					writer.write(amdRequire.getAlias());
+					writer.write(";\n");
 				}
 
 				// Map ES imports to their requested aliases
@@ -334,48 +355,27 @@ public class PortletDataRendererImpl implements PortletDataRenderer {
 						continue;
 					}
 
-					sb.append("const ");
-					sb.append(fragmentESImport.getAlias());
-					sb.append(" = ");
-					sb.append(esImport.getAlias());
-					sb.append(";\n");
+					writer.write("const ");
+					writer.write(fragmentESImport.getAlias());
+					writer.write(" = ");
+					writer.write(esImport.getAlias());
+					writer.write(";\n");
 				}
 
-				sb.append(code);
+				writer.write(code);
 
 				if (!code.endsWith(StringPool.NEW_LINE)) {
-					sb.append(StringPool.NEW_LINE);
+					writer.write(StringPool.NEW_LINE);
 				}
 
 				if (legacyJSFragment) {
-					sb.append("})();\n");
+					writer.write("})();\n");
 				}
 				else {
-					sb.append("}\n");
+					writer.write("}\n");
 				}
 			}
 		}
-
-		return sb.toString();
-	}
-
-	private String _computeRawCode(Collection<PortletData> portletDatas) {
-		StringBundler sb = new StringBundler();
-
-		for (PortletData portletData : portletDatas) {
-			for (JSFragment jsFragment : portletData.getJSFragments()) {
-				String code = jsFragment.getCode();
-
-				if (Validator.isNull(code) || !jsFragment.isRaw()) {
-					continue;
-				}
-
-				sb.append(code);
-				sb.append("\n");
-			}
-		}
-
-		return sb.toString();
 	}
 
 }

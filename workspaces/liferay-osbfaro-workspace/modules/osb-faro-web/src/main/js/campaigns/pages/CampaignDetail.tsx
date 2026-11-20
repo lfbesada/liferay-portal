@@ -2,54 +2,34 @@ import * as API from 'shared/api';
 import * as breadcrumbs from 'shared/util/breadcrumbs';
 import AccountDropdown from 'shared/components/AccountDropdown';
 import BasePage from 'shared/components/base-page';
+import CampaignUtmParameters from '../components/CampaignUtmParameters';
 import MembershipsCard from '../components/MembershipsCard';
 import React, {useContext} from 'react';
 import {ChannelContext} from 'shared/context/channel';
 import {DropdownRangeKey} from 'shared/components/dropdown-range-key/DropdownRangeKey';
 import {pickBy} from 'lodash';
-import {RangeSelectors} from 'shared/types';
-import {removeUriQueryParam, setUriQueryValues} from 'shared/util/router';
+import {SectionHeader} from 'shared/components/SectionHeader';
 import {useAccountFilter} from 'shared/hooks/useAccountFilter';
-import {useHistoryAdapter} from 'shared/hooks/useHistoryAdapter';
 import {useParams} from 'react-router-dom';
-import {useQueryRangeSelectors} from 'shared/hooks/useQueryRangeSelectors';
+import {useRangeQueryValues} from 'shared/hooks/useRangeQueryValues';
+import {useRangeSelectorChange} from 'shared/hooks/useRangeSelectorChange';
 import {useRequest} from 'shared/hooks/useRequest';
 
 const CampaignDetail: React.FC = () => {
 	const {accountId, accountName, accountQueryValues, setAccount} =
 		useAccountFilter();
-	const history = useHistoryAdapter();
 	const {selectedChannel} = useContext(ChannelContext);
 
 	const {channelId, groupId, id} = useParams();
 
-	const rangeSelectors = useQueryRangeSelectors();
+	const {apiRangeParams, rangeSelectors} = useRangeQueryValues();
 
 	const {data: campaign} = useRequest({
 		dataSourceFn: API.campaigns.fetchCampaign,
 		variables: {channelId: channelId!, groupId: groupId!, id: id!},
 	});
 
-	const handleRangeSelectorChange = ({
-		rangeEnd,
-		rangeKey,
-		rangeStart,
-	}: RangeSelectors) => {
-
-		// The bounds belong to a custom range only, so drop the previous ones
-		// before writing rather than leaving them behind to narrow a preset.
-
-		history.push(
-			setUriQueryValues(
-				pickBy({rangeEnd, rangeKey, rangeStart}),
-				removeUriQueryParam(
-					window.location.href,
-					'rangeEnd',
-					'rangeStart'
-				)
-			)
-		);
-	};
+	const {handleRangeSelectorChange} = useRangeSelectorChange();
 
 	// Empty until the campaign arrives. The title doubles as the last
 	// breadcrumb, so a placeholder would show up twice on the way in.
@@ -84,10 +64,12 @@ const CampaignDetail: React.FC = () => {
 
 			<BasePage.SubHeader>
 				<AccountDropdown
+					campaignTouched
 					className="mr-2"
 					initialAccountId={accountId}
 					initialAccountName={accountName}
 					onFilterChange={setAccount}
+					rangeQueryValues={apiRangeParams}
 				/>
 
 				<div className="d-flex justify-content-end w-100">
@@ -101,6 +83,19 @@ const CampaignDetail: React.FC = () => {
 			</BasePage.SubHeader>
 
 			<BasePage.Body>
+				<SectionHeader
+					icon="box-container"
+					title={Liferay.Language.get('details')}
+				/>
+				<CampaignUtmParameters
+					campaignId={id!}
+					channelId={channelId!}
+					groupId={groupId!}
+				/>
+				<SectionHeader
+					icon="users"
+					title={Liferay.Language.get('membership')}
+				/>
 				<MembershipsCard
 					campaignId={id!}
 					channelId={channelId!}

@@ -8,9 +8,13 @@ import {RangeKeyTimeRanges} from 'shared/util/constants';
 import {useRequest} from 'shared/hooks/useRequest';
 import {warmFrontendDataSet} from 'test/warm-frontend-data-set';
 
+import type {TSort} from '@liferay/frontend-data-set-web';
+
 interface IStageItem {
 	externalReferenceCode: string;
 	id: string;
+	lifecycleName?: string;
+	name?: string;
 	stageName?: string;
 	stageType?: LifecycleStages;
 }
@@ -128,6 +132,7 @@ type FakeFilter = {
 	apiURL?: string;
 	id: string;
 	items?: Array<{label: string; value: string}>;
+	label?: string;
 	preloadedData?: {
 		exclude: boolean;
 		selectedItems: Array<{label?: string; value: string}>;
@@ -140,6 +145,13 @@ type FakeCustomDataRenderers = {
 		value: string;
 	}) => React.ReactElement;
 	accountLifecycleStageRenderer: (props: {
+		itemData?: {
+			lifecycleStages?: Array<{
+				lifecycleName: string;
+				name: string;
+				stageExternalReferenceCode: string;
+			}>;
+		};
 		value?: string;
 	}) => React.ReactElement;
 	activitiesCountRenderer: (props: {value?: number}) => React.ReactElement;
@@ -159,6 +171,7 @@ type FakeView = {
 let lastApiURL: string | undefined;
 let lastCustomDataRenderers: FakeCustomDataRenderers | undefined;
 let lastFilters: FakeFilter[] | undefined;
+let lastSorts: TSort[] | undefined;
 let lastViews: FakeView[] | undefined;
 let mountCount = 0;
 
@@ -175,17 +188,20 @@ jest.mock('@liferay/frontend-data-set-web', () => ({
 		customDataRenderers,
 		filters,
 		id,
+		sorts,
 		views,
 	}: {
 		apiURL: string;
 		customDataRenderers: FakeCustomDataRenderers;
 		filters: FakeFilter[];
 		id: string;
+		sorts: TSort[];
 		views: FakeView[];
 	}) => {
 		lastApiURL = apiURL;
 		lastCustomDataRenderers = customDataRenderers;
 		lastFilters = filters;
+		lastSorts = sorts;
 		lastViews = views;
 
 		React.useEffect(() => {
@@ -213,6 +229,7 @@ describe('AccountsDataSet', () => {
 		lastApiURL = undefined;
 		lastCustomDataRenderers = undefined;
 		lastFilters = undefined;
+		lastSorts = undefined;
 		lastViews = undefined;
 		mountCount = 0;
 	});
@@ -301,6 +318,55 @@ describe('AccountsDataSet', () => {
 
 		expect(countryFilter?.preloadedData).toBeUndefined();
 		expect(industryFilter?.preloadedData).toBeUndefined();
+	});
+
+	it('should omit the campaign filter unless a campaign is selected', async () => {
+		await renderAccountsDataSet(
+			<AccountsDataSet apiURL="fake-url" channelId="123" groupId="23" />
+		);
+
+		expect(lastFilters?.find((f) => f.id === 'campaignId')).toBeUndefined();
+	});
+
+	it('should offer the campaigns and preload the one selected', async () => {
+		await renderAccountsDataSet(
+			<AccountsDataSet
+				apiURL="fake-url"
+				campaignId="7"
+				campaignName="Spring Sale"
+				channelId="123"
+				groupId="23"
+			/>
+		);
+
+		const campaignFilter = lastFilters?.find((f) => f.id === 'campaignId');
+
+		expect(campaignFilter?.apiURL).toBe(
+			'/o/faro/contacts/23/campaigns/campaign-names?channelId=123'
+		);
+		expect(campaignFilter?.preloadedData).toEqual({
+			exclude: false,
+			selectedItems: [{label: 'Spring Sale', value: '7'}],
+		});
+	});
+
+	it('should remount the data set when the campaign changes', async () => {
+		const {rerender} = await renderAccountsDataSet(
+			<AccountsDataSet apiURL="fake-url" channelId="123" groupId="23" />
+		);
+
+		expect(mountCount).toBe(1);
+
+		rerender(
+			<AccountsDataSet
+				apiURL="fake-url"
+				campaignId="7"
+				channelId="123"
+				groupId="23"
+			/>
+		);
+
+		await waitFor(() => expect(mountCount).toBe(2));
 	});
 
 	it('should omit the lifecycleStatus filter when accountLifecycleId is not provided', async () => {
@@ -414,6 +480,201 @@ describe('AccountsDataSet', () => {
 		expect(lifecycleStatusFilter?.preloadedData).toBeUndefined();
 	});
 
+	it('should name the lifecycleStatus filter Lifecycle Stage', async () => {
+		await renderAccountsDataSet(
+			<AccountsDataSet
+				accountLifecycleId="al-1"
+				apiURL="fake-url"
+				channelId="123"
+				groupId="23"
+			/>
+		);
+
+		expect(
+			lastFilters?.find((f) => f.id === 'lifecycleStatus')?.label
+		).toBe('Lifecycle Stage');
+	});
+
+	it('should label the lifecycleStatus filter items with the stage name the API returns', async () => {
+		mockStages([
+			{
+				externalReferenceCode: 'erc-stage-1',
+				id: '1',
+				name: 'Aware',
+			},
+			{
+				externalReferenceCode: 'erc-stage-2',
+				id: '2',
+				name: 'At Risk',
+			},
+		]);
+
+		await renderAccountsDataSet(
+			<AccountsDataSet
+				accountLifecycleId="al-1"
+				apiURL="fake-url"
+				channelId="123"
+				groupId="23"
+			/>
+		);
+
+		expect(
+			lastFilters?.find((f) => f.id === 'lifecycleStatus')?.items
+		).toEqual([
+			{label: 'Aware', value: 'erc-stage-1'},
+			{label: 'At Risk', value: 'erc-stage-2'},
+		]);
+	});
+
+	it.each([
+		['Aware', 'secondary'],
+		['Engaged', 'warning'],
+		['Pipeline', 'info'],
+		['Onboarding', 'secondary'],
+		['Established', 'success'],
+		['At Risk', 'danger'],
+	])(
+		'should render the %s lifecycle stage with the %s label',
+		async (stage, displayType) => {
+			await renderAccountsDataSet(
+				<AccountsDataSet
+					apiURL="fake-url"
+					channelId="123"
+					groupId="23"
+				/>
+			);
+
+			const {container} = render(
+				lastCustomDataRenderers!.accountLifecycleStageRenderer({
+					value: stage,
+				})
+			);
+
+			expect(container).toHaveTextContent(stage);
+			expect(
+				container.querySelector(`.label-inverse-${displayType}`)
+			).toBeTruthy();
+		}
+	);
+
+	it('should render a custom lifecycle stage name as a secondary label', async () => {
+		await renderAccountsDataSet(
+			<AccountsDataSet apiURL="fake-url" channelId="123" groupId="23" />
+		);
+
+		const {container} = render(
+			lastCustomDataRenderers!.accountLifecycleStageRenderer({
+				value: 'Key Customer',
+			})
+		);
+
+		expect(container).toHaveTextContent('Key Customer');
+		expect(
+			container.querySelector('.label-inverse-secondary')
+		).toBeTruthy();
+	});
+
+	it('should list the stages of every lifecycle in the Lifecycle Stage filter', async () => {
+		mockStages([
+			{
+				externalReferenceCode: 'erc-stage-1',
+				id: '1',
+				lifecycleName: 'Account Lifecycle',
+				name: 'Aware',
+			},
+			{
+				externalReferenceCode: 'erc-stage-2',
+				id: '2',
+				lifecycleName: 'Customer',
+				name: 'Established',
+			},
+		]);
+
+		await renderAccountsDataSet(
+			<AccountsDataSet
+				allLifecycles
+				apiURL="fake-url"
+				channelId="123"
+				groupId="23"
+			/>
+		);
+
+		const lifecycleStatusFilter = lastFilters?.find(
+			(f) => f.id === 'lifecycleStatus'
+		);
+
+		expect(lifecycleStatusFilter).toEqual(
+			expect.objectContaining({
+				items: [
+					{label: 'Account Lifecycle: Aware', value: 'erc-stage-1'},
+					{label: 'Customer: Established', value: 'erc-stage-2'},
+				],
+				label: 'Lifecycle Stage',
+			})
+		);
+	});
+
+	it('should render the stage of the account in every lifecycle', async () => {
+		await renderAccountsDataSet(
+			<AccountsDataSet
+				allLifecycles
+				apiURL="fake-url"
+				channelId="123"
+				groupId="23"
+			/>
+		);
+
+		render(
+			lastCustomDataRenderers!.accountLifecycleStageRenderer({
+				itemData: {
+					lifecycleStages: [
+						{
+							lifecycleName: 'Account Lifecycle',
+							name: 'Aware',
+							stageExternalReferenceCode: 'erc-stage-1',
+						},
+						{
+							lifecycleName: 'Customer',
+							name: 'Established',
+							stageExternalReferenceCode: 'erc-stage-2',
+						},
+					],
+				},
+				value: 'Aware',
+			})
+		);
+
+		expect(
+			screen.getByText('Account Lifecycle: Aware')
+		).toBeInTheDocument();
+		expect(screen.getByText('Customer: Established')).toBeInTheDocument();
+	});
+
+	it.each([
+		['missing', undefined],
+		['empty', []],
+	])(
+		'should render the no data value when the lifecycle stages of the account are %s',
+		async (_, lifecycleStages) => {
+			await renderAccountsDataSet(
+				<AccountsDataSet
+					allLifecycles
+					apiURL="fake-url"
+					channelId="123"
+					groupId="23"
+				/>
+			);
+
+			render(
+				lastCustomDataRenderers!.accountLifecycleStageRenderer({
+					itemData: {lifecycleStages},
+				})
+			);
+
+			expect(screen.getByText('–')).toBeInTheDocument();
+		}
+	);
+
 	it('should render the account name link with channelId in the href', async () => {
 		await renderAccountsDataSet(
 			<AccountsDataSet apiURL="fake-url" channelId="123" groupId="23" />
@@ -469,7 +730,7 @@ describe('AccountsDataSet', () => {
 			})
 		);
 
-		expect(container).toHaveTextContent('Engaged');
+		expect(container).toHaveTextContent(/engaged/i);
 	});
 
 	it('should render a custom lifecycle stage name as a secondary label', async () => {
@@ -1091,6 +1352,62 @@ describe('AccountsDataSet', () => {
 			).toHaveLength(1);
 
 			expect(byFieldName('lastEnriched')?.sortable).toBe(true);
+		});
+	});
+
+	describe('the Order menu', () => {
+		it('should offer every sortable column of the Default View, last active descending by default', async () => {
+			await renderAccountsDataSet(
+				<AccountsDataSet
+					apiURL="fake-url"
+					channelId="123"
+					groupId="23"
+				/>
+			);
+
+			expect(lastSorts!.map(({key}) => key)).toEqual(
+				DEFAULT_VIEW_FIELD_NAMES
+			);
+
+			expect(lastSorts!.filter(({active}) => active)).toEqual([
+				{
+					active: true,
+					default: true,
+					direction: 'desc',
+					key: 'lastActive',
+					label: 'Last Active',
+				},
+			]);
+		});
+
+		it('should mark last active as the only default sort', async () => {
+			await renderAccountsDataSet(
+				<AccountsDataSet
+					apiURL="fake-url"
+					channelId="123"
+					fieldCatalog={ALL_ATTRIBUTES_FIELD_CATALOG}
+					groupId="23"
+				/>
+			);
+
+			expect(
+				lastSorts!.filter((sort) => sort.default).map(({key}) => key)
+			).toEqual(['lastActive']);
+		});
+
+		it('should add Last Enriched but leave the unsortable catalog columns out when the All Attributes View exists', async () => {
+			await renderAccountsDataSet(
+				<AccountsDataSet
+					apiURL="fake-url"
+					channelId="123"
+					fieldCatalog={ALL_ATTRIBUTES_FIELD_CATALOG}
+					groupId="23"
+				/>
+			);
+
+			expect(lastSorts!.map(({key}) => key)).toEqual(
+				ALL_ATTRIBUTES_FIXED_FIELD_NAMES
+			);
 		});
 	});
 });

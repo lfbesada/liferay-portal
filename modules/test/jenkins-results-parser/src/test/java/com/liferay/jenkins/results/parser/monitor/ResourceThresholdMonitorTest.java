@@ -5,9 +5,11 @@
 
 package com.liferay.jenkins.results.parser.monitor;
 
+import com.liferay.jenkins.results.parser.JenkinsMaster;
 import com.liferay.jenkins.results.parser.JenkinsMasterTestUtil;
 import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
 import com.liferay.jenkins.results.parser.RandomTestUtil;
+import com.liferay.jenkins.results.parser.ReflectionTestUtil;
 
 import java.io.IOException;
 
@@ -32,6 +34,24 @@ public class ResourceThresholdMonitorTest
 		super.setUp();
 
 		mockEnvironment(Collections.<String, String>emptyMap());
+	}
+
+	@Test
+	public void testExecuteBlacklistedJenkinsMaster() throws Exception {
+		mockURLReaders();
+
+		setShellCommandExitValue("cat /proc/meminfo", mockShell(), 255);
+		setURLReaderException(
+			new IOException(RandomTestUtil.randomString()), "/prometheus");
+
+		_testExecuteBlacklistedJenkinsMaster("disk", false);
+		_testExecuteBlacklistedJenkinsMaster("disk", true);
+		_testExecuteBlacklistedJenkinsMaster("executor.utilization", false);
+		_testExecuteBlacklistedJenkinsMaster("executor.utilization", true);
+		_testExecuteBlacklistedJenkinsMaster("queue.depth", false);
+		_testExecuteBlacklistedJenkinsMaster("queue.depth", true);
+		_testExecuteBlacklistedJenkinsMaster("ram", false);
+		_testExecuteBlacklistedJenkinsMaster("ram", true);
 	}
 
 	@Test
@@ -580,6 +600,50 @@ public class ResourceThresholdMonitorTest
 			"monitor[a].parameter[" + selectorName + "]", selectorValue);
 
 		return monitorProperties;
+	}
+
+	private void _testExecuteBlacklistedJenkinsMaster(
+		String metric, boolean whitelisted) {
+
+		String masterName = MonitorTestUtil.newJenkinsMasterName();
+
+		Properties monitorProperties = _newMonitorProperties(
+			masterName, metric);
+
+		monitorProperties.setProperty(
+			"monitor[a].parameter[device]", MonitorTestUtil.DEVICE);
+		monitorProperties.setProperty(
+			"monitor[a].parameter[label]", RandomTestUtil.randomString());
+		monitorProperties.setProperty(
+			"monitor[a].parameter[mount]", MonitorTestUtil.MOUNT);
+		monitorProperties.setProperty("monitor[a].threshold[warn]", "1");
+
+		JenkinsMaster jenkinsMaster = JenkinsMaster.getInstance(masterName);
+
+		ReflectionTestUtil.setFieldValue(jenkinsMaster, "_blacklisted", true);
+		ReflectionTestUtil.setFieldValue(
+			jenkinsMaster, "_whitelisted", whitelisted);
+
+		MonitorResult monitorResult = _execute(monitorProperties);
+
+		if (!whitelisted) {
+			String message = monitorResult.getMessage();
+
+			Assert.assertTrue(message.startsWith("Unable to read the "));
+
+			testEquals(
+				MonitorResult.Status.CRITICAL, monitorResult.getStatus());
+
+			return;
+		}
+
+		testEquals(masterName + " is blacklisted", monitorResult.getMessage());
+
+		Map<String, String> metrics = monitorResult.getMetrics();
+
+		Assert.assertTrue(metrics.isEmpty());
+
+		testEquals(MonitorResult.Status.OK, monitorResult.getStatus());
 	}
 
 	private void _testExecuteCapacityBound(

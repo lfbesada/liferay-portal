@@ -1109,15 +1109,6 @@ definition {
 	}
 
 	@summary = "Default summary"
-	macro checkoutViaManagementBar() {
-		Click(locator1 = "ManagementBar#ELLIPSIS");
-
-		MenuItem.click(menuItem = "Checkout");
-
-		Alert.viewSuccessMessage();
-	}
-
-	@summary = "Default summary"
 	macro configureCacheControl(uncacheableMimeTypes = null, maxAge = null, cacheControl = null) {
 		if (isSet(systemSettingsInstanceScope)) {
 			DMNavigator.openToConfigInSystemSettings(portlet = "Cache Control");
@@ -1467,23 +1458,6 @@ definition {
 	}
 
 	@summary = "Default summary"
-	macro deleteVersion(dmDocumentVersionNumber = null) {
-		DMDocument.expandInfo();
-
-		DMNavigator.gotoDocumentVersion();
-
-		var key_dmDocumentVersionNumber = "Version ${dmDocumentVersionNumber}";
-
-		Click(locator1 = "DocumentsAndMedia#DOCUMENT_VERSION_VERTICAL_ELLIPSIS");
-
-		MenuItem.clickNoError(menuItem = "Delete");
-
-		AssertConfirm(value1 = "Are you sure you want to delete this? It will be deleted immediately.");
-
-		Alert.viewSuccessMessage();
-	}
-
-	@summary = "Default summary"
 	macro deleteViaActionsPG(dmDocumentTitle = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
@@ -1586,51 +1560,6 @@ definition {
 			value1 = ${dmDocumentTitle});
 
 		DownloadTempFile();
-	}
-
-	@summary = "Default summary"
-	macro editCategoryTags(multipleDocuments = null, itemNumber = null, editAction = null, categoryNameList = null) {
-		SelectFrame(value1 = "relative=top");
-
-		AssertTextEquals(
-			locator1 = "Modal#HEADER",
-			value1 = "Edit Categories");
-
-		if (${multipleDocuments} == "true") {
-			AssertTextEquals.assertPartialText(
-				locator1 = "Modal#BODY",
-				value1 = "You are editing the common categories for ${itemNumber} items. Select edit or replace current categories.");
-
-			Click(locator1 = "Modal#BODY");
-
-			if (${editAction} == "Append") {
-				Click(locator1 = "Radio#APPEND");
-			}
-			else if (${editAction} == "Replace") {
-				Click(locator1 = "Radio#REPLACE");
-			}
-		}
-		else {
-			AssertTextEquals.assertPartialText(
-				locator1 = "Modal#BODY",
-				value1 = "You are editing the categories for the selected item.");
-		}
-
-		for (var categoryName : list ${categoryNameList}) {
-			Type(
-				locator1 = "DocumentsAndMedia#EDIT_TAGS_FIELD",
-				value1 = ${categoryName});
-
-			KeyPress(
-				locator1 = "DocumentsAndMedia#EDIT_TAGS_FIELD",
-				value1 = "\RETURN");
-		}
-
-		Button.clickSave();
-
-		SelectFrame(value1 = "relative=top");
-
-		Alert.viewSuccessMessageText(successMessage = "Changes Saved");
 	}
 
 	@summary = "Default summary"
@@ -2380,29 +2309,6 @@ definition {
 	}
 
 	@summary = "Default summary"
-	macro moveToRecycleBinCP(dmDocumentTitle = null) {
-		var key_dmDocumentTitle = ${dmDocumentTitle};
-
-		AssertElementPresent(locator1 = "DocumentsAndMedia#ICON_DOCUMENT");
-
-		DMDocument.viewCardTitle(dmDocumentTitle = ${dmDocumentTitle});
-
-		MouseOver(locator1 = "DocumentsAndMedia#ICON_DOCUMENT");
-
-		LexiconCard.checkCardCheckbox(card = ${dmDocumentTitle});
-
-		Click(locator1 = "Icon#MOVE_TO_RECYCLE_BIN");
-
-		VerifyElementPresent(locator1 = "Message#SUCCESS");
-
-		if (IsElementNotPresent(locator1 = "DocumentsAndMedia#ICON_DOCUMENT_GENERIC")) {
-			AssertTextEquals.assertPartialText(
-				locator1 = "Message#EMPTY_INFO",
-				value1 = "There are no documents or media files in this folder.");
-		}
-	}
-
-	@summary = "Default summary"
 	macro moveToSubFolderCP(dmSubFolderName = null, dmDocumentTitle = null) {
 		var key_dmDocumentTitle = ${dmDocumentTitle};
 
@@ -2474,23 +2380,6 @@ definition {
 	}
 
 	@summary = "Default summary"
-	macro removeCategories(categoriesNameList = null) {
-		SelectFrame(value1 = "relative=top");
-
-		for (var categoryName : list ${categoriesNameList}) {
-			Click(
-				key_categoryName = ${categoryName},
-				locator1 = "Icon#REMOVE_CATEGORY");
-		}
-
-		Button.clickSave();
-
-		SelectFrame(value1 = "relative=top");
-
-		Alert.viewSuccessMessageText(successMessage = "Changes Saved");
-	}
-
-	@summary = "Default summary"
 	macro removeOldFriendlyURL(oldFriendlyURL = null) {
 		MouseOver(
 			key_oldFriendlyURL = ${oldFriendlyURL},
@@ -2558,25 +2447,6 @@ definition {
 			inputFieldId = "urlTitle",
 			locator1 = "TextInput#INPUT_ID",
 			value1 = ${restoredURL});
-	}
-
-	@summary = "Default summary"
-	macro revertPG(dmDocumentVersionNumber = null) {
-		DMNavigator.gotoDocumentVersion();
-
-		var key_dmDocumentVersionNumber = ${dmDocumentVersionNumber};
-		var documentCreationDate = DateUtil.getFormattedCurrentDate("M/d/yy");
-
-		AssertTextEquals.assertPartialText(
-			locator1 = "DocumentsAndMediaDocument#DOCUMENT_VERSIONS_CREATION_DATE",
-			value1 = ${documentCreationDate},
-			versionNumber = ${key_dmDocumentVersionNumber});
-
-		Click(locator1 = "DocumentsAndMedia#DOCUMENT_VERSION_VERTICAL_ELLIPSIS");
-
-		MenuItem.click(menuItem = "Revert");
-
-		Alert.viewSuccessMessage();
 	}
 
 	@summary = "Default summary"
@@ -3075,18 +2945,6 @@ definition {
 	}
 
 	@summary = "Default summary"
-	macro updateMaximumVersions(fieldValue = null) {
-		DMNavigator.openToConfigInSystemSettings(portlet = "Service");
-
-		Type(
-			key_fieldLabel = "Maximum Number Of Versions",
-			locator1 = "TextInput#GENERIC_TEXT_INPUT",
-			value1 = ${fieldValue});
-
-		SystemSettings.saveConfiguration();
-	}
-
-	@summary = "Default summary"
 	macro updateMimeTypeSizeLimit(depotName = null, siteURLKey = null, maximumFileSizeValue = null, indexNumber = null, mimeTypeValue = null) {
 		if (isSet(instanceSettings)) {
 			DMNavigator.openToConfigInInstanceSettings(portlet = "Documents and Media Size Limits");
@@ -3158,35 +3016,6 @@ definition {
 		}
 		else {
 			SystemSettings.saveConfiguration();
-		}
-	}
-
-	@summary = "Default summary"
-	macro validateGuestUserViewPermission(dmDocumentTitle = null, groupName = null) {
-		var latestVersionURL = JSONDocument.getLatestVersionURL(
-			dmDocumentTitle = ${dmDocumentTitle},
-			groupName = ${groupName});
-
-		var curl = '''${latestVersionURL} -I''';
-
-		var responseHeader = JSONCurlUtil.post(${curl});
-
-		if (isSet(guestWithViewPermission)) {
-			if (contains(${responseHeader}, 200)) {
-				echo("A guest user can access this file..");
-			}
-			else {
-				fail("FAIL!");
-			}
-		}
-
-		if (isSet(guestWithoutViewPermission)) {
-			if (contains(${responseHeader}, 404)) {
-				echo("The guest user gets a not found response when the user doesn't have view permissions.");
-			}
-			else {
-				fail("FAIL!");
-			}
 		}
 	}
 
@@ -3321,26 +3150,6 @@ definition {
 
 			AssertTextEquals(
 				locator1 = "AssetCategorization#CATEGORY",
-				value1 = ${categoryName});
-		}
-	}
-
-	@summary = "Default summary"
-	macro viewCategoriesInfo(categoryNameList = null) {
-		DMDocument.expandInfo();
-
-		if (isSet(categoryNameList)) {
-			for (var categoryName : list ${categoryNameList}) {
-				AssertTextEquals(
-					key_categoryName = ${categoryName},
-					locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_CATEGORIES",
-					value1 = ${categoryName});
-			}
-		}
-		else {
-			AssertTextEquals(
-				key_categoryName = ${categoryName},
-				locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_CATEGORIES",
 				value1 = ${categoryName});
 		}
 	}
@@ -3831,33 +3640,6 @@ definition {
 	}
 
 	@summary = "Default summary"
-	macro viewDocumentVersionInfoFromVersionsPage(dmDocumentTitle = null, orderIndex = null) {
-		AssertVisible(
-			index = ${orderIndex},
-			key_tableEntry = ${dmDocumentTitle},
-			locator1 = "LexiconTable#TABLE_ENTRY_TITLE_INDEXED");
-
-		var list1 = ListUtil.newListFromString("id,title,version,status,modified-date,author");
-		var list2 = ListUtil.newListFromString(${dmDocumentVersionInfo});
-		var size = ListUtil.size(${list1});
-		var i = 0;
-
-		while (${i} != ${size}) {
-			var tableTitle = ListUtil.get(${list1}, ${i});
-			var dmDocumentVersionInfo = ListUtil.get(${list2}, ${i});
-
-			AssertVisible(
-				key_columnName = ${tableTitle},
-				key_tableEntry = ${dmDocumentVersionInfo},
-				locator1 = "LexiconTable#TABLE_ENTRY_INFO");
-
-			var i = ${i} + 1;
-
-			var i = StringUtil.valueOf(${i});
-		}
-	}
-
-	@summary = "Default summary"
 	macro viewDocumentVersionNumberCmdPG(dmDocumentVersionNumber = null) {
 		DMDocument.expandInfo();
 
@@ -4137,22 +3919,6 @@ definition {
 	}
 
 	@summary = "Default summary"
-	macro viewNoCategoriesPG(categoryNameList = null) {
-		if (isSet(categoryNameList)) {
-			for (var categoryName : list ${categoryNameList}) {
-				AssertElementNotPresent(
-					key_categoryName = ${categoryName},
-					locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_CATEGORIES");
-			}
-		}
-		else {
-			AssertElementNotPresent(
-				key_categoryName = ${categoryName},
-				locator1 = "DocumentsAndMediaDocument#DOCUMENT_INFO_CATEGORIES");
-		}
-	}
-
-	@summary = "Default summary"
 	macro viewNoFilesViaMG(mgImagePreview = null, mgDocumentTitle = null) {
 		if (isSet(mgImagePreview)) {
 			AssertElementNotPresent(
@@ -4164,17 +3930,6 @@ definition {
 				key_mgDocumentTitle = ${mgDocumentTitle},
 				locator1 = "MediaGallery#IMAGE_TITLE");
 		}
-	}
-
-	@summary = "Default summary"
-	macro viewNoItemInVersionMenu(menuItem = null, dmDocumentVersionNumber = null) {
-		DMNavigator.gotoDocumentVersion();
-
-		var key_dmDocumentVersionNumber = "Version ${dmDocumentVersionNumber}";
-
-		Click(locator1 = "DocumentsAndMedia#DOCUMENT_VERSION_VERTICAL_ELLIPSIS");
-
-		MenuItem.viewNotPresent(menuItem = ${menuItem});
 	}
 
 	@summary = "Default summary"
@@ -4716,6 +4471,11 @@ definition {
 				AssertTextEquals(
 					locator1 = "DocumentsAndMedia#ICON_DOCUMENT_WORKFLOW_STATUS_DRAFT",
 					value1 = "Draft");
+			}
+			else if (${dmDocumentStatus} == "Pending") {
+				AssertTextEquals(
+					locator1 = "DocumentsAndMedia#ICON_DOCUMENT_WORKFLOW_STATUS_PENDING",
+					value1 = "Pending");
 			}
 			else {
 				AssertTextEquals(

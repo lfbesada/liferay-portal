@@ -10,6 +10,8 @@ import com.liferay.application.list.PanelCategory;
 import com.liferay.application.list.constants.PanelCategoryKeys;
 import com.liferay.application.list.display.context.logic.PanelCategoryHelper;
 import com.liferay.application.list.util.PanelCategoryRegistryUtil;
+import com.liferay.petra.string.StringBundler;
+import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.User;
@@ -19,8 +21,6 @@ import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.product.navigation.product.menu.helper.ProductNavigationProductMenuHelper;
 
 import jakarta.servlet.http.HttpServletRequest;
-
-import java.util.List;
 
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Reference;
@@ -38,30 +38,21 @@ public class ProductNavigationProductMenuHelperImpl
 			(ThemeDisplay)httpServletRequest.getAttribute(
 				WebKeys.THEME_DISPLAY);
 
-		if (!themeDisplay.isSignedIn()) {
-			return false;
+		String attributeName = StringBundler.concat(
+			ProductNavigationProductMenuHelperImpl.class.getName(),
+			"#SHOW_PRODUCT_MENU#", themeDisplay.getScopeGroupId(),
+			StringPool.POUND, themeDisplay.getPpid());
+
+		Boolean showProductMenu = (Boolean)httpServletRequest.getAttribute(
+			attributeName);
+
+		if (showProductMenu == null) {
+			showProductMenu = _isShowProductMenu(themeDisplay);
+
+			httpServletRequest.setAttribute(attributeName, showProductMenu);
 		}
 
-		User user = themeDisplay.getUser();
-
-		if ((!themeDisplay.isImpersonated() && !user.isSetupComplete()) ||
-			_isApplicationsMenuApp(themeDisplay)) {
-
-			return false;
-		}
-
-		Group scopeGroup = themeDisplay.getScopeGroup();
-
-		if (scopeGroup.isDepot()) {
-			return false;
-		}
-
-		List<PanelCategory> childPanelCategories =
-			PanelCategoryRegistryUtil.getChildPanelCategories(
-				PanelCategoryKeys.ROOT, themeDisplay.getPermissionChecker(),
-				themeDisplay.getScopeGroup());
-
-		return !childPanelCategories.isEmpty();
+		return showProductMenu;
 	}
 
 	private boolean _isApplicationsMenuApp(ThemeDisplay themeDisplay) {
@@ -85,6 +76,37 @@ public class ProductNavigationProductMenuHelperImpl
 		}
 
 		return true;
+	}
+
+	private boolean _isShowProductMenu(ThemeDisplay themeDisplay) {
+		if (!themeDisplay.isSignedIn()) {
+			return false;
+		}
+
+		User user = themeDisplay.getUser();
+
+		if ((!themeDisplay.isImpersonated() && !user.isSetupComplete()) ||
+			_isApplicationsMenuApp(themeDisplay)) {
+
+			return false;
+		}
+
+		Group scopeGroup = themeDisplay.getScopeGroup();
+
+		if (scopeGroup.isDepot()) {
+			return false;
+		}
+
+		PanelCategory panelCategory =
+			PanelCategoryRegistryUtil.getFirstChildPanelCategory(
+				PanelCategoryKeys.ROOT, themeDisplay.getPermissionChecker(),
+				themeDisplay.getScopeGroup());
+
+		if (panelCategory != null) {
+			return true;
+		}
+
+		return false;
 	}
 
 	@Reference

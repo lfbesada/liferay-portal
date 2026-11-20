@@ -231,6 +231,12 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 		_wikiNodeModelResourcePermission.check(
 			getPermissionChecker(), nodeId, ActionKeys.ADD_ATTACHMENT);
 
+		WikiPage templatePage = wikiPageLocalService.getPage(
+			templateNodeId, templateTitle);
+
+		_wikiPageModelResourcePermission.check(
+			getPermissionChecker(), templatePage, ActionKeys.VIEW);
+
 		wikiPageLocalService.copyPageAttachments(
 			getUserId(), templateNodeId, templateTitle, nodeId, title);
 	}
@@ -853,12 +859,12 @@ public class WikiPageServiceImpl extends WikiPageServiceBaseImpl {
 			ServiceContext serviceContext)
 		throws PortalException {
 
-		WikiPage page = wikiPagePersistence.fetchByN_T_H_First(
-			nodeId, title, true, null);
+		WikiPage page = wikiPagePersistence.fetchByN_T_First(
+			nodeId, title, null);
 
 		if (page == null) {
 			_wikiNodeModelResourcePermission.check(
-				getPermissionChecker(), nodeId, ActionKeys.VIEW);
+				getPermissionChecker(), nodeId, ActionKeys.ADD_PAGE);
 		}
 		else {
 			_wikiPageModelResourcePermission.check(

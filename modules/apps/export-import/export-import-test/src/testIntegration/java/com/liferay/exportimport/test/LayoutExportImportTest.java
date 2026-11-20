@@ -22,9 +22,11 @@ import com.liferay.dynamic.data.mapping.service.DDMStructureLocalServiceUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMStructureTestUtil;
 import com.liferay.dynamic.data.mapping.test.util.DDMTemplateTestUtil;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationFactory;
+import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationParameterMapFactoryUtil;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactoryUtil;
 import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.exception.LARTypeException;
+import com.liferay.exportimport.kernel.lar.ExportImportDateUtil;
 import com.liferay.exportimport.kernel.lar.ExportImportHelperUtil;
 import com.liferay.exportimport.kernel.lar.PortletDataContext;
 import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
@@ -55,6 +57,7 @@ import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.service.JournalArticleLocalService;
 import com.liferay.journal.test.util.JournalTestUtil;
+import com.liferay.layout.admin.constants.LayoutAdminPortletKeys;
 import com.liferay.layout.friendly.url.LayoutFriendlyURLEntryHelper;
 import com.liferay.layout.page.template.constants.LayoutPageTemplateEntryTypeConstants;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
@@ -108,6 +111,7 @@ import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.ScopeUtil;
 import com.liferay.portal.kernel.util.StringUtil;
+import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.UnicodePropertiesBuilder;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.kernel.xml.Document;
@@ -131,6 +135,7 @@ import java.io.Serializable;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.Date;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
@@ -1713,6 +1718,43 @@ public class LayoutExportImportTest extends BaseExportImportTestCase {
 
 		_publishToLive(stagingGroup);
 
+		liveLayout = _layoutLocalService.getLayout(liveLayout.getPlid());
+
+		liveLayout.setExternalReferenceCode(RandomTestUtil.randomString());
+
+		liveLayout = _layoutLocalService.updateLayout(liveLayout);
+
+		Map<String, String[]> parameterMap =
+			ExportImportConfigurationParameterMapFactoryUtil.
+				buildParameterMap();
+
+		parameterMap.put(
+			ExportImportDateUtil.RANGE,
+			new String[] {ExportImportDateUtil.RANGE_DATE_RANGE});
+
+		Map<String, Serializable> settingsMap =
+			ExportImportConfigurationSettingsMapFactoryUtil.
+				buildPublishLayoutLocalSettingsMap(
+					TestPropsValues.getUser(), stagingGroup.getGroupId(),
+					stagingGroup.getLiveGroupId(), false,
+					ExportImportHelperUtil.getAllLayoutIds(
+						stagingGroup.getGroupId(), false),
+					parameterMap);
+
+		long time = System.currentTimeMillis();
+
+		settingsMap.put("endDate", new Date(time - Time.DAY));
+		settingsMap.put("startDate", new Date(time - (2 * Time.DAY)));
+
+		StagingUtil.publishLayouts(
+			TestPropsValues.getUserId(),
+			ExportImportConfigurationLocalServiceUtil.
+				addDraftExportImportConfiguration(
+					TestPropsValues.getUserId(),
+					ExportImportConfigurationConstants.
+						TYPE_PUBLISH_LAYOUT_LOCAL,
+					settingsMap));
+
 		Assert.assertNotNull(
 			_layoutLocalService.fetchLayout(liveLayout.getPlid()));
 	}
@@ -1928,7 +1970,7 @@ public class LayoutExportImportTest extends BaseExportImportTestCase {
 				serviceContext);
 
 		Repository repository = PortletFileRepositoryUtil.addPortletRepository(
-			group.getGroupId(), RandomTestUtil.randomString(),
+			group.getGroupId(), LayoutAdminPortletKeys.GROUP_PAGES,
 			ServiceContextTestUtil.getServiceContext(group.getGroupId()));
 
 		String randomString = StringUtil.randomString();
@@ -1938,7 +1980,7 @@ public class LayoutExportImportTest extends BaseExportImportTestCase {
 				null, group.getGroupId(), TestPropsValues.getUserId(),
 				LayoutPageTemplateEntry.class.getName(),
 				layoutUtilityPageEntry.getLayoutUtilityPageEntryId(),
-				RandomTestUtil.randomString(), repository.getDlFolderId(),
+				LayoutAdminPortletKeys.GROUP_PAGES, repository.getDlFolderId(),
 				new ByteArrayInputStream(randomString.getBytes()),
 				RandomTestUtil.randomString(), ContentTypes.IMAGE_PNG, false);
 

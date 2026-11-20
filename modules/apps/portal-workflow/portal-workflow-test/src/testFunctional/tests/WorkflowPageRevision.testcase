@@ -15,6 +15,10 @@ definition {
 
 		User.firstLoginPG();
 
+		task ("Enable the Staging Page Variations deprecation feature flag") {
+			Staging.enablePageVariationsFeatureFlag();
+		}
+
 		HeadlessSite.addSite(siteName = "Site Name");
 
 		JSONLayout.addPublicLayout(
@@ -114,6 +118,10 @@ definition {
 		property test.run.type = "single";
 
 		var pageName = "Page Revision Page";
+
+		task ("Enable widget pages") {
+			PagesAdmin.enableWidgetPages();
+		}
 
 		Navigator.gotoStagedSitePage(
 			pageName = "Site Page Name",
@@ -306,6 +314,10 @@ definition {
 		property test.run.type = "single";
 
 		var pageName = "New Site Page Name";
+
+		task ("Enable widget pages") {
+			PagesAdmin.enableWidgetPages();
+		}
 
 		Navigator.gotoStagedSitePage(
 			pageName = "Site Page Name",

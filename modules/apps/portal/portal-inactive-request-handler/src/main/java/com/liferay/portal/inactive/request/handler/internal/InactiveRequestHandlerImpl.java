@@ -19,7 +19,6 @@ import java.io.IOException;
 
 import java.util.Map;
 
-import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -68,14 +67,8 @@ public class InactiveRequestHandlerImpl implements InactiveRequestHandler {
 	}
 
 	@Activate
-	protected void activate(
-		BundleContext bundleContext, Map<String, Object> properties) {
-
-		modified(properties);
-	}
-
 	@Modified
-	protected void modified(Map<String, Object> properties) {
+	protected void activate(Map<String, Object> properties) {
 		InactiveRequestHandlerConfiguration
 			inactiveRequestHandlerConfiguration =
 				ConfigurableUtil.createConfigurable(

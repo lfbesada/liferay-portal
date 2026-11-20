@@ -12,27 +12,34 @@ import React from 'react';
 import '@testing-library/jest-dom';
 
 import LayoutSetControl from '../../../../../../src/main/resources/META-INF/resources/revamp/js/components/forms/content_selector/LayoutSetControl';
-import {PortletDataHandlerSelection} from '../../../../../../src/main/resources/META-INF/resources/revamp/js/utils/contentSelection';
+import {
+	LayoutSetVisibility,
+	PortletDataHandlerSelection,
+} from '../../../../../../src/main/resources/META-INF/resources/revamp/js/utils/contentSelection';
 
 jest.mock('@liferay/layout-js-components-web', () => ({
 	PageTreePickerModal: () => null,
 }));
 
-function renderLayoutSetControl({
-	onChange = jest.fn(),
-	portletDataHandlerSelection = {all: true, privateLayout: false},
-}: {
-	onChange?: jest.Mock;
-	portletDataHandlerSelection?: PortletDataHandlerSelection;
-} = {}) {
+function renderLayoutSetControl(
+	{
+		availableLayoutSetVisibilities = ['public'],
+		onChange = jest.fn(),
+		portletDataHandlerSelection,
+	}: {
+		availableLayoutSetVisibilities?: LayoutSetVisibility[];
+		onChange?: jest.Mock;
+		portletDataHandlerSelection?: PortletDataHandlerSelection;
+	} = {portletDataHandlerSelection: {all: true, privateLayout: false}}
+) {
 	return render(
 		<LayoutSetControl
+			availableLayoutSetVisibilities={availableLayoutSetVisibilities}
 			label="Pages"
 			onChange={onChange}
 			pageTreeModalConfiguration={{
 				groupId: 20121,
 				pageSize: 20,
-				privateLayoutsAvailable: false,
 				siteExternalReferenceCode: 'site',
 			}}
 			portletDataHandlerSelection={portletDataHandlerSelection}
@@ -81,6 +88,59 @@ describe('LayoutSetControl', () => {
 
 			unmount();
 		}
+	});
+
+	it('selects the private pages again when they are the default', async () => {
+		const onChange = jest.fn();
+
+		renderLayoutSetControl({
+			availableLayoutSetVisibilities: ['private'],
+			onChange,
+		});
+
+		await userEvent.click(screen.getByRole('checkbox', {name: 'Pages'}));
+
+		expect(onChange).toHaveBeenCalledWith({all: true, privateLayout: true});
+	});
+
+	it('shows the visibility radios only when both visibilities are available', () => {
+		const {unmount} = renderLayoutSetControl({
+			availableLayoutSetVisibilities: ['private'],
+			portletDataHandlerSelection: {all: true, privateLayout: true},
+		});
+
+		expect(screen.queryAllByRole('radio')).toHaveLength(0);
+
+		unmount();
+
+		renderLayoutSetControl({
+			availableLayoutSetVisibilities: ['public', 'private'],
+			portletDataHandlerSelection: {all: true, privateLayout: false},
+		});
+
+		expect(screen.getAllByRole('radio')).toHaveLength(2);
+	});
+
+	it('names the visibility on the select pages button only when both visibilities are available', () => {
+		const {unmount} = renderLayoutSetControl({
+			availableLayoutSetVisibilities: ['private'],
+			portletDataHandlerSelection: {all: true, privateLayout: true},
+		});
+
+		expect(
+			screen.getByRole('button', {name: 'select-layouts'})
+		).toBeInTheDocument();
+
+		unmount();
+
+		renderLayoutSetControl({
+			availableLayoutSetVisibilities: ['public', 'private'],
+			portletDataHandlerSelection: {all: true, privateLayout: false},
+		});
+
+		expect(
+			screen.getByRole('button', {name: 'select-x'})
+		).toBeInTheDocument();
 	});
 
 	it('has no accessibility violations', async () => {

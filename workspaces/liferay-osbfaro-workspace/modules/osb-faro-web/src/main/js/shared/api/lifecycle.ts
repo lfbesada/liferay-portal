@@ -1,19 +1,5 @@
 import sendRequest from 'shared/util/request';
 import {buildSortString, NAME} from 'shared/util/pagination';
-import {
-	ENABLE_LIFECYCLE_DELETE_MOCK_DATA,
-	ENABLE_LIFECYCLE_STAGES_MOCK_DATA,
-} from 'shared/util/feature-flags';
-import {
-	applyMockDeletes,
-	deleteMockLifecycle,
-	getMockDefaultLifecycle,
-	getMockLifecycle,
-	getMockLifecycleStages,
-	isMockLifecycleDeleted,
-	removeMockDeletedLifecycles,
-	saveMockLifecycle,
-} from 'lifecycle/utils/lifecycleMock';
 import {OrderByDirections} from 'shared/util/constants';
 
 export interface ILifecycle {
@@ -75,8 +61,6 @@ interface IFetchLifecycle {
 	lifecycleId: string;
 }
 
-const MOCK_DELETE_LIFECYCLES_PAGE_SIZE = 1000;
-
 const requestFirstLifecyclePage = ({
 	channelId,
 	defaultAccountLifecycle,
@@ -97,12 +81,12 @@ const requestFirstLifecyclePage = ({
 		path: `contacts/${groupId}/account-lifecycle`,
 	});
 
-const requestLifecycles = async (
+export const fetchLifecycles = async (
 	params: IFetchLifecycles
 ): Promise<ILifecycleDetail[]> =>
 	(await requestFirstLifecyclePage(params)).items;
 
-const requestLifecyclesPage = ({
+export const fetchLifecyclesPage = ({
 	channelId,
 	groupId,
 	page,
@@ -124,61 +108,14 @@ const requestLifecyclesPage = ({
 		path: `contacts/${groupId}/account-lifecycle`,
 	});
 
-const requestLifecycle = ({
+export const fetchLifecycle = ({
 	groupId,
 	lifecycleId,
-}: IFetchLifecycle): Promise<ILifecycleDetail> => {
-	if (ENABLE_LIFECYCLE_STAGES_MOCK_DATA) {
-		return getMockLifecycle();
-	}
-
-	return sendRequest({
+}: IFetchLifecycle): Promise<ILifecycleDetail> =>
+	sendRequest({
 		method: 'GET',
 		path: `contacts/${groupId}/account-lifecycle/${lifecycleId}`,
 	});
-};
-
-export const fetchLifecycle = async (
-	params: IFetchLifecycle
-): Promise<ILifecycleDetail> => {
-	const lifecycle = await requestLifecycle(params);
-
-	if (!ENABLE_LIFECYCLE_DELETE_MOCK_DATA) {
-		return lifecycle;
-	}
-
-	if (isMockLifecycleDeleted(lifecycle.id)) {
-		throw new Error('not-found');
-	}
-
-	return applyMockDeletes([lifecycle])[0];
-};
-
-export const fetchLifecycles = async (
-	params: IFetchLifecycles
-): Promise<ILifecycleDetail[]> => {
-	if (!ENABLE_LIFECYCLE_DELETE_MOCK_DATA) {
-		return requestLifecycles(params);
-	}
-
-	const mockDefaultLifecycle = getMockDefaultLifecycle();
-
-	if (params.defaultAccountLifecycle && mockDefaultLifecycle !== undefined) {
-		return mockDefaultLifecycle ? [mockDefaultLifecycle] : [];
-	}
-
-	return applyMockDeletes(await requestLifecycles(params));
-};
-
-export const fetchLifecyclesPage = async (
-	params: IFetchLifecyclesPage
-): Promise<ILifecyclesPage> => {
-	const page = await requestLifecyclesPage(params);
-
-	return ENABLE_LIFECYCLE_DELETE_MOCK_DATA
-		? removeMockDeletedLifecycles(page)
-		: page;
-};
 
 export const fetchChannelLifecycles = async ({
 	channelId,
@@ -220,6 +157,7 @@ interface ICreateLifecycle {
 	description: string;
 	groupId: string;
 	name: string;
+	segmentId?: string;
 	stages: ILifecycleStagePayload[];
 }
 
@@ -228,18 +166,16 @@ export async function createLifecycle({
 	description,
 	groupId,
 	name,
+	segmentId,
 	stages,
 }: ICreateLifecycle): Promise<ILifecycleDetail> {
-	if (ENABLE_LIFECYCLE_STAGES_MOCK_DATA) {
-		return saveMockLifecycle({description, name, stages});
-	}
-
 	return sendRequest({
 		data: {
 			accountLifecycle: {
 				accountLifecycleStages: stages,
 				description,
 				name,
+				...(segmentId && {segmentId}),
 			},
 		},
 		method: 'POST',
@@ -262,10 +198,6 @@ export async function updateLifecycle({
 	name,
 	stages,
 }: IUpdateLifecycle): Promise<ILifecycleDetail> {
-	if (ENABLE_LIFECYCLE_STAGES_MOCK_DATA) {
-		return saveMockLifecycle({description, name, stages});
-	}
-
 	return sendRequest({
 		data: {
 			accountLifecycle: {
@@ -279,35 +211,21 @@ export async function updateLifecycle({
 	});
 }
 
-interface IDeleteLifecycle extends IFetchLifecycle {
-	channelId?: string;
-}
-
 export async function deleteLifecycle({
-	channelId,
 	groupId,
 	lifecycleId,
-}: IDeleteLifecycle): Promise<unknown> {
-	if (ENABLE_LIFECYCLE_DELETE_MOCK_DATA) {
-		const {items} = await requestLifecyclesPage({
-			channelId,
-			groupId,
-			page: 1,
-			pageSize: MOCK_DELETE_LIFECYCLES_PAGE_SIZE,
-		});
-
-		return deleteMockLifecycle(lifecycleId, items);
-	}
-
+}: IFetchLifecycle): Promise<unknown> {
 	return sendRequest({
 		method: 'DELETE',
 		path: `contacts/${groupId}/account-lifecycle/${lifecycleId}`,
 	});
 }
 
-export interface IAccountLifecycle {
-	accountId?: string;
-	id: string;
+export interface IAccountLifecycleStage {
+	lifecycleId: string;
+	lifecycleName: string;
+	name: string;
+	stageExternalReferenceCode: string;
 }
 
 export interface IAccountLifecycleStageStatus {
@@ -364,10 +282,6 @@ export async function fetchLifecycleStages({
 	lifecycleId,
 	segmentId,
 }: IFetchLifecycleStages) {
-	if (ENABLE_LIFECYCLE_STAGES_MOCK_DATA) {
-		return getMockLifecycleStages();
-	}
-
 	return sendRequest({
 		data: {
 			...(country && {country}),
@@ -376,19 +290,5 @@ export async function fetchLifecycleStages({
 		},
 		method: 'GET',
 		path: `contacts/${groupId}/account-lifecycle/${lifecycleId}/stages`,
-	});
-}
-
-export async function fetchAccountLifecycles({
-	channelId,
-	groupId,
-}: {
-	channelId?: string;
-	groupId: string;
-}): Promise<IAccountLifecycle[]> {
-	return fetchLifecycles({
-		channelId,
-		defaultAccountLifecycle: !!channelId,
-		groupId,
 	});
 }

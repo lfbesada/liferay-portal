@@ -29,8 +29,7 @@ const mockLiferayLanguage = key => {
 			'connect-a-data-source-containing-account-data',
 		'connect-data-source': 'connect-data-source',
 		'learn-more-about-data-sources': 'learn-more-about-data-sources',
-		'no-account-data-synced': 'no-account-data-synced',
-		'no-results-found': 'no-results-found',
+		'no-account-data-has-been-synced': 'no-account-data-has-been-synced',
 		'no-results-were-found': 'no-results-were-found',
 		'review-your-search-and-try-again': 'review-your-search-and-try-again'
 	};
@@ -124,8 +123,8 @@ describe('CriteriaSidebarCollapse', () => {
 			</DndProvider>
 		);
 
-		expect(screen.getByText('Page Views')).toBeInTheDocument();
-		expect(screen.getByText('DXP Custom Fields')).toBeInTheDocument();
+		expect(screen.getByText(/^page views$/i)).toBeInTheDocument();
+		expect(screen.getByText(/^dxp custom fields$/i)).toBeInTheDocument();
 	});
 
 	it('should filter properties and show "no-results-were-found" for the empty subgroup', () => {
@@ -139,7 +138,7 @@ describe('CriteriaSidebarCollapse', () => {
 			</DndProvider>
 		);
 
-		expect(queryByText('Page Views')).toBeInTheDocument();
+		expect(queryByText(/^page views$/i)).toBeInTheDocument();
 
 		expect(queryByText('Page Actions')).toBeNull();
 
@@ -148,10 +147,10 @@ describe('CriteriaSidebarCollapse', () => {
 		);
 		expect(secondListItem).toHaveTextContent('no-results-were-found');
 
-		expect(queryByText('no-results-found')).toBeNull();
+		expect(queryByText('review-your-search-and-try-again')).toBeNull();
 	});
 
-	it('should render w/ global EmptyState "no-results-found" when no properties match the search', () => {
+	it('should render w/ global EmptyState "no-results-were-found" when no properties match the search', () => {
 		const {queryByText} = render(
 			<DndProvider backend={HTML5Backend}>
 				<CriteriaSidebarCollapse
@@ -162,14 +161,13 @@ describe('CriteriaSidebarCollapse', () => {
 			</DndProvider>
 		);
 
-		expect(queryByText('no-results-found')).toBeInTheDocument();
+		expect(queryByText('no-results-were-found')).toBeInTheDocument();
 		expect(
 			queryByText('review-your-search-and-try-again')
 		).toBeInTheDocument();
 
-		expect(queryByText('Page Views')).toBeNull();
+		expect(queryByText(/^page views$/i)).toBeNull();
 		expect(queryByText('Page Actions')).toBeNull();
-		expect(queryByText('no-results-were-found')).toBeNull();
 	});
 
 	it('should render custom events in the sidebar', () => {
@@ -183,7 +181,7 @@ describe('CriteriaSidebarCollapse', () => {
 			</DndProvider>
 		);
 
-		expect(queryByText('Custom Events')).toBeInTheDocument();
+		expect(queryByText(/^custom events$/i)).toBeInTheDocument();
 		expect(queryByText('Custom Event 1')).toBeInTheDocument();
 		expect(queryByText('Custom Event 2')).toBeInTheDocument();
 		expect(queryByText('Custom Event 3')).toBeInTheDocument();
@@ -200,7 +198,7 @@ describe('CriteriaSidebarCollapse', () => {
 			</DndProvider>
 		);
 
-		expect(queryByText('no-account-data-synced')).toBeInTheDocument();
+		expect(queryByText('no-account-data-has-been-synced')).toBeInTheDocument();
 		expect(
 			queryByText('connect-a-data-source-containing-account-data')
 		).toBeInTheDocument();
@@ -252,9 +250,9 @@ describe('CriteriaSidebarCollapse', () => {
 			</DndProvider>
 		);
 
-		expect(queryByText('Account Name')).toBeInTheDocument();
+		expect(queryByText(/^account name$/i)).toBeInTheDocument();
 
-		expect(queryByText('no-account-data-synced')).toBeNull();
+		expect(queryByText('no-account-data-has-been-synced')).toBeNull();
 	});
 });
 

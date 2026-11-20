@@ -22,8 +22,8 @@ public class FaroEventsSectionFragmentRenderer
 	}
 
 	@Override
-	protected String getSection() {
-		return "event-analysis";
+	protected String getModule() {
+		return "{Events} from osb-faro-web/events";
 	}
 
 }

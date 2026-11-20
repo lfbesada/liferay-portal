@@ -24,6 +24,7 @@ JavaSessionCheck | .java | Finds unnecessary calls to `Session.flush()` (calls t
 JavaStringBundlerInitialCapacityCheck | .java | Checks the initial capacity of new instances of `StringBundler`. |
 LocalPatternCheck | .java | Checks that a `java.util.Pattern` variable is declared globally, so that it is initiated only once. |
 LocalVariableTypeInferenceCheck | .java, .jsp, .jspf, .jspx, .tag, .tpl, or .vm | Finds usage of `var` in local variable declaration. |
+[MVCRenderCommandViewTemplateCheck](check/mvc_render_command_view_template_check.md#mvcrendercommandviewtemplatecheck) | .java | Finds MVC render commands that only map `/` to a constant path that the portlet can declare as `view-template`. |
 [MapIterationCheck](check/map_iteration_check.md#mapiterationcheck) | .java, .jsp, .jspf, .jspx, .tag, .tpl, or .vm | Checks that there are no unnecessary map iterations. |
 ParsePrimitiveTypeCheck | .java, .jsp, .jspf, .jspx, .tag, .tpl, or .vm | Verifies that `GetterUtil.parse*` is used to parse primitive types, when possible. |
 PatternMatchingForSwitchCheck | .java | Finds usage of pattern matching for `switch`. |
@@ -34,6 +35,7 @@ RecordClassCheck | .java | Finds usage of `record`. |
 RecordPatternCheck | .java | Finds usage of record patterns. |
 RedundantBranchingStatementCheck | .java | Finds unnecessary branching (`break`, `continue` or `return`) statements. |
 [RedundantLogCheck](check/redundant_log_check.md#redundantlogcheck) | .java | Finds unnecessary logs. |
+[RegisterServicePropertiesCheck](check/register_service_properties_check.md#registerservicepropertiescheck) | .java | Finds `registerService` calls that pass an empty `HashMapDictionary` or `Hashtable` as the service properties, which should pass `null` instead. |
 [ResourcePermissionFactoryCheck](check/resource_permission_factory_check.md#resourcepermissionfactorycheck) | .java | Checks usage of `*ResourcePermissionFactory` classes. |
 SealedAndNonsealedModifierCheck | .java | Finds usage of `sealed` and `non-sealed`. |
 SetUtilMethodsCheck | .java, .jsp, .jspf, .jspx, .tag, .tpl, or .vm | Finds cases of inefficient SetUtil operations. |
@@ -49,7 +51,7 @@ UnnecessaryTypeCastCheck | .java, .jsp, .jspf, .jspx, .tag, .tpl, or .vm | Finds
 [UnnecessaryVariableDeclarationCheck](check/unnecessary_variable_declaration_check.md#unnecessaryvariabledeclarationcheck) | .java | Finds unnecessary variable declarations (when it is either reassigned or returned right after). |
 UnprocessedExceptionCheck | .java | Finds cases where an `Exception` is swallowed without being processed. |
 UnusedMethodCheck | .java | Finds private methods that are not used. |
-UnusedParameterCheck | .java | Finds parameters in private methods that are not used. |
+UnusedParameterCheck | .java | Finds parameters in private methods and DS lifecycle methods that are not used. |
 UnusedVariableCheck | .java | Finds variables that are declared, but not used. |
 [UpgradeProcessCheck](check/upgrade_process_check.md#upgradeprocesscheck) | .java | Performs several checks on `*UpgradeProcess` classes. |
 [ValidatorEqualsCheck](check/validator_equals_check.md#validatorequalscheck) | .java, .jsp, .jspf, .jspx, .tag, .tpl, or .vm | Checks that there are no calls to `Validator.equals(Object, Object)`. |

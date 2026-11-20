@@ -11,6 +11,7 @@ import {sub} from 'frontend-js-web';
 import React, {useEffect, useState} from 'react';
 
 import ProductRelationshipSelectorTitleRenderer from './cell_renderers/ProductRelationshipSelectorTitleRenderer';
+import getImageURL from './cell_renderers/getImageURL';
 import addProductRelationships, {
 	getRelatedObjectEntryIds,
 } from './services/ProductRelationshipService';
@@ -160,13 +161,20 @@ export default function ProductRelationshipSelectorModal({
 					customRenderers={{
 						tableCell: [
 							{
-								component:
-									ProductRelationshipSelectorTitleRenderer,
+								component: ({itemData, value}: any) => (
+									<ProductRelationshipSelectorTitleRenderer
+										imageURL={getImageURL(
+											itemData?.embedded?.images
+										)}
+										value={value}
+									/>
+								),
 								name: TITLE_TABLE_CELL_RENDERER,
 								type: 'internal',
 							},
 						],
 					}}
+					emptyState={{symbol: 'products'}}
 					filters={JSON.parse(filters || '[]')}
 					id="productRelationshipSelector"
 					onSelectedItemsChange={setSelectedItems}

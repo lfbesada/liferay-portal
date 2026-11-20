@@ -41,6 +41,8 @@ import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.version.Version;
+import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
@@ -132,12 +134,16 @@ public class LayoutUpgradeProcessTest extends BaseCTUpgradeProcessTestCase {
 
 		_group = GroupTestUtil.addGroup();
 
-		_sites.updateLayoutSetPrototypesLinks(
-			_group, _layoutSetPrototype.getLayoutSetPrototypeId(),
-			_layoutSetPrototype.getLayoutSetPrototypeId(), true, true);
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"com.liferay.headless.admin.site.internal.util.LogUtil",
+				LoggerTestUtil.ERROR)) {
 
-		_sites.mergeLayoutSetPrototypeLayouts(
-			_layoutSetPrototype, TestPropsValues.getUserId());
+			_sites.updateLayoutSetPrototypesLinks(
+				_group, _layoutSetPrototype.getLayoutSetPrototypeId(),
+				_layoutSetPrototype.getLayoutSetPrototypeId(), true, true);
+		}
+
+		_mergeLayoutSetPrototypeLayouts();
 	}
 
 	@After
@@ -178,8 +184,7 @@ public class LayoutUpgradeProcessTest extends BaseCTUpgradeProcessTestCase {
 		_layoutLocalService.updateName(
 			_childLayout.getPlid(), name, languageId);
 
-		_sites.mergeLayoutSetPrototypeLayouts(
-			_layoutSetPrototype, TestPropsValues.getUserId());
+		_mergeLayoutSetPrototypeLayouts();
 
 		Assert.assertEquals(
 			privateLayoutsCount,
@@ -242,19 +247,23 @@ public class LayoutUpgradeProcessTest extends BaseCTUpgradeProcessTestCase {
 	}
 
 	@Test
-	@TestInfo("LPD-108617")
+	@TestInfo({"LPD-108617", "LPD-115729"})
 	public void testUpgradeWithPrivateLayoutSetPrototypeLink()
 		throws Exception {
 
 		Group group = GroupTestUtil.addGroup();
 
 		try {
-			_sites.updateLayoutSetPrototypesLinks(
-				group, 0, _layoutSetPrototype.getLayoutSetPrototypeId(), false,
-				true);
+			try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+					"com.liferay.headless.admin.site.internal.util.LogUtil",
+					LoggerTestUtil.ERROR)) {
 
-			_sites.mergeLayoutSetPrototypeLayouts(
-				_layoutSetPrototype, TestPropsValues.getUserId());
+				_sites.updateLayoutSetPrototypesLinks(
+					group, 0, _layoutSetPrototype.getLayoutSetPrototypeId(),
+					false, true);
+			}
+
+			_mergeLayoutSetPrototypeLayouts();
 
 			_resetExternalReferenceCodes(group);
 
@@ -610,6 +619,16 @@ public class LayoutUpgradeProcessTest extends BaseCTUpgradeProcessTestCase {
 		}
 
 		return uuids;
+	}
+
+	private void _mergeLayoutSetPrototypeLayouts() throws Exception {
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"com.liferay.headless.admin.site.internal.util.LogUtil",
+				LoggerTestUtil.ERROR)) {
+
+			_sites.mergeLayoutSetPrototypeLayouts(
+				_layoutSetPrototype, TestPropsValues.getUserId());
+		}
 	}
 
 	private void _resetExternalReferenceCodes(Group group) throws Exception {

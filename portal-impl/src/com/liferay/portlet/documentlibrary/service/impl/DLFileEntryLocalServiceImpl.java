@@ -1764,9 +1764,7 @@ public class DLFileEntryLocalServiceImpl
 	}
 
 	@Override
-	public void setTreePaths(long folderId, String treePath, boolean reindex)
-		throws PortalException {
-
+	public void setTreePaths(long folderId, String treePath, boolean reindex) {
 		if (treePath == null) {
 			throw new IllegalArgumentException("Tree path is null");
 		}
@@ -3942,8 +3940,7 @@ public class DLFileEntryLocalServiceImpl
 	}
 
 	private void _validateExternalReferenceCode(
-			String externalReferenceCode, long groupId)
-		throws PortalException {
+		String externalReferenceCode, long groupId) {
 
 		if (Validator.isNull(externalReferenceCode)) {
 			return;

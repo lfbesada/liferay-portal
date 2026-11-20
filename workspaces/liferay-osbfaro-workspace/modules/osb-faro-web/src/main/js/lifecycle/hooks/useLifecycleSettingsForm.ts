@@ -13,6 +13,7 @@ import {
 	getStageErrorMessages,
 	hasLifecycleName,
 	hasStageChipError,
+	isAtStageLimit,
 } from 'lifecycle/utils/lifecycleValidation';
 import {ILifecycleDetail} from 'shared/api/lifecycle';
 import {Routes, toRoute} from 'shared/util/router';
@@ -77,7 +78,7 @@ export const useLifecycleSettingsForm = ({
 
 	const history = useHistoryAdapter();
 
-	const {channelId, groupId, lifecycleId} = useParams();
+	const {channelId, groupId, lifecycleId, sourceLifecycleId} = useParams();
 
 	const {state} = useLocation();
 
@@ -145,7 +146,8 @@ export const useLifecycleSettingsForm = ({
 		}
 	}, [catalogError, dispatch]);
 
-	const backLifecycleId = lifecycleId ?? state?.lifecycleId;
+	const backLifecycleId =
+		lifecycleId ?? sourceLifecycleId ?? state?.lifecycleId;
 
 	const backURL = toRoute(
 		backLifecycleId ? Routes.LIFECYCLE_DASHBOARD : Routes.LIFECYCLE,
@@ -173,6 +175,10 @@ export const useLifecycleSettingsForm = ({
 		);
 
 	const addStage = () => {
+		if (isAtStageLimit(stageConfigs)) {
+			return;
+		}
+
 		const stage = createStageConfig();
 
 		setStageConfigs((previous) => [...previous, stage]);

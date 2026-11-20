@@ -5,18 +5,35 @@
 
 package com.liferay.headless.commerce.admin.channel.internal.resource.v1_0;
 
+import com.liferay.commerce.product.constants.CPActionKeys;
+import com.liferay.commerce.product.constants.CPConstants;
+import com.liferay.commerce.product.constants.CPPortletKeys;
 import com.liferay.commerce.product.model.CPTaxCategory;
 import com.liferay.commerce.product.service.CPTaxCategoryService;
+import com.liferay.exportimport.constants.ExportImportConstants;
+import com.liferay.exportimport.vulcan.batch.engine.ExportImportVulcanBatchEngineTaskItemDelegate;
 import com.liferay.headless.commerce.admin.channel.dto.v1_0.TaxCategory;
+import com.liferay.headless.commerce.admin.channel.internal.odata.entity.v1_0.TaxCategoryEntityModel;
 import com.liferay.headless.commerce.admin.channel.resource.v1_0.TaxCategoryResource;
 import com.liferay.headless.commerce.core.helper.ServiceContextHelper;
 import com.liferay.headless.commerce.core.util.LanguageUtils;
+import com.liferay.portal.kernel.search.Field;
+import com.liferay.portal.kernel.search.Sort;
+import com.liferay.portal.kernel.search.filter.Filter;
+import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.security.permission.resource.PortletResourcePermission;
 import com.liferay.portal.kernel.util.GetterUtil;
+import com.liferay.portal.odata.entity.EntityModel;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
 import com.liferay.portal.vulcan.dto.converter.DefaultDTOConverterContext;
 import com.liferay.portal.vulcan.pagination.Page;
 import com.liferay.portal.vulcan.pagination.Pagination;
+import com.liferay.portal.vulcan.util.SearchUtil;
 
+import jakarta.ws.rs.core.MultivaluedMap;
+
+import java.util.Collections;
+import java.util.List;
 import java.util.Map;
 
 import org.osgi.service.component.annotations.Component;
@@ -28,45 +45,58 @@ import org.osgi.service.component.annotations.ServiceScope;
  */
 @Component(
 	properties = "OSGI-INF/liferay/rest/v1_0/tax-category.properties",
+	property = "export.import.vulcan.batch.engine.task.item.delegate=true",
 	scope = ServiceScope.PROTOTYPE, service = TaxCategoryResource.class
 )
-public class TaxCategoryResourceImpl extends BaseTaxCategoryResourceImpl {
+public class TaxCategoryResourceImpl
+	extends BaseTaxCategoryResourceImpl
+	implements ExportImportVulcanBatchEngineTaskItemDelegate<TaxCategory> {
 
 	@Override
-	public Page<TaxCategory> getTaxCategoriesPage(
-			String search, Pagination pagination)
-		throws Exception {
-
-		return Page.of(
-			transform(
-				_cpTaxCategoryService.findCPTaxCategoriesByCompanyId(
-					contextCompany.getCompanyId(), search,
-					pagination.getStartPosition(), pagination.getEndPosition()),
-				cpTaxCategory -> _toTaxCategory(
-					cpTaxCategory.getCPTaxCategoryId())),
-			pagination,
-			_cpTaxCategoryService.countCPTaxCategoriesByCompanyId(
-				contextCompany.getCompanyId(), search));
+	public EntityModel getEntityModel(MultivaluedMap multivaluedMap) {
+		return _entityModel;
 	}
 
 	@Override
-	public TaxCategory getTaxCategory(Long id) throws Exception {
-		CPTaxCategory cpTaxCategory = _cpTaxCategoryService.getCPTaxCategory(
-			id);
+	public ExportImportDescriptor<CPTaxCategory> getExportImportDescriptor() {
+		return new ExportImportDescriptor<>() {
 
-		return _toTaxCategory(cpTaxCategory.getCPTaxCategoryId());
-	}
+			@Override
+			public String getKey() {
+				return TaxCategoryResourceImpl.class.getName();
+			}
 
-	@Override
-	public TaxCategory getTaxCategoryByExternalReferenceCode(
-			String externalReferenceCode)
-		throws Exception {
+			@Override
+			public String getLabelLanguageKey() {
+				return "tax-categories";
+			}
 
-		CPTaxCategory cpTaxCategory =
-			_cpTaxCategoryService.getCPTaxCategoryByExternalReferenceCode(
-				externalReferenceCode, contextCompany.getCompanyId());
+			@Override
+			public Class<CPTaxCategory> getModelClass() {
+				return CPTaxCategory.class;
+			}
 
-		return _toTaxCategory(cpTaxCategory.getCPTaxCategoryId());
+			@Override
+			public List<String> getNestedFields() {
+				return List.of("creator");
+			}
+
+			@Override
+			public String getPortletId() {
+				return CPPortletKeys.CP_TAX_CATEGORY;
+			}
+
+			@Override
+			public Scope getScope() {
+				return Scope.COMPANY;
+			}
+
+			@Override
+			public String getSectionKey() {
+				return ExportImportConstants.SECTION_KEY_PRICING;
+			}
+
+		};
 	}
 
 	@Override
@@ -89,7 +119,49 @@ public class TaxCategoryResourceImpl extends BaseTaxCategoryResourceImpl {
 	}
 
 	@Override
-	public TaxCategory postTaxCategory(TaxCategory taxCategory)
+	protected Page<TaxCategory> doGetTaxCategoriesPage(
+			String search, Filter filter, Pagination pagination, Sort[] sorts)
+		throws Exception {
+
+		_portletResourcePermission.check(
+			PermissionThreadLocal.getPermissionChecker(), null,
+			CPActionKeys.VIEW_COMMERCE_PRODUCT_TAX_CATEGORIES);
+
+		return SearchUtil.search(
+			Collections.emptyMap(),
+			booleanQuery -> booleanQuery.getPreBooleanFilter(), filter,
+			CPTaxCategory.class.getName(), search, pagination,
+			queryConfig -> queryConfig.setSelectedFieldNames(
+				Field.ENTRY_CLASS_PK),
+			searchContext -> searchContext.setCompanyId(
+				contextCompany.getCompanyId()),
+			sorts,
+			document -> _toTaxCategory(
+				GetterUtil.getLong(document.get(Field.ENTRY_CLASS_PK))));
+	}
+
+	@Override
+	protected TaxCategory doGetTaxCategory(Long id) throws Exception {
+		CPTaxCategory cpTaxCategory = _cpTaxCategoryService.getCPTaxCategory(
+			id);
+
+		return _toTaxCategory(cpTaxCategory.getCPTaxCategoryId());
+	}
+
+	@Override
+	protected TaxCategory doGetTaxCategoryByExternalReferenceCode(
+			String externalReferenceCode)
+		throws Exception {
+
+		CPTaxCategory cpTaxCategory =
+			_cpTaxCategoryService.getCPTaxCategoryByExternalReferenceCode(
+				externalReferenceCode, contextCompany.getCompanyId());
+
+		return _toTaxCategory(cpTaxCategory.getCPTaxCategoryId());
+	}
+
+	@Override
+	protected TaxCategory doPostTaxCategory(TaxCategory taxCategory)
 		throws Exception {
 
 		CPTaxCategory cpTaxCategory =
@@ -108,6 +180,16 @@ public class TaxCategoryResourceImpl extends BaseTaxCategoryResourceImpl {
 			_serviceContextHelper.getServiceContext());
 
 		return _toTaxCategory(cpTaxCategory.getCPTaxCategoryId());
+	}
+
+	@Override
+	protected Long getPermissionCheckerGroupId(Object id) {
+		return 0L;
+	}
+
+	@Override
+	protected String getPermissionCheckerResourceName(Object id) {
+		return CPTaxCategory.class.getName();
 	}
 
 	private TaxCategory _toTaxCategory(Long taxCategoryId) throws Exception {
@@ -145,8 +227,14 @@ public class TaxCategoryResourceImpl extends BaseTaxCategoryResourceImpl {
 		return _toTaxCategory(cpTaxCategory.getCPTaxCategoryId());
 	}
 
+	private static final EntityModel _entityModel =
+		new TaxCategoryEntityModel();
+
 	@Reference
 	private CPTaxCategoryService _cpTaxCategoryService;
+
+	@Reference(target = "(resource.name=" + CPConstants.RESOURCE_NAME_TAX + ")")
+	private PortletResourcePermission _portletResourcePermission;
 
 	@Reference
 	private ServiceContextHelper _serviceContextHelper;

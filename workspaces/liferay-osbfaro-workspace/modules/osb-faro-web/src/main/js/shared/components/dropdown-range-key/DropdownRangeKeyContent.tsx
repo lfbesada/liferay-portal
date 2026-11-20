@@ -3,7 +3,7 @@ import ClayDropDown, {Align} from '@clayui/drop-down';
 import ClayIcon from 'shared/components/Icon';
 import getCN from 'classnames';
 import moment from 'moment';
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useRef, useState} from 'react';
 import {Text as ClayText} from '@clayui/core';
 import {Data, DropdownRangeKeyIProps} from './DropdownRangeKey';
 import {DEFAULT_DATE_FORMAT} from 'shared/util/date';
@@ -46,17 +46,24 @@ export const DropdownRangeKeyContent: React.FC<
 	});
 	const [seeMore, setSeeMore] = useState(false);
 	const [showDatePicker, setShowDatePicker] = useState(false);
+	const firstExtraItemRef = useRef<HTMLElement | null>(null);
 	const location = useLocation();
 	const retentionPeriod = useRetentionPeriod();
 	const timeRange = formatTimeRange(data.timeRange);
-	const filteredItems = getFilteredItems({
+	const filterArgs = {
 		legacy,
 		rangeKey: rangeSelectors?.rangeKey as RangeKeyTimeRanges,
 		rangeKeys,
 		retentionPeriod: retentionPeriod as number,
-		seeMore,
 		timeRange,
-	});
+	};
+	const baseItems = getFilteredItems({...filterArgs, seeMore: false});
+	const moreItems = getFilteredItems({...filterArgs, seeMore: true});
+	const filteredItems = seeMore ? moreItems : baseItems;
+	const baseValues = new Set(baseItems.map(({value}) => value));
+	const firstExtraValue = moreItems.find(
+		({value}) => !baseValues.has(value)
+	)?.value;
 
 	let selectedItem = null;
 
@@ -100,6 +107,12 @@ export const DropdownRangeKeyContent: React.FC<
 		}
 	}, [customDateRange]);
 
+	useEffect(() => {
+		if (seeMore) {
+			firstExtraItemRef.current?.focus();
+		}
+	}, [seeMore]);
+
 	return (
 		<ClayDropDown
 			active={active}
@@ -142,12 +155,17 @@ export const DropdownRangeKeyContent: React.FC<
 				/>
 			) : (
 				<ClayDropDown.ItemList>
-					{filteredItems.map(({description, label, value}, index) => (
+					{filteredItems.map(({description, label, value}) => (
 						<ClayDropDown.Item
 							className={getCN('c-pointer', {
 								active: selectedItem?.value === value,
 							})}
-							key={index}
+							innerRef={
+								value === firstExtraValue
+									? firstExtraItemRef
+									: undefined
+							}
+							key={value}
 							onClick={() => {
 								setActive(false);
 

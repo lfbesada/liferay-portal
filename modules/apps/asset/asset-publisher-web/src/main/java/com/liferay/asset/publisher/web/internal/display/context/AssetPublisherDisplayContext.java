@@ -47,6 +47,7 @@ import com.liferay.data.engine.field.type.util.LocalizedValueUtil;
 import com.liferay.depot.util.SiteConnectedGroupGroupProviderUtil;
 import com.liferay.document.library.kernel.document.conversion.DocumentConversionUtil;
 import com.liferay.document.library.kernel.model.DLFileEntry;
+import com.liferay.frontend.js.audiences.DetectedAudienceEntryUtil;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItem;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.DropdownItemList;
 import com.liferay.info.collection.provider.CollectionQuery;
@@ -84,6 +85,7 @@ import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Company;
+import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
@@ -371,9 +373,22 @@ public class AssetPublisherDisplayContext {
 		AssetListEntry assetListEntry = fetchAssetListEntry();
 
 		if (isSelectionStyleAssetList() && (assetListEntry != null)) {
-			_assetEntryQuery = _assetListAssetEntryProvider.getAssetEntryQuery(
-				assetListEntry, _getSegmentsEntryIds(assetListEntry),
-				_getSegmentsAnonymousUserId());
+			if (FeatureFlagManagerUtil.isEnabled(
+					assetListEntry.getCompanyId(), "LPD-109242") &&
+				!FeatureFlagManagerUtil.isEnabled(
+					CompanyConstants.SYSTEM, "LPD-78863")) {
+
+				_assetEntryQuery =
+					_assetListAssetEntryProvider.getAssetEntryQuery(
+						assetListEntry, _getAudienceEntryERCs(),
+						_getSegmentsAnonymousUserId());
+			}
+			else {
+				_assetEntryQuery =
+					_assetListAssetEntryProvider.getAssetEntryQuery(
+						assetListEntry, _getSegmentsEntryIds(assetListEntry),
+						_getSegmentsAnonymousUserId());
+			}
 		}
 		else {
 			_assetEntryQuery = _assetPublisherHelper.getAssetEntryQuery(
@@ -1081,11 +1096,7 @@ public class AssetPublisherDisplayContext {
 			FeatureFlagManagerUtil.isEnabled(
 				_themeDisplay.getCompanyId(), "LPD-89171")) {
 
-			String redirect = ParamUtil.getString(_portletRequest, "redirect");
-
-			if (Validator.isNull(redirect)) {
-				redirect = _portal.getCurrentURL(_portletRequest);
-			}
+			String redirect = AssetPublisherUtil.getRedirect(_portletRequest);
 
 			if (Validator.isNotNull(redirect)) {
 				portletURL.setParameter("redirect", redirect);
@@ -2246,6 +2257,12 @@ public class AssetPublisherDisplayContext {
 		).buildString();
 	}
 
+	private String[] _getAudienceEntryERCs() {
+		return DetectedAudienceEntryUtil.getAudienceEntryERCs(
+			_portal.getOriginalServletRequest(
+				_portal.getHttpServletRequest(_portletRequest)));
+	}
+
 	private Comparator<ClassType> _getClassTypeComparator() {
 		if (_classTypeComparator != null) {
 			return _classTypeComparator;
@@ -2316,6 +2333,18 @@ public class AssetPublisherDisplayContext {
 
 			if (ArrayUtil.isNotEmpty(getAllAssetTagNames())) {
 				assetTagNames = new String[][] {getAllAssetTagNames()};
+			}
+
+			if (FeatureFlagManagerUtil.isEnabled(
+					assetListEntry.getCompanyId(), "LPD-109242") &&
+				!FeatureFlagManagerUtil.isEnabled(
+					CompanyConstants.SYSTEM, "LPD-78863")) {
+
+				return _assetListAssetEntryProvider.getAssetEntriesInfoPage(
+					assetCategoryIds, assetListEntry, assetTagNames,
+					_getAudienceEntryERCs(), searchContainer.getEnd(),
+					StringPool.BLANK, searchContainer.getStart(),
+					_getSegmentsAnonymousUserId());
 			}
 
 			return _assetListAssetEntryProvider.getAssetEntriesInfoPage(

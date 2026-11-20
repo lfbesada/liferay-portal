@@ -4,75 +4,43 @@
  */
 
 import ClayButton from '@clayui/button';
-import {ClayInput} from '@clayui/form';
 import ClayIcon from '@clayui/icon';
 import ClayLabel from '@clayui/label';
-import ClayModal, {useModal} from '@clayui/modal';
-import {openToast} from 'frontend-js-components-web';
-import {escapeHTML, fetch} from 'frontend-js-web';
-import React, {useState} from 'react';
+import {navigate} from 'frontend-js-web';
+import React from 'react';
+
+import openScheduleLaunchModal from '../modals/openScheduleLaunchModal';
+import {formatDateTime} from '../util/dateTime';
+
+import type {TimeZoneOption} from '../util/dateTime';
 
 interface Props {
+	launchName: string;
 	portletNamespace: string;
 	published: boolean;
 	scheduleLaunchURL: string;
 	scheduledDate: string | null;
+	timeZoneId: string;
+	timeZones: TimeZoneOption[];
 }
 
 export default function LaunchScheduleButton({
+	launchName,
 	portletNamespace,
 	published,
 	scheduleLaunchURL,
 	scheduledDate,
+	timeZoneId,
+	timeZones,
 }: Props) {
-	const [publishDate, setPublishDate] = useState('');
-	const [scheduleActive, setScheduleActive] = useState(false);
-
-	const {observer, onClose} = useModal({
-		onClose: () => setScheduleActive(false),
-	});
-
-	async function handleSchedule() {
-		const body = new FormData();
-
-		body.append(
-			`${portletNamespace}publishTime`,
-			String(new Date(publishDate).getTime())
-		);
-
-		try {
-			const response = await fetch(scheduleLaunchURL, {
-				body,
-				method: 'POST',
-			});
-
-			const {error, redirect, validationError} = await response.json();
-
-			if (error || validationError) {
-				openToast({
-					message: escapeHTML(error || validationError),
-					type: 'danger',
-				});
-
-				return;
-			}
-
-			window.location.href = redirect;
-		}
-		catch (exception) {
-			openToast({
-				message: escapeHTML((exception as Error).message),
-				type: 'danger',
-			});
-		}
-	}
-
 	if (scheduledDate) {
 		return (
 			<ClayLabel displayType="info">
-				{`${Liferay.Language.get('scheduled')}: ${new Date(
-					scheduledDate
-				).toLocaleString()}`}
+				{`${Liferay.Language.get('scheduled')}: ${formatDateTime(
+					new Date(scheduledDate).getTime(),
+					Liferay.ThemeDisplay.getBCP47LanguageId(),
+					timeZoneId
+				)}`}
 			</ClayLabel>
 		);
 	}
@@ -82,59 +50,35 @@ export default function LaunchScheduleButton({
 	}
 
 	return (
-		<>
-			{scheduleActive && (
-				<ClayModal observer={observer} size="sm">
-					<ClayModal.Header>
-						{Liferay.Language.get('schedule')}
-					</ClayModal.Header>
-
-					<ClayModal.Body>
-						<ClayInput
-							onChange={(event) =>
-								setPublishDate(event.target.value)
-							}
-							type="datetime-local"
-							value={publishDate}
-						/>
-					</ClayModal.Body>
-
-					<ClayModal.Footer
-						last={
-							<ClayButton.Group spaced>
-								<ClayButton
-									displayType="secondary"
-									onClick={onClose}
-								>
-									{Liferay.Language.get('cancel')}
-								</ClayButton>
-
-								<ClayButton
-									disabled={!publishDate}
-									onClick={handleSchedule}
-								>
-									{Liferay.Language.get('schedule')}
-								</ClayButton>
-							</ClayButton.Group>
+		<ClayButton
+			className="text-nowrap"
+			displayType="secondary"
+			onClick={() =>
+				openScheduleLaunchModal({
+					launchName,
+					onScheduled: (redirect) => {
+						if (redirect) {
+							navigate(redirect);
 						}
-					/>
-				</ClayModal>
-			)}
+						else {
+							window.location.reload();
+						}
+					},
+					portletNamespace,
+					scheduleLaunchURL,
+					timeZoneId,
+					timeZones,
+				})
+			}
+			small
+			type="button"
+		>
+			<ClayIcon
+				className="inline-item inline-item-before"
+				symbol="calendar"
+			/>
 
-			<ClayButton
-				className="text-nowrap"
-				displayType="secondary"
-				onClick={() => setScheduleActive(true)}
-				small
-				type="button"
-			>
-				<ClayIcon
-					className="inline-item inline-item-before"
-					symbol="calendar"
-				/>
-
-				{Liferay.Language.get('schedule')}
-			</ClayButton>
-		</>
+			{Liferay.Language.get('schedule')}
+		</ClayButton>
 	);
 }

@@ -82,6 +82,7 @@ import com.liferay.portal.kernel.model.ResourceAction;
 import com.liferay.portal.kernel.model.ResourceConstants;
 import com.liferay.portal.kernel.model.ResourcePermission;
 import com.liferay.portal.kernel.model.Role;
+import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.UserGroup;
 import com.liferay.portal.kernel.model.UserGroupRole;
@@ -454,6 +455,24 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 				GroupConstants.DEFAULT_MEMBERSHIP_RESTRICTION;
 		}
 
+		if (FeatureFlagManagerUtil.isEnabled(
+				user.getCompanyId(), "LPD-82960")) {
+
+			UnicodeProperties typeSettingsUnicodeProperties =
+				UnicodePropertiesBuilder.create(
+					true
+				).fastLoad(
+					typeSettings
+				).build();
+
+			if (GetterUtil.getBoolean(
+					typeSettingsUnicodeProperties.getProperty(
+						GroupConstants.TYPE_SETTINGS_KEY_MAINTENANCE_MODE))) {
+
+				active = false;
+			}
+		}
+
 		if (className.equals(Group.class.getName())) {
 			if (!site && (liveGroupId == 0) &&
 				!(StringUtil.startsWith(groupKey, GroupConstants.APP) ||
@@ -482,7 +501,8 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 				groupId, user.getCompanyId(), groupKey, type, site);
 		}
 
-		validateInheritContent(parentGroupId, inheritContent);
+		validateInheritContent(
+			user.getCompanyId(), groupId, inheritContent, parentGroupId);
 
 		friendlyURL = getValidatedFriendlyURL(
 			user.getCompanyId(), groupId, classNameId, classPK, friendlyURL);
@@ -1331,6 +1351,13 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 			_systemEventLocalService.deleteSystemEvents(group.getGroupId());
 
+			if (group.isRegularSite() && !group.isStagingGroup()) {
+				_systemEventLocalService.addSystemEvent(
+					group.getCompanyId(), group.getExternalReferenceCode(),
+					Group.class.getName(), group.getGroupId(), group.getUuid(),
+					null, SystemEventConstants.TYPE_DELETE, StringPool.BLANK);
+			}
+
 			return group;
 		}
 		finally {
@@ -1739,9 +1766,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	 * @throws PortalException if a portal exception occurred
 	 */
 	@Override
-	public Group fetchUserPersonalSiteGroup(long companyId)
-		throws PortalException {
-
+	public Group fetchUserPersonalSiteGroup(long companyId) {
 		User user = _userLocalService.fetchGuestUser(companyId);
 
 		if (user == null) {
@@ -2502,9 +2527,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	 * @throws PortalException if a portal exception occurred
 	 */
 	@Override
-	public List<Group> getUserGroupsGroups(List<UserGroup> userGroups)
-		throws PortalException {
-
+	public List<Group> getUserGroupsGroups(List<UserGroup> userGroups) {
 		return TransformUtil.transform(
 			userGroups, userGroup -> userGroup.getGroup());
 	}
@@ -4023,6 +4046,10 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 
 		validateParentGroup(group.getGroupId(), parentGroupId);
 
+		validateInheritContent(
+			group.getCompanyId(), group.getGroupId(), inheritContent,
+			parentGroupId);
+
 		group.setParentGroupId(parentGroupId);
 		group.setTreePath(group.buildTreePath());
 		group.setGroupKey(groupKey);
@@ -4065,6 +4092,13 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 			else if (!group.isMaintenanceMode() && maintenanceMode) {
 				active = false;
 			}
+		}
+
+		if (!active &&
+			(group.isCompany() || group.isControlPanel() || group.isGuest())) {
+
+			throw new RequiredGroupException.MustNotDeactivateSystemGroup(
+				group.getExternalReferenceCode());
 		}
 
 		if (group.isActive() != active) {
@@ -4996,9 +5030,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		return false;
 	}
 
-	protected void reindex(long companyId, long[] userIds)
-		throws PortalException {
-
+	protected void reindex(long companyId, long[] userIds) {
 		ReindexerBridge reindexerBridge = _reindexerBridgeSnapshot.get();
 
 		reindexerBridge.reindex(companyId, User.class.getName(), userIds);
@@ -5292,7 +5324,8 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	protected void validateInheritContent(
-			long parentGroupId, boolean inheritContent)
+			long companyId, long groupId, boolean inheritContent,
+			long parentGroupId)
 		throws GroupInheritContentException {
 
 		if (!inheritContent) {
@@ -5306,6 +5339,13 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 		Group parentGroup = groupPersistence.fetchByPrimaryKey(parentGroupId);
 
 		if (parentGroup.isInheritContent()) {
+			throw new GroupInheritContentException();
+		}
+
+		int count = groupPersistence.countByC_P_S_I(
+			companyId, groupId, true, true);
+
+		if (count > 0) {
 			throw new GroupInheritContentException();
 		}
 	}
@@ -5682,8 +5722,7 @@ public class GroupLocalServiceImpl extends GroupLocalServiceBaseImpl {
 	}
 
 	private List<Group> _getUserGroups(
-			long companyId, long userId, boolean inherit, int start, int end)
-		throws PortalException {
+		long companyId, long userId, boolean inherit, int start, int end) {
 
 		if (inherit) {
 			return search(

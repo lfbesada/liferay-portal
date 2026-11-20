@@ -13,14 +13,15 @@ import React from 'react';
 import '@testing-library/jest-dom';
 
 import {NewExport} from '../../../../../src/main/resources/META-INF/resources/revamp/js/pages/export/NewExport';
-import {Preview} from '../../../../../src/main/resources/META-INF/resources/revamp/js/types/exportImportPreview';
-import {
-	CONTROL_NAME_PAGES,
-	CONTROL_NAME_VISIBILITY,
-	PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
-} from '../../../../../src/main/resources/META-INF/resources/revamp/js/utils/contentSelection';
 import {toMockPortletDataHandlers} from '../../mocks/mockPortletDataHandlerSections';
 import {mockPreview} from '../../mocks/mockPreview';
+import {
+	toMockLayoutSetPortletDataHandler,
+	toMockLayoutSetPreviewPortletDataHandler,
+	toMockLookAndFeelPortletDataHandler,
+	toMockLookAndFeelPreviewPortletDataHandler,
+	toMockSiteBuilderPreview,
+} from '../../mocks/mockSiteBuilderPreview';
 
 const expandSection = async (label: string) => {
 	const sectionLabel = screen.getByText(label, {selector: 'label'});
@@ -60,7 +61,6 @@ const DEFAULT_PROPS = {
 	pageTreeModalConfiguration: {
 		groupId: 20121,
 		pageSize: 20,
-		privateLayoutsAvailable: false,
 		siteExternalReferenceCode: 'site-erc',
 	},
 	timeZoneId: 'UTC',
@@ -729,79 +729,15 @@ describe('NewExport', () => {
 	});
 
 	describe('page selection', () => {
-		const toPreviewWithPages = (choice: string): Preview => ({
-			additionCount: 1,
-			deletionCount: 0,
-			portletDataHandlers: toMockPortletDataHandlers([
-				{
-					key: 'category.site_administration.build',
-					label: 'Site Builder',
-					portletDataHandlers: [
-						{
-							label: 'Pages',
-							name: PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
-							portletDataHandlerControls: [
-								{
-									choice,
-									choices: [
-										{
-											label: 'Public Pages',
-											name: 'public-pages',
-										},
-										{
-											label: 'Private Pages',
-											name: 'private-pages',
-										},
-									],
-									label: 'Visibility',
-									name: CONTROL_NAME_VISIBILITY,
-									portletDataHandlerControls: [
-										{
-											label: 'Pages',
-											name: CONTROL_NAME_PAGES,
-											selected: true,
-											type: 'TreeSelection',
-										},
-									],
-									type: 'Choice',
-								},
-							],
-						},
-					],
-				},
-			]),
-		});
+		const toPreviewWithPages = (choiceNames: string[]) =>
+			toMockSiteBuilderPreview([
+				toMockLayoutSetPreviewPortletDataHandler(choiceNames),
+			]);
 
-		const previewWithPages = toPreviewWithPages('public-pages');
-
-		const toLayoutSetPortletDataHandlers = (
-			choice: string,
-			treeSelection?: object
-		) => [
-			{
-				name: PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
-				portletDataHandlerControls: [
-					{
-						choice,
-						name: CONTROL_NAME_VISIBILITY,
-						portletDataHandlerControls: [
-							{
-								...treeSelection,
-								name: CONTROL_NAME_PAGES,
-								selected: true,
-								type: 'TreeSelection',
-							},
-						],
-						type: 'Choice',
-					},
-				],
-			},
-		];
-
-		const privatePageTreeModalConfiguration = {
-			...DEFAULT_PROPS.pageTreeModalConfiguration,
-			privateLayoutsAvailable: true,
-		};
+		const previewWithPages = toPreviewWithPages([
+			'public-pages',
+			'private-pages',
+		]);
 
 		const getExportRequest = () =>
 			JSON.parse(String(getExportCall()?.[1]?.body));
@@ -865,9 +801,9 @@ describe('NewExport', () => {
 			await submitExport();
 
 			await waitFor(() =>
-				expect(getExportRequest().portletDataHandlers).toEqual(
-					toLayoutSetPortletDataHandlers('public-pages')
-				)
+				expect(getExportRequest().portletDataHandlers).toEqual([
+					toMockLayoutSetPortletDataHandler('public-pages'),
+				])
 			);
 
 			await waitFor(() =>
@@ -885,13 +821,9 @@ describe('NewExport', () => {
 			).toBeDisabled();
 		});
 
-		it('exports all private pages when private pages are the default', async () => {
+		it('exports all private pages when only private pages are available', async () => {
 			renderComponent({
-				exportPreview: toPreviewWithPages('private-pages'),
-				pageTreeModalConfiguration: {
-					...DEFAULT_PROPS.pageTreeModalConfiguration,
-					privateLayoutsAvailable: true,
-				},
+				exportPreview: toPreviewWithPages(['private-pages']),
 			});
 
 			await typeFileName();
@@ -899,14 +831,16 @@ describe('NewExport', () => {
 			await submitExport();
 
 			await waitFor(() =>
-				expect(getExportRequest().portletDataHandlers).toEqual(
-					toLayoutSetPortletDataHandlers('private-pages')
-				)
+				expect(getExportRequest().portletDataHandlers).toEqual([
+					toMockLayoutSetPortletDataHandler('private-pages'),
+				])
 			);
 		});
 
 		it('hides the visibility radios and excludes a page deselected in the modal', async () => {
-			renderComponent({exportPreview: previewWithPages});
+			renderComponent({
+				exportPreview: toPreviewWithPages(['public-pages']),
+			});
 
 			await typeFileName();
 			await expandSection();
@@ -914,11 +848,14 @@ describe('NewExport', () => {
 			expect(screen.queryAllByRole('radio')).toHaveLength(0);
 
 			await userEvent.click(
-				screen.getByRole('button', {name: 'select-x'})
+				screen.getByRole('button', {name: 'select-layouts'})
 			);
 
 			expect(
 				await screen.findByText('pages-to-export')
+			).toBeInTheDocument();
+			expect(
+				await screen.findByRole('checkbox', {name: 'pages'})
 			).toBeInTheDocument();
 
 			expect(
@@ -936,19 +873,18 @@ describe('NewExport', () => {
 			await submitExport();
 
 			await waitFor(() =>
-				expect(getExportRequest().portletDataHandlers).toEqual(
-					toLayoutSetPortletDataHandlers('public-pages', {
+				expect(getExportRequest().portletDataHandlers).toEqual([
+					toMockLayoutSetPortletDataHandler('public-pages', {
 						excludedItemExternalReferenceCodes: ['page-2-erc'],
 						selectAll: true,
-					})
-				)
+					}),
+				])
 			);
 		});
 
 		it('shows the visibility radios and exports all private pages', async () => {
 			renderComponent({
 				exportPreview: previewWithPages,
-				pageTreeModalConfiguration: privatePageTreeModalConfiguration,
 			});
 
 			await typeFileName();
@@ -967,16 +903,15 @@ describe('NewExport', () => {
 			await submitExport();
 
 			await waitFor(() =>
-				expect(getExportRequest().portletDataHandlers).toEqual(
-					toLayoutSetPortletDataHandlers('private-pages')
-				)
+				expect(getExportRequest().portletDataHandlers).toEqual([
+					toMockLayoutSetPortletDataHandler('private-pages'),
+				])
 			);
 		});
 
 		it('resets the selection to public when the public radio is selected', async () => {
 			renderComponent({
 				exportPreview: previewWithPages,
-				pageTreeModalConfiguration: privatePageTreeModalConfiguration,
 			});
 
 			await expandSection();
@@ -994,7 +929,6 @@ describe('NewExport', () => {
 		it('clears the page selection when the main checkbox is toggled off', async () => {
 			renderComponent({
 				exportPreview: previewWithPages,
-				pageTreeModalConfiguration: privatePageTreeModalConfiguration,
 			});
 
 			await expandSection();
@@ -1015,7 +949,6 @@ describe('NewExport', () => {
 		it('excludes a private page deselected in the modal', async () => {
 			renderComponent({
 				exportPreview: previewWithPages,
-				pageTreeModalConfiguration: privatePageTreeModalConfiguration,
 			});
 
 			await typeFileName();
@@ -1041,84 +974,27 @@ describe('NewExport', () => {
 			await submitExport();
 
 			await waitFor(() =>
-				expect(getExportRequest().portletDataHandlers).toEqual(
-					toLayoutSetPortletDataHandlers('private-pages', {
+				expect(getExportRequest().portletDataHandlers).toEqual([
+					toMockLayoutSetPortletDataHandler('private-pages', {
 						excludedItemExternalReferenceCodes: ['page-2-erc'],
 						selectAll: true,
-					})
-				)
+					}),
+				])
 			);
 		});
 	});
 
 	describe('look and feel', () => {
-		const previewWithLookAndFeel: Preview = {
-			additionCount: 0,
-			deletionCount: 0,
-			portletDataHandlers: toMockPortletDataHandlers([
-				{
-					key: 'category.site_administration.build',
-					label: 'Site Builder',
-					portletDataHandlers: [
-						{
-							label: 'Look and Feel',
-							name: 'LOOK_AND_FEEL',
-							portletDataHandlerControls: [
-								{
-									label: 'Theme Settings',
-									name: 'THEME_REFERENCE',
-									selected: true,
-									type: 'Boolean',
-								},
-								{
-									label: 'Logo',
-									name: 'LOGO',
-									selected: true,
-									type: 'Boolean',
-								},
-								{
-									label: 'Site Pages Settings',
-									name: 'LAYOUT_SET_SETTINGS',
-									selected: true,
-									type: 'Boolean',
-								},
-								{
-									label: 'Site Template Settings',
-									name: 'LAYOUT_SET_PROTOTYPE_SETTINGS',
-									selected: true,
-									type: 'Boolean',
-								},
-							],
-						},
-					],
-				},
-			]),
-		};
+		const lookAndFeelControlNames = [
+			'THEME_REFERENCE',
+			'LOGO',
+			'LAYOUT_SET_SETTINGS',
+			'LAYOUT_SET_PROTOTYPE_SETTINGS',
+		];
 
-		const toLookAndFeelPortletDataHandler = (
-			logo: boolean,
-			siteTemplateSettings: boolean
-		) => ({
-			name: 'LOOK_AND_FEEL',
-			portletDataHandlerControls: [
-				{
-					name: 'THEME_REFERENCE',
-					selected: true,
-					type: 'Boolean',
-				},
-				{name: 'LOGO', selected: logo, type: 'Boolean'},
-				{
-					name: 'LAYOUT_SET_SETTINGS',
-					selected: true,
-					type: 'Boolean',
-				},
-				{
-					name: 'LAYOUT_SET_PROTOTYPE_SETTINGS',
-					selected: siteTemplateSettings,
-					type: 'Boolean',
-				},
-			],
-		});
+		const previewWithLookAndFeel = toMockSiteBuilderPreview([
+			toMockLookAndFeelPreviewPortletDataHandler(lookAndFeelControlNames),
+		]);
 
 		const submitExport = async () => {
 			await userEvent.type(
@@ -1150,7 +1026,10 @@ describe('NewExport', () => {
 			const body = await submitExport();
 
 			expect(body.portletDataHandlers).toEqual([
-				toLookAndFeelPortletDataHandler(false, false),
+				toMockLookAndFeelPortletDataHandler(lookAndFeelControlNames, [
+					'LOGO',
+					'LAYOUT_SET_PROTOTYPE_SETTINGS',
+				]),
 			]);
 			expect(body).not.toHaveProperty('logo');
 			expect(body).not.toHaveProperty('themeSettings');
@@ -1162,7 +1041,7 @@ describe('NewExport', () => {
 			const body = await submitExport();
 
 			expect(body.portletDataHandlers).toEqual([
-				toLookAndFeelPortletDataHandler(true, true),
+				toMockLookAndFeelPortletDataHandler(lookAndFeelControlNames),
 			]);
 		});
 	});

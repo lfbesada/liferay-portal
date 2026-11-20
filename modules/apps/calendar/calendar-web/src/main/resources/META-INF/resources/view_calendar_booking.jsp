@@ -12,7 +12,7 @@
 <%
 String backURL = ParamUtil.getString(request, "backURL");
 
-int instanceIndex = BeanParamUtil.getInteger(calendarBooking, request, "instanceIndex");
+int instanceIndex = BeanParamUtil.getInteger(calendarBooking, request, "instanceIndex", CalendarBooking::getInstanceIndex);
 
 calendarBooking = RecurrenceUtil.getCalendarBookingInstance(calendarBooking, instanceIndex);
 
@@ -50,7 +50,11 @@ portletDisplay.setShowBackIcon(Validator.isNotNull(backURL));
 							<liferay-ui:message key="status" />:
 						</dt>
 						<dd>
-							<aui:workflow-status markupView="lexicon" model="<%= CalendarBooking.class %>" showHelpMessage="<%= false %>" showIcon="<%= false %>" showLabel="<%= false %>" status="<%= calendarBooking.getStatus() %>" />
+							<liferay-portal-workflow:status
+								showStatusLabel="<%= false %>"
+								status="<%= calendarBooking.getStatus() %>"
+								statusMessage="<%= CalendarUtil.getStatusLabel(calendarBooking.getStatus()) %>"
+							/>
 						</dd>
 						<dt>
 							<liferay-ui:message key="starts" />:

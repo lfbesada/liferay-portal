@@ -36,8 +36,8 @@ import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
 import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.PermissionThreadLocal;
+import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
-import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.CompanyTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
@@ -46,6 +46,9 @@ import com.liferay.portal.kernel.upgrade.UpgradeStep;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.zip.ZipWriter;
 import com.liferay.portal.kernel.zip.ZipWriterFactory;
+import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LogEntry;
+import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
@@ -122,7 +125,9 @@ public class MCPProfileUpgradeProcessTest {
 	}
 
 	@After
-	public void tearDown() {
+	public void tearDown() throws Exception {
+		_companyLocalService.deleteCompany(_company);
+
 		CompanyThreadLocal.setCompanyId(_originalCompanyId);
 		PermissionThreadLocal.setPermissionChecker(_originalPermissionChecker);
 		PrincipalThreadLocal.setName(_originalName);
@@ -145,19 +150,39 @@ public class MCPProfileUpgradeProcessTest {
 	public void testUpgradeAfterFailedBatchProvisioning() throws Exception {
 		ObjectDefinition objectDefinition = _addObjectEntries();
 
-		try {
-			_processBatchEngineUnits(
-				FrameworkUtil.getBundle(_upgradeStepRegistrator.getClass()));
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"com.liferay.batch.engine.internal." +
+					"BatchEngineImportTaskExecutorImpl",
+				LoggerTestUtil.ERROR)) {
 
-			Assert.fail();
-		}
-		catch (Exception exception) {
-			String message = exception.getMessage();
+			try {
+				_processBatchEngineUnits(
+					FrameworkUtil.getBundle(
+						_upgradeStepRegistrator.getClass()));
 
-			Assert.assertTrue(
-				message,
-				message.contains(
-					"02-object-definition.batch-engine-data.json"));
+				Assert.fail();
+			}
+			catch (Exception exception) {
+				String message = exception.getMessage();
+
+				Assert.assertTrue(
+					message.contains(
+						"02-object-definition.batch-engine-data.json"));
+			}
+
+			List<LogEntry> logEntries = logCapture.getLogEntries();
+
+			LogEntry logEntry = logEntries.get(0);
+
+			Assert.assertEquals(
+				StringBundler.concat(
+					"The tools object field cannot be deleted because the ",
+					"profile tool \"mcp-server-profiles ",
+					"getMCPServerProfilesPage\" of profile \"",
+					_objectEntry1.getExternalReferenceCode(),
+					"\" was not migrated to an MCPServerProfileTool object ",
+					"entry"),
+				logEntry.getMessage());
 		}
 
 		Assert.assertNotNull(
@@ -566,8 +591,10 @@ public class MCPProfileUpgradeProcessTest {
 	@Inject
 	private BatchEngineUnitReader _batchEngineUnitReader;
 
-	@DeleteAfterTestRun
 	private Company _company;
+
+	@Inject
+	private CompanyLocalService _companyLocalService;
 
 	@Inject
 	private ListTypeDefinitionLocalService _listTypeDefinitionLocalService;

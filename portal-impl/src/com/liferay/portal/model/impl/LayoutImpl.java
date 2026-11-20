@@ -91,8 +91,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.servlet.http.HttpSession;
 
-import java.io.IOException;
-
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -501,12 +499,15 @@ public class LayoutImpl extends LayoutBaseImpl {
 		for (PortletPreferences portletPreferences : portletPreferencesList) {
 			String portletId = portletPreferences.getPortletId();
 
+			if (!layoutPortletIds.contains(portletId)) {
+				continue;
+			}
+
 			Portlet portlet = PortletLocalServiceUtil.getPortletById(
 				getCompanyId(), portletId);
 
 			if ((portlet == null) || !portlet.isReady() ||
-				portlet.isUndeployedPortlet() || !portlet.isActive() ||
-				!layoutPortletIds.contains(portletId)) {
+				portlet.isUndeployedPortlet() || !portlet.isActive()) {
 
 				continue;
 			}
@@ -1423,7 +1424,9 @@ public class LayoutImpl extends LayoutBaseImpl {
 	 */
 	@Override
 	public boolean isSupportsEmbeddedPortlets() {
-		if (isTypeEmbedded() || isTypePanel() || isTypePortlet()) {
+		if (isTypeEmbedded() || isTypePanel() || isTypePortlet() ||
+			isTypeUtility()) {
+
 			return true;
 		}
 
@@ -1610,7 +1613,7 @@ public class LayoutImpl extends LayoutBaseImpl {
 				getPlid());
 	}
 
-	private ColorScheme _getColorScheme() throws PortalException {
+	private ColorScheme _getColorScheme() {
 		if (isInheritLookAndFeel()) {
 			LayoutSet layoutSet = getLayoutSet();
 
@@ -1699,8 +1702,7 @@ public class LayoutImpl extends LayoutBaseImpl {
 	}
 
 	private LayoutTypePortlet _getLayoutTypePortletClone(
-			HttpServletRequest httpServletRequest)
-		throws IOException {
+		HttpServletRequest httpServletRequest) {
 
 		LayoutTypePortlet layoutTypePortlet = null;
 
@@ -1767,7 +1769,7 @@ public class LayoutImpl extends LayoutBaseImpl {
 		return portletPreferences;
 	}
 
-	private Theme _getTheme() throws PortalException {
+	private Theme _getTheme() {
 		if (isInheritLookAndFeel()) {
 			LayoutSet layoutSet = getLayoutSet();
 
@@ -1802,15 +1804,8 @@ public class LayoutImpl extends LayoutBaseImpl {
 				layoutTypePortlet = themeDisplay.getLayoutTypePortlet();
 			}
 			else {
-				try {
-					layoutTypePortlet = _getLayoutTypePortletClone(
-						httpServletRequest);
-				}
-				catch (IOException ioException) {
-					_log.error("Unable to clone layout settings", ioException);
-
-					layoutTypePortlet = (LayoutTypePortlet)getLayoutType();
-				}
+				layoutTypePortlet = _getLayoutTypePortletClone(
+					httpServletRequest);
 			}
 
 			if (layoutTypePortlet.hasStateMax()) {

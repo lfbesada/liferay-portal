@@ -1,8 +1,8 @@
 {
 	"dependencies": {
-		"@clayui/autocomplete": "^3.166.0",
-		"@clayui/form": "^3.166.0",
-		"@clayui/icon": "^3.166.0",
+		"@clayui/autocomplete": "^3.167.0",
+		"@clayui/form": "^3.167.0",
+		"@clayui/icon": "^3.167.0",
 		"@liferay/frontend-data-set-web": "*",
 		"@liferay/frontend-js-item-selector-web": "*",
 		"@liferay/frontend-js-react-web": "*",
@@ -18,7 +18,8 @@
 	"scripts": {
 		"build": "node-scripts build",
 		"checkFormat": "node-scripts format --check",
-		"format": "node-scripts format"
+		"format": "node-scripts format",
+		"test": "node-scripts test"
 	},
 	"version": "7.0.183"
 }

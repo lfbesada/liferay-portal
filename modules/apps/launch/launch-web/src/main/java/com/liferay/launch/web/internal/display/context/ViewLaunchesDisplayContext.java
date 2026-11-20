@@ -12,15 +12,19 @@ import com.liferay.frontend.data.set.model.FDSSortItemListBuilder;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenu;
 import com.liferay.frontend.taglib.clay.servlet.taglib.util.CreationMenuBuilder;
 import com.liferay.launch.web.internal.constants.LaunchFDSNames;
+import com.liferay.launch.web.internal.util.LaunchTimeZoneUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.portlet.LiferayPortletResponse;
 import com.liferay.portal.kernel.portlet.url.builder.PortletURLBuilder;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.WebKeys;
 
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.List;
 import java.util.Map;
+import java.util.TimeZone;
 
 /**
  * @author Alejandro Tardín
@@ -40,7 +44,28 @@ public class ViewLaunchesDisplayContext {
 	}
 
 	public Map<String, Object> getAdditionalProps() {
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)_httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
 		return HashMapBuilder.<String, Object>put(
+			"portletNamespace", _liferayPortletResponse.getNamespace()
+		).put(
+			"scheduleLaunchURL", _getScheduleLaunchURL()
+		).put(
+			"timeZoneId",
+			() -> {
+				TimeZone timeZone = themeDisplay.getTimeZone();
+
+				return timeZone.getID();
+			}
+		).put(
+			"timeZones",
+			() -> LaunchTimeZoneUtil.getTimeZonesJSONArray(
+				themeDisplay.getLocale())
+		).put(
+			"unscheduleLaunchURL", _getUnscheduleLaunchURL()
+		).put(
 			"viewLaunchURL", _getViewLaunchURL()
 		).build();
 	}
@@ -57,7 +82,15 @@ public class ViewLaunchesDisplayContext {
 			new FDSActionDropdownItem(
 				_getViewLaunchURL(), "view", "view",
 				LanguageUtil.get(_httpServletRequest, "view"), "get", null,
-				null));
+				null),
+			new FDSActionDropdownItem(
+				"#", "calendar", "schedule",
+				LanguageUtil.get(_httpServletRequest, "schedule"), "get",
+				"update", null),
+			new FDSActionDropdownItem(
+				"#", "date-time", "unschedule",
+				LanguageUtil.get(_httpServletRequest, "unschedule"), "get",
+				"update", null));
 	}
 
 	public String getFDSName() {
@@ -82,6 +115,26 @@ public class ViewLaunchesDisplayContext {
 				LanguageUtil.get(_httpServletRequest, "last-modified")
 			).build()
 		).build();
+	}
+
+	private String _getScheduleLaunchURL() {
+		return PortletURLBuilder.createActionURL(
+			_liferayPortletResponse
+		).setActionName(
+			"/launch/schedule_launch"
+		).setParameter(
+			"launchSetId", "{id}"
+		).buildString();
+	}
+
+	private String _getUnscheduleLaunchURL() {
+		return PortletURLBuilder.createActionURL(
+			_liferayPortletResponse
+		).setActionName(
+			"/launch/unschedule_launch"
+		).setParameter(
+			"launchSetId", "{id}"
+		).buildString();
 	}
 
 	private String _getViewLaunchURL() {

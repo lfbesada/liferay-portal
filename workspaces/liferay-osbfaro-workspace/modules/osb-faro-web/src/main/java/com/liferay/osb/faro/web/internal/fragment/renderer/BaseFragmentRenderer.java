@@ -7,32 +7,32 @@ package com.liferay.osb.faro.web.internal.fragment.renderer;
 
 import com.liferay.fragment.renderer.FragmentRenderer;
 import com.liferay.fragment.renderer.FragmentRendererContext;
-import com.liferay.osb.faro.constants.FaroChannelConstants;
-import com.liferay.osb.faro.engine.client.constants.LCPProjectConstants;
-import com.liferay.osb.faro.provisioning.client.constants.FaroSubscriptionConstants;
-import com.liferay.osb.faro.util.FaroPropsValues;
-import com.liferay.osb.faro.web.internal.constants.FaroPaginationConstants;
-import com.liferay.osb.faro.web.internal.util.JSONUtil;
-import com.liferay.petra.reflect.ReflectionUtil;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemList;
+import com.liferay.frontend.taglib.react.servlet.taglib.ComponentTag;
+import com.liferay.osb.faro.web.internal.display.context.ChannelSelectorDisplayContext;
+import com.liferay.osb.faro.web.internal.util.FaroFragmentRendererUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Layout;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.HashMapBuilder;
-import com.liferay.portal.kernel.util.HtmlUtil;
-import com.liferay.portal.kernel.util.PortalUtil;
-import com.liferay.portal.kernel.util.URLCodec;
+import com.liferay.portal.kernel.util.ParamUtil;
+import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.WebKeys;
-import com.liferay.taglib.aui.LinkTag;
-import com.liferay.taglib.aui.ScriptTag;
+import com.liferay.taglib.servlet.PageContextFactoryUtil;
 
+import jakarta.servlet.ServletContext;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
-import jakarta.servlet.jsp.JspException;
+import jakarta.servlet.jsp.JspWriter;
+import jakarta.servlet.jsp.PageContext;
 
-import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Writer;
+import java.util.HashMap;
+import java.util.Map;
+
+import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Eudaldo Alonso
@@ -46,45 +46,15 @@ public abstract class BaseFragmentRenderer implements FragmentRenderer {
 		HttpServletResponse httpServletResponse) {
 
 		try {
-			ThemeDisplay themeDisplay =
-				(ThemeDisplay)httpServletRequest.getAttribute(
-					WebKeys.THEME_DISPLAY);
-
-			if (!themeDisplay.isSignedIn()) {
-				_renderScriptTag(
-					httpServletRequest, httpServletResponse, null,
-					StringBundler.concat(
-						"window.location.href = '",
-						HtmlUtil.escapeJS(
-							StringBundler.concat(
-								themeDisplay.getURLSignIn(), "?redirect=",
-								URLCodec.encodeURL(
-									PortalUtil.getCurrentURL(
-										httpServletRequest)))),
-						"';"),
-					null, null);
-
-				return;
-			}
-
-			_renderLinkTag(
+			FaroFragmentRendererUtil.renderLinkTag(
 				httpServletRequest, httpServletResponse,
 				"/o/osb-faro-web/dist/main.css");
-
-			PrintWriter printWriter = httpServletResponse.getWriter();
-
-			printWriter.write("<div id=\"faroApp\"></div>");
-
-			_renderScriptTag(
+			FaroFragmentRendererUtil.renderScriptTag(
 				httpServletRequest, httpServletResponse, "inline",
-				"window.faroConstants = " + _getFaroConstants() + ";", null,
-				null);
-			_renderScriptTag(
-				httpServletRequest, httpServletResponse, null, null,
-				_getStaticResourceURL(
-					httpServletRequest, "/o/osb-faro-web/dist/main.js"),
-				"module");
-			_renderScriptTag(
+				"window.faroConstants = " +
+					FaroFragmentRendererUtil.getFaroConstants() + ";",
+				null, null);
+			FaroFragmentRendererUtil.renderScriptTag(
 				httpServletRequest, httpServletResponse, null,
 				StringBundler.concat(
 					"document.addEventListener('DOMContentLoaded', () => {",
@@ -92,6 +62,74 @@ public abstract class BaseFragmentRenderer implements FragmentRenderer {
 					"const element = document.getElementById(id);",
 					"if (element) {element.disabled = true;}}});"),
 				null, null);
+
+			PageContext pageContext = PageContextFactoryUtil.create(
+				httpServletRequest, httpServletResponse);
+
+			JspWriter jspWriter = pageContext.getOut();
+
+			jspWriter.write("<div>");
+
+			ThemeDisplay themeDisplay =
+				(ThemeDisplay)httpServletRequest.getAttribute(
+					WebKeys.THEME_DISPLAY);
+
+			ComponentTag componentTag = new ComponentTag();
+
+			componentTag.setModule(getModule());
+			componentTag.setPageContext(pageContext);
+			componentTag.setProps(
+				HashMapBuilder.<String, Object>put(
+					"channelId",
+					() -> {
+						ChannelSelectorDisplayContext
+							channelSelectorDisplayContext =
+								new ChannelSelectorDisplayContext(
+									httpServletRequest);
+
+						return channelSelectorDisplayContext.getFaroChannelId();
+					}
+				).put(
+					"friendlyURL",
+					() -> {
+						Layout layout = themeDisplay.getLayout();
+
+						return layout.getFriendlyURL();
+					}
+				).put(
+					"groupId", String.valueOf(themeDisplay.getScopeGroupId())
+				).put(
+					"navigationItems",
+					() -> getNavigationItems(httpServletRequest)
+				).put(
+					"pageURLs",
+					() -> {
+						Map<String, String> pageURLs = new HashMap<>();
+
+						for (Layout layout :
+								layoutLocalService.getLayouts(
+									themeDisplay.getScopeGroupId(), false)) {
+
+							pageURLs.put(
+								layout.getFriendlyURL(),
+								portal.getLayoutRelativeURL(
+									layout, themeDisplay));
+						}
+
+						return pageURLs;
+					}
+				).put(
+					"params", getParams(httpServletRequest)
+				).put(
+					"sidebarNavigationItems",
+					() -> getSidebarNavigationItems(httpServletRequest)
+				).build());
+			componentTag.setServletContext(servletContext);
+
+			componentTag.doStartTag();
+			componentTag.doEndTag();
+
+			jspWriter.write("</div>");
 		}
 		catch (Exception exception) {
 			_log.error(exception);
@@ -100,73 +138,70 @@ public abstract class BaseFragmentRenderer implements FragmentRenderer {
 		}
 	}
 
-	private String _getFaroConstants() throws Exception {
-		return JSONUtil.writeValueAsString(
-			HashMapBuilder.<String, Object>put(
-				"channelPermissionTypes",
-				FaroChannelConstants.getPermissionTypes()
-			).put(
-				"faroURL", FaroPropsValues.FARO_URL
-			).put(
-				"pagination", FaroPaginationConstants.getConstants()
-			).put(
-				"projectLocations", LCPProjectConstants.getLocations()
-			).put(
-				"subscriptionPlans",
-				FaroSubscriptionConstants.getFaroSubscriptionPlans()
-			).build());
+	protected abstract String getModule();
+
+	protected NavigationItemList getNavigationItems(
+			HttpServletRequest httpServletRequest)
+		throws Exception {
+
+		return null;
 	}
 
-	private String _getStaticResourceURL(
-		HttpServletRequest httpServletRequest, String uri) {
+	protected Map<String, String> getParams(
+		HttpServletRequest httpServletRequest) {
 
-		return HtmlUtil.escapeAttribute(
-			PortalUtil.getStaticResourceURL(httpServletRequest, uri));
+		return HashMapBuilder.put(
+			"accountId", ParamUtil.getString(httpServletRequest, "accountId")
+		).put(
+			"accountName",
+			ParamUtil.getString(httpServletRequest, "accountName")
+		).put(
+			"campaignId", ParamUtil.getString(httpServletRequest, "campaignId")
+		).put(
+			"campaignName",
+			ParamUtil.getString(httpServletRequest, "campaignName")
+		).put(
+			"delta", ParamUtil.getString(httpServletRequest, "delta")
+		).put(
+			"downloadReport",
+			ParamUtil.getString(httpServletRequest, "downloadReport")
+		).put(
+			"field", ParamUtil.getString(httpServletRequest, "field")
+		).put(
+			"page", ParamUtil.getString(httpServletRequest, "page")
+		).put(
+			"query", ParamUtil.getString(httpServletRequest, "query")
+		).put(
+			"rangeEnd", ParamUtil.getString(httpServletRequest, "rangeEnd")
+		).put(
+			"rangeKey", ParamUtil.getString(httpServletRequest, "rangeKey")
+		).put(
+			"rangeStart", ParamUtil.getString(httpServletRequest, "rangeStart")
+		).put(
+			"segmentId", ParamUtil.getString(httpServletRequest, "segmentId")
+		).put(
+			"segmentName",
+			ParamUtil.getString(httpServletRequest, "segmentName")
+		).put(
+			"sortOrder", ParamUtil.getString(httpServletRequest, "sortOrder")
+		).build();
 	}
 
-	private void _renderLinkTag(
-			HttpServletRequest httpServletRequest,
-			HttpServletResponse httpServletResponse, String uri)
-		throws JspException {
+	protected NavigationItemList getSidebarNavigationItems(
+			HttpServletRequest httpServletRequest)
+		throws Exception {
 
-		LinkTag linkTag = new LinkTag();
-
-		linkTag.setHref(_getStaticResourceURL(httpServletRequest, uri));
-		linkTag.setRel("stylesheet");
-		linkTag.setType("text/css");
-
-		linkTag.doTag(httpServletRequest, httpServletResponse);
+		return null;
 	}
 
-	private void _renderScriptTag(
-			HttpServletRequest httpServletRequest,
-			HttpServletResponse httpServletResponse, String position,
-			String script, String src, String type)
-		throws JspException {
+	@Reference
+	protected LayoutLocalService layoutLocalService;
 
-		ScriptTag scriptTag = new ScriptTag();
+	@Reference
+	protected Portal portal;
 
-		scriptTag.setPosition(position);
-		scriptTag.setSrc(src);
-		scriptTag.setType(type);
-
-		scriptTag.doBodyTag(
-			httpServletRequest, httpServletResponse,
-			pageContext -> {
-				if (script == null) {
-					return;
-				}
-
-				try {
-					Writer writer = pageContext.getOut();
-
-					writer.write(script);
-				}
-				catch (IOException ioException) {
-					ReflectionUtil.throwException(ioException);
-				}
-			});
-	}
+	@Reference(target = "(osgi.web.symbolicname=com.liferay.osb.faro.web)")
+	protected ServletContext servletContext;
 
 	private static final Log _log = LogFactoryUtil.getLog(
 		BaseFragmentRenderer.class);

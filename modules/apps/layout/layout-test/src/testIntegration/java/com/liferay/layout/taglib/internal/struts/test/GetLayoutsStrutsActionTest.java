@@ -7,6 +7,8 @@ package com.liferay.layout.taglib.internal.struts.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.layout.test.util.ContentLayoutTestUtil;
+import com.liferay.layout.test.util.LayoutTestUtil;
+import com.liferay.petra.lang.SafeCloseable;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.MultiVMPool;
 import com.liferay.portal.kernel.dao.orm.EntityCache;
@@ -14,13 +16,17 @@ import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
+import com.liferay.portal.kernel.launch.LaunchPreviewThreadLocal;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.model.LayoutConstants;
 import com.liferay.portal.kernel.model.ResourceConstants;
+import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.LayoutLocalServiceUtil;
@@ -95,11 +101,83 @@ public class GetLayoutsStrutsActionTest {
 	public void setUp() throws Exception {
 		_group = GroupTestUtil.addGroup();
 
+		_role = RoleTestUtil.addRole(RoleConstants.TYPE_SITE);
+
+		RoleTestUtil.addResourcePermission(
+			_role, Layout.class.getName(), ResourceConstants.SCOPE_GROUP,
+			String.valueOf(_group.getGroupId()), ActionKeys.VIEW);
+
 		_themeDisplay = ContentLayoutTestUtil.getThemeDisplay(
 			_companyLocalService.getCompany(_group.getCompanyId()), _group,
 			_layoutLocalService.getLayout(
 				_portal.getControlPanelPlid(_group.getCompanyId())));
-		_user = UserTestUtil.addGroupUser(_group, RoleConstants.SITE_MEMBER);
+		_user = UserTestUtil.addGroupUser(_group, _role.getName());
+	}
+
+	@Test
+	@TestInfo("LPD-112154")
+	public void testGetLayoutsStrutsActionWithIncludeDraftLayouts()
+		throws Exception {
+
+		Layout publishedLayout = _layoutLocalService.addLayout(
+			null, TestPropsValues.getUserId(), _group.getGroupId(), false,
+			LayoutConstants.DEFAULT_PARENT_LAYOUT_ID,
+			RandomTestUtil.randomString(), StringPool.BLANK, StringPool.BLANK,
+			LayoutConstants.TYPE_CONTENT, false, StringPool.BLANK,
+			ServiceContextTestUtil.getServiceContext(
+				TestPropsValues.getGroupId(), TestPropsValues.getUserId()));
+
+		ContentLayoutTestUtil.publishLayout(
+			publishedLayout.fetchDraftLayout(), publishedLayout);
+
+		Layout unpublishedLayout = _layoutLocalService.addLayout(
+			null, TestPropsValues.getUserId(), _group.getGroupId(), false,
+			LayoutConstants.DEFAULT_PARENT_LAYOUT_ID,
+			RandomTestUtil.randomString(), StringPool.BLANK, StringPool.BLANK,
+			LayoutConstants.TYPE_CONTENT, false, StringPool.BLANK,
+			ServiceContextTestUtil.getServiceContext(
+				TestPropsValues.getGroupId(), TestPropsValues.getUserId()));
+
+		_assertLayoutInTree(false, unpublishedLayout, false);
+		_assertLayoutInTree(false, unpublishedLayout, true);
+
+		_assertLayoutInTree(true, publishedLayout, false);
+		_assertLayoutInTree(true, publishedLayout, true);
+
+		RoleTestUtil.addResourcePermission(
+			_role, Layout.class.getName(), ResourceConstants.SCOPE_INDIVIDUAL,
+			String.valueOf(unpublishedLayout.getPlid()),
+			ActionKeys.PREVIEW_DRAFT);
+
+		_assertLayoutInTree(false, unpublishedLayout, false);
+		_assertLayoutInTree(true, unpublishedLayout, true);
+	}
+
+	@Test
+	@TestInfo("LPD-112154")
+	public void testGetLayoutsStrutsActionWithLaunchDraft() throws Exception {
+		Layout layout = _layoutLocalService.addLayout(
+			null, TestPropsValues.getUserId(), _group.getGroupId(), false,
+			LayoutConstants.DEFAULT_PARENT_LAYOUT_ID,
+			RandomTestUtil.randomString(), StringPool.BLANK, StringPool.BLANK,
+			LayoutConstants.TYPE_CONTENT, false, StringPool.BLANK,
+			ServiceContextTestUtil.getServiceContext(
+				TestPropsValues.getGroupId(), TestPropsValues.getUserId()));
+
+		_assertLayoutInTree(false, layout);
+
+		long launchSetId = RandomTestUtil.randomLong();
+
+		LayoutTestUtil.addLaunchDraftLayout(launchSetId, layout);
+
+		_assertLayoutInTree(false, layout);
+
+		try (SafeCloseable safeCloseable =
+				LaunchPreviewThreadLocal.setLaunchSetIdWithSafeCloseable(
+					launchSetId)) {
+
+			_assertLayoutInTree(true, layout);
+		}
 	}
 
 	@Test
@@ -171,6 +249,36 @@ public class GetLayoutsStrutsActionTest {
 		}
 	}
 
+	private void _assertLayoutInTree(boolean expected, Layout layout)
+		throws Exception {
+
+		_assertLayoutInTree(expected, layout, false);
+	}
+
+	private void _assertLayoutInTree(
+			boolean expected, Layout layout, boolean includeDraftLayouts)
+		throws Exception {
+
+		JSONObject jsonObject = _getLayoutsStrutsActionResponseJSONObject(
+			0, _PAGE_SIZE, includeDraftLayouts);
+
+		JSONArray jsonArray = jsonObject.getJSONArray("items");
+
+		boolean actual = false;
+
+		for (int i = 0; i < jsonArray.length(); i++) {
+			JSONObject layoutJSONObject = jsonArray.getJSONObject(i);
+
+			if (layoutJSONObject.getLong("layoutId") == layout.getLayoutId()) {
+				actual = true;
+
+				break;
+			}
+		}
+
+		Assert.assertEquals(expected, actual);
+	}
+
 	private Map<Long, List<Long>> _getLayoutIdsMap(
 			int count, long parentLayoutId)
 		throws Exception {
@@ -227,13 +335,26 @@ public class GetLayoutsStrutsActionTest {
 			int start, int end)
 		throws Exception {
 
+		return _getLayoutsStrutsActionResponseJSONObject(start, end, false);
+	}
+
+	private JSONObject _getLayoutsStrutsActionResponseJSONObject(
+			int start, int end, boolean includeDraftLayouts)
+		throws Exception {
+
 		MockHttpServletRequest mockHttpServletRequest =
-			_getMockHttpServletRequest(start, end);
+			_getMockHttpServletRequest(start, end, includeDraftLayouts);
 		MockHttpServletResponse mockHttpServletResponse =
 			new MockHttpServletResponse();
 
+		PermissionChecker originalPermissionChecker =
+			_themeDisplay.getPermissionChecker();
+
 		try {
 			UserTestUtil.setUser(_user);
+
+			_themeDisplay.setPermissionChecker(
+				PermissionCheckerFactoryUtil.create(_user));
 
 			_entityCache.clearCache();
 			_multiVMPool.clear();
@@ -245,6 +366,8 @@ public class GetLayoutsStrutsActionTest {
 		}
 		finally {
 			UserTestUtil.setUser(TestPropsValues.getUser());
+
+			_themeDisplay.setPermissionChecker(originalPermissionChecker);
 		}
 
 		return _jsonFactory.createJSONObject(
@@ -252,15 +375,18 @@ public class GetLayoutsStrutsActionTest {
 	}
 
 	private MockHttpServletRequest _getMockHttpServletRequest(
-		int start, int end) {
+		int start, int end, boolean includeDraftLayouts) {
 
 		MockHttpServletRequest mockHttpServletRequest =
 			new MockHttpServletRequest();
 
+		mockHttpServletRequest.addParameter("end", String.valueOf(end));
 		mockHttpServletRequest.addParameter(
 			"groupId", String.valueOf(_group.getGroupId()));
+		mockHttpServletRequest.addParameter(
+			"includeDraftLayouts", String.valueOf(includeDraftLayouts));
 		mockHttpServletRequest.addParameter("start", String.valueOf(start));
-		mockHttpServletRequest.addParameter("end", String.valueOf(end));
+
 		mockHttpServletRequest.setAttribute(
 			WebKeys.LAYOUT, _themeDisplay.getLayout());
 		mockHttpServletRequest.setAttribute(
@@ -314,6 +440,9 @@ public class GetLayoutsStrutsActionTest {
 
 	@Inject
 	private Portal _portal;
+
+	@DeleteAfterTestRun
+	private Role _role;
 
 	private ThemeDisplay _themeDisplay;
 	private User _user;

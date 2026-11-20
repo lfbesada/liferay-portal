@@ -15,6 +15,9 @@ import com.liferay.portal.kernel.model.Address;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.bridges.mvc.BaseMVCActionCommand;
 import com.liferay.portal.kernel.portlet.bridges.mvc.MVCActionCommand;
+import com.liferay.portal.kernel.security.auth.PrincipalException;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionChecker;
 import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.AddressLocalService;
 import com.liferay.portal.kernel.service.ServiceContextFactory;
@@ -143,10 +146,31 @@ public class EditAccountEntryAddressMVCActionCommand
 		ThemeDisplay themeDisplay = (ThemeDisplay)actionRequest.getAttribute(
 			WebKeys.THEME_DISPLAY);
 
+		PermissionChecker permissionChecker =
+			themeDisplay.getPermissionChecker();
+
+		long accountEntryId = ParamUtil.getLong(
+			actionRequest, "accountEntryId");
+
 		_accountEntryModelResourcePermission.check(
-			themeDisplay.getPermissionChecker(),
-			ParamUtil.getLong(actionRequest, "accountEntryId"),
+			permissionChecker, accountEntryId,
 			AccountActionKeys.MANAGE_ADDRESSES);
+
+		long accountEntryAddressId = ParamUtil.getLong(
+			actionRequest, "accountEntryAddressId");
+
+		Address address = _addressLocalService.fetchAddress(
+			accountEntryAddressId);
+
+		if ((address != null) &&
+			(!Objects.equals(
+				address.getClassName(), AccountEntry.class.getName()) ||
+			 (address.getClassPK() != accountEntryId))) {
+
+			throw new PrincipalException.MustHavePermission(
+				permissionChecker, Address.class.getName(),
+				accountEntryAddressId, ActionKeys.UPDATE);
+		}
 	}
 
 	private void _updateAccountEntryAddress(ActionRequest actionRequest)

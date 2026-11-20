@@ -11,8 +11,11 @@ import com.liferay.osb.faro.engine.client.model.Results;
 import com.liferay.osb.faro.rest.dto.v1_0.Individual;
 import com.liferay.osb.faro.rest.internal.dto.v1_0.converter.FaroDTOConverterContext;
 import com.liferay.osb.faro.rest.internal.dto.v1_0.util.FaroPaginationUtil;
+import com.liferay.osb.faro.rest.internal.jaxrs.util.ProblemUtil;
 import com.liferay.osb.faro.rest.resource.v1_0.IndividualResource;
 import com.liferay.osb.faro.service.FaroProjectLocalService;
+import com.liferay.portal.kernel.log.Log;
+import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.search.Sort;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.vulcan.dto.converter.DTOConverter;
@@ -47,10 +50,10 @@ public class IndividualResourceImpl extends BaseIndividualResourceImpl {
 		Results<com.liferay.osb.faro.engine.client.model.Individual> results =
 			_contactsEngineClient.getIndividuals(
 				_faroProjectLocalService.getFaroProjectByGroupId(groupId),
-				accountId, null, activityStatus, channelId, null, null, null,
-				false, individualSegmentId, _getIndividualTypes(profileType),
-				interestName, null, search, rangeEnd,
-				TimeRange.getRangeKey(rangeKey), rangeStart,
+				accountId, null, activityStatus, null, channelId, null, null,
+				null, false, individualSegmentId,
+				_getIndividualTypes(profileType), interestName, null, search,
+				rangeEnd, TimeRange.getRangeKey(rangeKey), rangeStart,
 				FaroPaginationUtil.getCur(pagination),
 				FaroPaginationUtil.getDelta(pagination),
 				FaroPaginationUtil.toOrderByFields(sorts, true));
@@ -72,13 +75,22 @@ public class IndividualResourceImpl extends BaseIndividualResourceImpl {
 			Long groupId, String individualId, String channelId)
 		throws Exception {
 
-		com.liferay.osb.faro.engine.client.model.Individual individual =
-			_contactsEngineClient.getIndividual(
+		com.liferay.osb.faro.engine.client.model.Individual individual = null;
+
+		try {
+			individual = _contactsEngineClient.getIndividual(
 				_faroProjectLocalService.getFaroProjectByGroupId(groupId),
 				individualId, channelId);
+		}
+		catch (NoSuchEntryException noSuchEntryException) {
+			if (_log.isDebugEnabled()) {
+				_log.debug(noSuchEntryException);
+			}
+		}
 
 		if ((individual == null) || Validator.isNull(individual.getId())) {
-			throw new NoSuchEntryException();
+			throw ProblemUtil.getNotFoundException(
+				"No individual was found with ID " + individualId);
 		}
 
 		return _individualDTOConverter.toDTO(
@@ -95,6 +107,9 @@ public class IndividualResourceImpl extends BaseIndividualResourceImpl {
 
 		return Collections.singletonList(profileType);
 	}
+
+	private static final Log _log = LogFactoryUtil.getLog(
+		IndividualResourceImpl.class);
 
 	@Reference
 	private ContactsEngineClient _contactsEngineClient;

@@ -41,6 +41,7 @@ import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.ModelListener;
 import com.liferay.portal.kernel.model.Organization;
 import com.liferay.portal.kernel.model.PasswordPolicy;
+import com.liferay.portal.kernel.model.RememberMeToken;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.SystemEvent;
 import com.liferay.portal.kernel.model.SystemEventConstants;
@@ -67,6 +68,7 @@ import com.liferay.portal.kernel.service.GroupLocalServiceUtil;
 import com.liferay.portal.kernel.service.PasswordPolicyLocalService;
 import com.liferay.portal.kernel.service.PortalPreferencesLocalService;
 import com.liferay.portal.kernel.service.PortletPreferencesLocalService;
+import com.liferay.portal.kernel.service.RememberMeTokenLocalService;
 import com.liferay.portal.kernel.service.RoleLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.ServiceContextThreadLocal;
@@ -577,6 +579,12 @@ public class UserLocalServiceTest {
 			"PBKDF2WITHHMACSHA1/160/2600000", "PBKDF2WITHHMACSHA1/160/1300000");
 		_testAuthenticateByEmailAddressWithOutdatedPasswordsEncryptionAlgorithm(
 			"SHA-384", "PBKDF2WITHHMACSHA1/160/1300000");
+		_testAuthenticateByEmailAddressWithOutdatedPasswordsEncryptionAlgorithmInFIPSMode(
+			false, "PBKDF2WITHHMACSHA256/256/1300000",
+			RandomTestUtil.randomString(14));
+		_testAuthenticateByEmailAddressWithOutdatedPasswordsEncryptionAlgorithmInFIPSMode(
+			true, "PBKDF2WITHHMACSHA1/160/1300000",
+			RandomTestUtil.randomString(13));
 	}
 
 	@Test
@@ -1059,83 +1067,12 @@ public class UserLocalServiceTest {
 
 	@Test
 	public void testDeleteUser() throws Exception {
-		User user = UserTestUtil.addUser();
-		UserGroup userGroup = UserGroupTestUtil.addUserGroup();
-
-		_userLocalService.addUserGroupUser(userGroup.getUserGroupId(), user);
-
-		_assertSearchUserGroup(true, user, userGroup);
-
-		_userLocalService.deleteUser(user);
-
-		_assertSearchUserGroup(false, user, userGroup);
-	}
-
-	@Test
-	public void testDeleteUserAddsSystemEvent() throws Exception {
-		User user = UserTestUtil.addUser();
-
-		_userLocalService.deleteUser(user);
-
-		List<SystemEvent> systemEvents =
-			_systemEventLocalService.getSystemEvents(
-				0, _portal.getClassNameId(user.getModelClassName()),
-				user.getPrimaryKey(), SystemEventConstants.TYPE_DELETE);
-
-		SystemEvent systemEvent = systemEvents.get(0);
-
-		Assert.assertEquals(
-			user.getExternalReferenceCode(),
-			systemEvent.getClassExternalReferenceCode());
-	}
-
-	@Test
-	public void testDeleteUserDeletesNotificationEvents() throws Exception {
-		User user = UserTestUtil.addUser();
-
-		_userNotificationEventLocalService.sendUserNotificationEvents(
-			user.getUserId(), null, 0, false, false,
-			JSONFactoryUtil.createJSONObject());
-
-		_userLocalService.deleteUser(user);
-
-		int count =
-			_userNotificationEventLocalService.getUserNotificationEventsCount(
-				user.getUserId());
-
-		Assert.assertEquals(0, count);
-	}
-
-	@Test
-	public void testDeleteUserDeletesPreferences() throws Exception {
-		User user = UserTestUtil.addUser();
-
-		_portalPreferencesLocalService.addPortalPreferences(
-			user.getUserId(), PortletKeys.PREFS_OWNER_TYPE_USER, null);
-		_portletPreferencesLocalService.addPortletPreferences(
-			user.getCompanyId(), user.getUserId(),
-			PortletKeys.PREFS_OWNER_TYPE_USER, 0, null, null, null);
-
-		_userLocalService.deleteUser(user);
-
-		Assert.assertNull(
-			_portalPreferencesLocalService.fetchPortalPreferences(
-				user.getUserId(), PortletKeys.PREFS_OWNER_TYPE_USER));
-		Assert.assertNull(
-			_portletPreferencesLocalService.fetchPortletPreferences(
-				user.getUserId(), PortletKeys.PREFS_OWNER_TYPE_USER, 0, null));
-	}
-
-	@Test
-	public void testDeleteUserDeletesTickets() throws Exception {
-		User user = UserTestUtil.addUser();
-
-		_userLocalService.deleteUser(user);
-
-		List<Ticket> tickets = _ticketLocalService.getTickets(
-			user.getCompanyId(), User.class.getName(), user.getUserId());
-
-		Assert.assertEquals(tickets.toString(), 0, tickets.size());
+		_testDeleteUser();
+		_testDeleteUserAddsSystemEvent();
+		_testDeleteUserDeletesNotificationEvents();
+		_testDeleteUserDeletesPreferences();
+		_testDeleteUserDeletesRememberMeTokens();
+		_testDeleteUserDeletesTickets();
 	}
 
 	@Test
@@ -2215,6 +2152,31 @@ public class UserLocalServiceTest {
 		finally {
 			ServiceContextThreadLocal.popServiceContext();
 		}
+
+		try (SafeCloseable safeCloseable =
+				PropsValuesTestUtil.swapWithSafeCloseable(
+					"FIPS_ENABLED", true)) {
+
+			String newPassword = RandomTestUtil.randomString(13);
+			long userId = user.getUserId();
+
+			Assert.assertThrows(
+				UserPasswordException.MustBeLonger.class,
+				() -> _userLocalService.updatePassword(
+					userId, newPassword, newPassword, false, false));
+			Assert.assertThrows(
+				UserPasswordException.MustBeLonger.class,
+				() -> _userLocalService.updatePassword(
+					userId, newPassword, newPassword, false, true));
+			Assert.assertThrows(
+				UserPasswordException.MustNotBeNull.class,
+				() -> _userLocalService.updatePassword(
+					userId, null, null, false, false));
+		}
+
+		User curUser = _userLocalService.getUser(user.getUserId());
+
+		Assert.assertEquals(user.getPassword(), curUser.getPassword());
 	}
 
 	@Test
@@ -2976,6 +2938,149 @@ public class UserLocalServiceTest {
 		}
 	}
 
+	private void
+			_testAuthenticateByEmailAddressWithOutdatedPasswordsEncryptionAlgorithmInFIPSMode(
+				boolean expectedPasswordReset,
+				String expectedPasswordsEncryptionAlgorithm, String password)
+		throws Exception {
+
+		User user = UserTestUtil.addUser();
+
+		try (AutoCloseable autoCloseable =
+				ReflectionTestUtil.setFieldValueWithAutoCloseable(
+					PasswordEncryptorUtil.class,
+					"_PASSWORDS_ENCRYPTION_ALGORITHM",
+					"PBKDF2WITHHMACSHA1/160/1300000")) {
+
+			user = _userLocalService.updatePassword(
+				user.getUserId(), password, password, false, true);
+		}
+
+		String passwordsEncryptionAlgorithm =
+			"PBKDF2WITHHMACSHA256/256/1300000";
+
+		try (AutoCloseable autoCloseable1 =
+				PropsValuesTestUtil.swapWithSafeCloseable("FIPS_ENABLED", true);
+			AutoCloseable autoCloseable2 =
+				ReflectionTestUtil.setFieldValueWithAutoCloseable(
+					PasswordEncryptorUtil.class,
+					"_PASSWORDS_ENCRYPTION_ALGORITHM",
+					passwordsEncryptionAlgorithm);
+			AutoCloseable autoCloseable3 =
+				ReflectionTestUtil.setFieldValueWithAutoCloseable(
+					UserLocalServiceImpl.class,
+					"_PASSWORDS_ENCRYPTION_ALGORITHM",
+					passwordsEncryptionAlgorithm)) {
+
+			Assert.assertEquals(
+				Authenticator.SUCCESS,
+				_userLocalService.authenticateByEmailAddress(
+					user.getCompanyId(), user.getDisplayEmailAddress(),
+					password, null, null, null));
+
+			user = _userLocalService.getUser(user.getUserId());
+
+			Assert.assertEquals(
+				expectedPasswordsEncryptionAlgorithm,
+				PasswordEncryptorUtil.getEncryptedPasswordAlgorithmSettings(
+					user.getPassword()));
+			Assert.assertEquals(expectedPasswordReset, user.isPasswordReset());
+		}
+	}
+
+	private void _testDeleteUser() throws Exception {
+		User user = UserTestUtil.addUser();
+		UserGroup userGroup = UserGroupTestUtil.addUserGroup();
+
+		_userLocalService.addUserGroupUser(userGroup.getUserGroupId(), user);
+
+		_assertSearchUserGroup(true, user, userGroup);
+
+		_userLocalService.deleteUser(user);
+
+		_assertSearchUserGroup(false, user, userGroup);
+	}
+
+	private void _testDeleteUserAddsSystemEvent() throws Exception {
+		User user = UserTestUtil.addUser();
+
+		_userLocalService.deleteUser(user);
+
+		List<SystemEvent> systemEvents =
+			_systemEventLocalService.getSystemEvents(
+				0, _portal.getClassNameId(user.getModelClassName()),
+				user.getPrimaryKey(), SystemEventConstants.TYPE_DELETE);
+
+		SystemEvent systemEvent = systemEvents.get(0);
+
+		Assert.assertEquals(
+			user.getExternalReferenceCode(),
+			systemEvent.getClassExternalReferenceCode());
+	}
+
+	private void _testDeleteUserDeletesNotificationEvents() throws Exception {
+		User user = UserTestUtil.addUser();
+
+		_userNotificationEventLocalService.sendUserNotificationEvents(
+			user.getUserId(), null, 0, false, false,
+			JSONFactoryUtil.createJSONObject());
+
+		_userLocalService.deleteUser(user);
+
+		int count =
+			_userNotificationEventLocalService.getUserNotificationEventsCount(
+				user.getUserId());
+
+		Assert.assertEquals(0, count);
+	}
+
+	private void _testDeleteUserDeletesPreferences() throws Exception {
+		User user = UserTestUtil.addUser();
+
+		_portalPreferencesLocalService.addPortalPreferences(
+			user.getUserId(), PortletKeys.PREFS_OWNER_TYPE_USER, null);
+		_portletPreferencesLocalService.addPortletPreferences(
+			user.getCompanyId(), user.getUserId(),
+			PortletKeys.PREFS_OWNER_TYPE_USER, 0, null, null, null);
+
+		_userLocalService.deleteUser(user);
+
+		Assert.assertNull(
+			_portalPreferencesLocalService.fetchPortalPreferences(
+				user.getUserId(), PortletKeys.PREFS_OWNER_TYPE_USER));
+		Assert.assertNull(
+			_portletPreferencesLocalService.fetchPortletPreferences(
+				user.getUserId(), PortletKeys.PREFS_OWNER_TYPE_USER, 0, null));
+	}
+
+	private void _testDeleteUserDeletesRememberMeTokens() throws Exception {
+		User user = UserTestUtil.addUser();
+
+		RememberMeToken rememberMeToken =
+			_rememberMeTokenLocalService.addRememberMeToken(
+				user.getCompanyId(), user.getUserId(),
+				RandomTestUtil.nextDate(),
+				value -> {
+				});
+
+		_userLocalService.deleteUser(user);
+
+		Assert.assertNull(
+			_rememberMeTokenLocalService.fetchRememberMeToken(
+				rememberMeToken.getRememberMeTokenId()));
+	}
+
+	private void _testDeleteUserDeletesTickets() throws Exception {
+		User user = UserTestUtil.addUser();
+
+		_userLocalService.deleteUser(user);
+
+		List<Ticket> tickets = _ticketLocalService.getTickets(
+			user.getCompanyId(), User.class.getName(), user.getUserId());
+
+		Assert.assertEquals(tickets.toString(), 0, tickets.size());
+	}
+
 	private void _testSearchBySocialWithGroup() throws Exception {
 		Group group = GroupTestUtil.addGroup();
 		User user = UserTestUtil.addUser();
@@ -3165,7 +3270,7 @@ public class UserLocalServiceTest {
 			if (expired) {
 				try {
 					ticket.setExpirationDate(
-						new Date(System.currentTimeMillis()));
+						new Date(System.currentTimeMillis() - 5000));
 
 					ticket = _ticketLocalService.updateTicket(ticket);
 
@@ -3331,6 +3436,9 @@ public class UserLocalServiceTest {
 
 	@Inject
 	private PortletPreferencesLocalService _portletPreferencesLocalService;
+
+	@Inject
+	private RememberMeTokenLocalService _rememberMeTokenLocalService;
 
 	@Inject
 	private RoleLocalService _roleLocalService;

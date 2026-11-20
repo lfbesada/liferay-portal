@@ -8,6 +8,7 @@ package com.liferay.site.internal.configuration.manager;
 import com.liferay.configuration.admin.util.ConfigurationFilterStringUtil;
 import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.ModelListener;
 import com.liferay.portal.kernel.model.Role;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -16,14 +17,17 @@ import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.HashMapDictionaryBuilder;
 import com.liferay.site.configuration.MenuAccessConfiguration;
 import com.liferay.site.configuration.manager.MenuAccessConfigurationManager;
+import com.liferay.site.internal.model.listener.RoleModelListener;
 
-import java.util.ArrayList;
 import java.util.Dictionary;
-import java.util.List;
 
+import org.osgi.framework.BundleContext;
+import org.osgi.framework.ServiceRegistration;
 import org.osgi.service.cm.Configuration;
 import org.osgi.service.cm.ConfigurationAdmin;
+import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.Deactivate;
 import org.osgi.service.component.annotations.Reference;
 
 /**
@@ -44,31 +48,34 @@ public class MenuAccessConfigurationManagerImpl
 			return;
 		}
 
-		String roleId = String.valueOf(role.getRoleId());
-
 		for (Configuration configuration : configurations) {
 			Dictionary<String, Object> properties =
 				configuration.getProperties();
 
-			String[] accessToControlMenuRoleIds = (String[])properties.get(
-				"accessToControlMenuRoleIds");
+			String[] accessToControlMenuRoleExternalReferenceCodes =
+				(String[])properties.get(
+					"accessToControlMenuRoleExternalReferenceCodes");
 
-			if (!ArrayUtil.contains(accessToControlMenuRoleIds, roleId)) {
+			if (!ArrayUtil.contains(
+					accessToControlMenuRoleExternalReferenceCodes,
+					role.getExternalReferenceCode())) {
+
 				continue;
 			}
 
-			accessToControlMenuRoleIds = ArrayUtil.remove(
-				accessToControlMenuRoleIds, roleId);
-
 			properties.put(
-				"accessToControlMenuRoleIds", accessToControlMenuRoleIds);
+				"accessToControlMenuRoleExternalReferenceCodes",
+				ArrayUtil.remove(
+					accessToControlMenuRoleExternalReferenceCodes,
+					role.getExternalReferenceCode()));
 
 			configuration.update(properties);
 		}
 	}
 
 	@Override
-	public String[] getAccessToControlMenuRoleIds(long groupId)
+	public String[] getAccessToControlMenuRoleExternalReferenceCodes(
+			long groupId)
 		throws Exception {
 
 		Group group = _groupLocalService.getGroup(groupId);
@@ -77,7 +84,8 @@ public class MenuAccessConfigurationManagerImpl
 			_configurationProvider.getGroupConfiguration(
 				MenuAccessConfiguration.class, group.getCompanyId(), groupId);
 
-		return menuAccessConfiguration.accessToControlMenuRoleIds();
+		return menuAccessConfiguration.
+			accessToControlMenuRoleExternalReferenceCodes();
 	}
 
 	@Override
@@ -93,38 +101,85 @@ public class MenuAccessConfigurationManagerImpl
 
 	@Override
 	public void updateMenuAccessConfiguration(
-			long groupId, String[] accessToControlMenuRoleIds,
+			long groupId,
+			String[] accessToControlMenuRoleExternalReferenceCodes,
 			boolean showControlMenuByRole)
 		throws Exception {
 
 		Group group = _groupLocalService.getGroup(groupId);
 
-		if (accessToControlMenuRoleIds == null) {
-			List<String> accessToControlMenuRoleIdsList = new ArrayList<>();
-
+		if (accessToControlMenuRoleExternalReferenceCodes == null) {
 			Role administratorRole = _roleLocalService.getRole(
 				group.getCompanyId(), RoleConstants.ADMINISTRATOR);
-
-			accessToControlMenuRoleIdsList.add(
-				String.valueOf(administratorRole.getRoleId()));
-
 			Role siteAdministratorRole = _roleLocalService.getRole(
 				group.getCompanyId(), RoleConstants.SITE_ADMINISTRATOR);
 
-			accessToControlMenuRoleIdsList.add(
-				String.valueOf(siteAdministratorRole.getRoleId()));
-
-			accessToControlMenuRoleIds = ArrayUtil.toStringArray(
-				accessToControlMenuRoleIdsList);
+			accessToControlMenuRoleExternalReferenceCodes = new String[] {
+				administratorRole.getExternalReferenceCode(),
+				siteAdministratorRole.getExternalReferenceCode()
+			};
 		}
 
 		_configurationProvider.saveGroupConfiguration(
 			MenuAccessConfiguration.class, group.getCompanyId(), groupId,
 			HashMapDictionaryBuilder.<String, Object>put(
-				"accessToControlMenuRoleIds", accessToControlMenuRoleIds
+				"accessToControlMenuRoleExternalReferenceCodes",
+				accessToControlMenuRoleExternalReferenceCodes
 			).put(
 				"showControlMenuByRole", showControlMenuByRole
 			).build());
+	}
+
+	@Override
+	public void updateRoleAccessToControlMenu(Role originalRole, Role role)
+		throws Exception {
+
+		Configuration[] configurations = _configurationAdmin.listConfigurations(
+			ConfigurationFilterStringUtil.getGroupScopedFilterString(
+				role.getCompanyId(), null,
+				MenuAccessConfiguration.class.getName(), null));
+
+		if (configurations == null) {
+			return;
+		}
+
+		for (Configuration configuration : configurations) {
+			Dictionary<String, Object> properties =
+				configuration.getProperties();
+
+			String[] accessToControlMenuRoleExternalReferenceCodes =
+				(String[])properties.get(
+					"accessToControlMenuRoleExternalReferenceCodes");
+
+			if (!ArrayUtil.contains(
+					accessToControlMenuRoleExternalReferenceCodes,
+					originalRole.getExternalReferenceCode())) {
+
+				continue;
+			}
+
+			ArrayUtil.replace(
+				accessToControlMenuRoleExternalReferenceCodes,
+				originalRole.getExternalReferenceCode(),
+				role.getExternalReferenceCode());
+
+			properties.put(
+				"accessToControlMenuRoleExternalReferenceCodes",
+				accessToControlMenuRoleExternalReferenceCodes);
+
+			configuration.update(properties);
+		}
+	}
+
+	@Activate
+	protected void activate(BundleContext bundleContext) {
+		_serviceRegistration = bundleContext.registerService(
+			ModelListener.class, new RoleModelListener(this), null);
+	}
+
+	@Deactivate
+	protected void deactivate() {
+		_serviceRegistration.unregister();
 	}
 
 	@Reference
@@ -138,5 +193,7 @@ public class MenuAccessConfigurationManagerImpl
 
 	@Reference
 	private RoleLocalService _roleLocalService;
+
+	private ServiceRegistration<?> _serviceRegistration;
 
 }

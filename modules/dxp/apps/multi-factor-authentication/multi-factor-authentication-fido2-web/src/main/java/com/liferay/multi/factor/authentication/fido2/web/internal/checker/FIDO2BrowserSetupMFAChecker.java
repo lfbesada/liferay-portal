@@ -13,27 +13,31 @@ import com.fasterxml.jackson.datatype.jdk8.Jdk8Module;
 
 import com.liferay.multi.factor.authentication.fido2.credential.model.MFAFIDO2CredentialEntry;
 import com.liferay.multi.factor.authentication.fido2.credential.service.MFAFIDO2CredentialEntryLocalService;
-import com.liferay.multi.factor.authentication.fido2.web.internal.audit.MFAFIDO2AuditMessageBuilder;
 import com.liferay.multi.factor.authentication.fido2.web.internal.configuration.MFAFIDO2Configuration;
 import com.liferay.multi.factor.authentication.fido2.web.internal.constants.MFAFIDO2WebKeys;
 import com.liferay.multi.factor.authentication.fido2.web.internal.util.ConvertUtil;
+import com.liferay.multi.factor.authentication.fido2.web.internal.util.MFAFIDO2AuditMessageUtil;
 import com.liferay.multi.factor.authentication.fido2.web.internal.yubico.webauthn.MFAFIDO2CredentialRepository;
 import com.liferay.multi.factor.authentication.spi.checker.browser.BrowserMFAChecker;
 import com.liferay.multi.factor.authentication.spi.checker.setup.SetupMFAChecker;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.kernel.audit.AuditRouter;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.User;
-import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.security.auth.CompanyThreadLocal;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
 import com.liferay.portal.kernel.service.UserLocalService;
+import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.GetterUtil;
 import com.liferay.portal.kernel.util.HashMapDictionary;
 import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.Portal;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.SetUtil;
+import com.liferay.portal.kernel.util.WebKeys;
 
 import com.yubico.webauthn.AssertionRequest;
 import com.yubico.webauthn.AssertionResult;
@@ -124,6 +128,10 @@ public class FIDO2BrowserSetupMFAChecker
 			_mfaFIDO2CredentialEntryLocalService.
 				getMFAFIDO2CredentialEntriesByUserId(userId);
 
+		httpServletRequest.setAttribute(
+			MFAFIDO2WebKeys.MFA_FIDO2_CREDENTIAL_ENTRIES,
+			mfaFIDO2CredentialEntries);
+
 		if (mfaFIDO2CredentialEntries.size() <
 				_mfaFIDO2Configuration.allowedCredentialsPerUser()) {
 
@@ -141,6 +149,24 @@ public class FIDO2BrowserSetupMFAChecker
 			httpSession.setAttribute(
 				MFAFIDO2WebKeys.MFA_FIDO2_PKCC_OPTIONS, mfaFIDO2PKCCOptions);
 		}
+
+		ThemeDisplay themeDisplay =
+			(ThemeDisplay)httpServletRequest.getAttribute(
+				WebKeys.THEME_DISPLAY);
+
+		boolean removable = false;
+
+		if ((themeDisplay != null) &&
+			((userId == themeDisplay.getUserId()) ||
+			 _userModelResourcePermission.contains(
+				 themeDisplay.getPermissionChecker(), userId,
+				 ActionKeys.IMPERSONATE))) {
+
+			removable = true;
+		}
+
+		httpServletRequest.setAttribute(
+			MFAFIDO2WebKeys.MFA_FIDO2_REMOVABLE, removable);
 
 		RequestDispatcher requestDispatcher =
 			_servletContext.getRequestDispatcher(
@@ -185,16 +211,9 @@ public class FIDO2BrowserSetupMFAChecker
 			_mfaFIDO2CredentialEntryLocalService.deleteMFAFIDO2CredentialEntry(
 				mfaFIDO2CredentialEntry);
 
-			MFAFIDO2AuditMessageBuilder mfaFIDO2AuditMessageBuilder =
-				_mfaFIDO2AuditMessageBuilderSnapshot.get();
-
-			if (mfaFIDO2AuditMessageBuilder == null) {
-				continue;
-			}
-
-			mfaFIDO2AuditMessageBuilder.routeAuditMessage(
-				mfaFIDO2AuditMessageBuilder.buildSetupRemovedAuditMessage(
-					userId));
+			MFAFIDO2AuditMessageUtil.routeAuditMessage(
+				MFAFIDO2AuditMessageUtil.buildSetupRemovedAuditMessage(userId),
+				_auditRouter);
 		}
 	}
 
@@ -217,14 +236,9 @@ public class FIDO2BrowserSetupMFAChecker
 				userId, credentialIdByteArray.getBase64(), 0,
 				publicKeyCOSEByteArray.getBase64());
 
-			MFAFIDO2AuditMessageBuilder mfaFIDO2AuditMessageBuilder =
-				_mfaFIDO2AuditMessageBuilderSnapshot.get();
-
-			if (mfaFIDO2AuditMessageBuilder != null) {
-				mfaFIDO2AuditMessageBuilder.routeAuditMessage(
-					mfaFIDO2AuditMessageBuilder.buildSetupAddedAuditMessage(
-						userId));
-			}
+			MFAFIDO2AuditMessageUtil.routeAuditMessage(
+				MFAFIDO2AuditMessageUtil.buildSetupAddedAuditMessage(userId),
+				_auditRouter);
 
 			return true;
 		}
@@ -254,16 +268,12 @@ public class FIDO2BrowserSetupMFAChecker
 						userId);
 			}
 
-			MFAFIDO2AuditMessageBuilder mfaFIDO2AuditMessageBuilder =
-				_mfaFIDO2AuditMessageBuilderSnapshot.get();
-
-			if (mfaFIDO2AuditMessageBuilder != null) {
-				mfaFIDO2AuditMessageBuilder.routeAuditMessage(
-					mfaFIDO2AuditMessageBuilder.
-						buildNonexistentUserVerificationFailureAuditMessage(
-							CompanyThreadLocal.getCompanyId(), userId,
-							_getClassName()));
-			}
+			MFAFIDO2AuditMessageUtil.routeAuditMessage(
+				MFAFIDO2AuditMessageUtil.
+					buildNonexistentUserVerificationFailureAuditMessage(
+						CompanyThreadLocal.getCompanyId(), userId,
+						_getClassName()),
+				_auditRouter);
 
 			return false;
 		}
@@ -275,16 +285,12 @@ public class FIDO2BrowserSetupMFAChecker
 						" with incomplete configuration");
 			}
 
-			MFAFIDO2AuditMessageBuilder mfaFIDO2AuditMessageBuilder =
-				_mfaFIDO2AuditMessageBuilderSnapshot.get();
-
-			if (mfaFIDO2AuditMessageBuilder != null) {
-				mfaFIDO2AuditMessageBuilder.routeAuditMessage(
-					mfaFIDO2AuditMessageBuilder.
-						buildUnconfiguredUserVerificationFailureAuditMessage(
-							CompanyThreadLocal.getCompanyId(), user,
-							_getClassName()));
-			}
+			MFAFIDO2AuditMessageUtil.routeAuditMessage(
+				MFAFIDO2AuditMessageUtil.
+					buildUnconfiguredUserVerificationFailureAuditMessage(
+						CompanyThreadLocal.getCompanyId(), user,
+						_getClassName()),
+				_auditRouter);
 
 			return false;
 		}
@@ -299,16 +305,12 @@ public class FIDO2BrowserSetupMFAChecker
 				_mfaFIDO2CredentialEntryLocalService.updateAttempts(
 					userId, credentialIdByteArray.getBase64(), 0);
 
-				MFAFIDO2AuditMessageBuilder mfaFIDO2AuditMessageBuilder =
-					_mfaFIDO2AuditMessageBuilderSnapshot.get();
-
-				if (mfaFIDO2AuditMessageBuilder != null) {
-					mfaFIDO2AuditMessageBuilder.routeAuditMessage(
-						mfaFIDO2AuditMessageBuilder.
-							buildVerificationFailureAuditMessage(
-								user, _getClassName(),
-								"Incorrect FIDO2 verification"));
-				}
+				MFAFIDO2AuditMessageUtil.routeAuditMessage(
+					MFAFIDO2AuditMessageUtil.
+						buildVerificationFailureAuditMessage(
+							user, _getClassName(),
+							"Incorrect FIDO2 verification"),
+					_auditRouter);
 
 				return false;
 			}
@@ -336,14 +338,10 @@ public class FIDO2BrowserSetupMFAChecker
 		httpSession.setAttribute(
 			MFAFIDO2WebKeys.MFA_FIDO2_VALIDATED_USER_ID, userId);
 
-		MFAFIDO2AuditMessageBuilder mfaFIDO2AuditMessageBuilder =
-			_mfaFIDO2AuditMessageBuilderSnapshot.get();
-
-		if (mfaFIDO2AuditMessageBuilder != null) {
-			mfaFIDO2AuditMessageBuilder.routeAuditMessage(
-				mfaFIDO2AuditMessageBuilder.buildVerifiedAuditMessage(
-					user, _getClassName()));
-		}
+		MFAFIDO2AuditMessageUtil.routeAuditMessage(
+			MFAFIDO2AuditMessageUtil.buildVerifiedAuditMessage(
+				user, _getClassName()),
+			_auditRouter);
 
 		return true;
 	}
@@ -534,29 +532,21 @@ public class FIDO2BrowserSetupMFAChecker
 						userId);
 			}
 
-			MFAFIDO2AuditMessageBuilder mfaFIDO2AuditMessageBuilder =
-				_mfaFIDO2AuditMessageBuilderSnapshot.get();
-
-			if (mfaFIDO2AuditMessageBuilder != null) {
-				mfaFIDO2AuditMessageBuilder.routeAuditMessage(
-					mfaFIDO2AuditMessageBuilder.
-						buildNonexistentUserVerificationFailureAuditMessage(
-							CompanyThreadLocal.getCompanyId(), userId,
-							_getClassName()));
-			}
+			MFAFIDO2AuditMessageUtil.routeAuditMessage(
+				MFAFIDO2AuditMessageUtil.
+					buildNonexistentUserVerificationFailureAuditMessage(
+						CompanyThreadLocal.getCompanyId(), userId,
+						_getClassName()),
+				_auditRouter);
 
 			return false;
 		}
 
 		if (httpSession == null) {
-			MFAFIDO2AuditMessageBuilder mfaFIDO2AuditMessageBuilder =
-				_mfaFIDO2AuditMessageBuilderSnapshot.get();
-
-			if (mfaFIDO2AuditMessageBuilder != null) {
-				mfaFIDO2AuditMessageBuilder.routeAuditMessage(
-					mfaFIDO2AuditMessageBuilder.buildNotVerifiedAuditMessage(
-						user, _getClassName(), "Empty session"));
-			}
+			MFAFIDO2AuditMessageUtil.routeAuditMessage(
+				MFAFIDO2AuditMessageUtil.buildNotVerifiedAuditMessage(
+					user, _getClassName(), "Empty session"),
+				_auditRouter);
 
 			return false;
 		}
@@ -570,10 +560,8 @@ public class FIDO2BrowserSetupMFAChecker
 	private static final Log _log = LogFactoryUtil.getLog(
 		FIDO2BrowserSetupMFAChecker.class);
 
-	private static final Snapshot<MFAFIDO2AuditMessageBuilder>
-		_mfaFIDO2AuditMessageBuilderSnapshot = new Snapshot<>(
-			FIDO2BrowserSetupMFAChecker.class,
-			MFAFIDO2AuditMessageBuilder.class);
+	@Reference
+	private AuditRouter _auditRouter;
 
 	private MFAFIDO2Configuration _mfaFIDO2Configuration;
 
@@ -596,5 +584,10 @@ public class FIDO2BrowserSetupMFAChecker
 
 	@Reference
 	private UserLocalService _userLocalService;
+
+	@Reference(
+		target = "(model.class.name=com.liferay.portal.kernel.model.User)"
+	)
+	private ModelResourcePermission<User> _userModelResourcePermission;
 
 }

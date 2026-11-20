@@ -18,10 +18,13 @@ import com.liferay.petra.string.CharPool;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.RoleConstants;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.SetUtil;
 import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Validator;
+
+import jakarta.annotation.security.RolesAllowed;
 
 import jakarta.ws.rs.DefaultValue;
 import jakarta.ws.rs.GET;
@@ -57,10 +60,12 @@ public class ReportFaroController extends BaseFaroController {
 
 	@GET
 	@Path("/export/csv/{type}")
+	@RolesAllowed(RoleConstants.SITE_MEMBER)
 	public Object getCSV(
 			@QueryParam("assetId") String assetId,
 			@QueryParam("assetTitle") String assetTitle,
 			@QueryParam("assetType") String assetType,
+			@QueryParam("campaignId") String campaignId,
 			@QueryParam("channelId") String channelId,
 			@QueryParam("filter") String filterString,
 			@QueryParam("fromDate") String fromDateString,
@@ -77,9 +82,9 @@ public class ReportFaroController extends BaseFaroController {
 		throws Exception {
 
 		Object result = _buildQueryParameters(
-			assetId, assetType, channelId, filterString, fromDateString,
-			individualId, objectType, orderByFieldsFaroParam, query, rangeKey,
-			segmentId, toDateString, type);
+			assetId, assetType, campaignId, channelId, filterString,
+			fromDateString, individualId, objectType, orderByFieldsFaroParam,
+			query, rangeKey, segmentId, toDateString, type);
 
 		Map<String, List<String>> queryParameters;
 
@@ -144,9 +149,11 @@ public class ReportFaroController extends BaseFaroController {
 
 	@GET
 	@Path("/export/csv/{type}/count")
+	@RolesAllowed(RoleConstants.SITE_MEMBER)
 	public Object getCSVCount(
 			@QueryParam("assetId") String assetId,
 			@QueryParam("assetType") String assetType,
+			@QueryParam("campaignId") String campaignId,
 			@QueryParam("channelId") String channelId,
 			@QueryParam("filter") String filterString,
 			@QueryParam("fromDate") String fromDateString,
@@ -161,9 +168,9 @@ public class ReportFaroController extends BaseFaroController {
 		throws Exception {
 
 		Object result = _buildQueryParameters(
-			assetId, assetType, channelId, filterString, fromDateString,
-			individualId, objectType, null, query, rangeKey, segmentId,
-			toDateString, type);
+			assetId, assetType, campaignId, channelId, filterString,
+			fromDateString, individualId, objectType, null, query, rangeKey,
+			segmentId, toDateString, type);
 
 		if (!(result instanceof Map<?, ?>)) {
 			return result;
@@ -179,10 +186,11 @@ public class ReportFaroController extends BaseFaroController {
 	}
 
 	private Object _buildQueryParameters(
-		String assetId, String assetType, String channelId, String filterString,
-		String fromDateString, String individualId, String objectType,
-		FaroParam<List<OrderByField>> orderByFieldsFaroParam, String query,
-		String rangeKey, String segmentId, String toDateString, String type) {
+		String assetId, String assetType, String campaignId, String channelId,
+		String filterString, String fromDateString, String individualId,
+		String objectType, FaroParam<List<OrderByField>> orderByFieldsFaroParam,
+		String query, String rangeKey, String segmentId, String toDateString,
+		String type) {
 
 		if (!_csvExportTypes.contains(type)) {
 			return _reportFaroControllerResponseFactory.create(
@@ -227,6 +235,13 @@ public class ReportFaroController extends BaseFaroController {
 							orderByField.getOrderBy();
 					})
 			);
+
+		if (StringUtil.equals(type, "individual") &&
+			Validator.isNotNull(campaignId)) {
+
+			hashMapWrapper.put(
+				"campaignId", Collections.singletonList(campaignId));
+		}
 
 		if (Validator.isNotNull(filterString)) {
 			hashMapWrapper.put(

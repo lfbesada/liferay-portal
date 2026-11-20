@@ -20,6 +20,7 @@ import formatPackageJSONFiles from './formatters/formatPackageJSONFiles.mjs';
 import formatPackageJSONForbidAlloyUI from './formatters/formatPackageJSONForbidAlloyUI.mjs';
 import formatPackageJSONForbidNestedWorkspaces from './formatters/formatPackageJSONForbidNestedWorkspaces.mjs';
 import formatPackageJSONTypesLocation from './formatters/formatPackageJSONTypesLocation.mjs';
+import formatPackageJSONTypesPackages from './formatters/formatPackageJSONTypesPackages.mjs';
 import formatPackageJSONVersionAlignment from './formatters/formatPackageJSONVersionAlignment.mjs';
 import formatSourceFiles from './formatters/formatSourceFiles.mjs';
 import formatTsconfigFiles from './formatters/formatTsconfigFiles.mjs';
@@ -46,10 +47,13 @@ export default async function formatPortal(check, files) {
 		checksPassed = false;
 	}
 
-	if (
-		(!files || !!files.find((file) => file.endsWith('/package.json'))) &&
-		!(await formatTsconfigFiles(check))
-	) {
+	// We always check tsconfig files, no matter which files changed, because
+	// the list of changed files never contains deleted files, and deleting the
+	// last TypeScript file of a project leaves its tsconfig file obsolete. The
+	// check is cheap enough, and otherwise the next unrelated change would be
+	// the one failing.
+
+	if (!(await formatTsconfigFiles(check))) {
 		checksPassed = false;
 	}
 
@@ -112,6 +116,10 @@ export default async function formatPortal(check, files) {
 		}
 
 		if (!(await formatPackageJSONVersionAlignment(packageJSONs))) {
+			checksPassed = false;
+		}
+
+		if (!(await formatPackageJSONTypesPackages(packageJSONs))) {
 			checksPassed = false;
 		}
 

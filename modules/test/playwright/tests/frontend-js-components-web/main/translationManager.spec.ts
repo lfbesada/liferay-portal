@@ -88,10 +88,18 @@ test(
 
 test(
 	'Assert translation manager dialog navigation',
-	{tag: '@LPD-47235'},
+	{tag: ['@LPD-47235', '@LPD-114956']},
 	async ({translationManagerPage}) => {
-		const {dialog, englishTriggerButton, manageButton} =
-			translationManagerPage;
+		const {
+			adminTriggerButton,
+			cancelButton,
+			dialog,
+			englishRow,
+			englishTriggerButton,
+			frenchRow,
+			manageButton,
+			manageMenuItem,
+		} = translationManagerPage;
 
 		await test.step('Assert manage button exists and opens dialog', async () => {
 			await clickAndExpectToBeVisible({
@@ -103,6 +111,26 @@ test(
 				target: dialog,
 				trigger: manageButton,
 			});
+		});
+
+		await test.step('Assert the status of each language in the React selector dialog', async () => {
+			await clickAndExpectToBeHidden({
+				target: dialog,
+				trigger: cancelButton,
+			});
+
+			await clickAndExpectToBeVisible({
+				target: manageMenuItem,
+				trigger: adminTriggerButton,
+			});
+
+			await clickAndExpectToBeVisible({
+				target: dialog,
+				trigger: manageMenuItem,
+			});
+
+			await expect(englishRow).toContainText('Default');
+			await expect(frenchRow).toContainText('Not Translated');
 		});
 	}
 );
@@ -194,7 +222,7 @@ test(
 			name: 'de-DE',
 		});
 
-		test.step('Add a new language', async () => {
+		await test.step('Add a new language', async () => {
 			await clickAndExpectToBeVisible({
 				target: newLanguageOption,
 				trigger: addButton,
@@ -203,21 +231,18 @@ test(
 			await newLanguageOption.click();
 		});
 
-		test.step('Assert the new language is added to the translation manager', async () => {
-			await clickAndExpectToBeVisible({
-				target: germanChoice,
-				trigger: newLanguageOption,
-			});
+		await test.step('Assert the new language is added to the translation manager', async () => {
+			await expect(
+				dialog.getByRole('row', {name: 'German (Germany)'})
+			).toBeVisible();
 
-			// await expect(doneButton).toBeVisible();
-
-			clickAndExpectToBeHidden({
+			await clickAndExpectToBeHidden({
 				target: dialog,
 				trigger: doneButton,
 			});
 		});
 
-		test.step('Assert the new language is listed as an option', async () => {
+		await test.step('Assert the new language is listed as an option', async () => {
 			await expect(englishTriggerButton).toBeVisible();
 
 			await clickAndExpectToBeVisible({

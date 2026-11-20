@@ -6,26 +6,46 @@
 import ClayLabel from '@clayui/label';
 import React from 'react';
 
+import confirmAndUnscheduleLaunchAction from '../actions/confirmAndUnscheduleLaunchAction';
 import {Launch, isPublished} from '../api/launches';
 import {
 	WORKFLOW_STATUS_DRAFT,
 	WORKFLOW_STATUS_SCHEDULED,
 } from '../components/WorkflowStatusLabel';
 import openNewLaunchModal from '../modals/openNewLaunchModal';
+import openScheduleLaunchModal from '../modals/openScheduleLaunchModal';
+import fillViewLaunchURL from '../util/fillViewLaunchURL';
+import {openSuccessToast} from '../util/toasts';
+
+import type {TimeZoneOption} from '../util/dateTime';
 
 interface CreationMenu {
 	primaryItems: Array<{[key: string]: unknown}>;
 }
 
+interface ItemsAction {
+	data?: {id?: string};
+	[key: string]: unknown;
+}
+
 interface Props {
-	additionalProps: {viewLaunchURL: string};
+	additionalProps: {
+		portletNamespace: string;
+		scheduleLaunchURL: string;
+		timeZoneId: string;
+		timeZones: TimeZoneOption[];
+		unscheduleLaunchURL: string;
+		viewLaunchURL: string;
+	};
 	creationMenu?: CreationMenu;
+	itemsActions?: ItemsAction[];
 	[key: string]: unknown;
 }
 
 export default function LaunchesFDSPropsTransformer({
 	additionalProps,
 	creationMenu,
+	itemsActions,
 	...props
 }: Props) {
 	return {
@@ -84,6 +104,65 @@ export default function LaunchesFDSPropsTransformer({
 					type: 'internal',
 				},
 			],
+		},
+		itemsActions: itemsActions?.map((action) => {
+			if (action.data?.id === 'schedule') {
+				return {
+					...action,
+					isVisible: (launch: Launch) =>
+						launch.status?.code === WORKFLOW_STATUS_DRAFT,
+				};
+			}
+
+			if (action.data?.id === 'unschedule') {
+				return {
+					...action,
+					isVisible: (launch: Launch) =>
+						launch.status?.code === WORKFLOW_STATUS_SCHEDULED,
+				};
+			}
+
+			return action;
+		}),
+		onActionDropdownItemClick({
+			action,
+			itemData,
+			loadData,
+		}: {
+			action: ItemsAction;
+			itemData: Launch;
+			loadData: () => void;
+		}) {
+			if (action.data?.id === 'schedule') {
+				openScheduleLaunchModal({
+					launchName: itemData.name,
+					onScheduled: () => {
+						loadData();
+
+						openSuccessToast(
+							Liferay.Language.get(
+								'your-request-completed-successfully'
+							)
+						);
+					},
+					portletNamespace: additionalProps.portletNamespace,
+					scheduleLaunchURL: fillViewLaunchURL(
+						additionalProps.scheduleLaunchURL,
+						itemData
+					),
+					timeZoneId: additionalProps.timeZoneId,
+					timeZones: additionalProps.timeZones,
+				});
+			}
+			else if (action.data?.id === 'unschedule') {
+				confirmAndUnscheduleLaunchAction({
+					loadData,
+					unscheduleLaunchURL: fillViewLaunchURL(
+						additionalProps.unscheduleLaunchURL,
+						itemData
+					),
+				});
+			}
 		},
 	};
 }

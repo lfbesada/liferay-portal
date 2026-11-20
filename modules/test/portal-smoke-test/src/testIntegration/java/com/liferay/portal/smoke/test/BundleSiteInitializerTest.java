@@ -138,6 +138,7 @@ import com.liferay.petra.io.StreamUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
+import com.liferay.portal.kernel.exception.NoSuchUserException;
 import com.liferay.portal.kernel.json.JSONArray;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -162,6 +163,7 @@ import com.liferay.portal.kernel.model.WorkflowDefinitionLink;
 import com.liferay.portal.kernel.model.role.RoleConstants;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
 import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.security.auth.PrincipalThreadLocal;
 import com.liferay.portal.kernel.security.permission.ActionKeys;
 import com.liferay.portal.kernel.service.CompanyLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
@@ -185,6 +187,7 @@ import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DataGuard;
 import com.liferay.portal.kernel.test.util.FeatureFlagTestUtil;
 import com.liferay.portal.kernel.test.util.GroupTestUtil;
+import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.ArrayUtil;
@@ -213,14 +216,12 @@ import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portal.vulcan.pagination.Page;
-import com.liferay.search.experiences.rest.dto.v1_0.GeneralConfiguration;
-import com.liferay.search.experiences.rest.dto.v1_0.SXPBlueprint;
-import com.liferay.search.experiences.rest.resource.v1_0.SXPBlueprintResource;
 import com.liferay.segments.model.SegmentsEntry;
 import com.liferay.segments.model.SegmentsExperience;
 import com.liferay.segments.service.SegmentsEntryLocalService;
 import com.liferay.segments.service.SegmentsExperienceLocalService;
 import com.liferay.site.configuration.manager.MenuAccessConfigurationManager;
+import com.liferay.site.exception.InitializationException;
 import com.liferay.site.initializer.SiteInitializer;
 import com.liferay.site.initializer.SiteInitializerFactory;
 import com.liferay.site.initializer.SiteInitializerRegistry;
@@ -578,6 +579,60 @@ public class BundleSiteInitializerTest {
 			Assert.assertEquals("CMS", publicTheme.getName());
 		}
 		finally {
+			FileUtil.deltree(tempDir);
+		}
+	}
+
+	@Test
+	public void testInitializeWithNonexistentUser() throws Exception {
+		String name = PrincipalThreadLocal.getName();
+
+		PrincipalThreadLocal.setName(RandomTestUtil.nextLong());
+
+		File tempDir = FileUtil.createTempFolder();
+
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"com.liferay.site.initializer.extender.internal." +
+					"BundleSiteInitializer",
+				LoggerTestUtil.ERROR)) {
+
+			File siteInitializerDir = new File(tempDir, "site-initializer");
+
+			siteInitializerDir.mkdirs();
+
+			SiteInitializer siteInitializer = _siteInitializerFactory.create(
+				siteInitializerDir, null);
+
+			try {
+				siteInitializer.initialize(_group.getGroupId());
+
+				Assert.fail();
+			}
+			catch (InitializationException initializationException) {
+				Throwable throwable = initializationException.getCause();
+
+				Assert.assertTrue(throwable instanceof NoSuchUserException);
+
+				List<LogEntry> logEntries = logCapture.getLogEntries();
+
+				Assert.assertEquals(
+					logEntries.toString(), 1, logEntries.size());
+
+				LogEntry logEntry = logEntries.get(0);
+
+				Assert.assertEquals(
+					throwable.getMessage(), logEntry.getMessage());
+				Assert.assertEquals(
+					LoggerTestUtil.ERROR, logEntry.getPriority());
+				Assert.assertSame(throwable, logEntry.getThrowable());
+			}
+
+			Assert.assertSame(
+				_serviceContext, ServiceContextThreadLocal.getServiceContext());
+		}
+		finally {
+			PrincipalThreadLocal.setName(name);
+
 			FileUtil.deltree(tempDir);
 		}
 	}
@@ -4108,102 +4163,6 @@ public class BundleSiteInitializerTest {
 			allowedServiceSignatures2.size());
 	}
 
-	private void _assertSXPBlueprint1() throws Exception {
-		SXPBlueprintResource.Builder sxpBlueprintResourceBuilder =
-			_sxpBlueprintResourceFactory.create();
-
-		SXPBlueprintResource sxpBlueprintResource =
-			sxpBlueprintResourceBuilder.user(
-				_serviceContext.fetchUser()
-			).build();
-
-		SXPBlueprint sxpBlueprint =
-			sxpBlueprintResource.getSXPBlueprintByExternalReferenceCode(
-				"TESTSXPBLUEPRINT1");
-
-		Assert.assertNotNull(sxpBlueprint);
-		_assertSearchableAssetTypes(
-			new String[] {"com.liferay.journal.model.JournalArticle"},
-			sxpBlueprint.getConfiguration());
-		Assert.assertEquals("Test SXBlueprint 1", sxpBlueprint.getTitle());
-
-		sxpBlueprint =
-			sxpBlueprintResource.getSXPBlueprintByExternalReferenceCode(
-				"TESTSXPBLUEPRINT2");
-
-		Assert.assertNotNull(sxpBlueprint);
-		Assert.assertFalse(
-			sxpBlueprint.toString(
-			).contains(
-				"[$TAXONOMY_CATEGORY_ID:/site-initializer/taxonomy-" +
-					"vocabularies/company/test-asset-vocabulary-1/test-asset-" +
-						"category-1.json$]"
-			));
-		_assertSearchableAssetTypes(
-			new String[] {
-				"com.liferay.document.library.kernel.model.DLFileEntry"
-			},
-			sxpBlueprint.getConfiguration());
-		Assert.assertEquals("Test SXBlueprint 2", sxpBlueprint.getTitle());
-	}
-
-	private void _assertSXPBlueprint2() throws Exception {
-		SXPBlueprintResource.Builder sxpBlueprintResourceBuilder =
-			_sxpBlueprintResourceFactory.create();
-
-		SXPBlueprintResource sxpBlueprintResource =
-			sxpBlueprintResourceBuilder.user(
-				_serviceContext.fetchUser()
-			).build();
-
-		SXPBlueprint sxpBlueprint =
-			sxpBlueprintResource.getSXPBlueprintByExternalReferenceCode(
-				"TESTSXPBLUEPRINT1");
-
-		Assert.assertNotNull(sxpBlueprint);
-		_assertSearchableAssetTypes(
-			new String[] {"com.liferay.journal.model.JournalArticle"},
-			sxpBlueprint.getConfiguration());
-		Assert.assertEquals("Test SXBlueprint 1", sxpBlueprint.getTitle());
-
-		sxpBlueprint =
-			sxpBlueprintResource.getSXPBlueprintByExternalReferenceCode(
-				"TESTSXPBLUEPRINT2");
-
-		Assert.assertNotNull(sxpBlueprint);
-		_assertSearchableAssetTypes(
-			new String[] {
-				"com.liferay.document.library.kernel.model.DLFileEntry",
-				"com.liferay.journal.model.JournalArticle"
-			},
-			sxpBlueprint.getConfiguration());
-		Assert.assertEquals(
-			"Test SXBlueprint 2 Update", sxpBlueprint.getTitle());
-
-		sxpBlueprint =
-			sxpBlueprintResource.getSXPBlueprintByExternalReferenceCode(
-				"TESTSXPBLUEPRINT3");
-
-		Assert.assertNotNull(sxpBlueprint);
-		_assertSearchableAssetTypes(
-			new String[] {"com.liferay.portal.kernel.model.User"},
-			sxpBlueprint.getConfiguration());
-		Assert.assertEquals("Test SXBlueprint 3", sxpBlueprint.getTitle());
-	}
-
-	private void _assertSearchableAssetTypes(
-		String[] className,
-		com.liferay.search.experiences.rest.dto.v1_0.Configuration
-			configuration) {
-
-		GeneralConfiguration generalConfiguration =
-			configuration.getGeneralConfiguration();
-
-		Assert.assertTrue(
-			ArrayUtil.containsAll(
-				generalConfiguration.getSearchableAssetTypes(), className));
-	}
-
 	private void _assertSegmentsEntries() {
 		Assert.assertEquals(
 			2,
@@ -4315,13 +4274,14 @@ public class BundleSiteInitializerTest {
 		Assert.assertEquals(GroupConstants.TYPE_SITE_OPEN, _group.getType());
 		Assert.assertTrue(_group.isManualMembership());
 
-		String[] accessToControlMenuRoleIds =
-			_menuAccessConfigurationManager.getAccessToControlMenuRoleIds(
-				_group.getGroupId());
+		String[] accessToControlMenuRoleExternalReferenceCodes =
+			_menuAccessConfigurationManager.
+				getAccessToControlMenuRoleExternalReferenceCodes(
+					_group.getGroupId());
 
 		Assert.assertEquals(
-			Arrays.toString(accessToControlMenuRoleIds), 2,
-			accessToControlMenuRoleIds.length);
+			Arrays.toString(accessToControlMenuRoleExternalReferenceCodes), 2,
+			accessToControlMenuRoleExternalReferenceCodes.length);
 
 		Assert.assertTrue(
 			_menuAccessConfigurationManager.isShowControlMenuByRole(
@@ -4335,13 +4295,14 @@ public class BundleSiteInitializerTest {
 		Assert.assertEquals(GroupConstants.TYPE_SITE_OPEN, _group.getType());
 		Assert.assertTrue(_group.isManualMembership());
 
-		String[] accessToControlMenuRoleIds =
-			_menuAccessConfigurationManager.getAccessToControlMenuRoleIds(
-				_group.getGroupId());
+		String[] accessToControlMenuRoleExternalReferenceCodes =
+			_menuAccessConfigurationManager.
+				getAccessToControlMenuRoleExternalReferenceCodes(
+					_group.getGroupId());
 
 		Assert.assertEquals(
-			Arrays.toString(accessToControlMenuRoleIds), 0,
-			accessToControlMenuRoleIds.length);
+			Arrays.toString(accessToControlMenuRoleExternalReferenceCodes), 0,
+			accessToControlMenuRoleExternalReferenceCodes.length);
 
 		Assert.assertTrue(
 			_menuAccessConfigurationManager.isShowControlMenuByRole(
@@ -5027,7 +4988,6 @@ public class BundleSiteInitializerTest {
 		_assertSiteSettings();
 		_assertSiteNavigationMenu1();
 		_assertStyleBookEntry();
-		_assertSXPBlueprint1();
 		_assertUserAccounts1();
 		_assertUserGroups();
 		_assertUserRoles();
@@ -5065,7 +5025,6 @@ public class BundleSiteInitializerTest {
 		_assertResourcePermission2();
 		_assertSiteConfiguration2();
 		_assertSiteNavigationMenu2();
-		_assertSXPBlueprint2();
 		_assertUserAccounts2();
 	}
 
@@ -5320,9 +5279,6 @@ public class BundleSiteInitializerTest {
 
 	@Inject
 	private StyleBookEntryLocalService _styleBookEntryLocalService;
-
-	@Inject
-	private SXPBlueprintResource.Factory _sxpBlueprintResourceFactory;
 
 	@Inject
 	private TemplateEntryLocalService _templateEntryLocalService;

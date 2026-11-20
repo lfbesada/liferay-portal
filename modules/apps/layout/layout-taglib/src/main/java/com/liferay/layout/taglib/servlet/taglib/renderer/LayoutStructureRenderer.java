@@ -738,8 +738,9 @@ public class LayoutStructureRenderer {
 			jspWriter.write("\"style=\"color: inherit; text-decoration: ");
 			jspWriter.write("none;\" target=\"");
 			jspWriter.write(
-				_renderLayoutStructureDisplayContext.getContainerLinkTarget(
-					containerStyledLayoutStructureItem));
+				HtmlUtil.escapeAttribute(
+					_renderLayoutStructureDisplayContext.getContainerLinkTarget(
+						containerStyledLayoutStructureItem)));
 			jspWriter.write("\">");
 		}
 

@@ -25,6 +25,7 @@ import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherSele
 import com.liferay.asset.publisher.web.internal.configuration.AssetPublisherWebConfiguration;
 import com.liferay.asset.publisher.web.internal.constants.AssetPublisherSelectionStyleConstants;
 import com.liferay.asset.util.AssetHelper;
+import com.liferay.frontend.js.audiences.DetectedAudienceEntryUtil;
 import com.liferay.info.pagination.InfoPage;
 import com.liferay.info.pagination.Pagination;
 import com.liferay.layout.page.template.model.LayoutPageTemplateEntry;
@@ -37,8 +38,10 @@ import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Layout;
@@ -372,16 +375,30 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 			portletPreferences);
 
 		if (assetListEntry != null) {
-			long[] segmentsEntryIds = _getSegmentsEntryIds(portletRequest);
-
 			String acClientUserId = GetterUtil.getString(
 				portletRequest.getAttribute(
 					SegmentsWebKeys.SEGMENTS_ANONYMOUS_USER_ID));
 
+			if (FeatureFlagManagerUtil.isEnabled(
+					assetListEntry.getCompanyId(), "LPD-109242") &&
+				!FeatureFlagManagerUtil.isEnabled(
+					CompanyConstants.SYSTEM, "LPD-78863")) {
+
+				InfoPage<AssetEntry> infoPage =
+					_assetListAssetEntryProvider.getAssetEntriesInfoPage(
+						null, assetListEntry, null,
+						DetectedAudienceEntryUtil.getAudienceEntryERCs(
+							_portal.getHttpServletRequest(portletRequest)),
+						QueryUtil.ALL_POS, StringPool.BLANK, QueryUtil.ALL_POS,
+						acClientUserId);
+
+				return (List<AssetEntry>)infoPage.getPageItems();
+			}
+
 			InfoPage<AssetEntry> infoPage =
 				_assetListAssetEntryProvider.getAssetEntriesInfoPage(
-					assetListEntry, segmentsEntryIds, null, null,
-					StringPool.BLANK, acClientUserId, QueryUtil.ALL_POS,
+					assetListEntry, _getSegmentsEntryIds(portletRequest), null,
+					null, StringPool.BLANK, acClientUserId, QueryUtil.ALL_POS,
 					QueryUtil.ALL_POS);
 
 			return (List<AssetEntry>)infoPage.getPageItems();
@@ -665,15 +682,13 @@ public class AssetPublisherHelperImpl implements AssetPublisherHelper {
 				if (Validator.isNotNull(viewURL) &&
 					!Objects.equals(viewURL, noSuchEntryRedirect)) {
 
-					String redirect = ParamUtil.getString(
-						liferayPortletRequest, "redirect");
+					String redirect = AssetPublisherUtil.getRedirect(
+						liferayPortletRequest);
 
-					if (Validator.isNull(redirect)) {
-						redirect = _portal.getCurrentURL(liferayPortletRequest);
+					if (Validator.isNotNull(redirect)) {
+						viewURL = HttpComponentsUtil.setParameter(
+							viewURL, "redirect", redirect);
 					}
-
-					viewURL = HttpComponentsUtil.setParameter(
-						viewURL, "redirect", redirect);
 				}
 			}
 			catch (Exception exception) {

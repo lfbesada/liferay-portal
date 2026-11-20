@@ -43,11 +43,12 @@ public class DLURLHelperUtil {
 
 	public static String getDownloadURL(
 		FileEntry fileEntry, FileVersion fileVersion, ThemeDisplay themeDisplay,
-		String queryString, boolean appendVersion, boolean absoluteURL) {
+		String queryString, boolean absoluteURL, boolean appendModifiedDate,
+		boolean appendVersion) {
 
 		return getDLURLHelper().getDownloadURL(
-			fileEntry, fileVersion, themeDisplay, queryString, appendVersion,
-			absoluteURL);
+			fileEntry, fileVersion, themeDisplay, queryString, absoluteURL,
+			appendModifiedDate, appendVersion);
 	}
 
 	public static String getFileEntryControlPanelLink(

@@ -62,6 +62,10 @@ function confirm_teardown {
 	fi
 }
 
+function get_database_engine {
+	jq --raw-output '.setup.database.engine // error("setup.database.engine is missing")' "${1}"
+}
+
 function get_tfstate_prefix {
 	jq --raw-output 'if .tfstate then "\(.deployment_name)/\(.region)/" else "" end' "${1}"
 }

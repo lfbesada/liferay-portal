@@ -6,6 +6,10 @@
 package com.liferay.osb.faro.web.internal.fragment.renderer;
 
 import com.liferay.fragment.renderer.FragmentRenderer;
+import com.liferay.frontend.taglib.clay.servlet.taglib.util.NavigationItemList;
+import com.liferay.osb.faro.web.internal.display.context.SitesNavigationDisplayContext;
+
+import jakarta.servlet.http.HttpServletRequest;
 
 import org.osgi.service.component.annotations.Component;
 
@@ -22,8 +26,19 @@ public class FaroSitesSectionFragmentRenderer
 	}
 
 	@Override
-	protected String getSection() {
-		return "sites";
+	protected String getModule() {
+		return "{Sites} from osb-faro-web/sites";
+	}
+
+	@Override
+	protected NavigationItemList getNavigationItems(
+			HttpServletRequest httpServletRequest)
+		throws Exception {
+
+		SitesNavigationDisplayContext sitesNavigationDisplayContext =
+			new SitesNavigationDisplayContext(httpServletRequest);
+
+		return sitesNavigationDisplayContext.getNavigationItems();
 	}
 
 }

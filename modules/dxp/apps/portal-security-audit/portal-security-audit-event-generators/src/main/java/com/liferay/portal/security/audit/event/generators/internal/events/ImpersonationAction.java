@@ -43,18 +43,14 @@ public class ImpersonationAction extends Action {
 		throws ActionException {
 
 		try {
-			doRun(httpServletRequest, httpServletResponse);
+			_run(httpServletRequest);
 		}
 		catch (Exception exception) {
 			throw new ActionException(exception);
 		}
 	}
 
-	protected void doRun(
-			HttpServletRequest httpServletRequest,
-			HttpServletResponse httpServletResponse)
-		throws Exception {
-
+	private void _run(HttpServletRequest httpServletRequest) throws Exception {
 		long plid = ParamUtil.getLong(httpServletRequest, "p_l_id");
 
 		if (plid <= 0) {
@@ -82,7 +78,7 @@ public class ImpersonationAction extends Action {
 				JSONObject additionalInfoJSONObject = null;
 
 				if (!FeatureFlagManagerUtil.isEnabled(
-						themeDisplay.getCompanyId(), "LPD-6417")) {
+						themeDisplay.getCompanyId(), "LPD-96921")) {
 
 					additionalInfoJSONObject = JSONUtil.put(
 						"userEmailAddress", user.getEmailAddress()

@@ -44,6 +44,13 @@ public class JournalArticleModelListener
 	public void onAfterUpdate(
 		JournalArticle originalJournalArticle, JournalArticle journalArticle) {
 
+		if ((originalJournalArticle != null) &&
+			!originalJournalArticle.isApproved() &&
+			!journalArticle.isApproved()) {
+
+			return;
+		}
+
 		clearCache(journalArticle);
 	}
 
@@ -55,8 +62,7 @@ public class JournalArticleModelListener
 		// Journal content
 
 		_journalContent.clearCache(
-			journalArticle.getGroupId(), journalArticle.getArticleId(),
-			journalArticle.getDDMTemplateKey());
+			journalArticle.getGroupId(), journalArticle.getArticleId());
 	}
 
 	@Reference

@@ -5,27 +5,15 @@ import {
 	FrontendDataSet,
 	pagination,
 } from 'shared/components/FrontendDataSet';
-import {omit, pickBy} from 'lodash';
-import {RangeKeyTimeRanges} from 'shared/util/constants';
 import {Routes, setUriQueryValues} from 'shared/util/router';
 import {useParams} from 'react-router-dom';
-import {useQueryRangeSelectors} from 'shared/hooks/useQueryRangeSelectors';
+import {useRangeQueryValues} from 'shared/hooks/useRangeQueryValues';
 
 const FDS_ID = 'account-individuals-dataset';
 
 const PREVIEW_FDS_ID = 'most-engaged-individuals-dataset';
 
 const PREVIEW_DELTA = 5;
-
-const SORTS = [
-	{
-		active: true,
-		default: true,
-		direction: 'desc' as const,
-		key: 'activitiesCount',
-		label: Liferay.Language.get('total-events'),
-	},
-];
 
 interface IIndividualItemData {
 	id: string | number;
@@ -76,31 +64,12 @@ const IndividualsDataSet: React.FC<IIndividualsDataSetProps> = ({
 		id: string;
 	}>();
 
-	const rangeSelectors = useQueryRangeSelectors();
-
-	/**
-	 * `rangeEnd` and `rangeStart` are only set for a custom range, so drop the
-	 * empty ones rather than sending them as `null`. The individual profile
-	 * link carries the same range so the selection survives the redirect.
-	 */
-
-	const rangeQueryValues = pickBy(rangeSelectors);
-
-	/**
-	 * `CUSTOM` is a client side sentinel that keeps the dropdown showing the
-	 * picked dates. The API takes an integer range key and answers anything
-	 * else with a 500, so a custom range travels as its bounds alone.
-	 */
-
-	const apiRangeQueryValues =
-		rangeQueryValues.rangeKey === RangeKeyTimeRanges.CustomRange
-			? omit(rangeQueryValues, 'rangeKey')
-			: rangeQueryValues;
+	const {apiRangeParams, routeRangeParams} = useRangeQueryValues();
 
 	return (
 		<FrontendDataSet
 			apiURL={setUriQueryValues(
-				{channelId, ...apiRangeQueryValues},
+				{channelId, ...apiRangeParams},
 				`/o/faro/contacts/${groupId}/account/${id}/individuals`
 			)}
 			customDataRenderers={{
@@ -118,7 +87,7 @@ const IndividualsDataSet: React.FC<IIndividualsDataSetProps> = ({
 						channelId,
 						groupId,
 						itemData,
-						queryValues: rangeQueryValues,
+						queryValues: routeRangeParams,
 						route: Routes.CONTACTS_INDIVIDUAL,
 						value,
 					}),
@@ -147,6 +116,7 @@ const IndividualsDataSet: React.FC<IIndividualsDataSetProps> = ({
 					/>
 				),
 			}}
+			defaultSort={{key: 'activitiesCount'}}
 			emptyState={{
 				description: Liferay.Language.get(
 					'no-activities-were-found-on-the-selected-period'
@@ -158,7 +128,6 @@ const IndividualsDataSet: React.FC<IIndividualsDataSetProps> = ({
 			showManagementBar={!preview}
 			showPagination={!preview}
 			showSearch={!preview}
-			sorts={SORTS}
 			views={[
 				{
 					contentRenderer: 'table',

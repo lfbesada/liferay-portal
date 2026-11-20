@@ -94,7 +94,7 @@ export default function DateFilter({
 	return (
 		<>
 			<ClayLayout.Row>
-				<ClayLayout.Col md={4}>
+				<ClayLayout.Col md="auto">
 					<FieldSelectWithOption
 						formGroupProps={{className: 'mb-0'}}
 						id="range"
@@ -126,21 +126,23 @@ export default function DateFilter({
 					/>
 				)}
 
-				<ClayLayout.Col className="align-items-end d-flex" md="auto">
-					{!(
-						editing.range === Range.All &&
-						appliedValue.range === Range.All
-					) && (
+				{!(
+					editing.range === Range.All &&
+					appliedValue.range === Range.All
+				) && (
+					<ClayLayout.Col
+						className="form-group-item-label-spacer pt-3 pt-sm-0"
+						md="auto"
+					>
 						<ClayButton
 							disabled={isDirty ? !validation.isValid : true}
 							displayType="secondary"
 							onClick={handleShowResults}
-							size="sm"
 						>
 							{Liferay.Language.get('show-results')}
 						</ClayButton>
-					)}
-				</ClayLayout.Col>
+					</ClayLayout.Col>
+				)}
 			</ClayLayout.Row>
 
 			{appliedValue.range !== Range.All && (

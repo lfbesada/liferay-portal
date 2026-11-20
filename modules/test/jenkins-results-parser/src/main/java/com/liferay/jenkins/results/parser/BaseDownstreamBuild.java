@@ -17,6 +17,7 @@ import com.liferay.jenkins.results.parser.failure.message.generator.LocalGitMirr
 import com.liferay.jenkins.results.parser.failure.message.generator.ModulesCompilationFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.PMDFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.PlaywrightCompilationFailureMessageGenerator;
+import com.liferay.jenkins.results.parser.failure.message.generator.PlaywrightSetupFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.PlaywrightTimeoutFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.PluginGitIdFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.RESTBuilderFailureMessageGenerator;
@@ -25,6 +26,7 @@ import com.liferay.jenkins.results.parser.failure.message.generator.ServiceBuild
 import com.liferay.jenkins.results.parser.failure.message.generator.SourceFormatFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.StartupFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.failure.message.generator.UpgradeFailureMessageGenerator;
+import com.liferay.jenkins.results.parser.failure.message.generator.ValidateAllowedFilesFailureMessageGenerator;
 import com.liferay.jenkins.results.parser.test.clazz.FunctionalTestClass;
 import com.liferay.jenkins.results.parser.test.clazz.JUnitTestClass;
 import com.liferay.jenkins.results.parser.test.clazz.TestClass;
@@ -33,6 +35,7 @@ import com.liferay.jenkins.results.parser.test.clazz.group.AxisTestClassGroup;
 import com.liferay.jenkins.results.parser.testray.TestrayCaseResult;
 import com.liferay.jenkins.results.parser.testray.TestrayCloudBucket;
 import com.liferay.jenkins.results.parser.testray.TestrayCloudObject;
+import com.liferay.jenkins.results.parser.testray.TestrayContext;
 import com.liferay.jenkins.results.parser.testray.TestrayFactory;
 
 import java.io.File;
@@ -125,6 +128,59 @@ public class BaseDownstreamBuild extends BaseBuild implements DownstreamBuild {
 		finally {
 			JenkinsResultsParserUtil.delete(buildReportFile);
 			JenkinsResultsParserUtil.delete(buildReportGzipFile);
+		}
+	}
+
+	@Override
+	public void generateTestrayCaseResultFile() {
+		synchronized (_testrayCaseResultURLLock) {
+			AxisTestClassGroup axisTestClassGroup = getAxisTestClassGroup();
+
+			if (axisTestClassGroup == null) {
+				return;
+			}
+
+			Job job = axisTestClassGroup.getJob();
+
+			if (job == null) {
+				return;
+			}
+
+			TestrayContext testrayContext = job.getTestrayContext();
+
+			if ((testrayContext == null) ||
+				testrayContext.hasTestrayCaseResultFile(axisTestClassGroup)) {
+
+				return;
+			}
+
+			TestrayCaseResult buildTestrayCaseResult =
+				TestrayFactory.newDownstreamBuildTestrayCaseResult(
+					this, testrayContext);
+
+			if (buildTestrayCaseResult == null) {
+				return;
+			}
+
+			buildTestrayCaseResult.cacheTestrayCaseResultURL();
+
+			_testrayCaseResultURL =
+				buildTestrayCaseResult.getTestrayCaseResultURL();
+
+			if (_testrayCaseResultURL == null) {
+				return;
+			}
+
+			TopLevelBuild topLevelBuild = getTopLevelBuild();
+
+			TopLevelBuildReport topLevelBuildReport =
+				topLevelBuild.getTopLevelBuildReport();
+
+			topLevelBuildReport.addDownstreamBuildReport(
+				getDownstreamBuildReport());
+
+			testrayContext.recordTestrayCaseResultFile(
+				axisTestClassGroup, buildTestrayCaseResult);
 		}
 	}
 
@@ -385,11 +441,22 @@ public class BaseDownstreamBuild extends BaseBuild implements DownstreamBuild {
 		}
 
 		if (result.equals("FAILURE")) {
-			Element failureMessageElement = getFailureMessageElement();
+			Element failureMessageElement = null;
 
-			if ((failureMessageElement != null) &&
-				!batchName.contains("playwright-js")) {
+			if (batchName.contains("playwright-js")) {
+				PlaywrightSetupFailureMessageGenerator
+					playwrightSetupFailureMessageGenerator =
+						new PlaywrightSetupFailureMessageGenerator();
 
+				failureMessageElement =
+					playwrightSetupFailureMessageGenerator.getMessageElement(
+						this);
+			}
+			else {
+				failureMessageElement = getFailureMessageElement();
+			}
+
+			if (failureMessageElement != null) {
 				messageElement.add(failureMessageElement);
 			}
 
@@ -794,7 +861,14 @@ public class BaseDownstreamBuild extends BaseBuild implements DownstreamBuild {
 		super.reset();
 
 		_downstreamBuildReport = null;
-		_testrayCaseResultURL = null;
+
+		if (_testrayCaseResultURLLock != null) {
+			synchronized (_testrayCaseResultURLLock) {
+				_testrayCaseResultURL = null;
+
+				_deleteTestrayCaseResultFile();
+			}
+		}
 
 		Build parentBuild = getParentBuild();
 
@@ -1259,6 +1333,37 @@ public class BaseDownstreamBuild extends BaseBuild implements DownstreamBuild {
 		return testResultGitHubElements;
 	}
 
+	private void _deleteTestrayCaseResultFile() {
+		AxisTestClassGroup axisTestClassGroup = getAxisTestClassGroup();
+
+		if (axisTestClassGroup == null) {
+			return;
+		}
+
+		Job job = axisTestClassGroup.getJob();
+
+		if (job == null) {
+			return;
+		}
+
+		TestrayContext testrayContext = job.getTestrayContext();
+
+		if (testrayContext == null) {
+			return;
+		}
+
+		try {
+			testrayContext.deleteTestrayCaseResultFile(axisTestClassGroup);
+		}
+		catch (RuntimeException runtimeException) {
+			System.out.println(
+				JenkinsResultsParserUtil.combine(
+					"Unable to delete the Testray case result file for ",
+					axisTestClassGroup.getAxisName(), ":\n",
+					runtimeException.getMessage()));
+		}
+	}
+
 	private String _getS3ObjectPath(File file) {
 		StringBuilder sb = new StringBuilder();
 
@@ -1285,11 +1390,22 @@ public class BaseDownstreamBuild extends BaseBuild implements DownstreamBuild {
 			workspace.getPrimaryWorkspaceGitRepository();
 
 		sb.append("/");
-		sb.append(workspaceGitRepository.getName());
-		sb.append("/");
-		sb.append(workspaceGitRepository.getBaseBranchSHA());
-		sb.append("/");
-		sb.append(workspaceGitRepository.getSenderBranchSHA());
+
+		if ((workspace instanceof PortalWorkspace) &&
+			(workspaceGitRepository instanceof PortalWorkspaceGitRepository)) {
+
+			PortalWorkspace portalWorkspace = (PortalWorkspace)workspace;
+
+			sb.append(portalWorkspace.getS3ObjectPathName());
+		}
+		else {
+			sb.append(workspaceGitRepository.getName());
+			sb.append("/");
+			sb.append(workspaceGitRepository.getBaseBranchSHA());
+			sb.append("/");
+			sb.append(workspaceGitRepository.getSenderBranchSHA());
+		}
+
 		sb.append("/");
 		sb.append(getBatchName());
 		sb.append("/");
@@ -1416,6 +1532,7 @@ public class BaseDownstreamBuild extends BaseBuild implements DownstreamBuild {
 		new SourceFormatFailureMessageGenerator(),
 		new StartupFailureMessageGenerator(),
 		new UpgradeFailureMessageGenerator(),
+		new ValidateAllowedFilesFailureMessageGenerator(),
 		//
 		new GradleTaskFailureMessageGenerator(),
 		new LocalGitMirrorFailureMessageGenerator(),

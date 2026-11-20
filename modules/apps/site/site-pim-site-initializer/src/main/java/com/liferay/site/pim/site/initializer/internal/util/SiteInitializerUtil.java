@@ -6,7 +6,6 @@
 package com.liferay.site.pim.site.initializer.internal.util;
 
 import com.liferay.portal.kernel.exception.PortalException;
-import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Role;
@@ -31,40 +30,19 @@ import java.util.List;
 public class SiteInitializerUtil {
 
 	public static void initialize(
-			long companyId, SiteInitializer siteInitializer)
+			long companyId, SiteInitializer cmsSiteInitializer,
+			SiteInitializer pimSiteInitializer)
 		throws PortalException {
 
-		if (!FeatureFlagManagerUtil.isEnabled(companyId, "LPD-96666")) {
-			return;
-		}
+		GroupLocalServiceUtil.checkSystemGroups(companyId);
 
-		Group group = GroupLocalServiceUtil.getGroup(
-			companyId, GroupConstants.CMS);
+		// The PIM site initializer appends to the pages and the primary
+		// navigation menu the CMS one creates, so run that one first.
 
-		String name = PrincipalThreadLocal.getName();
+		com.liferay.site.cms.site.initializer.util.SiteInitializerUtil.
+			initialize(companyId, cmsSiteInitializer);
 
-		PermissionChecker permissionChecker =
-			PermissionThreadLocal.getPermissionChecker();
-
-		try {
-			User user = _getUser(companyId);
-
-			PrincipalThreadLocal.setName(user.getUserId());
-
-			PermissionThreadLocal.setPermissionChecker(
-				PermissionCheckerFactoryUtil.create(user));
-
-			ServiceContextThreadLocal.pushServiceContext(new ServiceContext());
-
-			siteInitializer.initialize(group.getGroupId());
-		}
-		finally {
-			PrincipalThreadLocal.setName(name);
-
-			PermissionThreadLocal.setPermissionChecker(permissionChecker);
-
-			ServiceContextThreadLocal.popServiceContext();
-		}
+		_initialize(companyId, pimSiteInitializer);
 	}
 
 	private static User _getUser(long companyId) throws PortalException {
@@ -83,6 +61,39 @@ public class SiteInitializerUtil {
 		}
 
 		return adminUsers.get(0);
+	}
+
+	private static void _initialize(
+			long companyId, SiteInitializer siteInitializer)
+		throws PortalException {
+
+		Group group = GroupLocalServiceUtil.getGroup(
+			companyId, GroupConstants.CMS);
+
+		String name = PrincipalThreadLocal.getName();
+
+		PermissionChecker permissionChecker =
+			PermissionThreadLocal.getPermissionChecker();
+
+		User user = _getUser(companyId);
+
+		PermissionThreadLocal.setPermissionChecker(
+			PermissionCheckerFactoryUtil.create(user));
+
+		PrincipalThreadLocal.setName(user.getUserId());
+
+		ServiceContextThreadLocal.pushServiceContext(new ServiceContext());
+
+		try {
+			siteInitializer.initialize(group.getGroupId());
+		}
+		finally {
+			PrincipalThreadLocal.setName(name);
+
+			PermissionThreadLocal.setPermissionChecker(permissionChecker);
+
+			ServiceContextThreadLocal.popServiceContext();
+		}
 	}
 
 }

@@ -7,28 +7,40 @@ package com.liferay.headless.pim.resource.v1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.depot.model.DepotEntry;
+import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.headless.pim.client.dto.v1_0.LinkReference;
 import com.liferay.headless.pim.client.dto.v1_0.Status;
 import com.liferay.headless.pim.client.pagination.Page;
 import com.liferay.headless.pim.client.pagination.Pagination;
+import com.liferay.object.constants.ObjectEntryFolderConstants;
+import com.liferay.object.model.ObjectDefinition;
 import com.liferay.object.model.ObjectEntry;
+import com.liferay.object.service.ObjectDefinitionLocalService;
 import com.liferay.object.service.ObjectEntryLocalService;
 import com.liferay.petra.function.transform.TransformUtil;
+import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.util.ContentTypes;
+import com.liferay.portal.kernel.util.FileUtil;
+import com.liferay.portal.kernel.util.HashMapBuilder;
+import com.liferay.portal.kernel.util.MapUtil;
+import com.liferay.portal.kernel.util.TempFileEntryUtil;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
 import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
-import com.liferay.site.pim.site.initializer.constants.PIMObjectEntryFolderConstants;
+import com.liferay.site.pim.site.initializer.constants.PIMObjectDefinitionConstants;
 import com.liferay.site.pim.site.initializer.engine.PIMLinkEngine;
 import com.liferay.site.pim.site.initializer.link.PIMLinkType;
 import com.liferay.site.pim.site.initializer.test.util.PIMBasicProductTestUtil;
 import com.liferay.site.pim.site.initializer.test.util.PIMTestUtil;
 import com.liferay.site.pim.site.initializer.test.util.link.TestPIMLinkType;
+
+import java.io.Serializable;
 
 import java.util.Arrays;
 import java.util.List;
@@ -104,12 +116,12 @@ public class LinkReferenceResourceTest
 		ObjectEntry targetObjectEntry1 =
 			PIMBasicProductTestUtil.addPIMBasicProductObjectEntry(
 				depotEntry.getGroupId(), null,
-				PIMObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_PRODUCTS,
+				ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_PRODUCTS,
 				"sku-alpha", "Product");
 		ObjectEntry targetObjectEntry2 =
 			PIMBasicProductTestUtil.addPIMBasicProductObjectEntry(
 				depotEntry.getGroupId(), null,
-				PIMObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_PRODUCTS,
+				ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_PRODUCTS,
 				RandomTestUtil.randomString(), "Beta Product");
 
 		_pimLinkEngine.addPIMLinks(
@@ -179,6 +191,7 @@ public class LinkReferenceResourceTest
 
 		Assert.assertTrue(linkReference.getPrimary());
 
+		_testGetScopeScopeKeyLinksPageWithImages();
 		_testGetScopeScopeKeyLinksPageWithTrashedObjectEntry();
 	}
 
@@ -212,6 +225,74 @@ public class LinkReferenceResourceTest
 
 		Assert.assertEquals(
 			linkReferences.toString(), 2, linkReferences.size());
+	}
+
+	private ObjectEntry _addImageObjectEntry(
+			boolean addFileEntry, ObjectEntry pimProductObjectEntry)
+		throws Exception {
+
+		Map<String, Serializable> values =
+			HashMapBuilder.<String, Serializable>put(
+				"r_images_l_pimBasicProductId",
+				pimProductObjectEntry.getObjectEntryId()
+			).put(
+				"title", RandomTestUtil.randomString()
+			).build();
+
+		if (addFileEntry) {
+			FileEntry fileEntry = TempFileEntryUtil.addTempFileEntry(
+				pimProductObjectEntry.getGroupId(), TestPropsValues.getUserId(),
+				RandomTestUtil.randomString(),
+				TempFileEntryUtil.getTempFileName(
+					RandomTestUtil.randomString() + ".png"),
+				FileUtil.createTempFile(RandomTestUtil.randomBytes()),
+				ContentTypes.IMAGE_PNG);
+
+			values.put("image", fileEntry.getFileEntryId());
+		}
+
+		ObjectDefinition objectDefinition =
+			_objectDefinitionLocalService.
+				getObjectDefinitionByExternalReferenceCode(
+					PIMObjectDefinitionConstants.
+						EXTERNAL_REFERENCE_CODE_BASIC_PRODUCT_IMAGE,
+					pimProductObjectEntry.getCompanyId());
+
+		return _objectEntryLocalService.addObjectEntry(
+			pimProductObjectEntry.getGroupId(), TestPropsValues.getUserId(),
+			objectDefinition.getObjectDefinitionId(),
+			ObjectEntryFolderConstants.PARENT_OBJECT_ENTRY_FOLDER_ID_DEFAULT,
+			null, values,
+			ServiceContextTestUtil.getServiceContext(
+				pimProductObjectEntry.getGroupId()));
+	}
+
+	private void _assertImageURL(
+			ObjectEntry imageObjectEntry, ObjectEntry pimProductObjectEntry)
+		throws Exception {
+
+		Page<LinkReference> linkReferencesPage = _getLinkReferencesPage(
+			pimProductObjectEntry, Pagination.of(1, 20));
+
+		LinkReference linkReference = _getLinkReference(
+			(List<LinkReference>)linkReferencesPage.getItems(),
+			pimProductObjectEntry);
+
+		if (imageObjectEntry == null) {
+			Assert.assertNull(linkReference.getImageURL());
+
+			return;
+		}
+
+		imageObjectEntry = _objectEntryLocalService.getObjectEntry(
+			imageObjectEntry.getObjectEntryId());
+
+		FileEntry fileEntry = _dlAppLocalService.getFileEntry(
+			MapUtil.getLong(imageObjectEntry.getValues(), "image"));
+
+		String imageURL = linkReference.getImageURL();
+
+		Assert.assertTrue(imageURL.contains(fileEntry.getUuid()));
 	}
 
 	private void _assertLinkReference(
@@ -296,6 +377,41 @@ public class LinkReferenceResourceTest
 			objectEntry.getExternalReferenceCode(), search, pagination);
 	}
 
+	private void _testGetScopeScopeKeyLinksPageWithImages() throws Exception {
+		DepotEntry depotEntry = PIMTestUtil.addSpaceDepotEntry();
+
+		ObjectEntry sourceObjectEntry =
+			PIMBasicProductTestUtil.addPIMBasicProductObjectEntry(
+				depotEntry.getGroupId());
+		ObjectEntry targetObjectEntry =
+			PIMBasicProductTestUtil.addPIMBasicProductObjectEntry(
+				depotEntry.getGroupId());
+
+		_pimLinkEngine.addPIMLinks(
+			sourceObjectEntry, Arrays.asList(targetObjectEntry), _TYPE);
+
+		_assertImageURL(null, targetObjectEntry);
+
+		_addImageObjectEntry(false, targetObjectEntry);
+
+		ObjectEntry imageObjectEntry1 = _addImageObjectEntry(
+			true, targetObjectEntry);
+		ObjectEntry imageObjectEntry2 = _addImageObjectEntry(
+			true, targetObjectEntry);
+
+		_assertImageURL(imageObjectEntry1, targetObjectEntry);
+
+		_assertImageURL(null, sourceObjectEntry);
+
+		_objectEntryLocalService.deleteObjectEntry(imageObjectEntry1);
+
+		_assertImageURL(imageObjectEntry2, targetObjectEntry);
+
+		_objectEntryLocalService.deleteObjectEntry(imageObjectEntry2);
+
+		_assertImageURL(null, targetObjectEntry);
+	}
+
 	private void _testGetScopeScopeKeyLinksPageWithTrashedObjectEntry()
 		throws Exception {
 
@@ -334,6 +450,12 @@ public class LinkReferenceResourceTest
 	}
 
 	private static final String _TYPE = "variant";
+
+	@Inject
+	private DLAppLocalService _dlAppLocalService;
+
+	@Inject
+	private ObjectDefinitionLocalService _objectDefinitionLocalService;
 
 	@Inject
 	private ObjectEntryLocalService _objectEntryLocalService;

@@ -6,6 +6,7 @@
 package com.liferay.fragment.internal.renderer;
 
 import com.liferay.fragment.cache.FragmentEntryLinkCache;
+import com.liferay.fragment.configuration.FragmentCacheConfiguration;
 import com.liferay.fragment.configuration.FragmentJavaScriptConfiguration;
 import com.liferay.fragment.contributor.FragmentCollectionContributorRegistry;
 import com.liferay.fragment.helper.FragmentEntryLinkHelper;
@@ -32,7 +33,6 @@ import com.liferay.portal.kernel.content.security.policy.ContentSecurityPolicyNo
 import com.liferay.portal.kernel.exception.PortalException;
 import com.liferay.portal.kernel.json.JSONException;
 import com.liferay.portal.kernel.json.JSONObject;
-import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.launch.LaunchPreviewThreadLocal;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
@@ -42,6 +42,7 @@ import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.servlet.PipingServletResponse;
 import com.liferay.portal.kernel.servlet.taglib.util.OutputData;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
+import com.liferay.portal.kernel.util.ArrayUtil;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
@@ -205,6 +206,25 @@ public class FragmentEntryFragmentRenderer implements FragmentRenderer {
 		return fragmentEntry.isCacheable();
 	}
 
+	private boolean _isFragmentCacheHostAllowed(long companyId, String host)
+		throws PortalException {
+
+		FragmentCacheConfiguration fragmentCacheConfiguration =
+			_configurationProvider.getCompanyConfiguration(
+				FragmentCacheConfiguration.class, companyId);
+
+		String[] fragmentCacheHostsAllowed =
+			fragmentCacheConfiguration.fragmentCacheHostsAllowed();
+
+		if (ArrayUtil.isEmpty(fragmentCacheHostsAllowed) ||
+			ArrayUtil.contains(fragmentCacheHostsAllowed, host, true)) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	private boolean _isJavaScriptModuleEnabled(
 		HttpServletRequest httpServletRequest) {
 
@@ -336,7 +356,7 @@ public class FragmentEntryFragmentRenderer implements FragmentRenderer {
 
 		if (fragmentEntryLink.isTypeInput()) {
 			sb.append("; const input = ");
-			sb.append(JSONUtil.toString(inputTemplateNode.toJSONObject()));
+			sb.append(inputTemplateNode.toJSONObject());
 			sb.append("; input.value = Liferay.Util.unescapeHTML(input.value ");
 			sb.append("?? ''); Object.keys(input.valueI18n).forEach(");
 			sb.append("function(key){ input.valueI18n[key] = Liferay.Util.");
@@ -374,14 +394,22 @@ public class FragmentEntryFragmentRenderer implements FragmentRenderer {
 			HttpServletResponse httpServletResponse)
 		throws PortalException {
 
-		String content = StringPool.BLANK;
-		String nonce = _NONCE;
+		boolean cacheable = false;
 
 		FragmentEntryLink fragmentEntryLink = _getFragmentEntryLink(
 			fragmentRendererContext);
 
-		boolean cacheable = _isCacheable(
-			fragmentEntryLink, fragmentRendererContext);
+		boolean fragmentCacheHostAllowed = _isFragmentCacheHostAllowed(
+			fragmentEntryLink.getCompanyId(),
+			_portal.getForwardedHost(httpServletRequest));
+
+		if (fragmentCacheHostAllowed) {
+			cacheable = _isCacheable(
+				fragmentEntryLink, fragmentRendererContext);
+		}
+
+		String content = StringPool.BLANK;
+		String nonce = _NONCE;
 
 		if (cacheable) {
 			content = _fragmentEntryLinkCache.getFragmentEntryLinkContent(
@@ -485,8 +513,10 @@ public class FragmentEntryFragmentRenderer implements FragmentRenderer {
 		}
 
 		content = _renderFragmentEntry(
-			_toConfiguration(fragmentEntryLink, fragmentRendererContext), css,
-			fragmentRendererContext, html, httpServletRequest,
+			_toConfiguration(
+				fragmentCacheHostAllowed, fragmentEntryLink,
+				fragmentRendererContext),
+			css, fragmentRendererContext, html, httpServletRequest,
 			inputTemplateNode, nonce);
 
 		if (!cacheable) {
@@ -503,6 +533,7 @@ public class FragmentEntryFragmentRenderer implements FragmentRenderer {
 	}
 
 	private String _toConfiguration(
+			boolean fragmentCacheHostAllowed,
 			FragmentEntryLink fragmentEntryLink,
 			FragmentRendererContext fragmentRendererContext)
 		throws JSONException {
@@ -513,34 +544,41 @@ public class FragmentEntryFragmentRenderer implements FragmentRenderer {
 			return "{}";
 		}
 
-		String key = String.valueOf(fragmentEntryLink.getFragmentEntryLinkId());
+		String key = null;
 
-		if (configuration.contains("localizable")) {
-			key = key.concat(StringPool.POUND);
-			key = key.concat(
-				LocaleUtil.toLanguageId(fragmentRendererContext.getLocale()));
+		if (fragmentCacheHostAllowed) {
+			key = String.valueOf(fragmentEntryLink.getFragmentEntryLinkId());
+
+			if (configuration.contains("localizable")) {
+				key = key.concat(StringPool.POUND);
+				key = key.concat(
+					LocaleUtil.toLanguageId(
+						fragmentRendererContext.getLocale()));
+			}
+
+			Map.Entry<Long, String> entry = _configurationPortalCache.get(key);
+
+			if ((entry != null) &&
+				(entry.getKey() == fragmentEntryLink.getMvccVersion())) {
+
+				return entry.getValue();
+			}
 		}
 
-		Map.Entry<Long, String> entry = _configurationPortalCache.get(key);
-
-		if ((entry != null) &&
-			(entry.getKey() == fragmentEntryLink.getMvccVersion())) {
-
-			return entry.getValue();
-		}
-
-		JSONObject jsonObject =
+		String configurationJSON = String.valueOf(
 			_fragmentEntryConfigurationParser.getConfigurationJSONObject(
 				fragmentEntryLink.getConfigurationJSONObject(),
 				fragmentEntryLink.getEditableValuesJSONObject(),
-				fragmentRendererContext.getLocale());
+				fragmentRendererContext.getLocale()));
 
-		entry = new AbstractMap.SimpleImmutableEntry<>(
-			fragmentEntryLink.getMvccVersion(), jsonObject.toString());
+		if (fragmentCacheHostAllowed) {
+			_configurationPortalCache.put(
+				key,
+				new AbstractMap.SimpleImmutableEntry<>(
+					fragmentEntryLink.getMvccVersion(), configurationJSON));
+		}
 
-		_configurationPortalCache.put(key, entry);
-
-		return entry.getValue();
+		return configurationJSON;
 	}
 
 	private String _writePortletPaths(

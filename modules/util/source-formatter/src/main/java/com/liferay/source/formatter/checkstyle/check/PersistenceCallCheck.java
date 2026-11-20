@@ -25,6 +25,7 @@ import java.io.File;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -117,40 +118,45 @@ public class PersistenceCallCheck extends BaseCheck {
 		DetailAST methodCallDetailAST, List<String> importNames,
 		Map<String, String> variablesMap, String packageName) {
 
-		DetailAST childDetailAST = methodCallDetailAST.getFirstChild();
+		DetailAST firstChildDetailAST = methodCallDetailAST.getFirstChild();
 
-		if (childDetailAST.getType() != TokenTypes.DOT) {
+		if (firstChildDetailAST.getType() != TokenTypes.DOT) {
 			return;
 		}
 
-		childDetailAST = childDetailAST.getFirstChild();
+		List<String> names = getNames(firstChildDetailAST, false);
 
-		if (childDetailAST.getType() != TokenTypes.IDENT) {
+		if (names.size() != 2) {
 			return;
 		}
 
-		DetailAST siblingDetailAST = childDetailAST.getNextSibling();
+		String methodCallMethodName = names.get(1);
 
-		if (siblingDetailAST.getType() == TokenTypes.IDENT) {
-			String methodName = siblingDetailAST.getText();
+		if (methodCallMethodName.equals("clearCache") ||
+			methodCallMethodName.startsWith("create")) {
 
-			if (methodName.equals("clearCache") ||
-				methodName.startsWith("create")) {
-
-				return;
-			}
+			return;
 		}
 
-		String fieldName = childDetailAST.getText();
+		String absolutePath = getAbsolutePath();
 
-		if (fieldName.matches("[A-Z].*")) {
+		if ((absolutePath.contains("/src/test/") ||
+			 absolutePath.contains("/src/testIntegration/")) &&
+			_isInTransactionInvocation(methodCallDetailAST)) {
+
+			return;
+		}
+
+		String classOrVariableName = names.get(0);
+
+		if (classOrVariableName.matches("[A-Z].*")) {
 			_checkClass(
-				fieldName, importNames, packageName,
+				classOrVariableName, importNames, packageName,
 				methodCallDetailAST.getLineNo());
 		}
 		else {
 			_checkVariable(
-				fieldName, variablesMap, packageName,
+				classOrVariableName, variablesMap, packageName,
 				methodCallDetailAST.getLineNo());
 		}
 	}
@@ -276,6 +282,34 @@ public class PersistenceCallCheck extends BaseCheck {
 		}
 
 		return variablesMap;
+	}
+
+	private boolean _isInTransactionInvocation(DetailAST detailAST) {
+		DetailAST lambdaDetailAST = getParentWithTokenType(
+			detailAST, TokenTypes.LAMBDA);
+
+		while (lambdaDetailAST != null) {
+			DetailAST methodCallDetailAST = getParentWithTokenType(
+				lambdaDetailAST, TokenTypes.METHOD_CALL);
+
+			if ((methodCallDetailAST != null) &&
+				Objects.equals(getMethodName(methodCallDetailAST), "invoke")) {
+
+				String classOrVariableName = getClassOrVariableName(
+					methodCallDetailAST);
+
+				if ((classOrVariableName != null) &&
+					classOrVariableName.matches("Transaction\\w*Util")) {
+
+					return true;
+				}
+			}
+
+			lambdaDetailAST = getParentWithTokenType(
+				lambdaDetailAST, TokenTypes.LAMBDA);
+		}
+
+		return false;
 	}
 
 	private static final String _MSG_ILLEGAL_PERSISTENCE_CALL =

@@ -105,7 +105,9 @@ describe('AccountProfileRoutes', () => {
 		const {container} = renderProfileRoutes();
 
 		expect(container.querySelector('.loading-root')).toBeInTheDocument();
-		expect(screen.queryByText('Account Not Found')).not.toBeInTheDocument();
+		expect(
+			screen.queryByText(/^account was not found$/i)
+		).not.toBeInTheDocument();
 	});
 
 	it('renders the not-found error page when the account request errors', () => {
@@ -117,11 +119,15 @@ describe('AccountProfileRoutes', () => {
 
 		renderProfileRoutes();
 
-		expect(screen.getByText('Account Not Found')).toBeInTheDocument();
 		expect(
-			screen.getByText('The account you are looking for does not exist.')
+			screen.getByText(/^account was not found$/i)
 		).toBeInTheDocument();
-		expect(screen.getByText('Go to Accounts')).toBeInTheDocument();
+		expect(
+			screen.getByText(
+				/^the account you are looking for does not exist\.$/i
+			)
+		).toBeInTheDocument();
+		expect(screen.getByText(/^go to accounts$/i)).toBeInTheDocument();
 	});
 
 	it('renders the not-found error page when the account does not exist', () => {
@@ -133,7 +139,9 @@ describe('AccountProfileRoutes', () => {
 
 		renderProfileRoutes();
 
-		expect(screen.getByText('Account Not Found')).toBeInTheDocument();
+		expect(
+			screen.getByText(/^account was not found$/i)
+		).toBeInTheDocument();
 	});
 
 	it('points the error page link back to the accounts list', () => {
@@ -145,10 +153,9 @@ describe('AccountProfileRoutes', () => {
 
 		renderProfileRoutes();
 
-		expect(screen.getByText('Go to Accounts').closest('a')).toHaveAttribute(
-			'href',
-			expect.stringContaining('accounts')
-		);
+		expect(
+			screen.getByText(/^go to accounts$/i).closest('a')
+		).toHaveAttribute('href', expect.stringContaining('accounts'));
 	});
 
 	it('renders the account page when the account exists', () => {
@@ -161,7 +168,9 @@ describe('AccountProfileRoutes', () => {
 		renderProfileRoutes();
 
 		expect(screen.getAllByText('Acme Corp').length).toBeGreaterThan(0);
-		expect(screen.queryByText('Account Not Found')).not.toBeInTheDocument();
+		expect(
+			screen.queryByText(/^account was not found$/i)
+		).not.toBeInTheDocument();
 	});
 
 	it('lists overview as the first tab in the account nav bar', () => {

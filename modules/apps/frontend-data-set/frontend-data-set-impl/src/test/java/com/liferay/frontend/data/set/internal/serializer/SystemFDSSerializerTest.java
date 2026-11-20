@@ -1249,6 +1249,32 @@ public class SystemFDSSerializerTest extends BaseFDSSerializerTestCase {
 	}
 
 	@Test
+	public void testSerializeShowPagination() throws Exception {
+		_registerServices(
+			_registerSystemFDSEntry(
+				SystemFDSEntryFactory.create(
+					FDS_NAMES[0]
+				).withShowPagination(
+					true
+				)),
+			_registerSystemFDSEntry(
+				SystemFDSEntryFactory.create(
+					FDS_NAMES[1]
+				).withShowPagination(
+					false
+				)));
+
+		Assert.assertTrue(
+			systemFDSSerializer.serializeShowPagination(
+				FDS_NAMES[0], httpServletRequest));
+		Assert.assertFalse(
+			systemFDSSerializer.serializeShowPagination(
+				FDS_NAMES[1], httpServletRequest));
+
+		_unregisterServices();
+	}
+
+	@Test
 	public void testSerializeShowSearch() throws Exception {
 		_registerServices(
 			_registerSystemFDSEntry(
@@ -1753,6 +1779,8 @@ public class SystemFDSSerializerTest extends BaseFDSSerializerTestCase {
 							).put(
 								"fieldName", FIELD_NAMES[0]
 							).put(
+								"hidden", false
+							).put(
 								"label", LABELS[0]
 							).put(
 								"localizeLabel", true
@@ -1766,6 +1794,8 @@ public class SystemFDSSerializerTest extends BaseFDSSerializerTestCase {
 							).put(
 								"fieldName", FIELD_NAMES[1]
 							).put(
+								"hidden", false
+							).put(
 								"label", LABELS[1]
 							).put(
 								"localizeLabel", true
@@ -1776,6 +1806,8 @@ public class SystemFDSSerializerTest extends BaseFDSSerializerTestCase {
 								"contentRendererClientExtension", false
 							).put(
 								"fieldName", FIELD_NAMES[2]
+							).put(
+								"hidden", false
 							).put(
 								"label", LABELS[2]
 							).put(
@@ -2037,6 +2069,11 @@ public class SystemFDSSerializerTest extends BaseFDSSerializerTestCase {
 					}
 
 					@Override
+					public boolean getShowPagination() {
+						return _showPagination;
+					}
+
+					@Override
 					public boolean getShowSearch() {
 						return _showSearch;
 					}
@@ -2105,6 +2142,14 @@ public class SystemFDSSerializerTest extends BaseFDSSerializerTestCase {
 			return this;
 		}
 
+		public SystemFDSEntryWrapper withShowPagination(
+			boolean showPagination) {
+
+			_showPagination = showPagination;
+
+			return this;
+		}
+
 		public SystemFDSEntryWrapper withShowSearch(boolean showSearch) {
 			_showSearch = showSearch;
 
@@ -2127,6 +2172,7 @@ public class SystemFDSSerializerTest extends BaseFDSSerializerTestCase {
 		private String _propsTransformer;
 		private boolean _searchAsYouType;
 		private boolean _searchSuggestionsEnabled;
+		private boolean _showPagination = true;
 		private boolean _showSearch;
 		private boolean _snapshotsEnabled;
 

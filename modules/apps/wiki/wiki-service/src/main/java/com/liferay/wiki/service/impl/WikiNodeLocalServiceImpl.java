@@ -11,7 +11,7 @@ import com.liferay.exportimport.kernel.lar.ExportImportThreadLocal;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
-import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
+import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
 import com.liferay.portal.kernel.cache.MultiVMPool;
 import com.liferay.portal.kernel.cache.PortalCache;
 import com.liferay.portal.kernel.exception.PortalException;
@@ -33,6 +33,7 @@ import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
 import com.liferay.portal.kernel.service.permission.ModelPermissions;
+import com.liferay.portal.kernel.settings.GroupServiceSettingsLocator;
 import com.liferay.portal.kernel.systemevent.SystemEvent;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.NotificationThreadLocal;
@@ -80,7 +81,6 @@ import org.osgi.service.component.annotations.Reference;
  * @author Raymond Augé
  */
 @Component(
-	configurationPid = "com.liferay.wiki.configuration.WikiGroupServiceConfiguration",
 	property = "model.class.name=com.liferay.wiki.model.WikiNode",
 	service = AopService.class
 )
@@ -90,8 +90,15 @@ public class WikiNodeLocalServiceImpl extends WikiNodeLocalServiceBaseImpl {
 	public WikiNode addDefaultNode(long userId, ServiceContext serviceContext)
 		throws PortalException {
 
+		WikiGroupServiceConfiguration wikiGroupServiceConfiguration =
+			_configurationProvider.getConfiguration(
+				WikiGroupServiceConfiguration.class,
+				new GroupServiceSettingsLocator(
+					serviceContext.getScopeGroupId(),
+					WikiConstants.SERVICE_NAME));
+
 		return addNode(
-			userId, _wikiGroupServiceConfiguration.initialNodeName(),
+			userId, wikiGroupServiceConfiguration.initialNodeName(),
 			StringPool.BLANK, serviceContext);
 	}
 
@@ -524,14 +531,11 @@ public class WikiNodeLocalServiceImpl extends WikiNodeLocalServiceBaseImpl {
 	}
 
 	@Activate
-	protected void activate(Map<String, Object> properties) {
-		_wikiGroupServiceConfiguration = ConfigurableUtil.createConfigurable(
-			WikiGroupServiceConfiguration.class, properties);
-
+	protected void activate() {
 		_mediaWikiImporter = new MediaWikiImporter(
-			_assetTagLocalService, _companyLocalService, _portletFileRepository,
-			_userLocalService, _wikiGroupServiceConfiguration,
-			_wikiPageLocalService, _wikiPageTitleValidator, _zipReaderFactory);
+			_assetTagLocalService, _companyLocalService, _configurationProvider,
+			_portletFileRepository, _userLocalService, _wikiPageLocalService,
+			_wikiPageTitleValidator, _zipReaderFactory);
 
 		_portalCache = _multiVMPool.getPortalCache(
 			WikiPageDisplay.class.getName());
@@ -644,6 +648,9 @@ public class WikiNodeLocalServiceImpl extends WikiNodeLocalServiceBaseImpl {
 	private CompanyLocalService _companyLocalService;
 
 	@Reference
+	private ConfigurationProvider _configurationProvider;
+
+	@Reference
 	private GroupLocalService _groupLocalService;
 
 	@Reference
@@ -673,8 +680,6 @@ public class WikiNodeLocalServiceImpl extends WikiNodeLocalServiceBaseImpl {
 
 	@Reference
 	private UserLocalService _userLocalService;
-
-	private WikiGroupServiceConfiguration _wikiGroupServiceConfiguration;
 
 	@Reference
 	private WikiPageLocalService _wikiPageLocalService;

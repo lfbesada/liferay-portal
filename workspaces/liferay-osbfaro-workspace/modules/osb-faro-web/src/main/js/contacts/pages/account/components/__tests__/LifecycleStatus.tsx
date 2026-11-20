@@ -1,6 +1,12 @@
 import LifecycleStatus from '../LifecycleStatus';
 import React from 'react';
-import {cleanup, render, screen, within} from '@testing-library/react';
+import {
+	cleanup,
+	fireEvent,
+	render,
+	screen,
+	within,
+} from '@testing-library/react';
 import {useRequest} from 'shared/hooks/useRequest';
 
 jest.unmock('react-dom');
@@ -10,7 +16,7 @@ jest.mock('shared/api', () => ({
 		fetchLifecycleStatus: jest.fn(),
 	},
 	lifecycle: {
-		fetchAccountLifecycles: jest.fn(),
+		fetchChannelLifecycles: jest.fn(),
 	},
 }));
 
@@ -70,17 +76,42 @@ const useRequestImpl =
 		lifecyclesData,
 		lifecyclesLoading = false,
 		statusData,
+		statusDataByLifecycleId,
 		statusLoading = false,
 	}: {
-		lifecyclesData?: Array<{accountId: string; id: string}>;
+		lifecyclesData?: Array<{
+			defaultAccountLifecycle?: boolean;
+			id: string;
+			name: string;
+		}>;
 		lifecyclesLoading?: boolean;
 		statusData?: unknown;
+		statusDataByLifecycleId?: {[lifecycleId: string]: unknown};
 		statusLoading?: boolean;
 	}) =>
 	({variables}: {variables: {[key: string]: any}}) =>
 		variables.accountLifecycleId !== undefined
-			? {data: statusData, loading: statusLoading}
+			? {
+					data:
+						statusDataByLifecycleId?.[
+							variables.accountLifecycleId
+						] ?? statusData,
+					loading: statusLoading,
+				}
 			: {data: lifecyclesData, loading: lifecyclesLoading};
+
+const buildStatus = (lifecycleId: string, stageName: string) => ({
+	accountLifecycleStageStatuses: [
+		{
+			id: `${lifecycleId}-stage`,
+			name: stageName,
+			position: 0,
+			startDate: '2026-01-04T00:00:00.000Z',
+		},
+	],
+	id: lifecycleId,
+	name: lifecycleId,
+});
 
 jest.mock('@clayui/multi-step-nav', () => {
 	const MultiStepNav = ({
@@ -132,7 +163,7 @@ describe('LifecycleStatus', () => {
 		jest.clearAllMocks();
 		mockedUseRequest.mockImplementation(
 			useRequestImpl({
-				lifecyclesData: [{accountId: 'acc-1', id: 'al-1'}],
+				lifecyclesData: [{id: 'al-1', name: 'Default Lifecycle'}],
 				statusData: DEFAULT_STATUS,
 			})
 		);
@@ -147,7 +178,7 @@ describe('LifecycleStatus', () => {
 			expect(screen.getByText('LIFECYCLE STATUS')).toBeInTheDocument();
 			expect(
 				screen.getByText(
-					'Shows the current stage progression for this account.'
+					/^shows the current stage progression for this account\.$/i
 				)
 			).toBeInTheDocument();
 		});
@@ -159,21 +190,25 @@ describe('LifecycleStatus', () => {
 				'.lifecycle-status-multistep'
 			) as HTMLElement;
 
-			expect(within(multistep).getByText('Aware')).toBeInTheDocument();
-			expect(within(multistep).getByText('Engaged')).toBeInTheDocument();
-			expect(within(multistep).getByText('Pipeline')).toBeInTheDocument();
+			expect(within(multistep).getByText(/^aware$/i)).toBeInTheDocument();
 			expect(
-				within(multistep).getByText('Onboarding')
+				within(multistep).getByText(/^engaged$/i)
 			).toBeInTheDocument();
 			expect(
-				within(multistep).getByText('Established')
+				within(multistep).getByText(/^pipeline$/i)
+			).toBeInTheDocument();
+			expect(
+				within(multistep).getByText(/^onboarding$/i)
+			).toBeInTheDocument();
+			expect(
+				within(multistep).getByText(/^established$/i)
 			).toBeInTheDocument();
 		});
 
 		it('should render the custom stage names in their position order', () => {
 			mockedUseRequest.mockImplementation(
 				useRequestImpl({
-					lifecyclesData: [{accountId: 'acc-1', id: 'al-1'}],
+					lifecyclesData: [{id: 'al-1', name: 'Default Lifecycle'}],
 					statusData: {
 						accountLifecycleStageStatuses: [
 							{
@@ -253,7 +288,9 @@ describe('LifecycleStatus', () => {
 				'.lifecycle-status-multistep'
 			) as HTMLElement;
 
-			expect(within(multistep).getByText('At Risk')).toBeInTheDocument();
+			expect(
+				within(multistep).getByText(/^at risk$/i)
+			).toBeInTheDocument();
 			expect(multistep.querySelector('.sticker')).toBeInTheDocument();
 			expect(
 				multistep.querySelector('.lexicon-icon-exclamation-circle')
@@ -269,7 +306,7 @@ describe('LifecycleStatus', () => {
 				'.lifecycle-status-summary'
 			) as HTMLElement;
 
-			expect(within(summary).getByText('Engaged')).toBeInTheDocument();
+			expect(within(summary).getByText(/^engaged$/i)).toBeInTheDocument();
 			expect(
 				within(summary).getByText('Step 2 of 5')
 			).toBeInTheDocument();
@@ -294,14 +331,14 @@ describe('LifecycleStatus', () => {
 				'.lifecycle-status-summary'
 			) as HTMLElement;
 
-			expect(within(summary).getByText('At Risk')).toBeInTheDocument();
-			expect(within(summary).getByText('No')).toBeInTheDocument();
+			expect(within(summary).getByText(/^at risk$/i)).toBeInTheDocument();
+			expect(within(summary).getByText(/^no$/i)).toBeInTheDocument();
 		});
 
 		it('should render the at-risk row when no progression stage is active', () => {
 			mockedUseRequest.mockImplementation(
 				useRequestImpl({
-					lifecyclesData: [{accountId: 'acc-1', id: 'al-1'}],
+					lifecyclesData: [{id: 'al-1', name: 'Default Lifecycle'}],
 					statusData: {
 						accountLifecycleStageStatuses: [
 							{
@@ -329,15 +366,15 @@ describe('LifecycleStatus', () => {
 			) as HTMLElement;
 
 			expect(summary).not.toBeNull();
-			expect(within(summary).getByText('At Risk')).toBeInTheDocument();
-			expect(within(summary).getByText('Yes')).toBeInTheDocument();
-			expect(within(summary).queryByText('Aware')).toBeNull();
+			expect(within(summary).getByText(/^at risk$/i)).toBeInTheDocument();
+			expect(within(summary).getByText(/^yes$/i)).toBeInTheDocument();
+			expect(within(summary).queryByText(/^aware$/i)).toBeNull();
 		});
 
 		it('should not render the summary when the lifecycle has no at-risk stage and no active stage', () => {
 			mockedUseRequest.mockImplementation(
 				useRequestImpl({
-					lifecyclesData: [{accountId: 'acc-1', id: 'al-1'}],
+					lifecyclesData: [{id: 'al-1', name: 'Default Lifecycle'}],
 					statusData: {
 						accountLifecycleStageStatuses: [
 							{
@@ -361,22 +398,95 @@ describe('LifecycleStatus', () => {
 	});
 
 	describe('request', () => {
-		it('should request the default lifecycle of the channel', () => {
-			mockedUseRequest.mockImplementation(useRequestImpl({}));
+		it.each([
+			{
+				defaultLifecycleId: 'al-1',
+				expectedLifecycle: 'Customer',
+				expectedStage: 'Prospect',
+			},
+			{
+				defaultLifecycleId: 'al-2',
+				expectedLifecycle: 'Partner',
+				expectedStage: 'Reseller',
+			},
+		])(
+			'should render the status of the default lifecycle $defaultLifecycleId',
+			({defaultLifecycleId, expectedLifecycle, expectedStage}) => {
+				mockedUseRequest.mockImplementation(
+					useRequestImpl({
+						lifecyclesData: [
+							{
+								defaultAccountLifecycle:
+									defaultLifecycleId === 'al-1',
+								id: 'al-1',
+								name: 'Customer',
+							},
+							{
+								defaultAccountLifecycle:
+									defaultLifecycleId === 'al-2',
+								id: 'al-2',
+								name: 'Partner',
+							},
+						],
+						statusDataByLifecycleId: {
+							'al-1': buildStatus('al-1', 'Prospect'),
+							'al-2': buildStatus('al-2', 'Reseller'),
+						},
+					})
+				);
 
-			render(<LifecycleStatus />);
+				const {container} = render(<LifecycleStatus />);
 
-			expect(mockedUseRequest).toHaveBeenCalledWith(
-				expect.objectContaining({
-					variables: {channelId: '123', groupId: '23'},
+				expect(
+					screen.getByRole('combobox', {name: /^lifecycle$/i})
+				).toHaveTextContent(expectedLifecycle);
+				expect(
+					within(
+						container.querySelector(
+							'.lifecycle-status-multistep'
+						) as HTMLElement
+					).getByText(expectedStage)
+				).toBeInTheDocument();
+			}
+		);
+
+		it('should render the status of the lifecycle selected in the card', () => {
+			mockedUseRequest.mockImplementation(
+				useRequestImpl({
+					lifecyclesData: [
+						{
+							defaultAccountLifecycle: true,
+							id: 'al-1',
+							name: 'Customer',
+						},
+						{id: 'al-2', name: 'Partner'},
+					],
+					statusDataByLifecycleId: {
+						'al-1': buildStatus('al-1', 'Prospect'),
+						'al-2': buildStatus('al-2', 'Reseller'),
+					},
 				})
 			);
+
+			const {container} = render(<LifecycleStatus />);
+
+			fireEvent.click(
+				screen.getByRole('combobox', {name: /^lifecycle$/i})
+			);
+			fireEvent.click(screen.getByRole('option', {name: 'Partner'}));
+
+			const multistep = container.querySelector(
+				'.lifecycle-status-multistep'
+			) as HTMLElement;
+
+			expect(within(multistep).getByText('Reseller')).toBeInTheDocument();
+			expect(within(multistep).queryByText('Prospect')).toBeNull();
 		});
 
 		it('should render the fetched status when the backend returns data', () => {
 			mockedUseRequest.mockImplementation(
 				useRequestImpl({
-					lifecyclesData: [{accountId: 'acc-1', id: 'al-1'}],
+					lifecyclesData: [{id: 'al-1', name: 'Default Lifecycle'}],
 					statusData: {
 						accountLifecycleStageStatuses: [
 							{
@@ -441,10 +551,12 @@ describe('LifecycleStatus', () => {
 			const {container} = render(<LifecycleStatus />);
 
 			expect(
-				screen.getByText('No Lifecycle Data Available')
+				screen.getByText(/^no lifecycle data available$/i)
 			).toBeInTheDocument();
 			expect(
-				screen.getByText('Lifecycle data will appear here when synced.')
+				screen.getByText(
+					/^lifecycle data will appear here when synced\.$/i
+				)
 			).toBeInTheDocument();
 			expect(
 				container.querySelector('.lifecycle-status-multistep')
@@ -457,7 +569,7 @@ describe('LifecycleStatus', () => {
 		it('should render the empty state when the matching status has no stages', () => {
 			mockedUseRequest.mockImplementation(
 				useRequestImpl({
-					lifecyclesData: [{accountId: 'acc-1', id: 'al-1'}],
+					lifecyclesData: [{id: 'al-1', name: 'Default Lifecycle'}],
 					statusData: {
 						accountLifecycleStageStatuses: [],
 						id: 'al-1',
@@ -469,7 +581,7 @@ describe('LifecycleStatus', () => {
 			render(<LifecycleStatus />);
 
 			expect(
-				screen.getByText('No Lifecycle Data Available')
+				screen.getByText(/^no lifecycle data available$/i)
 			).toBeInTheDocument();
 		});
 	});
@@ -493,7 +605,7 @@ describe('LifecycleStatus', () => {
 		it('should render the loading indicator while the matching status is loading', () => {
 			mockedUseRequest.mockImplementation(
 				useRequestImpl({
-					lifecyclesData: [{accountId: 'acc-1', id: 'al-1'}],
+					lifecyclesData: [{id: 'al-1', name: 'Default Lifecycle'}],
 					statusLoading: true,
 				})
 			);

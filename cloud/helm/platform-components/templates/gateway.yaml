@@ -1,4 +1,4 @@
-{{- if .Values.operatorApplications.envoyGateway.enabled -}}
+{{- if .Values.envoyGateway.enabled -}}
 {{- $envoyProxy := .Values.gateway.envoyProxy }}
 apiVersion: gateway.envoyproxy.io/v1alpha1
 kind: EnvoyProxy
@@ -8,9 +8,9 @@ metadata:
         argocd.argoproj.io/sync-wave: "-90"
     labels:
         {{- include "liferay-platform.labels" . | nindent 8 }}
-        app.kubernetes.io/name: liferay-proxy-config
-    name: liferay-proxy-config
-    namespace: {{ .Values.operatorApplications.envoyGateway.namespace }}
+        app.kubernetes.io/name: {{ $envoyProxy.name }}
+    name: {{ $envoyProxy.name }}
+    namespace: {{ .Values.envoyGateway.namespace }}
 spec:
     provider:
         kubernetes:
@@ -27,9 +27,8 @@ spec:
                             maxSkew: 1
                             topologyKey: kubernetes.io/hostname
                             whenUnsatisfiable: ScheduleAnyway
-                replicas: 3
             envoyHpa:
-                maxReplicas: 10
+                maxReplicas: {{ $envoyProxy.maxReplicas }}
                 metrics:
                     -   resource:
                             name: cpu
@@ -37,7 +36,9 @@ spec:
                                 averageUtilization: 75
                                 type: Utilization
                         type: Resource
-                minReplicas: 3
+                minReplicas: {{ $envoyProxy.minReplicas }}
+            envoyPDB:
+                maxUnavailable: 1
             envoyService:
                 {{- with $envoyProxy.serviceAnnotations }}
                 annotations:
@@ -55,13 +56,13 @@ metadata:
         argocd.argoproj.io/sync-wave: "-90"
     labels:
         {{- include "liferay-platform.labels" . | nindent 8 }}
-        app.kubernetes.io/name: liferay-gateway-class
-    name: liferay-gateway-class
+        app.kubernetes.io/name: {{ .Values.gateway.className }}
+    name: {{ .Values.gateway.className }}
 spec:
     controllerName: gateway.envoyproxy.io/gatewayclass-controller
     parametersRef:
         group: gateway.envoyproxy.io
         kind: EnvoyProxy
-        name: liferay-proxy-config
-        namespace: {{ .Values.operatorApplications.envoyGateway.namespace }}
+        name: {{ $envoyProxy.name }}
+        namespace: {{ .Values.envoyGateway.namespace }}
 {{- end -}}

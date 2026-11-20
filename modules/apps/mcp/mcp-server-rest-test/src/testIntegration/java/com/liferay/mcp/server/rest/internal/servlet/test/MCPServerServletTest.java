@@ -56,6 +56,8 @@ import com.liferay.portal.kernel.util.StringUtil;
 import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.workflow.WorkflowConstants;
+import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
@@ -69,6 +71,8 @@ import io.modelcontextprotocol.spec.McpSchema;
 import java.io.Serializable;
 
 import java.net.URI;
+
+import java.time.Duration;
 
 import java.util.Collections;
 import java.util.Date;
@@ -761,6 +765,8 @@ public class MCPServerServletTest {
 			).elicitation(
 				true, true
 			).build()
+		).requestTimeout(
+			Duration.ofMinutes(5)
 		).build();
 	}
 
@@ -789,8 +795,20 @@ public class MCPServerServletTest {
 
 		Http.Options options = new Http.Options();
 
+		options.addHeader("Accept", "application/json, text/event-stream");
 		options.addHeader("Authorization", authorization);
+		options.addHeader("Content-Type", ContentTypes.APPLICATION_JSON);
+		options.setBody(
+			JSONUtil.put(
+				"id", 1
+			).put(
+				"jsonrpc", "2.0"
+			).put(
+				"method", "ping"
+			).toString(),
+			ContentTypes.APPLICATION_JSON, StringPool.UTF8);
 		options.setLocation(_getMCPURL() + StringPool.SLASH + profileName);
+		options.setPost(true);
 
 		_http.URLtoString(options);
 
@@ -1618,15 +1636,19 @@ public class MCPServerServletTest {
 
 		Http.Options options = new Http.Options();
 
+		options.addHeader("Accept", "text/event-stream");
 		options.addHeader("Authorization", authorization);
 		options.setLocation(url);
 
-		_http.URLtoString(options);
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"portal_web.docroot.errors.code_jsp", LoggerTestUtil.WARN)) {
+
+			_http.URLtoString(options);
+		}
 
 		Http.Response response = options.getResponse();
 
-		Assert.assertEquals("text/event-stream", response.getContentType());
-		Assert.assertEquals(200, response.getResponseCode());
+		Assert.assertEquals(405, response.getResponseCode());
 
 		options = new Http.Options();
 

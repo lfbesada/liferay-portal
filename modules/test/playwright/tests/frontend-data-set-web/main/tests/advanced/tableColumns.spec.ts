@@ -153,6 +153,80 @@ test(
 );
 
 test(
+	'Search columns in the column visibility dropdown',
+	{tag: '@LPD-107790'},
+	async ({fdsSamplePage, page}) => {
+		const menuItems = page.getByRole('menuitem');
+		const searchInput = page.getByRole('textbox', {name: 'Search'});
+
+		let menuItemsCount: number;
+
+		await test.step('Open the column visibility dropdown', async () => {
+			await fdsSamplePage.table.manageColumnsVisibilityButton.click();
+
+			await expect(searchInput).toBeVisible();
+
+			menuItemsCount = await menuItems.count();
+
+			expect(menuItemsCount).toBeGreaterThan(1);
+		});
+
+		await test.step('Filter the columns by name', async () => {
+			await searchInput.fill('DESC');
+
+			await expect(menuItems).toHaveCount(1);
+			await expect(menuItems.first()).toHaveText('Description');
+		});
+
+		await test.step('Show a message when no column matches', async () => {
+			await searchInput.fill('nonexistent column');
+
+			await expect(menuItems).toHaveCount(0);
+			await expect(page.getByText('No Results Found')).toBeVisible();
+		});
+
+		await test.step('Clear the search to show every column again', async () => {
+			await page.getByRole('button', {name: 'Clear Search'}).click();
+
+			await expect(searchInput).toHaveValue('');
+			await expect(menuItems).toHaveCount(menuItemsCount);
+		});
+
+		await test.step('Hide a column from the filtered list', async () => {
+			await searchInput.fill('desc');
+
+			await menuItems.first().getByRole('switch').click();
+
+			await expect(
+				fdsSamplePage.table.headerCells.filter({
+					hasText: 'Description',
+				})
+			).toHaveCount(0);
+		});
+
+		await test.step('Reach the search and the columns with the keyboard', async () => {
+			await page.keyboard.press('Escape');
+
+			await expect(
+				fdsSamplePage.table.manageColumnsVisibilityButton
+			).toBeFocused();
+
+			await page.keyboard.press('Enter');
+
+			await expect(searchInput).toBeFocused();
+
+			await page.keyboard.press('ArrowDown');
+
+			await expect(menuItems.first().getByRole('switch')).toBeFocused();
+
+			await page.keyboard.press('ArrowUp');
+
+			await expect(searchInput).toBeFocused();
+		});
+	}
+);
+
+test(
 	'Columns with nested field names are shown',
 	{tag: '@LPD-75783'},
 	async ({fdsSamplePage, page, systemDataSetsPage}) => {
@@ -217,7 +291,7 @@ test(
 
 test(
 	'Action column stays frozen during horizontal scroll',
-	{tag: '@LPD-106210'},
+	{tag: ['@LPD-106210', '@LPD-114095']},
 	async ({fdsSamplePage, page}) => {
 		const actionsHeaderCell = fdsSamplePage.table.headerCells.last();
 		const firstRowActionsCell = fdsSamplePage.table.bodyRows
@@ -225,22 +299,50 @@ test(
 			.locator('.cell-item-actions');
 		const scrollContainer = page.locator('.fds .table-responsive');
 
+		async function getBoxShadow(locator: Locator) {
+			return locator.evaluate(
+				(element) => getComputedStyle(element).boxShadow
+			);
+		}
+
 		async function getRightEdge(locator: Locator) {
 			const boundingBox = await locator.boundingBox();
 
 			return boundingBox.x + boundingBox.width;
 		}
 
+		async function hasHorizontalScroll() {
+			return scrollContainer.evaluate(
+				(element) => element.scrollWidth > element.clientWidth
+			);
+		}
+
+		await test.step('Check the action column has no shadow without horizontal scroll', async () => {
+			await page.setViewportSize({height: 900, width: 2560});
+
+			await expect.poll(hasHorizontalScroll).toBe(false);
+
+			await expect
+				.poll(() => getBoxShadow(actionsHeaderCell))
+				.toBe('none');
+			await expect
+				.poll(() => getBoxShadow(firstRowActionsCell))
+				.toBe('none');
+		});
+
 		await test.step('Narrow the viewport to force horizontal scroll', async () => {
 			await page.setViewportSize({height: 900, width: 700});
 
+			await expect.poll(hasHorizontalScroll).toBe(true);
+		});
+
+		await test.step('Check the action column has a shadow with horizontal scroll', async () => {
 			await expect
-				.poll(() =>
-					scrollContainer.evaluate(
-						(element) => element.scrollWidth > element.clientWidth
-					)
-				)
-				.toBe(true);
+				.poll(() => getBoxShadow(actionsHeaderCell))
+				.not.toBe('none');
+			await expect
+				.poll(() => getBoxShadow(firstRowActionsCell))
+				.not.toBe('none');
 		});
 
 		for (const scrollPosition of ['start', 'middle', 'end']) {

@@ -688,6 +688,12 @@ public class ObjectEntryModelDocumentContributor
 			return "files";
 		}
 
+		if (externalReferenceCode.equals(
+				ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_PRODUCTS)) {
+
+			return "products";
+		}
+
 		return null;
 	}
 
@@ -846,17 +852,7 @@ public class ObjectEntryModelDocumentContributor
 	private ObjectEntryFolder _getRootObjectEntryFolder(
 		ObjectEntryFolder objectEntryFolder) {
 
-		if (objectEntryFolder == null) {
-			return null;
-		}
-
-		if (Objects.equals(
-				objectEntryFolder.getExternalReferenceCode(),
-				ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_CONTENTS) ||
-			Objects.equals(
-				objectEntryFolder.getExternalReferenceCode(),
-				ObjectEntryFolderConstants.EXTERNAL_REFERENCE_CODE_FILES)) {
-
+		if (objectEntryFolder.isRoot()) {
 			return objectEntryFolder;
 		}
 

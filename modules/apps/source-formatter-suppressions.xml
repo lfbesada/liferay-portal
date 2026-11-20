@@ -18,7 +18,6 @@
 		<suppress checks="ComponentExposureCheck" files="flags/flags-taglib/src/main/java/com/liferay/flags/taglib/internal/servlet/ServletContextUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="frontend-data-set/frontend-data-set-taglib/src/main/java/com/liferay/frontend/data/set/taglib/internal/servlet/ServletContextUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="frontend-taglib/frontend-taglib/src/main/java/com/liferay/frontend/taglib/internal/servlet/ServletContextUtil\.java" />
-		<suppress checks="ComponentExposureCheck" files="frontend-taglib/frontend-taglib-clay/src/main/java/com/liferay/frontend/taglib/clay/internal/ClayTagContextContributorsProvider\.java" />
 		<suppress checks="ComponentExposureCheck" files="frontend-taglib/frontend-taglib-clay/src/main/java/com/liferay/frontend/taglib/clay/internal/js/loader/modules/extender/npm/NPMResolverProvider\.java" />
 		<suppress checks="ComponentExposureCheck" files="frontend-taglib/frontend-taglib-clay/src/main/java/com/liferay/frontend/taglib/clay/internal/servlet/ServletContextUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="image-uploader/image-uploader-web/src/main/java/com/liferay/image/uploader/web/internal/util/UploadImageUtil\.java" />
@@ -26,7 +25,6 @@
 		<suppress checks="ComponentExposureCheck" files="item-selector/item-selector-taglib/src/main/java/com/liferay/item/selector/taglib/internal/servlet/ServletContextUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="item-selector/item-selector-taglib/src/main/java/com/liferay/item/selector/taglib/internal/servlet/item/selector/ItemSelectorUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="item-selector/item-selector-taglib/src/main/java/com/liferay/item/selector/taglib/internal/util/GroupItemSelectorProviderRegistryUtil\.java" />
-		<suppress checks="ComponentExposureCheck" files="journal/journal-service/src/main/java/com/liferay/journal/internal/util/JournalServiceComponentProvider\.java" />
 		<suppress checks="ComponentExposureCheck" files="journal/journal-taglib/src/main/java/com/liferay/journal/taglib/internal/servlet/ServletContextUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="knowledge-base/knowledge-base-web/src/main/java/com/liferay/knowledge/base/web/internal/display/context/DLMimeTypeDisplayContextUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="layout/layout-taglib/src/main/java/com/liferay/layout/taglib/internal/frontend/js/loader/modules/extender/npm/NPMResolverProvider\.java" />
@@ -36,16 +34,13 @@
 		<suppress checks="ComponentExposureCheck" files="product-navigation/product-navigation-taglib/src/main/java/com/liferay/product/navigation/taglib/internal/servlet/ServletContextUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="ratings/ratings-taglib/src/main/java/com/liferay/ratings/taglib/internal/servlet/ServletContextUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="rss/rss-taglib/src/main/java/com/liferay/rss/taglib/internal/servlet/ServletContextUtil\.java" />
-		<suppress checks="ComponentExposureCheck" files="segments/segments-web/src/main/java/com/liferay/segments/web/internal/util/SegmentsSourceDetailsProviderUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="site-navigation/site-navigation-taglib/src/main/java/com/liferay/site/navigation/taglib/internal/servlet/ServletContextUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="site-navigation/site-navigation-taglib/src/main/java/com/liferay/site/navigation/taglib/servlet/taglib/util/NavItemUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="social/social-bookmarks-taglib/src/main/java/com/liferay/social/bookmarks/taglib/internal/util/SocialBookmarksRegistryUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="staging/staging-taglib/src/main/java/com/liferay/staging/taglib/internal/servlet/ServletContextUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="template/template-taglib/src/main/java/com/liferay/template/taglib/internal/servlet/ServletContextUtil\.java" />
 		<suppress checks="ComponentExposureCheck" files="trash/trash-taglib/src/main/java/com/liferay/trash/taglib/internal/servlet/ServletContextUtil\.java" />
-		<suppress checks="ComponentExposureCheck" files="wiki/wiki-engine-creole/src/main/java/com/liferay/wiki/engine/creole/internal/util/WikiEngineCreoleComponentProvider\.java" />
 		<suppress checks="ComponentExposureCheck" files="wiki/wiki-web/src/main/java/com/liferay/wiki/web/internal/display/context/DLMimeTypeDisplayContextUtil\.java" />
-		<suppress checks="ComponentExposureCheck" files="wiki/wiki-web/src/main/java/com/liferay/wiki/web/internal/util/WikiWebComponentProvider\.java" />
 		<suppress checks="InnerExceptionClassCheck" files="data-engine/data-engine-rest-api/src/main/java/com/liferay/data/engine/rest/resource/exception/DataDefinitionValidationException\.java" />
 		<suppress checks="InnerExceptionClassCheck" files="data-engine/data-engine-rest-api/src/main/java/com/liferay/data/engine/rest/resource/exception/DataLayoutValidationException\.java" />
 		<suppress checks="InnerExceptionClassCheck" files="dynamic-data-mapping/dynamic-data-mapping-api/src/main/java/com/liferay/dynamic/data/mapping/exception/StorageFieldValueException\.java" />

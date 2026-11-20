@@ -26,6 +26,10 @@ tests:
             clientExtension:
                 configs: null
     -   asserts:
+            -   notExists:
+                    path: spec.version
+        it: Omits the version when none is set
+    -   asserts:
             -   equal:
                     path: spec.workloadRef
                     value:
@@ -108,3 +112,11 @@ tests:
             -   notExists:
                     path: spec.dxpNamespace
         it: Renders without the domain and dxpNamespace when they are empty
+    -   asserts:
+            -   equal:
+                    path: spec.version
+                    value: 5.0.0
+        it: Sets the version of the client extension
+        set:
+            clientExtension:
+                version: 5.0.0

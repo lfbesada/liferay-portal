@@ -7,6 +7,7 @@ package com.liferay.source.formatter.checkstyle.check;
 
 import com.puppycrawl.tools.checkstyle.api.DetailAST;
 import com.puppycrawl.tools.checkstyle.api.TokenTypes;
+import com.puppycrawl.tools.checkstyle.utils.AnnotationUtil;
 
 import java.util.List;
 
@@ -28,64 +29,78 @@ public class UnusedParameterCheck extends BaseCheck {
 			return;
 		}
 
-		List<DetailAST> constructorsAndMethodsDetailASTs = getAllChildTokens(
+		List<DetailAST> childDetailASTs = getAllChildTokens(
 			detailAST, true, TokenTypes.CTOR_DEF, TokenTypes.METHOD_DEF);
 
-		for (DetailAST constructorOrMethodDetailAST :
-				constructorsAndMethodsDetailASTs) {
-
-			_checkUnusedParameters(detailAST, constructorOrMethodDetailAST);
+		for (DetailAST childDetailAST : childDetailASTs) {
+			_checkUnusedParameters(detailAST, childDetailAST);
 		}
 	}
 
 	private void _checkUnusedParameters(
-		DetailAST classDetailAST, DetailAST constructorOrMethodDetailAST) {
+		DetailAST classDetailAST, DetailAST childDetailAST) {
 
-		DetailAST modifiersDetailAST =
-			constructorOrMethodDetailAST.findFirstToken(TokenTypes.MODIFIERS);
+		DetailAST modifiersDetailAST = childDetailAST.findFirstToken(
+			TokenTypes.MODIFIERS);
 
-		if (!modifiersDetailAST.branchContains(TokenTypes.LITERAL_PRIVATE)) {
-			return;
-		}
-
-		String constructorOrMethodName = getName(constructorOrMethodDetailAST);
-
-		if (constructorOrMethodName.equals("readObject") ||
-			constructorOrMethodName.equals("writeObject")) {
+		if ((!modifiersDetailAST.branchContains(TokenTypes.LITERAL_PRIVATE) &&
+			 !_isDSLifecycleMethod(childDetailAST)) ||
+			AnnotationUtil.containsAnnotation(childDetailAST, "Override")) {
 
 			return;
 		}
 
-		List<String> parameterNames = getParameterNames(
-			constructorOrMethodDetailAST);
+		String name = getName(childDetailAST);
 
-		if (parameterNames.isEmpty()) {
+		if (name.equals("readObject") || name.equals("writeObject")) {
 			return;
 		}
 
-		DetailAST statementsDetailAST =
-			constructorOrMethodDetailAST.findFirstToken(TokenTypes.SLIST);
+		List<DetailAST> parameterDefDetailASTs = getParameterDefs(
+			childDetailAST);
 
-		List<String> names = getNames(statementsDetailAST, true);
+		if (parameterDefDetailASTs.isEmpty()) {
+			return;
+		}
 
-		for (String parameterName :
-				getParameterNames(constructorOrMethodDetailAST)) {
+		DetailAST slistDetailAST = childDetailAST.findFirstToken(
+			TokenTypes.SLIST);
+
+		if ((slistDetailAST == null) ||
+			_isReferencedMethod(classDetailAST, childDetailAST)) {
+
+			return;
+		}
+
+		List<String> names = getNames(slistDetailAST, true);
+
+		for (DetailAST parameterDefDetailAST : parameterDefDetailASTs) {
+			String parameterName = getName(parameterDefDetailAST);
 
 			if (names.contains(parameterName) ||
-				_isReferencedMethod(
-					classDetailAST, constructorOrMethodDetailAST)) {
+				AnnotationUtil.containsAnnotation(
+					parameterDefDetailAST, "Reference")) {
 
 				continue;
 			}
 
-			log(
-				constructorOrMethodDetailAST, _MSG_UNUSED_PARAMETER,
-				parameterName);
+			log(childDetailAST, _MSG_UNUSED_PARAMETER, parameterName);
 		}
 	}
 
+	private boolean _isDSLifecycleMethod(DetailAST detailAST) {
+		if (AnnotationUtil.containsAnnotation(detailAST, "Activate") ||
+			AnnotationUtil.containsAnnotation(detailAST, "Deactivate") ||
+			AnnotationUtil.containsAnnotation(detailAST, "Modified")) {
+
+			return true;
+		}
+
+		return false;
+	}
+
 	private boolean _isReferencedMethod(
-		DetailAST classDetailAST, DetailAST constructorOrMethodDetailAST) {
+		DetailAST classDetailAST, DetailAST childDetailAST) {
 
 		List<DetailAST> methodReferenceDetailASTs = getAllChildTokens(
 			classDetailAST, true, TokenTypes.METHOD_REF);
@@ -94,13 +109,13 @@ public class UnusedParameterCheck extends BaseCheck {
 			return false;
 		}
 
-		String constructorOrMethodName = getName(constructorOrMethodDetailAST);
+		String name = getName(childDetailAST);
 
 		for (DetailAST methodReferenceDetailAST : methodReferenceDetailASTs) {
-			for (String name : getNames(methodReferenceDetailAST, true)) {
-				if (constructorOrMethodName.equals(name)) {
-					return true;
-				}
+			List<String> names = getNames(methodReferenceDetailAST, true);
+
+			if (names.contains(name)) {
+				return true;
 			}
 		}
 

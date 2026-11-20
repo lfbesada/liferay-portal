@@ -656,6 +656,9 @@ public interface LayoutLocalService
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public Layout getBrowsableLayout(Layout layout);
 
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public long[] getClassPKsByLaunchSetId(long groupId, long launchSetId);
+
 	/**
 	 * Returns the primary key of the default layout for the group.
 	 *
@@ -689,8 +692,7 @@ public interface LayoutLocalService
 	 */
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public long getDefaultPlid(
-			long groupId, boolean privateLayout, String portletId)
-		throws PortalException;
+		long groupId, boolean privateLayout, String portletId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public ExportActionableDynamicQuery getExportActionableDynamicQuery(
@@ -1125,6 +1127,10 @@ public interface LayoutLocalService
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int getLayoutsCount(
+		long groupId, boolean privateLayout, int[] statuses);
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int getLayoutsCount(
 		long groupId, boolean privateLayout, long parentLayoutId);
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
@@ -1294,6 +1300,13 @@ public interface LayoutLocalService
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public List<Layout> search(
+			long groupId, boolean privateLayout, String keywords,
+			boolean searchOnlyByTitle, String[] types, int[] statuses,
+			int start, int end, OrderByComparator<Layout> orderByComparator)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public List<Layout> search(
 			long groupId, long userId, boolean privateLayout, String keywords,
 			boolean searchOnlyByTitle, String[] types, int start, int end,
 			OrderByComparator<Layout> orderByComparator)
@@ -1314,8 +1327,20 @@ public interface LayoutLocalService
 
 	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
 	public int searchCount(
+			Group group, boolean privateLayout, String keywords,
+			boolean searchOnlyByTitle, String[] types, int[] statuses)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int searchCount(
 			long groupId, long userId, boolean privateLayout, String keywords,
 			boolean searchOnlyByTitle, String[] types)
+		throws PortalException;
+
+	@Transactional(propagation = Propagation.SUPPORTS, readOnly = true)
+	public int searchCount(
+			long groupId, long userId, boolean privateLayout, String keywords,
+			boolean searchOnlyByTitle, String[] types, int[] statuses)
 		throws PortalException;
 
 	/**
@@ -1491,6 +1516,12 @@ public interface LayoutLocalService
 			String colorSchemeId, String css)
 		throws PortalException;
 
+	public Layout updateMasterLayoutPageTemplateEntry(
+			long groupId, boolean privateLayout, long layoutId,
+			String masterLayoutPageTemplateEntryERC,
+			String masterLayoutPageTemplateEntryScopeERC)
+		throws PortalException;
+
 	/**
 	 * Updates the layout replacing its master layout page template entry
 	 * external reference code
@@ -1602,8 +1633,7 @@ public interface LayoutLocalService
 	 * @param privateLayout whether the layout is private to the group
 	 * @throws PortalException
 	 */
-	public void updatePriorities(long groupId, boolean privateLayout)
-		throws PortalException;
+	public void updatePriorities(long groupId, boolean privateLayout);
 
 	/**
 	 * Updates the priority of the layout.
@@ -1715,4 +1745,4 @@ public interface LayoutLocalService
 		throws E;
 
 }
-// LIFERAY-SERVICE-BUILDER-HASH:-1359112909
+// LIFERAY-SERVICE-BUILDER-HASH:-1167632332

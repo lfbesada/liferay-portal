@@ -4,17 +4,11 @@
 {{- $xr := .observed.composite.resource -}}
 
 {{- if eq $xr.spec.search.engine "opensearch" -}}
-{{- fail "Azure has no managed OpenSearch, so search.engine must be elasticsearch" -}}
+{{- fail "Azure has no managed OpenSearch, so \"search.engine\" must be \"elasticsearch\"" -}}
 {{- end -}}
 
-{{- if not $env.databaseEngine -}}
-{{- fail "Property \"database.engine\" must be set" -}}
-{{- end -}}
-
-{{- $observedDatabaseEngine := coalesce (dig "database-primary-blue" "resource" "metadata" "labels" "databaseEngine" "" $observedResources) (dig "database-primary-green" "resource" "metadata" "labels" "databaseEngine" "" $observedResources) -}}
-
-{{- if and $observedDatabaseEngine (ne $observedDatabaseEngine $env.databaseEngine) -}}
-{{- fail (printf "Unable to change the database engine of the environment from %q to %q. Create a new deployment to use another database engine." $observedDatabaseEngine $env.databaseEngine) -}}
+{{- if dig "search" "snapshots" "enabled" false $xr.spec -}}
+{{- fail "Search snapshots are only available on GCP, so \"search.snapshots.enabled\" must be false" -}}
 {{- end -}}
 
 {{- $backup := $xr.spec.backup -}}

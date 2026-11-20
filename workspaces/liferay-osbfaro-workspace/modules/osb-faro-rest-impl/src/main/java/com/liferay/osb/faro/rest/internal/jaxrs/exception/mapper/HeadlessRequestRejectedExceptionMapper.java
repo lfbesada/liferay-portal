@@ -41,8 +41,10 @@ public class HeadlessRequestRejectedExceptionMapper
 			headlessRequestRejectedException.getRetryAfterSeconds();
 
 		if ((retryAfterSeconds == null) ||
-			(response.getStatus() !=
-				Response.Status.SERVICE_UNAVAILABLE.getStatusCode())) {
+			((response.getStatus() !=
+				Response.Status.SERVICE_UNAVAILABLE.getStatusCode()) &&
+			 (response.getStatus() !=
+				 Response.Status.TOO_MANY_REQUESTS.getStatusCode()))) {
 
 			return response;
 		}
@@ -68,6 +70,40 @@ public class HeadlessRequestRejectedExceptionMapper
 					"Date range is too large",
 					headlessRequestRejectedException.getLimit(),
 					"Date range must be at most %d days"));
+		}
+
+		if (Objects.equals(messageKey, "mcp-cancelled-by-operator")) {
+			return new Problem(
+				Response.Status.SERVICE_UNAVAILABLE,
+				_getRetryTitle(
+					headlessRequestRejectedException.getRetryAfterSeconds(),
+					"The query was cancelled by an operator, retry %s"));
+		}
+
+		if (Objects.equals(messageKey, "mcp-concurrency-limit-exceeded") ||
+			Objects.equals(messageKey, "mcp-rate-limit-exceeded")) {
+
+			return new Problem(
+				Response.Status.TOO_MANY_REQUESTS,
+				_getRetryTitle(
+					headlessRequestRejectedException.getRetryAfterSeconds(),
+					"Request limit was exceeded, retry %s"));
+		}
+
+		if (Objects.equals(messageKey, "mcp-disabled")) {
+			return new Problem(
+				Response.Status.SERVICE_UNAVAILABLE,
+				_getRetryTitle(
+					headlessRequestRejectedException.getRetryAfterSeconds(),
+					"MCP is temporarily unavailable, retry %s"));
+		}
+
+		if (Objects.equals(messageKey, "mcp-tool-disabled")) {
+			return new Problem(
+				Response.Status.SERVICE_UNAVAILABLE,
+				_getRetryTitle(
+					headlessRequestRejectedException.getRetryAfterSeconds(),
+					"This tool is temporarily unavailable, retry %s"));
 		}
 
 		if (Objects.equals(messageKey, "page-size-limit-exceeded")) {

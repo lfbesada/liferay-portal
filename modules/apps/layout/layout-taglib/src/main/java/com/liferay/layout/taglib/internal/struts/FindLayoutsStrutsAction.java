@@ -25,6 +25,7 @@ import com.liferay.portal.kernel.util.ParamUtil;
 import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.portal.kernel.util.WebKeys;
+import com.liferay.portal.kernel.workflow.WorkflowConstants;
 
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
@@ -72,6 +73,18 @@ public class FindLayoutsStrutsAction implements StrutsAction {
 		boolean searchOnlyByTitle = ParamUtil.getBoolean(
 			httpServletRequest, "searchOnlyByTitle");
 
+		int[] statuses = new int[0];
+
+		boolean includeDraftLayouts = ParamUtil.getBoolean(
+			httpServletRequest, "includeDraftLayouts");
+
+		if (includeDraftLayouts) {
+			statuses = new int[] {
+				WorkflowConstants.STATUS_APPROVED,
+				WorkflowConstants.STATUS_DRAFT
+			};
+		}
+
 		int layoutsCount = _layoutLocalService.searchCount(
 			group, privateLayout, keywords, searchOnlyByTitle,
 			new String[] {
@@ -79,7 +92,8 @@ public class FindLayoutsStrutsAction implements StrutsAction {
 				LayoutConstants.TYPE_FULL_PAGE_APPLICATION,
 				LayoutConstants.TYPE_LINK_TO_LAYOUT, LayoutConstants.TYPE_PANEL,
 				LayoutConstants.TYPE_PORTLET, LayoutConstants.TYPE_URL
-			});
+			},
+			statuses);
 
 		boolean hasMoreElements = false;
 
@@ -119,7 +133,7 @@ public class FindLayoutsStrutsAction implements StrutsAction {
 					LayoutConstants.TYPE_PANEL, LayoutConstants.TYPE_PORTLET,
 					LayoutConstants.TYPE_URL
 				},
-				start, end, null);
+				statuses, start, end, null);
 
 			boolean checkDisplayPage = ParamUtil.getBoolean(
 				httpServletRequest, "checkDisplayPage");

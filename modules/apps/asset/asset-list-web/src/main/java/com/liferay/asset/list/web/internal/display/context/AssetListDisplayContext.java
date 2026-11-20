@@ -13,6 +13,7 @@ import com.liferay.asset.list.constants.AssetListActionKeys;
 import com.liferay.asset.list.constants.AssetListEntryTypeConstants;
 import com.liferay.asset.list.constants.AssetListPortletKeys;
 import com.liferay.asset.list.model.AssetListEntry;
+import com.liferay.asset.list.service.AssetListEntryAudienceEntryRelLocalServiceUtil;
 import com.liferay.asset.list.service.AssetListEntryLocalServiceUtil;
 import com.liferay.asset.list.service.AssetListEntrySegmentsEntryRelLocalServiceUtil;
 import com.liferay.asset.list.service.AssetListEntryServiceUtil;
@@ -34,9 +35,11 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.dao.search.EmptyOnClickRowChecker;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.feature.flag.FeatureFlagManagerUtil;
 import com.liferay.portal.kernel.language.LanguageUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.CompanyConstants;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.portlet.LiferayPortletRequest;
@@ -233,21 +236,6 @@ public class AssetListDisplayContext {
 		return _assetListEntryId;
 	}
 
-	public int getAssetListEntrySegmentsEntryRelsCount(
-		AssetListEntry assetListEntry) {
-
-		int assetListEntrySegmentsEntryRelsCount =
-			AssetListEntrySegmentsEntryRelLocalServiceUtil.
-				getAssetListEntrySegmentsEntryRelsCount(
-					assetListEntry.getAssetListEntryId());
-
-		if (assetListEntrySegmentsEntryRelsCount < 2) {
-			return 0;
-		}
-
-		return assetListEntrySegmentsEntryRelsCount;
-	}
-
 	public String getAssetListEntryTitle() {
 		AssetListEntry assetListEntry = getAssetListEntry();
 
@@ -316,6 +304,36 @@ public class AssetListDisplayContext {
 			_themeDisplay.getScopeGroupId(),
 			PortalUtil.getClassNameId(AssetListEntry.class),
 			String.valueOf(assetListEntry.getAssetListEntryId()));
+	}
+
+	public int getAssetListEntryVariationsCount(AssetListEntry assetListEntry) {
+		if (FeatureFlagManagerUtil.isEnabled(
+				assetListEntry.getCompanyId(), "LPD-109242") &&
+			!FeatureFlagManagerUtil.isEnabled(
+				CompanyConstants.SYSTEM, "LPD-78863")) {
+
+			int assetListEntryAudienceEntryRelsCount =
+				AssetListEntryAudienceEntryRelLocalServiceUtil.
+					getAssetListEntryAudienceEntryRelsCount(
+						assetListEntry.getAssetListEntryId());
+
+			if (assetListEntryAudienceEntryRelsCount == 0) {
+				return 0;
+			}
+
+			return assetListEntryAudienceEntryRelsCount + 1;
+		}
+
+		int assetListEntrySegmentsEntryRelsCount =
+			AssetListEntrySegmentsEntryRelLocalServiceUtil.
+				getAssetListEntrySegmentsEntryRelsCount(
+					assetListEntry.getAssetListEntryId());
+
+		if (assetListEntrySegmentsEntryRelsCount < 2) {
+			return 0;
+		}
+
+		return assetListEntrySegmentsEntryRelsCount;
 	}
 
 	public String getAudienceEntryERC() {

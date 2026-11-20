@@ -32,6 +32,10 @@ public interface PanelApp extends PanelEntry {
 
 	public String getIcon();
 
+	public default String getIconURL() {
+		return null;
+	}
+
 	/**
 	 * Returns the number of notifications for the user.
 	 *

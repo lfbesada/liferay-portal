@@ -213,7 +213,7 @@
 		<finder name="CorpProjectUuid" return-type="FaroProject">
 			<finder-column name="corpProjectUuid" />
 		</finder>
-		<finder name="SalesforceAccountId" return-type="FaroProject" unique="true">
+		<finder name="SalesforceAccountId" return-type="Collection">
 			<finder-column name="salesforceAccountId" />
 		</finder>
 		<finder name="ServerLocation" return-type="Collection">
@@ -268,7 +268,9 @@
 
 		<column name="activeLogicalBytes" type="long" />
 		<column name="anonymousIndividualsCount" type="long" />
+		<column name="billableEventsCount" type="long" />
 		<column name="eventsCount" type="long" />
+		<column name="experimentEventsCount" type="long" />
 		<column name="faroProjectId" type="long" />
 		<column name="knownIndividualsCount" type="long" />
 		<column name="longTermLogicalBytes" type="long" />

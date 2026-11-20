@@ -88,6 +88,7 @@ DockerfileInstructionCheck | [Styling](styling_checks.md#styling-checks) | Docke
 EmbeddedJSONCheck | [Styling](styling_checks.md#styling-checks) | .action, .function, .hcl, .jelly, .jrxml, .macro, .markdown, .md, .pom, .project, .properties, .qti, .svg, .testcase, .tf, .toggle, .tpl, .wsdl, .xlf, .xml, or .xsd | Ensures consistent formatting for embedded JSON. |
 EmptyCollectionCheck | [Styling](styling_checks.md#styling-checks) | .java, .jsp, .jspf, .jspx, .tag, .tpl, or .vm | Checks that there are no calls to `Collections.EMPTY_LIST`, `Collections.EMPTY_MAP` or `Collections.EMPTY_SET`. |
 EmptyConstructorCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .java | Finds unnecessary empty constructors. |
+[EmptySafeCloseableCheck](check/empty_safe_closeable_check.md#emptysafecloseablecheck) | [Styling](styling_checks.md#styling-checks) | .java | Finds empty lambdas used as `SafeCloseable`, which should use `SafeCloseable.EMPTY` instead. |
 EnumConstantDividerCheck | [Styling](styling_checks.md#styling-checks) | .java | Find unnecessary empty lines between enum constants. |
 EnumConstantOrderCheck | [Styling](styling_checks.md#styling-checks) | .java | Checks the order of enum constants. |
 EqualClauseIfStatementsCheck | [Styling](styling_checks.md#styling-checks) | .java | Finds consecutive if-statements with identical clauses. |
@@ -392,6 +393,7 @@ LocaleUtilCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-check
 [LogMessageCheck](check/message_check.md#messagecheck) | [Styling](styling_checks.md#styling-checks) | .java | Validates messages that are passed to `log.*` calls. |
 LogParametersCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .java, .jsp, .jspf, .jspx, .tag, .tpl, or .vm | Validates the values of parameters passed to `_log.*` calls. |
 [MVCCommandNameCheck](check/mvc_command_name_check.md#mvccommandnamecheck) | [Naming Conventions](naming_conventions_checks.md#naming-conventions-checks) | .java | Checks for consistent naming for values of `mvc.command.name`. |
+[MVCRenderCommandViewTemplateCheck](check/mvc_render_command_view_template_check.md#mvcrendercommandviewtemplatecheck) | [Performance](performance_checks.md#performance-checks) | .java | Finds MVC render commands that only map `/` to a constant path that the portlet can declare as `view-template`. |
 [MapBuilderCheck](check/builder_check.md#buildercheck) | [Miscellaneous](miscellaneous_checks.md#miscellaneous-checks) | .java, .jsp, .jspf, .jspx, .tag, .tpl, or .vm | Checks that `ConcurrentHashMapBuilder`, `HashMapBuilder`, `LinkedHashMapBuilder` or `TreeMapBuilder` is used when possible. |
 [MapIterationCheck](check/map_iteration_check.md#mapiterationcheck) | [Performance](performance_checks.md#performance-checks) | .java, .jsp, .jspf, .jspx, .tag, .tpl, or .vm | Checks that there are no unnecessary map iterations. |
 MarkdownBreakingChangesAmendmentsFileCheck | [Styling](styling_checks.md#styling-checks) | .markdown or .md | Checks that breaking changes amendments should contain the schematized breaking changes in `BREAKING_CHANGES_AMENDMENTS.md` file. |
@@ -502,6 +504,7 @@ RecordPatternCheck | [Performance](performance_checks.md#performance-checks) | .
 RedundantBranchingStatementCheck | [Performance](performance_checks.md#performance-checks) | .java | Finds unnecessary branching (`break`, `continue` or `return`) statements. |
 [RedundantLogCheck](check/redundant_log_check.md#redundantlogcheck) | [Performance](performance_checks.md#performance-checks) | .java | Finds unnecessary logs. |
 ReferenceAnnotationCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .java | Performs several checks on classes with @Reference annotation. |
+[RegisterServicePropertiesCheck](check/register_service_properties_check.md#registerservicepropertiescheck) | [Performance](performance_checks.md#performance-checks) | .java | Finds `registerService` calls that pass an empty `HashMapDictionary` or `Hashtable` as the service properties, which should pass `null` instead. |
 [RequireThisCheck](https://checkstyle.sourceforge.io/checks/coding/requirethis.html) | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .java | Checks that references to instance variables and methods of the present object are explicitly of the form 'this.varName' or 'this.methodName(args)' and that those references don't rely on the default behavior when 'this.' is absent. |
 [ResourceBundleCheck](check/resource_bundle_check.md#resourcebundlecheck) | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .java, .jsp, .jspf, .jspx, .tag, .tpl, or .vm | Checks that there are no calls to `java.util.ResourceBundle.getBundle`. |
 ResourceImplCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .java | Performs several checks on `*ResourceImpl` classes. |
@@ -577,7 +580,7 @@ UnnecessaryTypeCastCheck | [Performance](performance_checks.md#performance-check
 UnparameterizedClassCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .java, .jsp, .jspf, .jspx, .tag, .tpl, or .vm | Finds `Class` instantiation without generic type. |
 UnprocessedExceptionCheck | [Performance](performance_checks.md#performance-checks) | .java | Finds cases where an `Exception` is swallowed without being processed. |
 UnusedMethodCheck | [Performance](performance_checks.md#performance-checks) | .java | Finds private methods that are not used. |
-UnusedParameterCheck | [Performance](performance_checks.md#performance-checks) | .java | Finds parameters in private methods that are not used. |
+UnusedParameterCheck | [Performance](performance_checks.md#performance-checks) | .java | Finds parameters in private methods and DS lifecycle methods that are not used. |
 UnusedVariableCheck | [Performance](performance_checks.md#performance-checks) | .java | Finds variables that are declared, but not used. |
 UnwrappedVariableInfoCheck | [Bug Prevention](bug_prevention_checks.md#bug-prevention-checks) | .java | Finds cases where the variable should be wrapped into an inner class in order to defer array elements initialization. |
 UpgradeBNDDeclarativeServicesCheck | [Upgrade](upgrade_checks.md#upgrade-checks) | .bnd, .ftl, .gradle, .java, .json, .jsp, .jspf, .scss, or .vm | Adds `-dsannotations-options: inherit` to `bnd.bnd` if it does not yet exist. |

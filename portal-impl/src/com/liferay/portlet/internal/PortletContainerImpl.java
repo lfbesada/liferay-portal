@@ -94,7 +94,6 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.Serializable;
-import java.io.Writer;
 
 import java.util.Arrays;
 import java.util.HashMap;
@@ -454,26 +453,24 @@ public class PortletContainerImpl implements PortletContainer {
 			_log.debug("Content type " + contentType);
 		}
 
+		LiferayActionRequest liferayActionRequest = ActionRequestFactory.create(
+			httpServletRequest, portlet, invokerPortlet, portletContext,
+			windowState, portletMode, portletPreferences, layout.getPlid());
+
+		LiferayActionResponse liferayActionResponse =
+			ActionResponseFactory.create(
+				liferayActionRequest, httpServletResponse,
+				PortalUtil.getUser(httpServletRequest), layout);
+
+		liferayActionRequest.defineObjects(
+			portletConfig, liferayActionResponse);
+
+		ServiceContext serviceContext = ServiceContextFactory.getInstance(
+			liferayActionRequest);
+
+		ServiceContextThreadLocal.pushServiceContext(serviceContext);
+
 		try {
-			LiferayActionRequest liferayActionRequest =
-				ActionRequestFactory.create(
-					httpServletRequest, portlet, invokerPortlet, portletContext,
-					windowState, portletMode, portletPreferences,
-					layout.getPlid());
-
-			LiferayActionResponse liferayActionResponse =
-				ActionResponseFactory.create(
-					liferayActionRequest, httpServletResponse,
-					PortalUtil.getUser(httpServletRequest), layout);
-
-			liferayActionRequest.defineObjects(
-				portletConfig, liferayActionResponse);
-
-			ServiceContext serviceContext = ServiceContextFactory.getInstance(
-				liferayActionRequest);
-
-			ServiceContextThreadLocal.pushServiceContext(serviceContext);
-
 			invokerPortlet.processAction(
 				liferayActionRequest, liferayActionResponse);
 
@@ -904,9 +901,10 @@ public class PortletContainerImpl implements PortletContainer {
 			}
 
 			if (writeOutput) {
-				Writer writer = httpServletResponse.getWriter();
+				StringBundler sb =
+					bufferCacheServletResponse.getStringBundler();
 
-				writer.write(bufferCacheServletResponse.getString());
+				sb.writeTo(httpServletResponse.getWriter());
 			}
 		}
 		finally {
@@ -1031,12 +1029,12 @@ public class PortletContainerImpl implements PortletContainer {
 		liferayResourceRequest.defineObjects(
 			portletConfig, liferayResourceResponse);
 
+		ServiceContext serviceContext = ServiceContextFactory.getInstance(
+			liferayResourceRequest);
+
+		ServiceContextThreadLocal.pushServiceContext(serviceContext);
+
 		try {
-			ServiceContext serviceContext = ServiceContextFactory.getInstance(
-				liferayResourceRequest);
-
-			ServiceContextThreadLocal.pushServiceContext(serviceContext);
-
 			invokerPortlet.serveResource(
 				liferayResourceRequest, liferayResourceResponse);
 

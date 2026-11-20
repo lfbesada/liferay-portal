@@ -146,55 +146,6 @@ definition {
 	}
 
 	@summary = "Default summary"
-	macro addExistingRelatedAssetCP(webContentTitle = null, assetTitle = null, siteName = null, assetType = null, edit = null) {
-		var key_webContentTitle = ${webContentTitle};
-
-		RelatedAssets.selectAsset(assetTitle = ${assetTitle});
-
-		SelectFrame(value1 = "relative=top");
-
-		var key_assetTitle = ${assetTitle};
-
-		AssertTextEquals.assertPartialText(
-			locator1 = "AssetRelatedAssets#RELATED_ASSETS_TABLE_TYPE",
-			value1 = ${assetType});
-
-		AssertTextEquals.assertPartialText(
-			locator1 = "AssetRelatedAssets#RELATED_ASSETS_TABLE_TITLE",
-			value1 = ${assetTitle});
-
-		AssertTextEquals.assertPartialText(
-			locator1 = "AssetRelatedAssets#RELATED_ASSETS_TABLE_SCOPE",
-			value1 = ${siteName});
-
-		AssertElementPresent(locator1 = "AssetRelatedAssets#RELATED_ASSETS_TABLE_REMOVE_LINK");
-
-		if (${edit} == "true") {
-			WebContent.publishExistingWCArticleWithPermissions();
-		}
-		else {
-			WebContent.publishWithPermissions();
-		}
-	}
-
-	@summary = "Default summary"
-	macro addExpirationDateCP(expirationDate = null) {
-		Panel.expandPanel(panel = "Schedule");
-
-		AssertChecked(
-			locator1 = "Checkbox#NEVER_EXPIRE",
-			value1 = "Never Expire");
-
-		Uncheck(
-			locator1 = "Checkbox#NEVER_EXPIRE",
-			value1 = "Never Expire");
-
-		Type.clickAtType(
-			locator1 = "TextInput#EXPIRATION_DATE",
-			value1 = ${expirationDate});
-	}
-
-	@summary = "Default summary"
 	macro addFailWithoutRequiredCategoryAssetTypeCP(vocabularyName = null) {
 		PortletEntry.inputTitle(title = "Web Content Title");
 
@@ -1425,14 +1376,9 @@ definition {
 	macro editWebContentContent(saveAsDraft = null, webContentContentEdit = null, webContentTitleEdit = null) {
 		WebContent.addCP(webContentTitle = ${webContentTitleEdit});
 
-		SelectFrame.selectFrameNoLoading(locator1 = "CKEditor#BODY_FIELD_IFRAME_2");
-
-		Type(
-			key_fieldLabel = "Content",
-			locator1 = "CKEditor#BODY",
-			value1 = ${webContentContentEdit});
-
-		SelectFrame(value1 = "relative=top");
+		CKEditor.addContentInWebContent(
+			content = ${webContentContentEdit},
+			fieldLabel = "Content");
 
 		if (${saveAsDraft} == "true") {
 			WebContent.saveAsDraftWithPermissions();
@@ -2091,31 +2037,6 @@ definition {
 	}
 
 	@summary = "Default summary"
-	macro uploadVideo(navTab = null, videoShortcutTitle = null, dmDocumentURL = null, videoShortcutPreview = null) {
-		Click(locator1 = "WCEditWebContent#VIDEO_BUTTON");
-
-		if (${navTab} == "URL") {
-			ItemSelector.addVideoFromURL(
-				navTab = ${navTab},
-				videoSourceURL = ${dmDocumentURL});
-		}
-		else if (${navTab} == "Documents and Media") {
-			ItemSelector.addVideoFromDM(
-				navTab = ${navTab},
-				videoShortcutPreview = ${videoShortcutPreview},
-				videoShortcutTitle = ${videoShortcutTitle});
-		}
-
-		SelectFrame.selectFrameNoLoading(
-			key_fieldLabel = "Content",
-			locator1 = "CKEditor#BODY_FIELD_IFRAME_WEB_CONTENT_ARTICLE");
-
-		AssertElementPresent(locator1 = "CKEditor#CONTENT_VIDEO_LINK_IMAGE");
-
-		IFrame.selectTopFrame();
-	}
-
-	@summary = "Default summary"
 	macro viewApprovedStatus(webContentTitle = null) {
 		var key_webContentTitle = ${webContentTitle};
 
@@ -2298,33 +2219,6 @@ definition {
 	}
 
 	@summary = "Default summary"
-	macro viewDisplayStyleCP(webContentTitle = null) {
-		LexiconEntry.changeDisplayStyle(displayStyle = "cards");
-
-		LexiconEntry.viewActiveDisplayStyle(displayStyle = "cards");
-
-		AssertElementPresent(
-			key_webContentTitle = ${webContentTitle},
-			locator1 = "WC#ENTRY_CARDS_THUMBNAIL");
-
-		LexiconEntry.changeDisplayStyle(displayStyle = "list");
-
-		LexiconEntry.viewActiveDisplayStyle(displayStyle = "list");
-
-		AssertElementPresent(
-			key_webContentTitle = ${webContentTitle},
-			locator1 = "WC#ENTRY_LIST_THUMBNAIL");
-
-		LexiconEntry.changeDisplayStyle(displayStyle = "table");
-
-		LexiconEntry.viewActiveDisplayStyle(displayStyle = "table");
-
-		AssertElementPresent(
-			key_webContentTitle = ${webContentTitle},
-			locator1 = "WC#ENTRY_TABLE_TITLE");
-	}
-
-	@summary = "Default summary"
 	macro viewDuplicatedField(fieldLabel = null, totalPortletCount = null) {
 		var i = 0;
 
@@ -2358,19 +2252,6 @@ definition {
 			key_entryTitle = ${entryTitle},
 			locator1 = "WCEditWebContent#ENTRY_LIST_AUTHOR",
 			value1 = ${author});
-	}
-
-	@summary = "Default summary"
-	macro viewExpirationDateCP(expirationDate = null) {
-		Panel.expandPanel(panel = "Schedule");
-
-		AssertNotChecked(
-			locator1 = "Checkbox#NEVER_EXPIRE",
-			value1 = "Never Expire");
-
-		AssertTextEquals(
-			locator1 = "TextInput#EXPIRATION_DATE",
-			value1 = ${expirationDate});
 	}
 
 	@summary = "Default summary"
@@ -2635,16 +2516,6 @@ definition {
 				locator1 = "TextInput#INPUT_ID",
 				value1 = ${templateLocalizationName});
 		}
-	}
-
-	@summary = "Default summary"
-	macro viewStructureViaAddMenuCP(structureName = null) {
-		LexiconEntry.gotoAdd();
-
-		AssertTextEquals(
-			key_menuItem = ${structureName},
-			locator1 = "MenuItem#ANY_MENU_ITEM",
-			value1 = ${structureName});
 	}
 
 	@summary = "Default summary"

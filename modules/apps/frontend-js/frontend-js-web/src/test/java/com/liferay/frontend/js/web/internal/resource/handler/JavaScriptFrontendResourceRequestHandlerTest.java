@@ -53,7 +53,7 @@ public class JavaScriptFrontendResourceRequestHandlerTest
 		LiferayUnitTestRule.INSTANCE;
 
 	@Parameterized.Parameters(
-		name = "{0}: deployHashed={1},  deployLanguageJSON={2}, deployTranslatable={3}, requestURL={4}"
+		name = "{0}: deployHashed={1},  deployLanguageImport={2}, deployTranslatable={3}, requestURL={4}"
 	)
 	public static Collection<Object[]> data() {
 		return Arrays.asList(
@@ -127,13 +127,10 @@ public class JavaScriptFrontendResourceRequestHandlerTest
 
 		mockDeployedFile(
 			hashedFilesRegistry, deployHashed ? _VALID_HASHED_URL : _VALID_URL,
-			deployTranslatable ? _TRANSLATABLE_JS_CONTENT : _JS_CONTENT);
-
-		if (deployLanguageJSON) {
-			mockDeployedFile(
-				hashedFilesRegistry,
-				"/o/" + _SERVLET_CONTEXT_NAME + "/language.json", "{}");
-		}
+			_getDeployedContent());
+		mockDeployedFile(
+			hashedFilesRegistry,
+			"/o/" + _SERVLET_CONTEXT_NAME + "/language.json", "{}");
 
 		JavaScriptFrontendResourceRequestHandler
 			javaScriptFrontendResourceRequestHandler =
@@ -236,12 +233,7 @@ public class JavaScriptFrontendResourceRequestHandlerTest
 
 		if (_EXPECTED_CONTENT[index] == ExpectedContent.JS) {
 			Assert.assertEquals(
-				_JS_CONTENT,
-				StreamUtil.toString(frontendResource.getInputStream()));
-		}
-		else if (_EXPECTED_CONTENT[index] == ExpectedContent.TRANSLATABLE_JS) {
-			Assert.assertEquals(
-				_TRANSLATABLE_JS_CONTENT,
+				_getDeployedContent(),
 				StreamUtil.toString(frontendResource.getInputStream()));
 		}
 		else if (_EXPECTED_CONTENT[index] == ExpectedContent.TRANSLATED_JS) {
@@ -255,7 +247,7 @@ public class JavaScriptFrontendResourceRequestHandlerTest
 	public boolean deployHashed;
 
 	@Parameterized.Parameter(2)
-	public boolean deployLanguageJSON;
+	public boolean deployLanguageImport;
 
 	@Parameterized.Parameter(3)
 	public boolean deployTranslatable;
@@ -265,6 +257,22 @@ public class JavaScriptFrontendResourceRequestHandlerTest
 
 	@Parameterized.Parameter(4)
 	public String requestURL;
+
+	private String _getDeployedContent() {
+		String content = _JS_CONTENT;
+
+		if (deployTranslatable) {
+			content = _TRANSLATABLE_JS_CONTENT;
+		}
+
+		if (deployLanguageImport) {
+			content =
+				"import '@liferay/language/frontend-js-web/all.js';\n" +
+					content;
+		}
+
+		return content;
+	}
 
 	private Language _mockLanguage() {
 		Language language = Mockito.mock(Language.class);
@@ -306,12 +314,11 @@ public class JavaScriptFrontendResourceRequestHandlerTest
 	private static final ExpectedContent[] _EXPECTED_CONTENT = {
 		null, null, null, null, ExpectedContent.JS, null, null,
 		ExpectedContent.TRANSLATED_JS, null, null, ExpectedContent.JS, null,
-		null, ExpectedContent.TRANSLATABLE_JS, ExpectedContent.JS,
-		ExpectedContent.JS, ExpectedContent.JS, ExpectedContent.TRANSLATED_JS,
+		null, ExpectedContent.JS, ExpectedContent.JS, ExpectedContent.JS,
+		ExpectedContent.JS, ExpectedContent.TRANSLATED_JS,
 		ExpectedContent.TRANSLATED_JS, ExpectedContent.TRANSLATED_JS,
 		ExpectedContent.JS, ExpectedContent.JS, ExpectedContent.JS,
-		ExpectedContent.TRANSLATABLE_JS, ExpectedContent.TRANSLATABLE_JS,
-		ExpectedContent.TRANSLATABLE_JS
+		ExpectedContent.JS, ExpectedContent.JS, ExpectedContent.JS
 	};
 
 	private static final ExpectedETag[] _EXPECTED_E_TAG = {
@@ -416,7 +423,7 @@ public class JavaScriptFrontendResourceRequestHandlerTest
 
 	private enum ExpectedContent {
 
-		JS, TRANSLATABLE_JS, TRANSLATED_JS
+		JS, TRANSLATED_JS
 
 	}
 

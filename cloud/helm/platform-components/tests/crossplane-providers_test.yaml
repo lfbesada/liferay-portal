@@ -47,8 +47,26 @@ tests:
                     path: spec.deploymentTemplate.spec.template.spec.containers[0].resources
         it: Leaves the container resources to Crossplane only when a provider sets none
         set:
-            operatorApplications.crossplane.providers.provider-nop:
+            crossplane.providers.provider-nop:
                 package: xpkg.upbound.io/crossplane-contrib/provider-nop:v0.4.0
+    -   asserts:
+            -   hasDocuments:
+                    count: 2
+            -   documentSelector:
+                    path: metadata.name
+                    value: provider-kubernetes
+                equal:
+                    path: kind
+                    value: Provider
+            -   documentSelector:
+                    path: metadata.name
+                    value: provider-kubernetes-runtime-config
+                equal:
+                    path: kind
+                    value: DeploymentRuntimeConfig
+        it: Leaves the default Kubernetes provider config to another release and keeps the providers
+        set:
+            crossplane.clusterProviderConfig.enabled: false
     -   asserts:
             -   notExists:
                     path: spec.deploymentTemplate.spec.template.spec.serviceAccountName
@@ -59,14 +77,14 @@ tests:
             value: provider-nop-runtime-config
         it: Leaves the service account to Crossplane when a provider needs no cloud identity
         set:
-            operatorApplications.crossplane.providers.provider-nop:
+            crossplane.providers.provider-nop:
                 package: xpkg.upbound.io/crossplane-contrib/provider-nop:v0.4.0
     -   asserts:
             -   hasDocuments:
                     count: 0
         it: Omits the providers when Crossplane is disabled
         set:
-            operatorApplications.crossplane.enabled: false
+            crossplane.enabled: false
     -   asserts:
             -   equal:
                     path: metadata.annotations["argocd.argoproj.io/sync-wave"]

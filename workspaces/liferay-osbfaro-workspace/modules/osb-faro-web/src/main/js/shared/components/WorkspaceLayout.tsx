@@ -155,18 +155,18 @@ const LifecycleDashboard = lazy(
 			/* webpackChunkName: "LifecycleDashboard" */ 'lifecycle/pages/BaseLifecycle'
 		)
 );
+const LifecycleDuplicate = lazy(
+	() =>
+		import(
+
+			/* webpackChunkName: "LifecycleDuplicate" */ 'lifecycle/pages/DuplicateLifecycle'
+		)
+);
 const LifecycleEdit = lazy(
 	() =>
 		import(
 
 			/* webpackChunkName: "LifecycleEdit" */ 'lifecycle/pages/EditLifecycle'
-		)
-);
-const LifecycleRedirect = lazy(
-	() =>
-		import(
-
-			/* webpackChunkName: "LifecycleRedirect" */ 'lifecycle/pages/LifecycleRedirect'
 		)
 );
 
@@ -277,6 +277,16 @@ const WorkspaceLayer = ({groupId}: {groupId: string}) => {
 								<Route
 									element={
 										<BundleRouter
+											data={LifecycleDuplicate}
+											destructured={false}
+										/>
+									}
+									path=":channelId?/lifecycle/:sourceLifecycleId/duplicate"
+								/>
+
+								<Route
+									element={
+										<BundleRouter
 											data={LifecycleEdit}
 											destructured={false}
 										/>
@@ -365,21 +375,11 @@ const WorkspaceLayer = ({groupId}: {groupId: string}) => {
 								<Route
 									element={
 										<BundleRouter
-											data={LifecycleRedirect}
-											destructured={false}
-										/>
-									}
-									path=":channelId?/lifecycle"
-								/>
-
-								<Route
-									element={
-										<BundleRouter
 											data={LifecycleDashboard}
 											destructured={false}
 										/>
 									}
-									path=":channelId?/lifecycle/:lifecycleId"
+									path=":channelId?/lifecycle/:lifecycleId?"
 								/>
 							</Route>
 

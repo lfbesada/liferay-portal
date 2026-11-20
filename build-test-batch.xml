@@ -1296,9 +1296,17 @@ mariadb.executable=${mariadb.executable}]]></echo>
 				<param name="test.sql.zip.url" value="@{test.sql.zip.url}" />
 			</antcall>
 
-			<antcall inheritAll="false" target="setup-libs" />
+			<if>
+				<available file="liferay-portal-source.tar.gz" />
+				<then>
+					<antcall inheritAll="false" target="update-gradle-properties" />
+				</then>
+				<else>
+					<antcall inheritAll="false" target="setup-libs" />
 
-			<antcall inheritAll="false" target="setup-sdk" />
+					<antcall inheritAll="false" target="setup-sdk" />
+				</else>
+			</if>
 
 			<antcall inheritAll="false" target="setup-yarn" />
 
@@ -1575,9 +1583,17 @@ app.server.type=@{app.server.type}]]></echo>
 		<attribute default="true" name="setup.testable.tomcat" />
 
 		<sequential>
-			<antcall inheritAll="false" target="setup-libs" />
+			<if>
+				<available file="liferay-portal-source.tar.gz" />
+				<then>
+					<antcall inheritAll="false" target="update-gradle-properties" />
+				</then>
+				<else>
+					<antcall inheritAll="false" target="setup-libs" />
 
-			<antcall inheritAll="false" target="setup-sdk" />
+					<antcall inheritAll="false" target="setup-sdk" />
+				</else>
+			</if>
 
 			<antcall inheritAll="false" target="setup-yarn" />
 
@@ -3866,6 +3882,7 @@ ${poshi.runner.testsuite.testcase.name}</echo>
 										</or>
 										<then>
 											<ant dir="portal-kernel" inheritAll="false" target="test-class">
+												<property name="ignore.errors.file.name" value="${project.dir}/portal-web/test-ignorable-error-lines.xml" />
 												<property name="test.class" value="PortalLogAssertorTest" />
 											</ant>
 										</then>
@@ -10283,6 +10300,23 @@ ${output.content}</echo>
 		</run-batch-test>
 	</target>
 
+	<target name="portal-public-compile">
+		<run-batch-test>
+			<test-action>
+				<if>
+					<not>
+						<available file="${liferay.portal.public.dir}" type="dir" />
+					</not>
+					<then>
+						<fail>Unable to find the public portal directory ${liferay.portal.public.dir}</fail>
+					</then>
+				</if>
+
+				<ant antfile="${liferay.portal.public.dir}/build.xml" dir="${liferay.portal.public.dir}" inheritall="false" target="all" />
+			</test-action>
+		</run-batch-test>
+	</target>
+
 	<target name="portal-renamed-tomcat-in-path-mysql84">
 		<run-portal-renamed-tomcat-in-path-test database.type="mysql" database.version="8.4" />
 	</target>
@@ -10494,7 +10528,9 @@ ${output.content}</echo>
 
 		<local name="source.formatter.tree.sha" />
 
-		<exec executable="git" failonerror="true" outputproperty="source.formatter.tree.sha">
+		<property file="source.formatter.tree.properties" />
+
+		<exec executable="git" failonerror="true" outputproperty="source.formatter.tree.sha" unless:set="source.formatter.tree.sha">
 			<arg value="rev-parse" />
 			<arg value="${liferay.portal.branch}:modules/util/source-formatter" />
 		</exec>
@@ -11116,6 +11152,117 @@ junit.jvm.override.version=21</echo>
 
 	<target name="unit_stable">
 		<antcall target="unit" />
+	</target>
+
+	<target name="validate-allowed-files">
+		<run-batch-test>
+			<test-action>
+				<exec executable="git" failonerror="true" outputproperty="git.diff">
+					<arg value="diff" />
+					<arg value="--diff-filter=AMR" />
+					<arg value="--name-only" />
+					<arg value="${liferay.portal.branch}...HEAD" />
+				</exec>
+
+				<beanshell>
+					<![CDATA[
+						import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
+
+						import org.apache.tools.ant.types.selectors.SelectorUtils;
+
+						public String getCompanionBranch() {
+							String currentBranch = getCurrentBranch();
+
+							if (currentBranch.endsWith("-private")) {
+								return currentBranch.replaceFirst("-private$", "");
+							}
+
+							return currentBranch + "-private";
+						}
+
+						public String getCurrentBranch() {
+							return project.getProperty("liferay.portal.branch");
+						}
+
+						public String[] getFilePathPatterns(String propertyName) {
+							String propertyValue = project.getProperty(propertyName);
+
+							if (JenkinsResultsParserUtil.isNullOrEmpty(propertyValue)) {
+								return new String[0];
+							}
+
+							return propertyValue.split("\\s*,\\s*");
+						}
+
+						public boolean isMatchingFilePathPatterns(String filePath, String[] filePathPatterns) {
+							for (String filePathPattern : filePathPatterns) {
+								if (SelectorUtils.matchPath(filePathPattern, filePath)) {
+									return true;
+								}
+							}
+
+							return false;
+						}
+
+						public boolean isPrivateBranch() {
+							String currentBranch = getCurrentBranch();
+
+							if (currentBranch.endsWith("-private")) {
+								return true;
+							}
+
+							return false;
+						}
+
+						List prohibitedFilePaths = new ArrayList();
+
+						String gitDiff = project.getProperty("git.diff");
+
+						if (!JenkinsResultsParserUtil.isNullOrEmpty(gitDiff)) {
+							boolean privateBranch = isPrivateBranch();
+
+							String[] privateFilePathPatterns = getFilePathPatterns("working.dir.private.allowed.file.paths");
+							String[] sharedFilePathPatterns = getFilePathPatterns("working.dir.shared.allowed.file.paths");
+
+							for (String filePath : gitDiff.split("\n")) {
+								filePath = filePath.trim();
+
+								if (filePath.isEmpty() || isMatchingFilePathPatterns(filePath, sharedFilePathPatterns)) {
+									continue;
+								}
+
+								boolean privateFilePath = isMatchingFilePathPatterns(filePath, privateFilePathPatterns);
+
+								if ((privateBranch && !privateFilePath) || (!privateBranch && privateFilePath)) {
+									prohibitedFilePaths.add(filePath);
+								}
+							}
+						}
+
+						if (!prohibitedFilePaths.isEmpty()) {
+							StringBuilder sb = new StringBuilder();
+
+							sb.append("FAILURE: These files are not allowed in ");
+							sb.append(getCurrentBranch());
+							sb.append(", please submit them to ");
+							sb.append(getCompanionBranch());
+							sb.append(":");
+
+							for (String prohibitedFilePath : prohibitedFilePaths) {
+								sb.append("\n>    ");
+								sb.append(prohibitedFilePath);
+							}
+
+							project.setProperty("allowed.file.paths.error.message", sb.toString());
+						}
+					]]>
+				</beanshell>
+
+				<fail if="allowed.file.paths.error.message" message="${allowed.file.paths.error.message}" />
+
+				<echo>All changed file paths are allowed in ${liferay.portal.branch}</echo>
+			</test-action>
+		</run-batch-test>
 	</target>
 
 	<target name="workspaces-compile">

@@ -11,6 +11,7 @@ import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.asset.kernel.service.AssetTagLocalService;
 import com.liferay.asset.kernel.service.AssetVocabularyLocalService;
+import com.liferay.document.library.constants.DLPortletKeys;
 import com.liferay.document.library.kernel.model.DLFolderConstants;
 import com.liferay.document.library.kernel.service.DLAppLocalService;
 import com.liferay.document.library.kernel.service.DLAppService;
@@ -38,6 +39,7 @@ import com.liferay.portal.kernel.test.util.GroupTestUtil;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.ContentTypes;
 import com.liferay.portal.kernel.util.JavaConstants;
@@ -55,7 +57,6 @@ import jakarta.portlet.WindowState;
 import jakarta.portlet.annotations.PortletSerializable;
 
 import jakarta.servlet.http.HttpServletRequest;
-import jakarta.servlet.http.HttpServletResponse;
 
 import java.io.Writer;
 
@@ -68,6 +69,9 @@ import org.junit.ClassRule;
 import org.junit.Rule;
 import org.junit.Test;
 import org.junit.runner.RunWith;
+
+import org.springframework.mock.web.MockHttpServletRequest;
+import org.springframework.mock.web.MockHttpSession;
 
 /**
  * @author Cristina González
@@ -90,6 +94,12 @@ public class DLAdminDisplayContextTest {
 
 		_company = _companyLocalService.getCompany(_group.getCompanyId());
 		_layout = LayoutTestUtil.addTypePortletLayout(_group);
+	}
+
+	@Test
+	public void testGetOrderByCol() throws Exception {
+		_testGetOrderByCol(false);
+		_testGetOrderByCol(true);
 	}
 
 	@Test
@@ -223,12 +233,26 @@ public class DLAdminDisplayContextTest {
 			null, serviceContext);
 	}
 
+	private Object _getDLAdminDisplayContext(
+		MockLiferayPortletActionRequest mockLiferayPortletActionRequest) {
+
+		return ReflectionTestUtil.invoke(
+			_dlAdminDisplayContextProvider, "getDLAdminDisplayContext",
+			new Class<?>[] {HttpServletRequest.class},
+			mockLiferayPortletActionRequest.getHttpServletRequest());
+	}
+
 	private MockLiferayPortletActionRequest
 			_getMockLiferayPortletActionRequest()
 		throws Exception {
 
+		MockHttpServletRequest mockHttpServletRequest =
+			new MockHttpServletRequest();
+
+		mockHttpServletRequest.setSession(_mockHttpSession);
+
 		MockLiferayPortletActionRequest mockLiferayPortletActionRequest =
-			new MockLiferayPortletActionRequest();
+			new MockLiferayPortletActionRequest(mockHttpServletRequest);
 
 		mockLiferayPortletActionRequest.setAttribute(
 			JavaConstants.JAKARTA_PORTLET_CONFIG, null);
@@ -273,33 +297,77 @@ public class DLAdminDisplayContextTest {
 		return mockLiferayPortletActionRequest;
 	}
 
+	private String _getOrderByCol(String keywords, String orderByCol)
+		throws Exception {
+
+		MockLiferayPortletActionRequest mockLiferayPortletActionRequest =
+			_getMockLiferayPortletActionRequest(-1, -1, keywords, null);
+
+		if (Validator.isNotNull(orderByCol)) {
+			mockLiferayPortletActionRequest.setParameter(
+				"orderByCol", orderByCol);
+		}
+
+		return ReflectionTestUtil.invoke(
+			_getDLAdminDisplayContext(mockLiferayPortletActionRequest),
+			"getOrderByCol", new Class<?>[0], null);
+	}
+
+	private String _getSavedOrderByCol() throws Exception {
+		return ReflectionTestUtil.invoke(
+			_getDLAdminDisplayContext(_getMockLiferayPortletActionRequest()),
+			"_getPortletPreference",
+			new Class<?>[] {String.class, String.class}, "order-by-col", null);
+	}
+
 	private SearchContainer<Object> _getSearchContainer(
 		MockLiferayPortletActionRequest mockLiferayPortletActionRequest) {
 
-		Object dlAdminDisplayContext = ReflectionTestUtil.invoke(
-			_dlAdminDisplayContextProvider, "getDLAdminDisplayContext",
-			new Class<?>[] {
-				HttpServletRequest.class, HttpServletResponse.class
-			},
-			mockLiferayPortletActionRequest.getHttpServletRequest(), null);
-
 		return ReflectionTestUtil.invoke(
-			dlAdminDisplayContext, "getSearchContainer", new Class<?>[0], null);
+			_getDLAdminDisplayContext(mockLiferayPortletActionRequest),
+			"getSearchContainer", new Class<?>[0], null);
 	}
 
 	private ThemeDisplay _getThemeDisplay() throws Exception {
 		ThemeDisplay themeDisplay = new ThemeDisplay();
 
+		PortletDisplay portletDisplay = themeDisplay.getPortletDisplay();
+
+		portletDisplay.setId(DLPortletKeys.DOCUMENT_LIBRARY_ADMIN);
+
 		themeDisplay.setCompany(_company);
 		themeDisplay.setLayout(_layout);
 		themeDisplay.setPermissionChecker(
 			PermissionThreadLocal.getPermissionChecker());
+		themeDisplay.setPlid(_layout.getPlid());
 		themeDisplay.setRealUser(TestPropsValues.getUser());
 		themeDisplay.setScopeGroupId(_layout.getGroupId());
+		themeDisplay.setSignedIn(_signedIn);
 		themeDisplay.setSiteGroupId(_layout.getGroupId());
 		themeDisplay.setUser(TestPropsValues.getUser());
 
 		return themeDisplay;
+	}
+
+	private void _testGetOrderByCol(boolean signedIn) throws Exception {
+		_signedIn = signedIn;
+
+		Assert.assertEquals("modifiedDate", _getOrderByCol(null, null));
+
+		String keywords = RandomTestUtil.randomString();
+
+		Assert.assertEquals("relevance", _getOrderByCol(keywords, null));
+
+		Assert.assertEquals("size", _getOrderByCol(null, "size"));
+		Assert.assertEquals("size", _getSavedOrderByCol());
+		Assert.assertEquals("size", _getOrderByCol(keywords, null));
+		Assert.assertEquals("relevance", _getOrderByCol(keywords, "relevance"));
+		Assert.assertEquals("relevance", _getSavedOrderByCol());
+		Assert.assertEquals("modifiedDate", _getOrderByCol(null, null));
+		Assert.assertNull(_getSavedOrderByCol());
+		Assert.assertEquals("relevance", _getOrderByCol(keywords, null));
+		Assert.assertEquals("title", _getOrderByCol(keywords, "title"));
+		Assert.assertEquals("title", _getOrderByCol(null, null));
 	}
 
 	@Inject
@@ -332,6 +400,8 @@ public class DLAdminDisplayContextTest {
 	private Group _group;
 
 	private Layout _layout;
+	private final MockHttpSession _mockHttpSession = new MockHttpSession();
+	private boolean _signedIn;
 
 	private static class MockActionResponse
 		extends MockLiferayPortletActionResponse {

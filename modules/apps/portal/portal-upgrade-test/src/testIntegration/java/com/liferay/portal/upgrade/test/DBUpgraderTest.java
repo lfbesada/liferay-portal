@@ -9,6 +9,7 @@ import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
 import com.liferay.osgi.util.BundleUtil;
 import com.liferay.petra.concurrent.DCLSingleton;
 import com.liferay.petra.lang.SafeCloseable;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.events.StartupHelperUtil;
 import com.liferay.portal.kernel.dao.db.DB;
 import com.liferay.portal.kernel.dao.db.DBInspector;
@@ -24,6 +25,7 @@ import com.liferay.portal.kernel.util.LoggingTimer;
 import com.liferay.portal.kernel.util.PropsKeys;
 import com.liferay.portal.kernel.util.PropsUtil;
 import com.liferay.portal.kernel.util.ReleaseInfo;
+import com.liferay.portal.kernel.version.Version;
 import com.liferay.portal.lpkg.deployer.LPKGDeployer;
 import com.liferay.portal.test.log.LogCapture;
 import com.liferay.portal.test.log.LogEntry;
@@ -109,6 +111,37 @@ public class DBUpgraderTest {
 	@After
 	public void tearDown() throws Exception {
 		_updatePortalRelease(_currentBuildNumber, _currentState);
+	}
+
+	@Test
+	public void testCheckReleaseStateWithInterruptedUpgrade() throws Exception {
+		_updatePortalRelease(
+			ReleaseInfo.RELEASE_6_2_0_BUILD_NUMBER,
+			ReleaseConstants.STATE_IN_PROGRESS);
+
+		DBUpgrader.checkReleaseState();
+	}
+
+	@Test
+	public void testCheckReleaseStateWithInterruptedUpgradeDoesNotSupportRetry()
+		throws Exception {
+
+		_updatePortalRelease(
+			ReleaseInfo.RELEASE_6_2_0_BUILD_NUMBER,
+			ReleaseConstants.STATE_IN_PROGRESS);
+
+		try {
+			_startUpgrade();
+
+			DBUpgrader.checkReleaseState();
+
+			Assert.fail();
+		}
+		catch (IllegalStateException illegalStateException) {
+		}
+		finally {
+			_stopUpgrade();
+		}
 	}
 
 	@Test
@@ -464,6 +497,81 @@ public class DBUpgraderTest {
 			ReleaseInfo.RELEASE_7_1_0_BUILD_NUMBER,
 			ReleaseConstants.STATE_UPGRADE_FAILURE);
 
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				DBUpgrader.class.getName(), LoggerTestUtil.WARN)) {
+
+			Version schemaVersion =
+				PortalUpgradeProcess.getCurrentSchemaVersion(_connection);
+
+			_startUpgrade();
+
+			DBUpgrader.upgradePortal();
+
+			List<String> messages = logCapture.getMessages();
+
+			Assert.assertTrue(
+				messages.contains(
+					StringBundler.concat(
+						"Retrying the upgrade of ",
+						ReleaseConstants.DEFAULT_SERVLET_CONTEXT_NAME,
+						" from schema version ", schemaVersion,
+						" after a failure")));
+		}
+		finally {
+			_stopUpgrade();
+		}
+	}
+
+	@Test
+	public void testUpgradeWithInterruption() throws Exception {
+		_updatePortalRelease(
+			ReleaseInfo.RELEASE_7_1_0_BUILD_NUMBER,
+			ReleaseConstants.STATE_IN_PROGRESS);
+
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				DBUpgrader.class.getName(), LoggerTestUtil.WARN)) {
+
+			Version schemaVersion =
+				PortalUpgradeProcess.getCurrentSchemaVersion(_connection);
+
+			_startUpgrade();
+
+			DBUpgrader.upgradePortal();
+
+			List<String> messages = logCapture.getMessages();
+
+			Assert.assertTrue(
+				messages.contains(
+					StringBundler.concat(
+						"Resuming the upgrade of ",
+						ReleaseConstants.DEFAULT_SERVLET_CONTEXT_NAME,
+						" from schema version ", schemaVersion,
+						" after an interruption")));
+			Assert.assertFalse(
+				messages.contains(
+					StringBundler.concat(
+						"Retrying the upgrade of ",
+						ReleaseConstants.DEFAULT_SERVLET_CONTEXT_NAME,
+						" from schema version ", schemaVersion,
+						" after a failure")));
+		}
+		finally {
+			_stopUpgrade();
+		}
+
+		Assert.assertEquals(
+			ReleaseConstants.STATE_GOOD,
+			PortalUpgradeProcess.getCurrentState(_connection));
+	}
+
+	@Test
+	public void testUpgradeWithInterruptionAfterLastUpgradeProcess()
+		throws Exception {
+
+		_updatePortalRelease(
+			ReleaseInfo.getParentBuildNumber(),
+			ReleaseConstants.STATE_IN_PROGRESS);
+
 		try {
 			_startUpgrade();
 
@@ -472,6 +580,10 @@ public class DBUpgraderTest {
 		finally {
 			_stopUpgrade();
 		}
+
+		Assert.assertEquals(
+			ReleaseConstants.STATE_GOOD,
+			PortalUpgradeProcess.getCurrentState(_connection));
 	}
 
 	private Bundle _getBundle() throws Exception {

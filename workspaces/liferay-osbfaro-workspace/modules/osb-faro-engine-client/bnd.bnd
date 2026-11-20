@@ -28,7 +28,9 @@ Import-Package:\
 	\
 	!com.damnhandy.*,\
 	\
-	!com.fasterxml.*,\
+	!com.fasterxml.jackson.dataformat.*,\
+	!com.fasterxml.jackson.datatype.*,\
+	!com.fasterxml.jackson.module.*,\
 	\
 	!com.github.mustachejava.*,\
 	\
@@ -221,8 +223,17 @@ Import-Package:\
 	\
 	!org.reactivestreams.*,\
 	\
+	!org.springframework.aop.*,\
+	!org.springframework.context.*,\
+	!org.springframework.expression.*,\
+	!org.springframework.format.*,\
 	!org.springframework.hateoas.*,\
 	!org.springframework.http.*,\
+	!org.springframework.jndi.*,\
+	!org.springframework.scheduling.*,\
+	!org.springframework.stereotype.*,\
+	!org.springframework.ui.*,\
+	!org.springframework.validation.*,\
 	!org.springframework.web.*,\
 	\
 	!org.synchronoss.cloud.nio.*,\

@@ -6,6 +6,8 @@
 package com.liferay.headless.delivery.resource.v1_0.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.document.library.kernel.model.DLFileEntry;
+import com.liferay.document.library.kernel.service.DLAppLocalServiceUtil;
 import com.liferay.headless.delivery.client.dto.v1_0.MessageBoardAttachment;
 import com.liferay.headless.delivery.client.http.HttpInvoker;
 import com.liferay.headless.delivery.client.pagination.Page;
@@ -13,10 +15,17 @@ import com.liferay.headless.delivery.client.resource.v1_0.MessageBoardAttachment
 import com.liferay.message.boards.constants.MBCategoryConstants;
 import com.liferay.message.boards.model.MBMessage;
 import com.liferay.message.boards.model.MBThread;
+import com.liferay.message.boards.service.MBMessageLocalServiceUtil;
 import com.liferay.message.boards.test.util.MBTestUtil;
 import com.liferay.portal.kernel.model.User;
+import com.liferay.portal.kernel.repository.model.FileEntry;
+import com.liferay.portal.kernel.security.permission.ActionKeys;
+import com.liferay.portal.kernel.security.permission.PermissionCheckerFactoryUtil;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermission;
+import com.liferay.portal.kernel.security.permission.resource.ModelResourcePermissionRegistryUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalServiceUtil;
+import com.liferay.portal.kernel.test.TestInfo;
 import com.liferay.portal.kernel.test.constants.TestDataConstants;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
@@ -112,6 +121,7 @@ public class MessageBoardAttachmentResourceTest
 
 	@Override
 	@Test
+	@TestInfo("LPD-116076")
 	public void testPostMessageBoardMessageMessageBoardAttachment()
 		throws Exception {
 
@@ -125,6 +135,7 @@ public class MessageBoardAttachmentResourceTest
 			"text/plain", postMessageBoardAttachment.getEncodingFormat());
 
 		_testPostMessageBoardMessageMessageBoardAttachmentWithoutUpdatePermission();
+		_testPostMessageBoardMessageMessageBoardAttachmentWithRestrictedMessageBoardMessage();
 	}
 
 	@Override
@@ -532,6 +543,34 @@ public class MessageBoardAttachmentResourceTest
 			userWithoutPermissionsMessageBoardAttachmentResource.
 				getMessageBoardAttachmentHttpResponse(
 					messageBoardAttachment.getId()));
+	}
+
+	private void _testPostMessageBoardMessageMessageBoardAttachmentWithRestrictedMessageBoardMessage()
+		throws Exception {
+
+		MessageBoardAttachment messageBoardAttachment =
+			_addRestrictedMessageBoardAttachment();
+
+		FileEntry fileEntry = DLAppLocalServiceUtil.getFileEntry(
+			messageBoardAttachment.getId());
+
+		DLFileEntry dlFileEntry = (DLFileEntry)fileEntry.getModel();
+
+		Assert.assertEquals(
+			MBMessage.class.getName(), dlFileEntry.getClassName());
+		Assert.assertNotNull(
+			MBMessageLocalServiceUtil.fetchMBMessage(dlFileEntry.getClassPK()));
+
+		ModelResourcePermission<FileEntry> fileEntryModelResourcePermission =
+			ModelResourcePermissionRegistryUtil.getModelResourcePermission(
+				FileEntry.class.getName());
+
+		Assert.assertFalse(
+			fileEntryModelResourcePermission.contains(
+				PermissionCheckerFactoryUtil.create(
+					UserLocalServiceUtil.getGuestUser(
+						testGroup.getCompanyId())),
+				fileEntry.getFileEntryId(), ActionKeys.VIEW));
 	}
 
 	private void _testPostMessageBoardMessageMessageBoardAttachmentWithoutUpdatePermission()

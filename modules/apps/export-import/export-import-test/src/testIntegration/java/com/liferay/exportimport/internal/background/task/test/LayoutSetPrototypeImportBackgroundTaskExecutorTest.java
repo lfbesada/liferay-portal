@@ -85,9 +85,16 @@ public class LayoutSetPrototypeImportBackgroundTaskExecutorTest {
 
 		long backgroundTaskId = 0;
 
-		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+		try (LogCapture logCapture1 = LoggerTestUtil.configureLog4JLogger(
+				"com.liferay.exportimport.internal.background.task." +
+					"LayoutSetPrototypeImportBackgroundTaskExecutor",
+				LoggerTestUtil.ERROR);
+			LogCapture logCapture2 = LoggerTestUtil.configureLog4JLogger(
 				"com.liferay.portal.background.task.internal.messaging." +
 					"BackgroundTaskMessageListener",
+				LoggerTestUtil.ERROR);
+			LogCapture logCapture3 = LoggerTestUtil.configureLog4JLogger(
+				"com.liferay.portal.zip.internal.reader.BaseZipReader",
 				LoggerTestUtil.ERROR)) {
 
 			backgroundTaskId =
@@ -99,7 +106,20 @@ public class LayoutSetPrototypeImportBackgroundTaskExecutorTest {
 								TestPropsValues.getUserId(),
 								_group.getGroupId(),
 								RandomTestUtil.randomString(),
-								RandomTestUtil.randomString(), 0, null,
+								RandomTestUtil.randomString(),
+								ExportImportConfigurationConstants.
+									TYPE_IMPORT_LAYOUT,
+								ExportImportConfigurationSettingsMapFactoryUtil.
+									buildImportLayoutSettingsMap(
+										TestPropsValues.getUser(),
+										_group.getGroupId(), true, new long[0],
+										LinkedHashMapBuilder.put(
+											PortletDataHandlerKeys.
+												PORTLET_CONFIGURATION,
+											new String[] {
+												Boolean.TRUE.toString()
+											}
+										).build()),
 								WorkflowConstants.STATUS_DRAFT,
 								ServiceContextTestUtil.getServiceContext()),
 						larFile);

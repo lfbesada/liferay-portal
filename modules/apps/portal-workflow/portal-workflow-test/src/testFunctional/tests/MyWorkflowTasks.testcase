@@ -52,6 +52,9 @@ definition {
 	@description = "LPS-135888 - Verify that the user with Account role type can Approve the task"
 	@priority = 5
 	test AccountUserCanApproveTask {
+		property test.liferay.virtual.instance = "false";
+		property test.run.type = "single";
+
 		CommerceAccelerators.initializeNewSiteViaAccelerator(siteName = "Minium");
 
 		Account.openAccountsAdmin();
@@ -216,7 +219,7 @@ definition {
 				key_text = "view",
 				locator1 = "Icon#ANY_LAST");
 
-			SelectWindow(value1 = "title=Pending Orders - Minium - Liferay DXP");
+			SelectWindow(value1 = "title=Pending Orders - Minium - Liferay");
 
 			AssertLocation.assertPartialLocation(value1 = "web/minium/pending-orders");
 		}
@@ -1140,6 +1143,8 @@ definition {
 	@description = "Verify that the pagination button indicates the selected page, even when there is only 1 page"
 	@priority = 2
 	test PaginationButtonIndicatesSelectedPage {
+		property custom.properties = "search.container.page.delta.values=4,8,20,40,60";
+
 		JSONBlog.addEntry(
 			entryContent = "Blogs Entry Content",
 			entryTitle = "Blogs Entry Title");
@@ -1256,6 +1261,8 @@ definition {
 	@description = "Verify that the pagination component is displayed when the table has 5 items or more"
 	@priority = 2
 	test PaginationIsDisplayedWhenTableHas5Items {
+		property custom.properties = "search.container.page.delta.values=4,8,20,40,60";
+
 		JSONBlog.addEntry(
 			entryContent = "Blogs Entry Content",
 			entryTitle = "Blogs Entry Title");

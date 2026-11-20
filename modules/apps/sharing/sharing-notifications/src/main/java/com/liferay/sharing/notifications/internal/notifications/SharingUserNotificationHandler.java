@@ -5,10 +5,8 @@
 
 package com.liferay.sharing.notifications.internal.notifications;
 
-import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetEntry;
 import com.liferay.asset.kernel.model.AssetRenderer;
-import com.liferay.asset.kernel.model.AssetRendererFactory;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
@@ -24,6 +22,7 @@ import com.liferay.portal.kernel.util.HtmlUtil;
 import com.liferay.portal.kernel.util.Validator;
 import com.liferay.sharing.constants.SharingPortletKeys;
 import com.liferay.sharing.model.SharingEntry;
+import com.liferay.sharing.notifications.internal.util.SharingNotificationURLUtil;
 import com.liferay.sharing.security.permission.SharingEntryAction;
 import com.liferay.sharing.service.SharingEntryLocalService;
 
@@ -77,26 +76,29 @@ public class SharingUserNotificationHandler
 			return super.getLink(userNotificationEvent, serviceContext);
 		}
 
-		AssetRendererFactory<Object> assetRendererFactory =
-			AssetRendererFactoryRegistryUtil.getAssetRendererFactoryByClassName(
-				sharingEntry.getClassName());
+		AssetRenderer<?> assetRenderer = getAssetRenderer(
+			sharingEntry.getClassName(), sharingEntry.getClassPK());
 
-		if (assetRendererFactory == null) {
+		if (assetRenderer == null) {
 			return super.getLink(userNotificationEvent, serviceContext);
 		}
-
-		AssetRenderer<Object> assetRenderer =
-			assetRendererFactory.getAssetRenderer(sharingEntry.getClassPK());
 
 		String viewInContextURL = assetRenderer.getURLSharingNotification(
 			sharingEntry.hasSharingPermission(SharingEntryAction.UPDATE),
 			themeDisplay);
 
-		if (Validator.isBlank(viewInContextURL)) {
+		if (!Validator.isBlank(viewInContextURL)) {
+			return viewInContextURL;
+		}
+
+		String previewURL = SharingNotificationURLUtil.getURL(
+			themeDisplay.getRequest(), sharingEntry);
+
+		if (previewURL == null) {
 			return super.getLink(userNotificationEvent, serviceContext);
 		}
 
-		return viewInContextURL;
+		return previewURL;
 	}
 
 	@Override

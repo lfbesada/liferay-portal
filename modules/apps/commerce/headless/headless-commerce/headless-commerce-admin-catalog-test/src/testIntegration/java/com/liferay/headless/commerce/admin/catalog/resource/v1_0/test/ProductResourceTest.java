@@ -89,6 +89,7 @@ import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.repository.model.FileVersion;
+import com.liferay.portal.kernel.search.IndexStatusManagerThreadLocal;
 import com.liferay.portal.kernel.search.Indexer;
 import com.liferay.portal.kernel.search.IndexerRegistryUtil;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
@@ -130,6 +131,7 @@ import java.math.BigDecimal;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Calendar;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.Date;
 import java.util.List;
@@ -291,6 +293,7 @@ public class ProductResourceTest extends BaseProductResourceTestCase {
 		_testGetProductsPageWithChannelFilter();
 		_testGetProductsPageWithFilter();
 		_testGetProductsPageWithSearch();
+		_testGetProductsPageWithStaleDocument();
 	}
 
 	@Ignore
@@ -433,6 +436,7 @@ public class ProductResourceTest extends BaseProductResourceTestCase {
 		super.testPatchProductByExternalReferenceCode();
 
 		_testPatchProductByExternalReferenceCodeBatch();
+		_testPatchProductByExternalReferenceCodeWithOptionExternalReferenceCode();
 	}
 
 	@Override
@@ -647,20 +651,27 @@ public class ProductResourceTest extends BaseProductResourceTestCase {
 		Assert.assertEquals(expectedStatus, problem.getStatus());
 	}
 
-	private ProductVirtualSettings _postProductWithTermsOfUse(
-			String groupExternalReferenceCode, JournalArticle journalArticle)
+	private ProductResource _getProductResource(String nestedFields)
 		throws Exception {
 
 		User adminUser = UserTestUtil.getAdminUser(testCompany.getCompanyId());
 
-		ProductResource productResource = ProductResource.builder(
+		return ProductResource.builder(
 		).authentication(
 			adminUser.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
 		).locale(
 			LocaleUtil.getDefault()
 		).parameters(
-			"nestedFields", "productVirtualSettings"
+			"nestedFields", nestedFields
 		).build();
+	}
+
+	private ProductVirtualSettings _postProductWithTermsOfUse(
+			String groupExternalReferenceCode, JournalArticle journalArticle)
+		throws Exception {
+
+		ProductResource productResource = _getProductResource(
+			"productVirtualSettings");
 
 		Product product = productResource.postProduct(
 			new Product() {
@@ -986,22 +997,13 @@ public class ProductResourceTest extends BaseProductResourceTestCase {
 				}
 			});
 
-		User adminUser = UserTestUtil.getAdminUser(testCompany.getCompanyId());
-
-		ProductResource nestedFieldsProductResource = ProductResource.builder(
-		).authentication(
-			adminUser.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
-		).locale(
-			LocaleUtil.getDefault()
-		).parameters(
-			"nestedFields", "productOptions,productOptions.productOptionValues"
-		).build();
+		ProductResource productResource = _getProductResource(
+			"productOptions,productOptions.productOptionValues");
 
 		Product postProduct = productResource.postProduct(randomProduct);
 
-		Product product =
-			nestedFieldsProductResource.getProductByExternalReferenceCode(
-				postProduct.getExternalReferenceCode());
+		Product product = productResource.getProductByExternalReferenceCode(
+			postProduct.getExternalReferenceCode());
 
 		ProductOption[] productOptions = product.getProductOptions();
 
@@ -1243,6 +1245,42 @@ public class ProductResourceTest extends BaseProductResourceTestCase {
 		productResource.deleteProduct(product2.getProductId());
 	}
 
+	private void _testGetProductsPageWithStaleDocument() throws Exception {
+		Product product = testGetProductsPage_addProduct(randomProduct());
+
+		CPDefinition cpDefinition =
+			_cpDefinitionLocalService.fetchCPDefinitionByCProductId(
+				product.getProductId(), false);
+
+		boolean indexReadOnly = IndexStatusManagerThreadLocal.isIndexReadOnly();
+
+		IndexStatusManagerThreadLocal.setIndexReadOnly(true);
+
+		try {
+			_cpDefinitionLocalService.deleteCPDefinition(cpDefinition);
+		}
+		finally {
+			IndexStatusManagerThreadLocal.setIndexReadOnly(indexReadOnly);
+		}
+
+		Page<Product> page = productResource.getProductsPage(
+			null,
+			"externalReferenceCode eq '" + product.getExternalReferenceCode() +
+				"'",
+			Pagination.of(1, 10), null);
+
+		Assert.assertEquals(1, page.getTotalCount());
+
+		Collection<Product> products = page.getItems();
+
+		Assert.assertEquals(products.toString(), 0, products.size());
+
+		Indexer<CPDefinition> indexer = IndexerRegistryUtil.nullSafeGetIndexer(
+			CPDefinition.class);
+
+		indexer.delete(cpDefinition);
+	}
+
 	private Product _testPatchProduct_addProduct() throws Exception {
 		return productResource.postProduct(randomProduct());
 	}
@@ -1324,6 +1362,57 @@ public class ProductResourceTest extends BaseProductResourceTestCase {
 			Http.Method.GET);
 
 		Assert.assertEquals(value, jsonObject.getString(objectField.getName()));
+	}
+
+	private void _testPatchProductByExternalReferenceCodeWithOptionExternalReferenceCode()
+		throws Exception {
+
+		Product randomProduct = randomProduct();
+
+		CPOption cpOption = CPTestUtil.addCPOption(
+			testGroup.getGroupId(), true);
+
+		ProductOption productOption1 = new ProductOption() {
+			{
+				fieldType = CPConstants.PRODUCT_OPTION_SELECT_KEY;
+				key = cpOption.getKey();
+				name = LanguageUtils.getLanguageIdMap(
+					RandomTestUtil.randomLocaleStringMap());
+				optionExternalReferenceCode =
+					cpOption.getExternalReferenceCode();
+				optionId = 0L;
+			}
+		};
+
+		randomProduct.setProductOptions(new ProductOption[] {productOption1});
+
+		ProductResource productResource = _getProductResource("productOptions");
+
+		Product postProduct = productResource.postProduct(randomProduct);
+
+		productOption1.setOptionId((Long)null);
+
+		productResource.patchProductByExternalReferenceCode(
+			postProduct.getExternalReferenceCode(),
+			new Product() {
+				{
+					productOptions = new ProductOption[] {productOption1};
+				}
+			});
+
+		Product product = productResource.getProductByExternalReferenceCode(
+			postProduct.getExternalReferenceCode());
+
+		ProductOption[] productOptions = product.getProductOptions();
+
+		Assert.assertEquals(
+			Arrays.toString(productOptions), 1, productOptions.length);
+
+		ProductOption productOption2 = productOptions[0];
+
+		Assert.assertEquals(
+			Long.valueOf(cpOption.getCPOptionId()),
+			productOption2.getOptionId());
 	}
 
 	private void _testPatchProductWithInvalidCommerceCatalog()
@@ -1526,16 +1615,8 @@ public class ProductResourceTest extends BaseProductResourceTestCase {
 	}
 
 	private void _testPostProductVirtual() throws Exception {
-		User adminUser = UserTestUtil.getAdminUser(testCompany.getCompanyId());
-
-		ProductResource productResource = ProductResource.builder(
-		).authentication(
-			adminUser.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
-		).locale(
-			LocaleUtil.getDefault()
-		).parameters(
-			"nestedFields", "productVirtualSettings"
-		).build();
+		ProductResource productResource = _getProductResource(
+			"productVirtualSettings");
 
 		Product randomVirtualProduct = productResource.postProduct(
 			new Product() {
@@ -1608,16 +1689,8 @@ public class ProductResourceTest extends BaseProductResourceTestCase {
 				}
 			});
 
-		User adminUser = UserTestUtil.getAdminUser(testCompany.getCompanyId());
-
-		ProductResource productResource = ProductResource.builder(
-		).authentication(
-			adminUser.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
-		).locale(
-			LocaleUtil.getDefault()
-		).parameters(
-			"nestedFields", "productVirtualSettings"
-		).build();
+		ProductResource productResource = _getProductResource(
+			"productVirtualSettings");
 
 		try (SafeCloseable safeCloseable =
 				LazyReferencingTestUtil.setLazyReferencingWithSafeCloseable(
@@ -1700,16 +1773,7 @@ public class ProductResourceTest extends BaseProductResourceTestCase {
 	private void _testPostProductWithDiagramImageExternalReferenceCode()
 		throws Exception {
 
-		User adminUser = UserTestUtil.getAdminUser(testCompany.getCompanyId());
-
-		ProductResource productResource = ProductResource.builder(
-		).authentication(
-			adminUser.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
-		).locale(
-			LocaleUtil.getDefault()
-		).parameters(
-			"nestedFields", "diagram,images"
-		).build();
+		ProductResource productResource = _getProductResource("diagram,images");
 
 		String attachmentExternalReferenceCode = StringUtil.toLowerCase(
 			RandomTestUtil.randomString());
@@ -1775,16 +1839,8 @@ public class ProductResourceTest extends BaseProductResourceTestCase {
 
 		randomProduct.setProductType(GroupedCPTypeConstants.NAME);
 
-		User adminUser = UserTestUtil.getAdminUser(testCompany.getCompanyId());
-
-		ProductResource productResource = ProductResource.builder(
-		).authentication(
-			adminUser.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
-		).locale(
-			LocaleUtil.getDefault()
-		).parameters(
-			"nestedFields", "groupedProducts"
-		).build();
+		ProductResource productResource = _getProductResource(
+			"groupedProducts");
 
 		Product postProduct = productResource.postProduct(randomProduct);
 
@@ -2005,16 +2061,8 @@ public class ProductResourceTest extends BaseProductResourceTestCase {
 	private void _testPostProductWithProductAccountGroupExternalReferenceCode()
 		throws Exception {
 
-		User adminUser = UserTestUtil.getAdminUser(testCompany.getCompanyId());
-
-		ProductResource productResource = ProductResource.builder(
-		).authentication(
-			adminUser.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
-		).locale(
-			LocaleUtil.getDefault()
-		).parameters(
-			"nestedFields", "productAccountGroups"
-		).build();
+		ProductResource productResource = _getProductResource(
+			"productAccountGroups");
 
 		Product randomProduct = _randomProductWithSku();
 
@@ -2045,16 +2093,8 @@ public class ProductResourceTest extends BaseProductResourceTestCase {
 	private void _testPostProductWithProductChannelExternalReferenceCode()
 		throws Exception {
 
-		User adminUser = UserTestUtil.getAdminUser(testCompany.getCompanyId());
-
-		ProductResource productResource = ProductResource.builder(
-		).authentication(
-			adminUser.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
-		).locale(
-			LocaleUtil.getDefault()
-		).parameters(
-			"nestedFields", "productChannels"
-		).build();
+		ProductResource productResource = _getProductResource(
+			"productChannels");
 
 		Product randomProduct = _randomProductWithSku();
 
@@ -2083,16 +2123,7 @@ public class ProductResourceTest extends BaseProductResourceTestCase {
 	private void _testPostProductWithProductGroupExternalReferenceCode()
 		throws Exception {
 
-		User adminUser = UserTestUtil.getAdminUser(testCompany.getCompanyId());
-
-		ProductResource productResource = ProductResource.builder(
-		).authentication(
-			adminUser.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
-		).locale(
-			LocaleUtil.getDefault()
-		).parameters(
-			"nestedFields", "productGroups"
-		).build();
+		ProductResource productResource = _getProductResource("productGroups");
 
 		Product randomProduct = _randomProductWithSku();
 
@@ -2288,16 +2319,8 @@ public class ProductResourceTest extends BaseProductResourceTestCase {
 
 		randomProduct.setProductType(GroupedCPTypeConstants.NAME);
 
-		User adminUser = UserTestUtil.getAdminUser(testCompany.getCompanyId());
-
-		ProductResource productResource = ProductResource.builder(
-		).authentication(
-			adminUser.getEmailAddress(), PropsValues.DEFAULT_ADMIN_PASSWORD
-		).locale(
-			LocaleUtil.getDefault()
-		).parameters(
-			"nestedFields", "groupedProducts"
-		).build();
+		ProductResource productResource = _getProductResource(
+			"groupedProducts");
 
 		productResource.putProductByExternalReferenceCode(
 			randomProduct.getExternalReferenceCode(), randomProduct);

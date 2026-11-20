@@ -5,9 +5,22 @@
 
 package com.liferay.jenkins.results.parser.test.clazz.group;
 
+import com.liferay.jenkins.results.parser.BaseDownstreamBuild;
+import com.liferay.jenkins.results.parser.BuildDatabaseUtil;
+import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
+import com.liferay.jenkins.results.parser.PluginsWorkspace;
+import com.liferay.jenkins.results.parser.PluginsWorkspaceGitRepository;
+import com.liferay.jenkins.results.parser.PortalGitRepositoryJob;
 import com.liferay.jenkins.results.parser.PortalGitWorkingDirectory;
 import com.liferay.jenkins.results.parser.PortalTestClassJob;
+import com.liferay.jenkins.results.parser.PortalWorkspace;
+import com.liferay.jenkins.results.parser.PortalWorkspaceGitRepository;
 import com.liferay.jenkins.results.parser.RandomTestUtil;
+import com.liferay.jenkins.results.parser.ReflectionTestUtil;
+import com.liferay.jenkins.results.parser.SubrepositoryWorkspace;
+import com.liferay.jenkins.results.parser.Workspace;
+import com.liferay.jenkins.results.parser.WorkspaceGitRepository;
+import com.liferay.jenkins.results.parser.WorkspaceTestUtil;
 import com.liferay.jenkins.results.parser.history.BatchHistory;
 import com.liferay.jenkins.results.parser.history.JobHistory;
 import com.liferay.jenkins.results.parser.job.property.JobPropertyFactory;
@@ -19,8 +32,11 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Properties;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.junit.Assert;
 import org.junit.Before;
@@ -40,6 +56,47 @@ public class BatchTestClassGroupTest
 			"git remote -v", mockShell(),
 			"upstream\tgit@github.com:liferay/liferay-portal.git (fetch)\n" +
 				"upstream\tgit@github.com:liferay/liferay-portal.git (push)\n");
+	}
+
+	@Test
+	public void testDownloadBuildReports() {
+		Map<String, String> environmentMap = new HashMap<>();
+
+		environmentMap.put("JENKINS_URL", RandomTestUtil.randomString());
+		environmentMap.put("MASTER_NETWORK_NAME", "aws-network");
+
+		mockEnvironment(environmentMap);
+
+		WorkspaceTestUtil.setWorkspaces();
+
+		BatchTestClassGroup batchTestClassGroup = Mockito.spy(
+			new BatchTestClassGroup(
+				"default",
+				BatchTestClassGroupTestUtil.getPortalTestClassJob()) {
+			});
+
+		Mockito.doReturn(
+			true
+		).when(
+			batchTestClassGroup
+		).isBuildCachingEnabled();
+
+		AtomicBoolean buildReportsDownloaded = ReflectionTestUtil.getFieldValue(
+			BatchTestClassGroup.class, "_buildReportsDownloaded");
+
+		boolean buildReportsDownloadedValue = buildReportsDownloaded.get();
+
+		buildReportsDownloaded.set(false);
+
+		try {
+			Assert.assertNull(
+				batchTestClassGroup.getCachedTestClassReport(
+					RandomTestUtil.randomString()));
+			Assert.assertTrue(buildReportsDownloaded.get());
+		}
+		finally {
+			buildReportsDownloaded.set(buildReportsDownloadedValue);
+		}
 	}
 
 	@Test
@@ -107,6 +164,65 @@ public class BatchTestClassGroupTest
 		Collections.sort(axisTestClasses);
 
 		Assert.assertEquals(testClasses, axisTestClasses);
+	}
+
+	@Test
+	public void testGetBuildReportsPathName() {
+		_testGetBuildReportsPathName(
+			WorkspaceTestUtil.newWorkspace(
+				PluginsWorkspace.class, PluginsWorkspaceGitRepository.class));
+		_testGetBuildReportsPathName(
+			WorkspaceTestUtil.newWorkspace(
+				PortalWorkspace.class, PortalWorkspaceGitRepository.class));
+		_testGetBuildReportsPathName(
+			WorkspaceTestUtil.newWorkspace(
+				SubrepositoryWorkspace.class, WorkspaceGitRepository.class));
+		_testGetBuildReportsPathName(
+			WorkspaceTestUtil.newWorkspace(
+				Workspace.class, WorkspaceGitRepository.class));
+	}
+
+	@Test
+	public void testGetPortalUpstreamBranchName() {
+		PortalTestClassJob portalTestClassJob =
+			BatchTestClassGroupTestUtil.getPortalTestClassJob();
+
+		PortalGitWorkingDirectory portalGitWorkingDirectory =
+			portalTestClassJob.getPortalGitWorkingDirectory();
+
+		Mockito.doReturn(
+			RandomTestUtil.randomString()
+		).when(
+			portalGitWorkingDirectory
+		).getUpstreamBranchName();
+
+		PortalGitRepositoryJob portalGitRepositoryJob =
+			(PortalGitRepositoryJob)portalTestClassJob;
+
+		_testGetPortalUpstreamBranchName(
+			portalTestClassJob, portalGitRepositoryJob.getUpstreamBranchName());
+
+		portalGitWorkingDirectory = Mockito.mock(
+			PortalGitWorkingDirectory.class);
+
+		String upstreamBranchName = RandomTestUtil.randomString();
+
+		Mockito.doReturn(
+			upstreamBranchName
+		).when(
+			portalGitWorkingDirectory
+		).getUpstreamBranchName();
+
+		portalTestClassJob = Mockito.mock(PortalTestClassJob.class);
+
+		Mockito.doReturn(
+			portalGitWorkingDirectory
+		).when(
+			portalTestClassJob
+		).getPortalGitWorkingDirectory();
+
+		_testGetPortalUpstreamBranchName(
+			portalTestClassJob, upstreamBranchName);
 	}
 
 	@Test
@@ -318,6 +434,65 @@ public class BatchTestClassGroupTest
 		testEquals(expectedAxisMaxSize, batchTestClassGroup.getAxisMaxSize());
 	}
 
+	private void _testGetBuildReportsPathName(Workspace workspace) {
+		Properties buildProperties = new Properties();
+
+		String buildReportsPath = RandomTestUtil.randomString();
+
+		buildProperties.setProperty(
+			"cloud.ci.s3.bucket.build.reports.path", buildReportsPath);
+
+		JenkinsResultsParserUtil.setBuildProperties(buildProperties);
+
+		WorkspaceTestUtil.setWorkspaces(workspace);
+
+		BaseDownstreamBuild baseDownstreamBuild = Mockito.mock(
+			BaseDownstreamBuild.class);
+
+		String batchName = RandomTestUtil.randomString();
+
+		Mockito.doReturn(
+			batchName
+		).when(
+			baseDownstreamBuild
+		).getBatchName();
+
+		Mockito.doReturn(
+			BuildDatabaseUtil.getBuildDatabase()
+		).when(
+			baseDownstreamBuild
+		).getBuildDatabase();
+
+		File file = new File(RandomTestUtil.randomString());
+
+		String s3ObjectPath = ReflectionTestUtil.invoke(
+			baseDownstreamBuild, "_getS3ObjectPath",
+			new Class<?>[] {File.class}, file);
+
+		String relativeBuildReportsPath = ReflectionTestUtil.invoke(
+			Mockito.mock(BatchTestClassGroup.class),
+			"_getRelativeBuildReportsPath", new Class<?>[] {Workspace.class},
+			workspace);
+
+		testEquals(
+			s3ObjectPath,
+			JenkinsResultsParserUtil.combine(
+				buildReportsPath, "/", relativeBuildReportsPath, "/", batchName,
+				"/", file.getName()));
+	}
+
+	private void _testGetPortalUpstreamBranchName(
+		PortalTestClassJob portalTestClassJob, String upstreamBranchName) {
+
+		BatchTestClassGroup batchTestClassGroup = new BatchTestClassGroup(
+			RandomTestUtil.randomString(), portalTestClassJob) {
+		};
+
+		testEquals(
+			upstreamBranchName,
+			batchTestClassGroup.getPortalUpstreamBranchName());
+	}
+
 	private void _testGetSegmentMaxChildren(
 		int expectedSegmentMaxChildren, String segmentMaxChildren) {
 
@@ -350,20 +525,13 @@ public class BatchTestClassGroupTest
 			new BatchTestClassGroup("default", portalTestClassJob) {
 			});
 
-		PortalGitWorkingDirectory portalGitWorkingDirectory = Mockito.mock(
-			PortalGitWorkingDirectory.class);
-
-		Mockito.doReturn(
-			portalGitWorkingDirectory
-		).when(
-			batchTestClassGroup
-		).getPortalGitWorkingDirectory();
-
 		Mockito.doReturn(
 			upstreamBranchName
 		).when(
-			portalGitWorkingDirectory
-		).getUpstreamBranchName();
+			batchTestClassGroup
+		).getPortalUpstreamBranchName();
+
+		String batchName = batchTestClassGroup.getBatchName();
 
 		JobHistory jobHistory = portalTestClassJob.getJobHistory();
 
@@ -372,7 +540,7 @@ public class BatchTestClassGroupTest
 		).when(
 			jobHistory
 		).getBatchHistory(
-			batchTestClassGroup.getBatchName()
+			batchName
 		);
 
 		if (targetAxisDurationExpected) {

@@ -206,15 +206,13 @@ The procedure runs in two passes over the validations, in the order below. The o
 
 1. [Startup Sync Usage](validations/branch/startup-sync-usage.md)
 
-1. [MVC Render Command View Template](validations/branch/mvc-render-command-view-template.md)
-
 1. [Service Holder Usage](validations/branch/service-holder-usage.md)
 
-1. [Empty Service Properties](validations/branch/empty-service-properties.md)
-
-1. [Empty SafeCloseable](validations/branch/empty-safe-closeable.md)
+1. [BeanParamUtil Getter](validations/branch/bean-param-util-getter.md)
 
 1. [HTML Escaping](validations/branch/html-escaping.md)
+
+1. [Required Configuration Policy](validations/branch/required-configuration-policy.md)
 
 1. [Full Portal Build](validations/portal/full-portal-build.md)
 

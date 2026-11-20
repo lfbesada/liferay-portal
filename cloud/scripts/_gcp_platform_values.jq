@@ -28,12 +28,34 @@ $configuration[0] as $configuration
 					}
 				}
 			},
-			clusterSecretStore: {
-				enabled: true,
-				name: ($deployment_context.deploymentName + "-secret-store"),
-				provider: $outputs.cluster_secret_store_provider.value
+			clusterSecretStores: {
+				($deployment_context.deploymentName + "-secret-store"): {
+					spec: {
+						provider: $outputs.cluster_secret_store_provider.value
+					}
+				}
 			},
 			deploymentContext: $deployment_context,
+			dxpOperator: {
+				values: {
+					marketplace: {
+						claimName: "dxp-operator-marketplace",
+						csi: {
+							driver: "filestore.csi.storage.gke.io",
+							volumeAttributes: {
+								ip: $marketplace_filestore_ip,
+								volume: "marketplace"
+							},
+							volumeHandle: $marketplace_volume_handle
+						},
+						enabled: true
+					},
+					podSecurityContext: {
+						fsGroup: 1000,
+						fsGroupChangePolicy: "OnRootMismatch"
+					}
+				}
+			},
 			infrastructure: {
 				parameters: [
 					{
@@ -46,6 +68,15 @@ $configuration[0] as $configuration
 					}
 				]
 			},
+			keda: (
+				if $keda_service_account_namespace == "" then
+					{}
+				else
+					{
+						enabled: true,
+						namespace: $keda_service_account_namespace
+					}
+				end),
 			liferay: {
 				parameters: [
 					{
@@ -123,39 +154,17 @@ $configuration[0] as $configuration
 							}
 						]
 					}
-				end),
-			operatorApplications: {
-				dxpOperator: {
-					values: {
-						marketplace: {
-							claimName: "dxp-operator-marketplace",
-							csi: {
-								driver: "filestore.csi.storage.gke.io",
-								volumeAttributes: {
-									ip: $marketplace_filestore_ip,
-									volume: "marketplace"
-								},
-								volumeHandle: $marketplace_volume_handle
-							},
-							enabled: true
-						},
-						podSecurityContext: {
-							fsGroup: 1000,
-							fsGroupChangePolicy: "OnRootMismatch"
-						}
-					}
-				},
-				keda: (
-					if $keda_service_account_namespace == "" then
-						{}
-					else
-						{
-							enabled: true,
-							namespace: $keda_service_account_namespace
-						}
-					end)
-			}
+				end)
 		}
 	}
 }
 | platform_values($configuration; "liferay-gcp-infrastructure-provider"; "liferay-gcp")
+* {
+	platformComponents: {
+		values: {
+			database: {
+				engine: $configuration.setup.database.engine
+			}
+		}
+	}
+}

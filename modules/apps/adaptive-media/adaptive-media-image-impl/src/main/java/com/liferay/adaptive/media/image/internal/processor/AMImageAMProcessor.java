@@ -44,15 +44,6 @@ import org.osgi.service.component.annotations.Reference;
 public final class AMImageAMProcessor implements AMProcessor<FileVersion> {
 
 	@Override
-	public void cleanUp(FileVersion fileVersion) throws PortalException {
-		if (!_amImageValidator.isValid(fileVersion)) {
-			return;
-		}
-
-		_amImageEntryLocalService.deleteAMImageEntryFileVersion(fileVersion);
-	}
-
-	@Override
 	public void process(FileVersion fileVersion) throws PortalException {
 		if (!_amImageValidator.isProcessingSupported(fileVersion) ||
 			!_hasDLFileVersion(fileVersion)) {
@@ -183,10 +174,6 @@ public final class AMImageAMProcessor implements AMProcessor<FileVersion> {
 			AMImageScaler amImageScaler =
 				_amImageScalerRegistry.getAMImageScaler(
 					fileVersion.getMimeType());
-
-			if (amImageScaler == null) {
-				return;
-			}
 
 			AMImageScaledImage amImageScaledImage = amImageScaler.scaleImage(
 				fileVersion, amImageConfigurationEntry);

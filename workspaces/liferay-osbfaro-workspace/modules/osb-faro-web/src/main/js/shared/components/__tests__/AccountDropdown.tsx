@@ -91,7 +91,7 @@ describe('AccountDropdown', () => {
 
 		expect(
 			screen.getByRole('combobox', {name: 'Filter By Accounts'})
-		).toHaveTextContent('All Accounts');
+		).toHaveTextContent(/all accounts/i);
 
 		expect(container).toMatchSnapshot();
 	});
@@ -116,6 +116,36 @@ describe('AccountDropdown', () => {
 
 		await waitFor(() =>
 			expect(API.accounts.searchAccounts).toHaveBeenCalledTimes(1)
+		);
+	});
+
+	it('should search the accounts touched by any campaign in the range', async () => {
+		(API.accounts.searchAccounts as jest.Mock).mockReturnValue(
+			Promise.resolve({
+				items: [MOCK_ACCOUNT('100', 'Account 100')],
+				total: 1,
+			})
+		);
+
+		render(
+			<Wrapper>
+				<AccountDropdown
+					campaignTouched
+					onFilterChange={jest.fn()}
+					rangeQueryValues={{rangeKey: '30'}}
+				/>
+			</Wrapper>
+		);
+
+		openPicker();
+
+		await waitFor(() =>
+			expect(API.accounts.searchAccounts).toHaveBeenCalledWith(
+				expect.objectContaining({
+					campaignTouched: true,
+					rangeKey: '30',
+				})
+			)
 		);
 	});
 
@@ -149,7 +179,7 @@ describe('AccountDropdown', () => {
 			screen.getByRole('option', {name: 'Account 200'})
 		).toBeInTheDocument();
 		expect(
-			screen.getByRole('option', {name: 'All Accounts'})
+			screen.getByRole('option', {name: /^all accounts$/i})
 		).toBeInTheDocument();
 	});
 
@@ -219,7 +249,7 @@ describe('AccountDropdown', () => {
 		openPicker();
 
 		fireEvent.click(
-			await screen.findByRole('option', {name: 'All Accounts'})
+			await screen.findByRole('option', {name: /^all accounts$/i})
 		);
 
 		expect(onFilterChange).toHaveBeenCalledWith(null);

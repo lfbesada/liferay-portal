@@ -99,7 +99,7 @@ public class CommerceOrderStatusNotificationTest {
 			RandomTestUtil.randomString(), _serviceContext);
 
 		CommerceAccountTestUtil.addAccountGroupAndAccountRel(
-			_user.getCompanyId(), RandomTestUtil.randomString(),
+			RandomTestUtil.randomString(),
 			AccountConstants.ACCOUNT_GROUP_TYPE_STATIC,
 			_accountEntry.getAccountEntryId(), _serviceContext);
 
@@ -146,7 +146,7 @@ public class CommerceOrderStatusNotificationTest {
 
 		Assert.assertEquals(
 			1,
-			_commerceNotificationQueueEntryLocalService.
+			CommerceNotificationTestUtil.
 				getCommerceNotificationQueueEntriesCount(
 					_commerceChannel.getGroupId()));
 
@@ -168,7 +168,7 @@ public class CommerceOrderStatusNotificationTest {
 
 		Assert.assertEquals(
 			1,
-			_commerceNotificationQueueEntryLocalService.
+			CommerceNotificationTestUtil.
 				getCommerceNotificationQueueEntriesCount(
 					_commerceChannel.getGroupId()));
 
@@ -181,7 +181,7 @@ public class CommerceOrderStatusNotificationTest {
 
 		Assert.assertEquals(
 			2,
-			_commerceNotificationQueueEntryLocalService.
+			CommerceNotificationTestUtil.
 				getCommerceNotificationQueueEntriesCount(
 					_commerceChannel.getGroupId()));
 
@@ -218,7 +218,7 @@ public class CommerceOrderStatusNotificationTest {
 
 		Assert.assertEquals(
 			3,
-			_commerceNotificationQueueEntryLocalService.
+			CommerceNotificationTestUtil.
 				getCommerceNotificationQueueEntriesCount(
 					_commerceChannel.getGroupId()));
 
@@ -234,7 +234,7 @@ public class CommerceOrderStatusNotificationTest {
 
 		Assert.assertEquals(
 			4,
-			_commerceNotificationQueueEntryLocalService.
+			CommerceNotificationTestUtil.
 				getCommerceNotificationQueueEntriesCount(
 					_commerceChannel.getGroupId()));
 
@@ -265,7 +265,7 @@ public class CommerceOrderStatusNotificationTest {
 
 		List<String> commerceNotificationTemplateTypes =
 			TransformUtil.transform(
-				_commerceNotificationQueueEntryLocalService.
+				CommerceNotificationTestUtil.
 					getCommerceNotificationQueueEntries(
 						_commerceChannel.getGroupId(), QueryUtil.ALL_POS,
 						QueryUtil.ALL_POS, null),

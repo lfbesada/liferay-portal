@@ -12,12 +12,17 @@ import com.liferay.asset.kernel.model.AssetVocabulary;
 import com.liferay.asset.kernel.service.AssetCategoryLocalService;
 import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.kernel.service.AssetVocabularyLocalService;
+import com.liferay.asset.list.constants.AssetListEntryTypeConstants;
 import com.liferay.asset.list.constants.AssetListPortletKeys;
+import com.liferay.asset.list.model.AssetListEntry;
+import com.liferay.asset.list.service.AssetListEntryAudienceEntryRelLocalService;
+import com.liferay.asset.list.service.AssetListEntryLocalService;
 import com.liferay.asset.publisher.constants.AssetPublisherPortletKeys;
 import com.liferay.asset.publisher.constants.AssetPublisherWebKeys;
 import com.liferay.asset.publisher.util.AssetEntryResult;
 import com.liferay.blogs.constants.BlogsPortletKeys;
 import com.liferay.blogs.model.BlogsEntry;
+import com.liferay.blogs.service.BlogsEntryLocalService;
 import com.liferay.depot.constants.DepotConstants;
 import com.liferay.depot.model.DepotEntry;
 import com.liferay.depot.service.DepotEntryGroupRelLocalService;
@@ -28,6 +33,7 @@ import com.liferay.journal.constants.JournalPortletKeys;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.layout.test.util.LayoutTestUtil;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.configuration.test.util.ConfigurationTestUtil;
 import com.liferay.portal.kernel.json.JSONArray;
@@ -52,6 +58,7 @@ import com.liferay.portal.kernel.settings.LocalizedValuesMap;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.portlet.MockLiferayPortletRenderRequest;
 import com.liferay.portal.kernel.test.portlet.MockLiferayPortletRenderResponse;
+import com.liferay.portal.kernel.test.portlet.MockLiferayPortletURL;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.rule.DeleteAfterTestRun;
 import com.liferay.portal.kernel.test.rule.SynchronousDestinationTestRule;
@@ -67,14 +74,17 @@ import com.liferay.portal.kernel.util.JavaConstants;
 import com.liferay.portal.kernel.util.LocaleUtil;
 import com.liferay.portal.kernel.util.Localization;
 import com.liferay.portal.kernel.util.Portal;
+import com.liferay.portal.kernel.util.URLCodec;
 import com.liferay.portal.kernel.util.UnicodeProperties;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.test.rule.FeatureFlag;
+import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
 import com.liferay.portal.test.rule.PermissionCheckerMethodTestRule;
 import com.liferay.portlet.PortletPreferencesImpl;
 import com.liferay.portlet.test.MockLiferayPortletContext;
+import com.liferay.segments.constants.SegmentsEntryConstants;
 
 import jakarta.portlet.Portlet;
 import jakarta.portlet.PortletPreferences;
@@ -82,6 +92,7 @@ import jakarta.portlet.PortletRequest;
 import jakarta.portlet.RenderRequest;
 import jakarta.portlet.RenderResponse;
 
+import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 
 import java.util.Arrays;
@@ -240,6 +251,53 @@ public class AssetPublisherDisplayContextTest {
 			Arrays.asList(assetEntry2, assetEntry3, assetEntry1));
 	}
 
+	@FeatureFlag(enable = false, value = "LPD-109242")
+	@Test
+	public void testGetAssetEntryResultsWithAudienceEntryWhenFeatureFlagIsDisabled()
+		throws Exception {
+
+		AssetEntry assetEntry = _addAssetEntry();
+
+		String audienceEntryERC = RandomTestUtil.randomString();
+
+		PortletPreferences portletPreferences = _getPortletPreferences(
+			assetEntry, _addAssetEntry(), audienceEntryERC);
+
+		List<AssetEntry> assetEntries = _testGetAssetEntryResults(
+			_getAssetEntryResults(audienceEntryERC, portletPreferences), 1);
+
+		Assert.assertEquals(assetEntry, assetEntries.get(0));
+	}
+
+	@FeatureFlags(
+		featureFlags = {
+			@FeatureFlag("LPD-109242"),
+			@FeatureFlag(enable = false, value = "LPD-78863")
+		}
+	)
+	@Test
+	public void testGetAssetEntryResultsWithAudienceEntryWhenFeatureFlagIsEnabled()
+		throws Exception {
+
+		AssetEntry assetEntry1 = _addAssetEntry();
+		AssetEntry assetEntry2 = _addAssetEntry();
+
+		String audienceEntryERC = RandomTestUtil.randomString();
+
+		PortletPreferences portletPreferences = _getPortletPreferences(
+			assetEntry1, assetEntry2, audienceEntryERC);
+
+		List<AssetEntry> assetEntries = _testGetAssetEntryResults(
+			_getAssetEntryResults(portletPreferences), 1);
+
+		Assert.assertEquals(assetEntry1, assetEntries.get(0));
+
+		assetEntries = _testGetAssetEntryResults(
+			_getAssetEntryResults(audienceEntryERC, portletPreferences), 1);
+
+		Assert.assertEquals(assetEntry2, assetEntries.get(0));
+	}
+
 	@Test
 	public void testGetAssetEntryTypesJSONArrayWithUnstagedPortlet()
 		throws Exception {
@@ -357,6 +415,8 @@ public class AssetPublisherDisplayContextTest {
 		String portletURLString = _getPortletURLString();
 
 		Assert.assertTrue(portletURLString.contains("redirect"));
+
+		_testGetPortletURLWithNestedRedirect();
 	}
 
 	@Test
@@ -400,6 +460,17 @@ public class AssetPublisherDisplayContextTest {
 					LayoutTestUtil.addTypePortletLayout(_group),
 					new PortletPreferencesImpl()),
 				"isEnableSetAsDefaultAssetPublisher", new Class<?>[0]));
+	}
+
+	private AssetEntry _addAssetEntry() throws Exception {
+		BlogsEntry blogsEntry = _blogsEntryLocalService.addEntry(
+			TestPropsValues.getUserId(), RandomTestUtil.randomString(),
+			StringPool.BLANK, StringPool.BLANK, RandomTestUtil.randomString(),
+			1, 1, 1965, 0, 0, true, true, null, StringPool.BLANK, null, null,
+			ServiceContextTestUtil.getServiceContext(_group.getGroupId()));
+
+		return _assetEntryLocalService.getEntry(
+			BlogsEntry.class.getName(), blogsEntry.getEntryId());
 	}
 
 	private AssetEntry _addAssetEntry(
@@ -465,6 +536,30 @@ public class AssetPublisherDisplayContextTest {
 			"getAssetEntryResults", new Class<?>[0]);
 	}
 
+	private List<AssetEntryResult> _getAssetEntryResults(
+			String audienceEntryERC, PortletPreferences portletPreferences)
+		throws Exception {
+
+		Object assetPublisherDisplayContext = _getAssetPublisherDisplayContext(
+			LayoutTestUtil.addTypePortletLayout(_group), portletPreferences);
+
+		MockHttpServletRequest mockHttpServletRequest =
+			(MockHttpServletRequest)_portal.getHttpServletRequest(
+				_mockLiferayPortletRenderRequest);
+
+		mockHttpServletRequest.setCookies(
+			new Cookie(
+				"com.liferay.frontend.js.audiences",
+				URLCodec.encodeURL(
+					JSONUtil.putAll(
+						audienceEntryERC
+					).toString())));
+
+		return ReflectionTestUtil.invoke(
+			assetPublisherDisplayContext, "getAssetEntryResults",
+			new Class<?>[0]);
+	}
+
 	private Object _getAssetPublisherDisplayContext(
 			Layout layout, PortletPreferences portletPreferences)
 		throws Exception {
@@ -526,6 +621,46 @@ public class AssetPublisherDisplayContextTest {
 		}
 
 		return null;
+	}
+
+	private PortletPreferences _getPortletPreferences(
+			AssetEntry assetEntry, AssetEntry audienceAssetEntry,
+			String audienceEntryERC)
+		throws Exception {
+
+		ServiceContext serviceContext =
+			ServiceContextTestUtil.getServiceContext(
+				_group.getGroupId(), TestPropsValues.getUserId());
+
+		AssetListEntry assetListEntry =
+			_assetListEntryLocalService.addAssetListEntry(
+				null, TestPropsValues.getUserId(), _group.getGroupId(),
+				RandomTestUtil.randomString(),
+				AssetListEntryTypeConstants.TYPE_MANUAL, serviceContext);
+
+		_assetListEntryLocalService.addAssetEntrySelection(
+			assetListEntry.getAssetListEntryId(), assetEntry.getEntryId(),
+			SegmentsEntryConstants.ID_DEFAULT, serviceContext);
+
+		_assetListEntryAudienceEntryRelLocalService.
+			addAssetListEntryAudienceEntryRel(
+				TestPropsValues.getUserId(), _group.getGroupId(),
+				assetListEntry.getAssetListEntryId(), audienceEntryERC, 0, null,
+				serviceContext);
+
+		_assetListEntryLocalService.addAssetEntrySelections(
+			assetListEntry.getAssetListEntryId(),
+			new long[] {audienceAssetEntry.getEntryId()}, audienceEntryERC,
+			serviceContext);
+
+		PortletPreferences portletPreferences = new PortletPreferencesImpl();
+
+		portletPreferences.setValue(
+			"assetListEntryExternalReferenceCode",
+			assetListEntry.getExternalReferenceCode());
+		portletPreferences.setValue("selectionStyle", "asset-list");
+
+		return portletPreferences;
 	}
 
 	private String _getPortletURLString() throws Exception {
@@ -633,6 +768,35 @@ public class AssetPublisherDisplayContextTest {
 		}
 	}
 
+	private void _testGetPortletURLWithNestedRedirect() throws Exception {
+		PortletPreferences portletPreferences = new PortletPreferencesImpl();
+
+		portletPreferences.setValue("paginationType", "regular");
+
+		Object assetPublisherDisplayContext = _getAssetPublisherDisplayContext(
+			LayoutTestUtil.addTypePortletLayout(_group), portletPreferences);
+
+		String currentURL =
+			"/web/" + RandomTestUtil.randomString() + "?param=value";
+		String previousRedirect = URLCodec.encodeURL(
+			StringBundler.concat(
+				"/web/", RandomTestUtil.randomString(), "?redirect=",
+				URLCodec.encodeURL("/web/" + RandomTestUtil.randomString())));
+
+		_mockLiferayPortletRenderRequest.setAttribute(
+			WebKeys.CURRENT_URL,
+			StringBundler.concat(
+				currentURL, "&redirect=", previousRedirect, "&_",
+				AssetPublisherPortletKeys.ASSET_PUBLISHER, "_INSTANCE_",
+				RandomTestUtil.randomString(), "_redirect=", previousRedirect));
+
+		MockLiferayPortletURL mockLiferayPortletURL = ReflectionTestUtil.invoke(
+			assetPublisherDisplayContext, "getPortletURL", new Class<?>[0]);
+
+		Assert.assertEquals(
+			currentURL, mockLiferayPortletURL.getParameter("redirect"));
+	}
+
 	private static Configuration _assetPublisherWebConfiguration;
 
 	@Inject
@@ -642,7 +806,17 @@ public class AssetPublisherDisplayContextTest {
 	private AssetEntryLocalService _assetEntryLocalService;
 
 	@Inject
+	private AssetListEntryAudienceEntryRelLocalService
+		_assetListEntryAudienceEntryRelLocalService;
+
+	@Inject
+	private AssetListEntryLocalService _assetListEntryLocalService;
+
+	@Inject
 	private AssetVocabularyLocalService _assetVocabularyLocalService;
+
+	@Inject
+	private BlogsEntryLocalService _blogsEntryLocalService;
 
 	private Company _company;
 

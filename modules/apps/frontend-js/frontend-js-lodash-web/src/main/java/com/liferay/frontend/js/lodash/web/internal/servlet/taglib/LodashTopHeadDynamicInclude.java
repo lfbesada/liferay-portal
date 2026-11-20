@@ -22,9 +22,9 @@ import java.io.PrintWriter;
 import java.util.Map;
 
 import org.osgi.framework.BundleContext;
-import org.osgi.service.component.ComponentContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
+import org.osgi.service.component.annotations.ConfigurationPolicy;
 import org.osgi.service.component.annotations.Modified;
 import org.osgi.service.component.annotations.Reference;
 
@@ -33,6 +33,7 @@ import org.osgi.service.component.annotations.Reference;
  */
 @Component(
 	configurationPid = "com.liferay.frontend.js.lodash.web.internal.configuration.JSLodashConfiguration",
+	configurationPolicy = ConfigurationPolicy.REQUIRE,
 	property = "dynamic.include.key=/html/common/themes/top_head.jsp#pre",
 	service = DynamicInclude.class
 )
@@ -73,8 +74,7 @@ public class LodashTopHeadDynamicInclude extends BaseDynamicInclude {
 	@Activate
 	@Modified
 	protected void activate(
-			BundleContext bundleContext, ComponentContext componentContext,
-			Map<String, Object> properties)
+			BundleContext bundleContext, Map<String, Object> properties)
 		throws Exception {
 
 		_bundleContext = bundleContext;

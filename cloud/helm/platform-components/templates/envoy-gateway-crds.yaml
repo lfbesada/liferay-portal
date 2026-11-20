@@ -1,0 +1,39 @@
+{{- $envoyGateway := .Values.envoyGateway -}}
+{{- $crds := $envoyGateway.crds -}}
+{{- if and $envoyGateway.enabled $crds.enabled -}}
+apiVersion: argoproj.io/v1alpha1
+kind: Application
+metadata:
+    annotations:
+        argocd.argoproj.io/sync-wave: "-100"
+    labels:
+        {{- include "liferay-platform.labels" . | nindent 8 }}
+        app.kubernetes.io/name: envoy-gateway-crds
+    name: envoy-gateway-crds
+    namespace: {{ .Release.Namespace }}
+spec:
+    destination:
+        namespace: {{ $envoyGateway.namespace }}
+        server: https://kubernetes.default.svc
+    project: liferay-operator
+    source:
+        {{- include "liferay-platform.chartSource" (dict "repoURL" $crds.repoURL "targetRevision" $crds.targetRevision) | nindent 8 }}
+        {{- with $crds.values }}
+        helm:
+            valuesObject:
+                {{- toYaml . | nindent 16 }}
+        {{- end }}
+    syncPolicy:
+        automated:
+            prune: false
+            selfHeal: true
+        retry:
+            backoff:
+                duration: 30s
+                factor: 2
+                maxDuration: 10m
+            limit: 10
+        syncOptions:
+            -   CreateNamespace=true
+            -   ServerSideApply=true
+{{- end -}}

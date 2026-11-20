@@ -14,16 +14,46 @@ function resolveModule(name = '') {
 
 const include = [resolveModule()];
 
+const POLYFILLS = [
+	'core-js/fn/array/fill',
+	'core-js/fn/string/code-point-at',
+	'core-js/fn/typed',
+	'custom-event-polyfill',
+	'unorm',
+	'whatwg-fetch',
+];
+
+function getComponentEntry(name) {
+	const appName = `${name.charAt(0).toUpperCase()}${name.slice(1)}App`;
+
+	return {
+		filename: '../__liferay__/[name].js',
+		import: [
+			...POLYFILLS,
+			resolveModule(`fragments/${name}/${appName}.tsx`),
+		],
+		library: {
+			type: 'module',
+		},
+	};
+}
+
 const config = {
-	entry: [
-		'core-js/fn/array/fill',
-		'core-js/fn/string/code-point-at',
-		'core-js/fn/typed',
-		'custom-event-polyfill',
-		'unorm',
-		'whatwg-fetch',
-		resolveModule('main.jsx'),
-	],
+	entry: {
+		accounts: getComponentEntry('accounts'),
+		assets: getComponentEntry('assets'),
+		campaigns: getComponentEntry('campaigns'),
+		events: getComponentEntry('events'),
+		'external-scripts': resolveModule('external-scripts.js'),
+		individuals: getComponentEntry('individuals'),
+		lifecycles: getComponentEntry('lifecycles'),
+		main: [...POLYFILLS, resolveModule('main.jsx')],
+		segments: getComponentEntry('segments'),
+		settings: getComponentEntry('settings'),
+		sites: getComponentEntry('sites'),
+		tests: getComponentEntry('tests'),
+		workspaces: getComponentEntry('workspaces'),
+	},
 	experiments: {
 		outputModule: true,
 	},
@@ -53,6 +83,7 @@ const config = {
 				resolve: {
 					alias: {
 						assets: resolveModule('assets'),
+						campaigns: resolveModule('campaigns'),
 						'cerebro-shared': resolveModule('cerebro-shared'),
 						contacts: resolveModule('contacts'),
 						'custom-types': resolveModule('custom-types'),
@@ -223,7 +254,7 @@ const config = {
 		],
 	},
 	output: {
-		filename: 'main.js',
+		filename: '[name].js',
 		module: true,
 		path: path.resolve('src/main/resources/META-INF/resources/dist'),
 		pathinfo: false,
@@ -231,7 +262,7 @@ const config = {
 	},
 	plugins: [
 		new MiniCssExtractPlugin({
-			filename: 'main.css',
+			filename: '[name].css',
 		}),
 		new ForkTsCheckerWebpackPlugin({
 			issue: {

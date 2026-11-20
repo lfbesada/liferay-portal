@@ -30,27 +30,34 @@ jest.mock(
 	})
 );
 
-jest.mock('@ckeditor/ckeditor5-react', () => ({
-	CKEditor: ({onChange, onReady}: any) => {
-		const mockEditor = {
-			getData: jest.fn().mockReturnValue('mocked data'),
-			on: jest.fn(),
-			setData: jest.fn(),
-		};
-		onReady(mockEditor);
+jest.mock('@ckeditor/ckeditor5-react', () => {
+	const {useEffect, useRef} = jest.requireActual('react');
 
-		return (
-			<input
-				aria-label="Mocked CKEditor"
-				onChange={(event) => {
-					if (onChange) {
-						onChange(event, mockEditor);
-					}
-				}}
-			/>
-		);
-	},
-}));
+	return {
+		CKEditor: ({onChange, onReady}: any) => {
+			const mockEditorRef = useRef({
+				getData: jest.fn().mockReturnValue('mocked data'),
+				on: jest.fn(),
+				setData: jest.fn(),
+			});
+
+			useEffect(() => {
+				onReady(mockEditorRef.current);
+			}, [onReady]);
+
+			return (
+				<input
+					aria-label="Mocked CKEditor"
+					onChange={(event) => {
+						if (onChange) {
+							onChange(event, mockEditorRef.current);
+						}
+					}}
+				/>
+			);
+		},
+	};
+});
 
 const initialComments: Comment[] = [
 	{
@@ -343,5 +350,77 @@ describe('CommentsPanel', () => {
 
 		expect(screen.getByText('Parent comment')).toBeInTheDocument();
 		expect(screen.getByText('Child comment')).toBeInTheDocument();
+	});
+
+	it('tells that the highlighted comment is no longer available when it does not exist', async () => {
+		render(
+			<CommentsPanel
+				addCommentURL="addCommentURL"
+				comments={initialComments}
+				deleteCommentURL="deleteCommentURL"
+				editCommentURL="editCommentURL"
+				editorConfig={{}}
+				getCommentsURL="getCommentsURL"
+				highlightedCommentId="3"
+			/>
+		);
+
+		expect(
+			screen.getByText('this-comment-is-no-longer-available')
+		).toBeInTheDocument();
+
+		await userEvent.click(screen.getByRole('button', {name: 'Close'}));
+
+		expect(
+			screen.queryByText('this-comment-is-no-longer-available')
+		).not.toBeInTheDocument();
+	});
+
+	it('shows a toast instead of telling that the highlighted comment is no longer available when the comments cannot be loaded', async () => {
+		const error = 'Unexpected error loading the comments';
+
+		(CommentService.getComments as jest.Mock).mockResolvedValue({
+			data: null,
+			error,
+		});
+
+		render(
+			<CommentsPanel
+				addCommentURL="addCommentURL"
+				deleteCommentURL="deleteCommentURL"
+				editCommentURL="editCommentURL"
+				editorConfig={{}}
+				getCommentsURL="getCommentsURL"
+				highlightedCommentId="1"
+			/>
+		);
+
+		await waitFor(() => {
+			expect(screen.getByText(error)).toBeInTheDocument();
+		});
+
+		expect(
+			screen.queryByText('this-comment-is-no-longer-available')
+		).not.toBeInTheDocument();
+	});
+
+	it('does not tell that the highlighted comment is no longer available when it is a reply', () => {
+		Element.prototype.scrollIntoView = jest.fn();
+
+		render(
+			<CommentsPanel
+				addCommentURL="addCommentURL"
+				comments={initialComments}
+				deleteCommentURL="deleteCommentURL"
+				editCommentURL="editCommentURL"
+				editorConfig={{}}
+				getCommentsURL="getCommentsURL"
+				highlightedCommentId="2"
+			/>
+		);
+
+		expect(
+			screen.queryByText('this-comment-is-no-longer-available')
+		).not.toBeInTheDocument();
 	});
 });

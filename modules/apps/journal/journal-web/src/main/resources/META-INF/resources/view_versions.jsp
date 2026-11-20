@@ -35,7 +35,7 @@ Map<String, Object> componentContext = journalDisplayContext.getComponentContext
 			<c:when test='<%= Objects.equals(journalDisplayContext.getDisplayStyle(), "descriptive") %>'>
 				<liferay-ui:search-container-column-text>
 					<liferay-user:user-portrait
-						userId="<%= articleVersion.getUserId() %>"
+						userId="<%= articleVersion.getStatusByUserId() %>"
 					/>
 				</liferay-ui:search-container-column-text>
 
@@ -50,7 +50,7 @@ Map<String, Object> componentContext = journalDisplayContext.getComponentContext
 					%>
 
 					<div class="h6 text-default">
-						<liferay-ui:message arguments="<%= new String[] {HtmlUtil.escape(articleVersion.getUserName()), modifiedDateDescription} %>" key="x-modified-x-ago" />
+						<liferay-ui:message arguments="<%= new String[] {HtmlUtil.escape(articleVersion.getStatusByUserName()), modifiedDateDescription} %>" key="x-modified-x-ago" />
 					</div>
 
 					<div class="h5">
@@ -133,7 +133,7 @@ Map<String, Object> componentContext = journalDisplayContext.getComponentContext
 
 				<liferay-ui:search-container-column-text
 					name="author"
-					value="<%= HtmlUtil.escape(PortalUtil.getUserName(articleVersion)) %>"
+					value="<%= HtmlUtil.escape(articleVersion.getStatusByUserName()) %>"
 				/>
 
 				<liferay-ui:search-container-column-text>

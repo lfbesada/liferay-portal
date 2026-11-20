@@ -54,6 +54,7 @@ definition {
 	@description = "LRQA-55606 Automate LPS-106225: [Dashboard] Apply pagination on bulk reassign workflow instances"
 	@priority = 5
 	test ApplyPaginationOnBulkReassign {
+		property custom.properties = "search.container.page.delta.values=4,8,20,40,60";
 		property test.liferay.virtual.instance = "false";
 		property test.run.type = "single";
 
@@ -1059,14 +1060,16 @@ definition {
 
 		AssertElementPresent(locator1 = "WorkflowReassignModal#REASSIGN_MODAL");
 
-		Click(locator1 = "WorkflowReassignModal#SEARCH_NEW_ASSIGNEE");
+		Click(
+			key_itemName = "Blogs Entry: Blogs Entry Title 1",
+			locator1 = "WorkflowReassignModal#SEARCH_NEW_ASSIGNEE_SPECIFIC");
 
 		AssertElementPresent(
 			key_nameOfAssignee = "Test Test",
 			locator1 = "WorkflowReassignModal#REASSIGN_TASK_NEW_ASSIGNEE_DROPDOWN");
 
 		AssertElementNotPresent(
-			key_nameOfAssignee = "userfn userls",
+			key_nameOfAssignee = "userfn userln",
 			locator1 = "WorkflowReassignModal#REASSIGN_TASK_NEW_ASSIGNEE_DROPDOWN");
 
 		WorkflowMetrics.selectNewAssignee(
@@ -1083,7 +1086,9 @@ definition {
 
 		AssertElementPresent(locator1 = "WorkflowReassignModal#REASSIGN_MODAL");
 
-		Click(locator1 = "WorkflowReassignModal#SEARCH_NEW_ASSIGNEE");
+		Click(
+			key_itemName = "Blogs Entry: Blogs Entry Title 1",
+			locator1 = "WorkflowReassignModal#SEARCH_NEW_ASSIGNEE_SPECIFIC");
 
 		AssertElementPresent(
 			key_nameOfAssignee = "No results were found.",

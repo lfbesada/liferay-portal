@@ -1306,6 +1306,9 @@ public class EditableFragmentEntryProcessorTest {
 			objectEntry.getExternalReferenceCode(),
 			element.attr("data-analytics-external-reference-code"));
 		Assert.assertEquals(
+			objectDefinition.getLabel(objectDefinition.getDefaultLocale()),
+			element.attr("data-analytics-object-definition-label"));
+		Assert.assertEquals(
 			objectDefinition.getName(),
 			element.attr("data-analytics-object-definition-name"));
 		Assert.assertEquals("", element.attr("data-analytics-object-type"));
@@ -1375,6 +1378,9 @@ public class EditableFragmentEntryProcessorTest {
 		Assert.assertEquals(
 			objectEntry.getExternalReferenceCode(),
 			element.attr("data-analytics-external-reference-code"));
+		Assert.assertEquals(
+			objectDefinition.getLabel(objectDefinition.getDefaultLocale()),
+			element.attr("data-analytics-object-definition-label"));
 		Assert.assertEquals(
 			objectDefinition.getName(),
 			element.attr("data-analytics-object-definition-name"));
@@ -1712,6 +1718,55 @@ public class EditableFragmentEntryProcessorTest {
 
 		_testFragmentEntryProcessorEditableLinkInlineValue(
 			"https://www.liferay.com", FragmentEntryLinkConstants.VIEW);
+	}
+
+	@Test
+	@TestInfo("LPD-115011")
+	public void testFragmentEntryProcessorEditableLinkManualURLScheme()
+		throws Exception {
+
+		FragmentEntryLink fragmentEntryLink = _addFragmentEntryLink(
+			StringUtil.replace(
+				_readJSONFileToString("link/editable_values_link_inline.json"),
+				"https://www.liferay.com", "javascript:void(0)"),
+			"link/fragment_entry_link.html");
+
+		Document document = _getDocument(
+			_fragmentEntryProcessorRegistry.processFragmentEntryLinkHTML(
+				fragmentEntryLink,
+				_getFragmentEntryProcessorContext(
+					LocaleUtil.getSiteDefault(),
+					FragmentEntryLinkConstants.VIEW)));
+
+		Element body = document.body();
+
+		Elements elements = body.getElementsByTag("a");
+
+		Element element = elements.get(0);
+
+		Assert.assertEquals("javascript:void(0)", element.attr("href"));
+	}
+
+	@Test
+	@TestInfo("LPD-115011")
+	public void testFragmentEntryProcessorEditableLinkMappedURLScheme()
+		throws Exception {
+
+		JournalArticle journalArticle = JournalTestUtil.addArticle(
+			_group.getGroupId(), "javascript:alert(document.domain)",
+			RandomTestUtil.randomString());
+
+		Element element = _getElement(
+			"data-lfr-editable-id", "link",
+			_getEditableFieldValues(
+				_portal.getClassNameId(JournalArticle.class),
+				journalArticle.getResourcePrimKey(), "title",
+				"link/fragment_entry_link_mapped_asset_field.json"),
+			"link/fragment_entry_link_button.html", LocaleUtil.US,
+			FragmentEntryLinkConstants.VIEW);
+
+		Assert.assertEquals(
+			"javascript%3aalert(document.domain)", element.attr("href"));
 	}
 
 	@Test

@@ -1803,6 +1803,12 @@
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
 		<attribute>
+			<name>resultEnd</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>int</type>
+		</attribute>
+		<attribute>
 			<description>A target for the <![CDATA[<code>first</code>]]>, <![CDATA[<code>previous</code>]]>, <![CDATA[<code>next</code>]]>, and <![CDATA[<code>last</code>]]> link buttons.</description>
 			<name>target</name>
 			<required>false</required>
@@ -2725,8 +2731,8 @@
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
 		<attribute>
-			<description>A property to use as the primary key for the object type in the <![CDATA[<code>className</code>]]> attribute.</description>
-			<name>keyProperty</name>
+			<description>A property name to use as the primary key for the object type in the <![CDATA[<code>className</code>]]> attribute.</description>
+			<name>keyPropertyName</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
 		</attribute>
@@ -2884,6 +2890,12 @@
 			<name>markupView</name>
 			<required>false</required>
 			<rtexprvalue>true</rtexprvalue>
+		</attribute>
+		<attribute>
+			<name>resultEnd</name>
+			<required>false</required>
+			<rtexprvalue>true</rtexprvalue>
+			<type>int</type>
 		</attribute>
 		<attribute>
 			<description>All configurable porperties of the search container, such as <![CDATA[<code>cur</code>]]> and <![CDATA[<code>curParam</code>]]>. These properties are set with <![CDATA[<code>searchContainer.getCur()</code>]]> and <![CDATA[<code>searchContainer.getCurParam()</code>]]> respectively.</description>

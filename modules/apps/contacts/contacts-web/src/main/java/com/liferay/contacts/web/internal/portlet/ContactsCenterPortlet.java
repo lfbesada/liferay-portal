@@ -19,7 +19,6 @@ import com.liferay.contacts.web.internal.constants.ContactsPortletKeys;
 import com.liferay.document.library.kernel.service.DLAppService;
 import com.liferay.petra.function.transform.TransformUtil;
 import com.liferay.petra.string.StringPool;
-import com.liferay.portal.kernel.bean.BeanParamUtil;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.AddressCityException;
 import com.liferay.portal.kernel.exception.AddressStreetException;
@@ -125,7 +124,6 @@ import org.osgi.service.component.annotations.Reference;
  * @deprecated As of Cavanaugh (7.4.x)
  */
 @Component(
-	configurationPid = "com.liferay.users.admin.configuration.UserFileUploadsConfiguration",
 	property = {
 		"com.liferay.portlet.add-default-resource=true",
 		"com.liferay.portlet.css-class-wrapper=contacts-portlet",
@@ -1310,32 +1308,33 @@ public class ContactsCenterPortlet extends MVCPortlet {
 			}
 		}
 
-		String comments = BeanParamUtil.getString(
-			user, actionRequest, "comments");
-		String emailAddress = BeanParamUtil.getString(
-			user, actionRequest, "emailAddress");
-		String firstName = BeanParamUtil.getString(
-			user, actionRequest, "firstName");
-		String jobTitle = BeanParamUtil.getString(
-			user, actionRequest, "jobTitle");
-		String lastName = BeanParamUtil.getString(
-			user, actionRequest, "lastName");
-		String middleName = BeanParamUtil.getString(
-			user, actionRequest, "middleName");
-		String screenName = BeanParamUtil.getString(
-			user, actionRequest, "screenName");
+		String comments = ParamUtil.getString(
+			actionRequest, "comments", user.getComments());
+		String emailAddress = ParamUtil.getString(
+			actionRequest, "emailAddress", user.getEmailAddress());
+		String firstName = ParamUtil.getString(
+			actionRequest, "firstName", user.getFirstName());
+		String jobTitle = ParamUtil.getString(
+			actionRequest, "jobTitle", user.getJobTitle());
+		String lastName = ParamUtil.getString(
+			actionRequest, "lastName", user.getLastName());
+		String middleName = ParamUtil.getString(
+			actionRequest, "middleName", user.getMiddleName());
+		String screenName = ParamUtil.getString(
+			actionRequest, "screenName", user.getScreenName());
 
 		Contact contact = user.getContact();
 
-		String facebookSn = BeanParamUtil.getString(
-			contact, actionRequest, "facebookSn");
-		String jabberSn = BeanParamUtil.getString(
-			contact, actionRequest, "jabberSn");
-		String skypeSn = BeanParamUtil.getString(
-			contact, actionRequest, "skypeSn");
-		String smsSn = BeanParamUtil.getString(contact, actionRequest, "smsSn");
-		String twitterSn = BeanParamUtil.getString(
-			contact, actionRequest, "twitterSn");
+		String facebookSn = ParamUtil.getString(
+			actionRequest, "facebookSn", contact.getFacebookSn());
+		String jabberSn = ParamUtil.getString(
+			actionRequest, "jabberSn", contact.getJabberSn());
+		String skypeSn = ParamUtil.getString(
+			actionRequest, "skypeSn", contact.getSkypeSn());
+		String smsSn = ParamUtil.getString(
+			actionRequest, "smsSn", contact.getSmsSn());
+		String twitterSn = ParamUtil.getString(
+			actionRequest, "twitterSn", contact.getTwitterSn());
 
 		Calendar cal = CalendarFactoryUtil.getCalendar();
 

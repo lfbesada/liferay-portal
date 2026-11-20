@@ -1,6 +1,7 @@
 package cx
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"errors"
@@ -31,12 +32,16 @@ import (
 
 const (
 	ReasonConfigurationOnly      = "ConfigurationOnly"
+	ReasonCronJobScheduled       = "CronJobScheduled"
 	ReasonDeleteIncomplete       = "DeleteIncomplete"
 	ReasonDeleting               = "Deleting"
 	ReasonDelivered              = "Delivered"
 	ReasonDeliveryNotPermitted   = "DeliveryNotPermitted"
 	ReasonDxpNamespaceNotFound   = "DxpNamespaceNotFound"
 	ReasonExtInitMissing         = "ExtInitMissing"
+	ReasonJobComplete            = "JobComplete"
+	ReasonJobFailed              = "JobFailed"
+	ReasonJobRunning             = "JobRunning"
 	ReasonMirrorFailed           = "MirrorFailed"
 	ReasonMirrored               = "Mirrored"
 	ReasonNamespaceNotPermitted  = "NamespaceNotPermitted"
@@ -47,8 +52,11 @@ const (
 	ReasonServiceIDConflict      = "ServiceIDConflict"
 	ReasonUnknownVirtualInstance = "UnknownVirtualInstance"
 	ReasonWorkloadAccepted       = "WorkloadAccepted"
+	ReasonWorkloadAvailable      = "WorkloadAvailable"
 	ReasonWorkloadMisconfigured  = "WorkloadMisconfigured"
 	ReasonWorkloadNotFound       = "WorkloadNotFound"
+	ReasonWorkloadProgressing    = "WorkloadProgressing"
+	ReasonWorkloadUnavailable    = "WorkloadUnavailable"
 )
 
 const deliveryClusterRoleName = "client-extension-delivery-cluster-role"
@@ -57,9 +65,12 @@ const extInitGracePeriod = 30 * time.Second
 
 const refusalRequeueInterval = time.Minute
 
+const unknownVirtualInstanceGracePeriod = 30 * time.Minute
+
 // +kubebuilder:rbac:groups="",resources=configmaps,verbs=get;list;watch
 // +kubebuilder:rbac:groups="",resources=events,verbs=create;patch
 // +kubebuilder:rbac:groups="",resources=namespaces,verbs=get;list;watch
+// +kubebuilder:rbac:groups="",resources=pods,verbs=get;list
 // +kubebuilder:rbac:groups=apps,resources=deployments,verbs=get;list;patch;watch
 // +kubebuilder:rbac:groups=batch,resources=cronjobs,verbs=get;list;watch
 // +kubebuilder:rbac:groups=batch,resources=jobs,verbs=get;list;watch
@@ -102,7 +113,7 @@ func (clientExtensionReconciler *ClientExtensionReconciler) Reconcile(
 			newCondition(
 				metav1.ConditionFalse, refusalMessage(&clientExtension, dxpNamespace, refusedReason), refusedReason,
 			),
-			"", nil, nil, nil, nil,
+			"", nil, nil, "", nil,
 		); error != nil {
 			return controllerruntime.Result{}, error
 		}
@@ -136,14 +147,20 @@ func (clientExtensionReconciler *ClientExtensionReconciler) Reconcile(
 	}
 
 	if apierrors.IsNotFound(error) || (dxpMetadata.Labels[LabelMirror] == "true") {
-		return controllerruntime.Result{}, clientExtensionReconciler.updateStatus(
+		if error := clientExtensionReconciler.updateStatus(
 			&clientExtension, context,
 			newCondition(
 				metav1.ConditionFalse, unknownVirtualInstanceMessage(&clientExtension, dxpNamespace),
 				ReasonUnknownVirtualInstance,
 			),
-			"", nil, nil, nil, nil,
-		)
+			"", nil, nil, "", nil,
+		); error != nil {
+			return controllerruntime.Result{}, error
+		}
+
+		return controllerruntime.Result{
+			RequeueAfter: unknownVirtualInstanceGraceRemaining(&clientExtension.Status),
+		}, nil
 	}
 
 	payload, error := json.MarshalIndent(clientExtension.Spec.Configs, "", "\t")
@@ -168,7 +185,7 @@ func (clientExtensionReconciler *ClientExtensionReconciler) Reconcile(
 					),
 					ReasonDeliveryNotPermitted,
 				),
-				"", nil, nil, nil, nil,
+				"", nil, nil, "", nil,
 			)
 	}
 
@@ -183,7 +200,7 @@ func (clientExtensionReconciler *ClientExtensionReconciler) Reconcile(
 				metav1.ConditionFalse, serviceIDConflictMessage(&clientExtension, conflictingConfigMap),
 				ReasonServiceIDConflict,
 			),
-			"", nil, nil, nil, nil,
+			"", nil, nil, "", nil,
 		)
 	}
 
@@ -248,7 +265,7 @@ func (clientExtensionReconciler *ClientExtensionReconciler) Reconcile(
 		}
 	}
 
-	workloadAcceptedCondition, workloadIssues, error := clientExtensionReconciler.workloadCondition(
+	workloadStatus, error := clientExtensionReconciler.workloadStatus(
 		&clientExtension, configMapsWithDigest, context,
 	)
 
@@ -260,12 +277,13 @@ func (clientExtensionReconciler *ClientExtensionReconciler) Reconcile(
 		&clientExtension, context,
 		newCondition(metav1.ConditionTrue, message, ReasonDelivered),
 		extProvisionResourceVersion, &mirroredCondition, &provisionedCondition,
-		&workloadAcceptedCondition, workloadIssues,
+		dxpMetadata.Data[MetadataKeyServerProtocol], workloadStatus,
 	); error != nil {
 		return controllerruntime.Result{}, error
 	}
 
 	for _, graceRemaining := range []time.Duration{
+		availabilityRequeueInterval(&clientExtension.Status),
 		extInitGraceRemaining(&clientExtension.Status),
 		workloadGraceRemaining(&clientExtension.Status),
 	} {
@@ -293,7 +311,6 @@ func (clientExtensionReconciler *ClientExtensionReconciler) SetupWithManager(
 		&appsv1.Deployment{},
 		handler.EnqueueRequestsFromMapFunc(clientExtensionReconciler.requestsForWorkload(cxv1alpha1.WorkloadKindDeployment)),
 		builder.OnlyMetadata,
-		builder.WithPredicates(predicate.GenerationChangedPredicate{}),
 	).Watches(
 		&batchv1.CronJob{},
 		handler.EnqueueRequestsFromMapFunc(clientExtensionReconciler.requestsForWorkload(cxv1alpha1.WorkloadKindCronJob)),
@@ -301,9 +318,8 @@ func (clientExtensionReconciler *ClientExtensionReconciler) SetupWithManager(
 		builder.WithPredicates(predicate.GenerationChangedPredicate{}),
 	).Watches(
 		&batchv1.Job{},
-		handler.EnqueueRequestsFromMapFunc(clientExtensionReconciler.requestsForWorkload(cxv1alpha1.WorkloadKindJob)),
+		handler.EnqueueRequestsFromMapFunc(clientExtensionReconciler.requestsForJob),
 		builder.OnlyMetadata,
-		builder.WithPredicates(predicate.GenerationChangedPredicate{}),
 	).Watches(
 		&corev1.ConfigMap{},
 		handler.EnqueueRequestsFromMapFunc(clientExtensionReconciler.requestsForConfigMap),
@@ -608,7 +624,10 @@ func readyCondition(conditions []metav1.Condition) metav1.Condition {
 		}
 	}
 
-	return newCondition(metav1.ConditionTrue, "The client extension is delivered and provisioned.", ReasonReady)
+	return newCondition(
+		metav1.ConditionTrue, "The client extension is delivered and provisioned, and its workload is available.",
+		ReasonReady,
+	)
 }
 
 func refusalMessage(
@@ -801,6 +820,16 @@ func serviceIDConflictMessage(clientExtension *cxv1alpha1.ClientExtension, confi
 	)
 }
 
+func unknownVirtualInstanceGraceRemaining(status *cxv1alpha1.ClientExtensionStatus) time.Duration {
+	delivered := meta.FindStatusCondition(status.Conditions, cxv1alpha1.ConditionDelivered)
+
+	if (delivered == nil) || (delivered.Reason != ReasonUnknownVirtualInstance) {
+		return 0
+	}
+
+	return max(time.Until(delivered.LastTransitionTime.Add(unknownVirtualInstanceGracePeriod)), 0)
+}
+
 func unknownVirtualInstanceMessage(clientExtension *cxv1alpha1.ClientExtension, dxpNamespace string) string {
 	return fmt.Sprintf(
 		"Virtual instance %q is unknown to DXP: ConfigMap %q does not exist in namespace %q.",
@@ -816,10 +845,18 @@ func (clientExtensionReconciler *ClientExtensionReconciler) updateStatus(
 	extProvisionResourceVersion string,
 	mirrored *metav1.Condition,
 	provisioned *metav1.Condition,
-	workloadAccepted *metav1.Condition,
-	workloadIssues []string,
+	serverProtocol string,
+	workloadStatus *workloadStatus,
 ) error {
 	status := clientExtension.Status.DeepCopy()
+
+	var workloadAccepted *metav1.Condition
+	var workloadAvailable *metav1.Condition
+
+	if workloadStatus != nil {
+		workloadAccepted = &workloadStatus.accepted
+		workloadAvailable = workloadStatus.available
+	}
 
 	delivered.Type = cxv1alpha1.ConditionDelivered
 
@@ -828,6 +865,7 @@ func (clientExtensionReconciler *ClientExtensionReconciler) updateStatus(
 	conditions = appendOptionalCondition(conditions, mirrored, cxv1alpha1.ConditionMirrored, status)
 	conditions = appendOptionalCondition(conditions, provisioned, cxv1alpha1.ConditionProvisioned, status)
 	conditions = appendOptionalCondition(conditions, workloadAccepted, cxv1alpha1.ConditionWorkloadAccepted, status)
+	conditions = appendOptionalCondition(conditions, workloadAvailable, cxv1alpha1.ConditionWorkloadAvailable, status)
 
 	if previousWorkloadAccepted := meta.FindStatusCondition(
 		status.Conditions, cxv1alpha1.ConditionWorkloadAccepted,
@@ -858,17 +896,34 @@ func (clientExtensionReconciler *ClientExtensionReconciler) updateStatus(
 		status.ExtProvisionResourceVersion = extProvisionResourceVersion
 	}
 
+	status.Image = ""
 	status.ObservedGeneration = clientExtension.Generation
+	status.URL = ""
 
-	status.WorkloadIssues = workloadIssues
+	if clientExtension.Spec.Domain != "" {
+		status.URL = cmp.Or(serverProtocol, "https") + "://" + clientExtension.Spec.Domain
+	}
+
+	status.WorkloadIssues = nil
 	status.WorkloadName = ""
+	status.WorkloadSummary = ""
 
-	if (clientExtension.Spec.WorkloadRef != nil) && (workloadAccepted != nil) {
-		status.WorkloadName = clientExtension.Spec.WorkloadRef.Name
+	if workloadStatus != nil {
+		status.Image = workloadStatus.image
+		status.WorkloadIssues = workloadStatus.issues
+
+		if clientExtension.Spec.WorkloadRef != nil {
+			status.WorkloadName = clientExtension.Spec.WorkloadRef.Name
+		}
+
+		status.WorkloadSummary = workloadStatus.summary
 	}
 
 	if ((ready.Reason == ReasonExtInitMissing) && (extInitGraceRemaining(status) > 0)) ||
-		((ready.Reason == ReasonWorkloadNotFound) && (workloadGraceRemaining(status) > 0)) {
+		(ready.Reason == ReasonJobRunning) ||
+		((ready.Reason == ReasonUnknownVirtualInstance) && (unknownVirtualInstanceGraceRemaining(status) > 0)) ||
+		((ready.Reason == ReasonWorkloadNotFound) && (workloadGraceRemaining(status) > 0)) ||
+		(ready.Reason == ReasonWorkloadProgressing) {
 
 		status.Phase = cxv1alpha1.PhasePending
 	} else if ready.Status == metav1.ConditionTrue {

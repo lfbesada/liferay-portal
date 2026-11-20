@@ -5,8 +5,6 @@
 
 package com.liferay.site.pim.site.initializer.internal.feature.flag;
 
-import com.liferay.depot.constants.DepotConstants;
-import com.liferay.depot.model.DepotEntry;
 import com.liferay.depot.service.DepotEntryLocalService;
 import com.liferay.object.service.ObjectEntryFolderLocalService;
 import com.liferay.petra.lang.SafeCloseable;
@@ -21,27 +19,38 @@ import com.liferay.portal.kernel.security.auth.CompanyInheritableThreadLocalCall
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.servlet.InitialRequestSyncUtil;
 import com.liferay.site.initializer.SiteInitializer;
+import com.liferay.site.navigation.model.SiteNavigationMenuItem;
+import com.liferay.site.navigation.service.SiteNavigationMenuItemLocalService;
 import com.liferay.site.pim.site.initializer.internal.util.PIMObjectEntryFolderUtil;
 import com.liferay.site.pim.site.initializer.internal.util.SiteInitializerUtil;
-
-import java.util.Objects;
-
-import org.osgi.service.component.annotations.Component;
-import org.osgi.service.component.annotations.Reference;
 
 /**
  * @author Stefano Motta
  */
-@Component(
-	property = "feature.flag.key=LPD-96666", service = FeatureFlagListener.class
-)
 public class PIMFeatureFlagListener implements FeatureFlagListener {
+
+	public PIMFeatureFlagListener(
+		SiteInitializer cmsSiteInitializer,
+		DepotEntryLocalService depotEntryLocalService,
+		GroupLocalService groupLocalService,
+		ObjectEntryFolderLocalService objectEntryFolderLocalService,
+		SiteInitializer pimSiteInitializer,
+		SiteNavigationMenuItemLocalService siteNavigationMenuItemLocalService) {
+
+		_cmsSiteInitializer = cmsSiteInitializer;
+		_depotEntryLocalService = depotEntryLocalService;
+		_groupLocalService = groupLocalService;
+		_objectEntryFolderLocalService = objectEntryFolderLocalService;
+		_pimSiteInitializer = pimSiteInitializer;
+		_siteNavigationMenuItemLocalService =
+			siteNavigationMenuItemLocalService;
+	}
 
 	@Override
 	public void onValue(
 		long companyId, String featureFlagKey, boolean enabled) {
 
-		if (!enabled || !Objects.equals(featureFlagKey, "LPD-96666")) {
+		if (!enabled) {
 			return;
 		}
 
@@ -69,23 +78,19 @@ public class PIMFeatureFlagListener implements FeatureFlagListener {
 		try (SafeCloseable safeCloseable =
 				CTCollectionThreadLocal.setProductionModeWithSafeCloseable()) {
 
-			_groupLocalService.checkSystemGroups(companyId);
+			SiteNavigationMenuItem siteNavigationMenuItem =
+				_siteNavigationMenuItemLocalService.
+					fetchSiteNavigationMenuItemByExternalReferenceCode(
+						"PIMPRIMARYNAVIGATIONCONNECTORS", group.getGroupId());
 
-			// The PIM site initializer appends to the pages and the primary
-			// navigation menu the CMS one creates, so run that one first.
-
-			com.liferay.site.cms.site.initializer.util.SiteInitializerUtil.
-				initialize(companyId, _cmsSiteInitializer);
-
-			SiteInitializerUtil.initialize(companyId, _pimSiteInitializer);
-
-			for (DepotEntry depotEntry :
-					_depotEntryLocalService.getDepotEntries(
-						companyId, DepotConstants.TYPE_SPACE)) {
-
-				PIMObjectEntryFolderUtil.getOrAddProductsObjectEntryFolder(
-					depotEntry.getGroup(), _objectEntryFolderLocalService);
+			if (siteNavigationMenuItem == null) {
+				SiteInitializerUtil.initialize(
+					companyId, _cmsSiteInitializer, _pimSiteInitializer);
 			}
+
+			PIMObjectEntryFolderUtil.addProductsObjectEntryFolders(
+				companyId, _depotEntryLocalService,
+				_objectEntryFolderLocalService);
 		}
 		catch (PortalException portalException) {
 			_log.error(portalException);
@@ -95,23 +100,12 @@ public class PIMFeatureFlagListener implements FeatureFlagListener {
 	private static final Log _log = LogFactoryUtil.getLog(
 		PIMFeatureFlagListener.class);
 
-	@Reference(
-		target = "(site.initializer.key=com.liferay.site.initializer.cms)"
-	)
-	private SiteInitializer _cmsSiteInitializer;
-
-	@Reference
-	private DepotEntryLocalService _depotEntryLocalService;
-
-	@Reference
-	private GroupLocalService _groupLocalService;
-
-	@Reference
-	private ObjectEntryFolderLocalService _objectEntryFolderLocalService;
-
-	@Reference(
-		target = "(site.initializer.key=com.liferay.site.initializer.pim)"
-	)
-	private SiteInitializer _pimSiteInitializer;
+	private final SiteInitializer _cmsSiteInitializer;
+	private final DepotEntryLocalService _depotEntryLocalService;
+	private final GroupLocalService _groupLocalService;
+	private final ObjectEntryFolderLocalService _objectEntryFolderLocalService;
+	private final SiteInitializer _pimSiteInitializer;
+	private final SiteNavigationMenuItemLocalService
+		_siteNavigationMenuItemLocalService;
 
 }

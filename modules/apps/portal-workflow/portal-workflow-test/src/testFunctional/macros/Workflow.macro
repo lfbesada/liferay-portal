@@ -361,6 +361,8 @@ definition {
 
 		Workflow.confirmWorkflowAction();
 
+		SelectFrameTop();
+
 		Click(locator1 = "Icon#ANGLE_LEFT_BACK");
 
 		Workflow.viewTaskAssignedToMe(
@@ -440,7 +442,9 @@ definition {
 			locator1 = "WorkflowConfiguration#ASSET_TYPE_ROW_EDIT",
 			value1 = "Edit");
 
-		if (IsNotVisible(locator1 = "WorkflowConfiguration#ASSET_TYPE_ROW_SELECT")) {
+		var key_workflowDefinition = ${workflowDefinition};
+
+		if ((IsNotVisible(locator1 = "WorkflowConfiguration#ASSET_TYPE_ROW_SELECT")) || (IsElementNotPresent(locator1 = "WorkflowConfiguration#ASSET_TYPE_ROW_SELECT_OPTION"))) {
 			Refresh();
 
 			WaitForSPARefresh();
@@ -748,17 +752,6 @@ definition {
 	@summary = "Default summary"
 	macro openWorkflowProcessBuilderConfiguration() {
 		Navigator.openSpecificURL(url = "/group/control_panel/manage?p_p_id=com_liferay_portal_workflow_web_portlet_ControlPanelWorkflowPortlet&p_p_lifecycle=0&p_p_state=maximized&p_p_mode=view&_com_liferay_portal_workflow_web_portlet_ControlPanelWorkflowPortlet_tab=configuration");
-	}
-
-	@summary = "Default summary"
-	macro permissionsWorkflowDefinition(workflowDefinitionTitle = null) {
-		var key_workflowDefinitionTitle = ${workflowDefinitionTitle};
-
-		Click(locator1 = "WorkflowDefinition#DEFINITION_TABLE_SPECIFIC_DEFINITION_ELLIPSIS");
-
-		MenuItem.click(menuItem = "Permissions");
-
-		AssertElementPresent(locator1 = "WorkflowDefinition#DEFINITION_TABLE_TITLE_PERMISSIONS");
 	}
 
 	@summary = "Default summary"

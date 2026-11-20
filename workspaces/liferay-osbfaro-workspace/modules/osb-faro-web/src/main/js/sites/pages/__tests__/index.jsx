@@ -70,7 +70,7 @@ describe('Sites Dashboard Index', () => {
 		delete window.location;
 	});
 
-	it('renders w/ "No Sites Connected" as title', () => {
+	it('renders w/ "No Sites Are Connected" as title', () => {
 		window.location = {
 			pathname: '/workspace/2000/123/sites'
 		};
@@ -113,7 +113,7 @@ describe('Sites Dashboard Index', () => {
 		const {container} = render(<WrappedComponentWithContext />);
 
 		expect(container.querySelector('.title-section')).toHaveTextContent(
-			'No Sites Connected'
+			/no sites are connected/i
 		);
 	});
 });
@@ -128,13 +128,13 @@ describe('sites with no Data Source', () => {
 		const {getByText} = render(<WrappedComponent />);
 
 		expect(
-			getByText('No Sites Synced from Data Sources')
+			getByText(/^no sites have been synced from data sources$/i)
 		).toBeInTheDocument();
 		expect(
-			getByText('Connect a data source with sites data.')
+			getByText(/^connect a data source with sites data\.$/i)
 		).toBeInTheDocument();
 		expect(
-			getByText('Access our documentation to learn more.')
+			getByText(/^access our documentation to learn more\.$/i)
 		).toBeInTheDocument();
 	});
 });

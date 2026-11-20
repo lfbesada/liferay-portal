@@ -20,7 +20,6 @@ import com.liferay.blogs.exception.EntrySmallImageNameException;
 import com.liferay.blogs.exception.EntrySmallImageScaleException;
 import com.liferay.blogs.exception.EntryTitleException;
 import com.liferay.blogs.exception.EntryUrlTitleException;
-import com.liferay.blogs.internal.image.ImageSelectorProcessor;
 import com.liferay.blogs.model.BlogsEntry;
 import com.liferay.blogs.service.base.BlogsEntryLocalServiceBaseImpl;
 import com.liferay.blogs.settings.BlogsGroupServiceSettings;
@@ -42,15 +41,19 @@ import com.liferay.petra.string.StringPool;
 import com.liferay.portal.aop.AopService;
 import com.liferay.portal.configuration.metatype.bnd.util.ConfigurableUtil;
 import com.liferay.portal.configuration.module.configuration.ConfigurationProvider;
+import com.liferay.portal.image.ImageToolUtil;
 import com.liferay.portal.kernel.comment.CommentManager;
 import com.liferay.portal.kernel.dao.orm.QueryDefinition;
 import com.liferay.portal.kernel.dao.orm.QueryUtil;
 import com.liferay.portal.kernel.exception.PortalException;
+import com.liferay.portal.kernel.image.ImageBag;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
 import com.liferay.portal.kernel.model.Group;
+import com.liferay.portal.kernel.model.ImageConstants;
 import com.liferay.portal.kernel.model.ModelHintsUtil;
 import com.liferay.portal.kernel.model.Repository;
 import com.liferay.portal.kernel.model.ResourceConstants;
@@ -68,7 +71,6 @@ import com.liferay.portal.kernel.search.IndexableType;
 import com.liferay.portal.kernel.service.ClassNameLocalService;
 import com.liferay.portal.kernel.service.GroupLocalService;
 import com.liferay.portal.kernel.service.ImageLocalService;
-import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.ResourceLocalService;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserLocalService;
@@ -118,6 +120,8 @@ import com.liferay.upload.UniqueFileNameProvider;
 import jakarta.portlet.PortletRequest;
 
 import jakarta.servlet.http.HttpServletRequest;
+
+import java.awt.image.RenderedImage;
 
 import java.io.IOException;
 import java.io.InputStream;
@@ -1614,12 +1618,8 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 		}
 
 		try {
-			ImageSelectorProcessor imageSelectorProcessor =
-				new ImageSelectorProcessor(
-					imageSelector.getImageBytes(), _imageMagick);
-
-			imageBytes = imageSelectorProcessor.cropImage(
-				imageSelector.getImageCropRegion());
+			imageBytes = _cropImage(
+				imageBytes, imageSelector.getImageCropRegion());
 
 			if (imageBytes == null) {
 				throw new EntryCoverImageCropException();
@@ -1693,12 +1693,8 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 			BlogsGroupServiceSettings blogsGroupServiceSettings =
 				BlogsGroupServiceSettings.getInstance(groupId);
 
-			ImageSelectorProcessor imageSelectorProcessor =
-				new ImageSelectorProcessor(
-					imageSelector.getImageBytes(), _imageMagick);
-
-			imageBytes = imageSelectorProcessor.scaleImage(
-				blogsGroupServiceSettings.getSmallImageWidth());
+			imageBytes = _scaleImage(
+				imageBytes, blogsGroupServiceSettings.getSmallImageWidth());
 
 			if (imageBytes == null) {
 				throw new EntrySmallImageScaleException();
@@ -1720,6 +1716,30 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 		throws PortalException {
 
 		return _addFolder(userId, groupId, _SMALL_IMAGE_FOLDER_NAME);
+	}
+
+	private byte[] _cropImage(byte[] bytes, String cropRegion)
+		throws IOException, PortalException {
+
+		JSONObject jsonObject = _jsonFactory.createJSONObject(cropRegion);
+
+		int height = jsonObject.getInt("height");
+		int width = jsonObject.getInt("width");
+		int x = jsonObject.getInt("x");
+		int y = jsonObject.getInt("y");
+
+		if ((x > 0) || (y > 0) || (width > 0) || (height > 0)) {
+			ImageBag imageBag = ImageToolUtil.read(bytes);
+
+			RenderedImage renderedImage = imageBag.getRenderedImage();
+
+			renderedImage = ImageToolUtil.crop(
+				renderedImage, height, width, x, y);
+
+			return ImageToolUtil.getBytes(renderedImage, imageBag.getType());
+		}
+
+		return bytes;
 	}
 
 	private void _deleteDiscussion(BlogsEntry entry) throws PortalException {
@@ -2199,13 +2219,7 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 				continue;
 			}
 
-			try {
-				LinkbackProducerUtil.sendPingback(sourceUri, targetUri);
-			}
-			catch (Exception exception) {
-				_log.error(
-					"Error while sending pingback " + targetUri, exception);
-			}
+			LinkbackProducerUtil.sendPingback(sourceUri, targetUri);
 		}
 	}
 
@@ -2309,6 +2323,33 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 		}
 
 		return urlTitle;
+	}
+
+	private byte[] _scaleImage(byte[] bytes, int width) throws Exception {
+		byte[] scaledBytes = null;
+
+		try {
+			ImageBag imageBag = ImageToolUtil.read(bytes);
+
+			RenderedImage renderedImage = imageBag.getRenderedImage();
+
+			renderedImage = ImageToolUtil.scale(renderedImage, width);
+
+			scaledBytes = ImageToolUtil.getBytes(
+				renderedImage, imageBag.getType());
+		}
+		catch (IOException ioException) {
+			if (_log.isWarnEnabled()) {
+				_log.warn(ioException);
+			}
+		}
+
+		if ((scaledBytes == null) && _imageMagick.isEnabled()) {
+			scaledBytes = _imageMagick.scale(
+				bytes, ImageConstants.TYPE_PNG, width, 0);
+		}
+
+		return scaledBytes;
 	}
 
 	private BlogsEntry _startWorkflowInstance(
@@ -2498,7 +2539,7 @@ public class BlogsEntryLocalServiceImpl extends BlogsEntryLocalServiceBaseImpl {
 	private ImageMagick _imageMagick;
 
 	@Reference
-	private LayoutLocalService _layoutLocalService;
+	private JSONFactory _jsonFactory;
 
 	@Reference
 	private Localization _localization;

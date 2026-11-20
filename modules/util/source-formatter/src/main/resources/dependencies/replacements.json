@@ -6454,6 +6454,17 @@
 	},
 	{
 		"classNames": [
+			"LayoutLocalService",
+			"LayoutLocalServiceUtil",
+			"LayoutService",
+			"LayoutServiceUtil"
+		],
+		"from": "updateLayout(long paramName, boolean paramName, long paramName, String paramName)",
+		"issueKey": "LPD-102569",
+		"to": "updateTypeSettings(param#0#, param#1#, param#2#, param#3#)"
+	},
+	{
+		"classNames": [
 			"CPDefinitionInventoryEngine"
 		],
 		"from": "getMinStockQuantity(CPInstance paramName)",
@@ -6467,6 +6478,32 @@
 		"from": "getAvailabilityStatus(long paramName, long paramName, long paramName, BigDecimal paramName, String paramName, String paramName)",
 		"issueKey": "LPD-102782",
 		"to": "getAvailabilityStatus(param#0#, 0, param#1#, param#2#, param#3#, param#4#, param#5#)"
+	},
+	{
+		"classNames": [
+			"CommerceOrderLocalService",
+			"CommerceOrderLocalServiceUtil",
+			"CommerceOrderLocalServiceWrapper"
+		],
+		"from": "addCommerceOrder(long paramName, long paramName, long paramName, long paramName, long paramName, long paramName, long paramName, long paramName, String paramName, int paramName, int paramName, int paramName, int paramName, int paramName, int paramName, int paramName, String paramName, BigDecimal paramName, String paramName, BigDecimal paramName, BigDecimal paramName, BigDecimal paramName, BigDecimal paramName, BigDecimal paramName, BigDecimal paramName, ServiceContext paramName)",
+		"issueKey": "LPD-102917",
+		"newImports": [
+			"com.liferay.commerce.currency.service.CommerceCurrencyLocalServiceUtil"
+		],
+		"to": "addCommerceOrder(param#0#, param#1#, param#2#, param#3#, CommerceCurrencyLocalServiceUtil.fetchCommerceCurrency(param#4#).getCode(), param#5#, param#6#, param#7#, param#8#, null, param#9#, param#10#, param#11#, param#12#, param#13#, param#14#, param#15#, param#16#, param#17#, param#18#, param#19#, param#20#, param#21#, param#22#, param#23#, param#24#, param#25#)"
+	},
+	{
+		"classNames": [
+			"CommerceOrderLocalService",
+			"CommerceOrderLocalServiceUtil",
+			"CommerceOrderLocalServiceWrapper"
+		],
+		"from": "addCommerceOrder(long paramName, long paramName, long paramName, long paramName, long paramName, long paramName, long paramName, long paramName, String paramName, String paramName, int paramName, int paramName, int paramName, int paramName, int paramName, int paramName, int paramName, String paramName, BigDecimal paramName, String paramName, BigDecimal paramName, BigDecimal paramName, BigDecimal paramName, BigDecimal paramName, BigDecimal paramName, BigDecimal paramName, ServiceContext paramName)",
+		"issueKey": "LPD-102917",
+		"newImports": [
+			"com.liferay.commerce.currency.service.CommerceCurrencyLocalServiceUtil"
+		],
+		"to": "addCommerceOrder(param#0#, param#1#, param#2#, param#3#, CommerceCurrencyLocalServiceUtil.fetchCommerceCurrency(param#4#).getCode(), param#5#, param#6#, param#7#, param#8#, param#9#, param#10#, param#11#, param#12#, param#13#, param#14#, param#15#, param#16#, param#17#, param#18#, param#19#, param#20#, param#21#, param#22#, param#23#, param#24#, param#25#, param#26#)"
 	},
 	{
 		"classNames": [
@@ -7237,15 +7274,6 @@
 		"from": "SUBSCRIPTION_STATUS",
 		"issueKey": "LPS-197981",
 		"to": "COMMERCE_SUBSCRIPTION_STATUS"
-	},
-	{
-		"classNames": [
-			"CommerceOrderLocalService",
-			"CommerceOrderLocalServiceUtil"
-		],
-		"from": "addCommerceOrder(long paramName, long paramName, long paramName, long paramName, long paramName, long paramName, long paramName, long paramName, String paramName, int paramName, int paramName, int paramName, int paramName, int paramName, int paramName, int paramName, String paramName, BigDecimal paramName, String paramName, BigDecimal paramName, BigDecimal paramName, BigDecimal paramName, BigDecimal paramName, BigDecimal paramName, BigDecimal paramName, ServiceContext paramName)",
-		"issueKey": "LPS-198138",
-		"to": "addCommerceOrder(param#0#, param#1#, param#2#, param#3#, param#4#, param#5#, param#6#, param#7#, param#8#, param#9#, param#10#, param#11#, param#12#, param#13#, param#14#, param#15#, param#16#, param#17#, param#18#)"
 	},
 	{
 		"classNames": [

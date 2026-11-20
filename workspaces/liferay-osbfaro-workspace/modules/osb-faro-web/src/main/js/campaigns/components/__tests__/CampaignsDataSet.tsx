@@ -120,16 +120,30 @@ describe('CampaignsDataSet', () => {
 		expect(getFields().every(({sortable}: any) => sortable)).toBe(true);
 	});
 
-	it('should sort by accounts touched descending by default', () => {
+	it('should offer every sortable column in the Order menu, accounts touched descending by default', () => {
 		renderDataSet();
 
 		expect(lastFDSProps.sorts).toEqual([
+			{
+				active: false,
+				default: false,
+				direction: 'asc',
+				key: 'campaignName',
+				label: 'Campaign Name',
+			},
 			{
 				active: true,
 				default: true,
 				direction: 'desc',
 				key: 'accountsTouched',
 				label: 'Accounts Touched',
+			},
+			{
+				active: false,
+				default: false,
+				direction: 'asc',
+				key: 'individualsTouched',
+				label: 'Individuals Touched',
 			},
 		]);
 	});
@@ -200,7 +214,9 @@ describe('CampaignsDataSet', () => {
 	it('should tell the marketer that no campaigns were synced', () => {
 		renderDataSet();
 
-		expect(lastFDSProps.emptyState.title).toMatch(/no campaigns found/i);
+		expect(lastFDSProps.emptyState.title).toMatch(
+			/no campaigns were found/i
+		);
 		expect(lastFDSProps.emptyState.description).toMatch(
 			/no campaigns were synced/i
 		);
@@ -241,7 +257,7 @@ describe('CampaignsDataSet', () => {
 
 			expect(lastFDSProps.filters).toEqual([
 				{
-					apiURL: '/o/faro/contacts/23/account/account-names?channelId=123',
+					apiURL: '/o/faro/contacts/23/account/account-names?campaignTouched=true&channelId=123&rangeKey=30',
 					entityFieldType: 'string',
 					id: 'accountId',
 					itemKey: 'id',

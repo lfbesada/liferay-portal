@@ -6,6 +6,7 @@
 package com.liferay.fragment.internal.renderer;
 
 import com.liferay.analytics.settings.rest.manager.AnalyticsSettingsManager;
+import com.liferay.fragment.constants.FragmentConfigurationFieldDataType;
 import com.liferay.fragment.model.FragmentEntryLink;
 import com.liferay.fragment.renderer.FragmentRenderer;
 import com.liferay.fragment.renderer.FragmentRendererContext;
@@ -31,6 +32,7 @@ import com.liferay.layout.display.page.LayoutDisplayPageProvider;
 import com.liferay.layout.display.page.constants.LayoutDisplayPageWebKeys;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
+import com.liferay.portal.kernel.json.JSONFactory;
 import com.liferay.portal.kernel.json.JSONObject;
 import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.language.Language;
@@ -107,41 +109,31 @@ public class ContentObjectFragmentRenderer implements FragmentRenderer {
 		FragmentRendererContext fragmentRendererContext,
 		HttpServletRequest httpServletRequest) {
 
-		JSONObject jsonObject = _getFieldValueJSONObject(
+		JSONObject jsonObject = _getItemSelectorJSONObject(
 			fragmentRendererContext);
 
 		InfoItemReference infoItemReference =
 			fragmentRendererContext.getContextInfoItemReference();
 
-		if ((infoItemReference == null) &&
-			((jsonObject == null) || (jsonObject.length() == 0))) {
-
+		if ((infoItemReference == null) && (jsonObject.length() == 0)) {
 			return true;
 		}
 
-		String className = StringPool.BLANK;
-		Object displayObject = null;
-
-		if (jsonObject != null) {
-			className = jsonObject.getString("className");
-
-			displayObject = _getDisplayObject(
-				httpServletRequest, infoItemReference, jsonObject);
-		}
-		else {
-			displayObject = _getInfoItem(infoItemReference);
-		}
+		Object displayObject = _getDisplayObject(
+			httpServletRequest, infoItemReference, jsonObject);
 
 		if (displayObject == null) {
 			return true;
 		}
+
+		String className = jsonObject.getString("className");
 
 		if (Validator.isNull(className) && (infoItemReference != null)) {
 			className = infoItemReference.getClassName();
 		}
 
 		Tuple tuple = _getTuple(
-			className, displayObject.getClass(), fragmentRendererContext);
+			className, displayObject.getClass(), jsonObject);
 
 		if ((tuple == null) || (tuple.getObject(0) == null) ||
 			_hasPermission(httpServletRequest, className, displayObject)) {
@@ -158,15 +150,13 @@ public class ContentObjectFragmentRenderer implements FragmentRenderer {
 		HttpServletRequest httpServletRequest,
 		HttpServletResponse httpServletResponse) {
 
-		JSONObject jsonObject = _getFieldValueJSONObject(
+		JSONObject jsonObject = _getItemSelectorJSONObject(
 			fragmentRendererContext);
 
 		InfoItemReference infoItemReference =
 			fragmentRendererContext.getContextInfoItemReference();
 
-		if ((infoItemReference == null) &&
-			((jsonObject == null) || (jsonObject.length() == 0))) {
-
+		if ((infoItemReference == null) && (jsonObject.length() == 0)) {
 			if (fragmentRendererContext.isEditMode()) {
 				FragmentRendererUtil.printPortletMessageInfo(
 					httpServletRequest, httpServletResponse,
@@ -176,15 +166,8 @@ public class ContentObjectFragmentRenderer implements FragmentRenderer {
 			return;
 		}
 
-		Object displayObject = null;
-
-		if (jsonObject != null) {
-			displayObject = _getDisplayObject(
-				httpServletRequest, infoItemReference, jsonObject);
-		}
-		else {
-			displayObject = _getInfoItem(infoItemReference);
-		}
+		Object displayObject = _getDisplayObject(
+			httpServletRequest, infoItemReference, jsonObject);
 
 		if (displayObject == null) {
 			if (fragmentRendererContext.isEditMode()) {
@@ -197,18 +180,14 @@ public class ContentObjectFragmentRenderer implements FragmentRenderer {
 			return;
 		}
 
-		String className = StringPool.BLANK;
-
-		if (jsonObject != null) {
-			className = jsonObject.getString("className");
-		}
+		String className = jsonObject.getString("className");
 
 		if (Validator.isNull(className) && (infoItemReference != null)) {
 			className = infoItemReference.getClassName();
 		}
 
 		Tuple tuple = _getTuple(
-			className, displayObject.getClass(), fragmentRendererContext);
+			className, displayObject.getClass(), jsonObject);
 
 		if ((tuple == null) || (tuple.getObject(0) == null)) {
 			if (fragmentRendererContext.isEditMode()) {
@@ -316,12 +295,10 @@ public class ContentObjectFragmentRenderer implements FragmentRenderer {
 	private long _getClassPK(
 		InfoItemReference infoItemReference, JSONObject jsonObject) {
 
-		if (jsonObject != null) {
-			long classPK = jsonObject.getLong("classPK");
+		long classPK = jsonObject.getLong("classPK");
 
-			if (classPK > 0) {
-				return classPK;
-			}
+		if (classPK > 0) {
+			return classPK;
 		}
 
 		if (infoItemReference != null) {
@@ -405,18 +382,6 @@ public class ContentObjectFragmentRenderer implements FragmentRenderer {
 		return null;
 	}
 
-	private JSONObject _getFieldValueJSONObject(
-		FragmentRendererContext fragmentRendererContext) {
-
-		FragmentEntryLink fragmentEntryLink =
-			fragmentRendererContext.getFragmentEntryLink();
-
-		return (JSONObject)_fragmentEntryConfigurationParser.getFieldValue(
-			getConfigurationJSONObject(fragmentRendererContext),
-			fragmentEntryLink.getEditableValuesJSONObject(),
-			fragmentRendererContext.getLocale(), "itemSelector");
-	}
-
 	private Object _getInfoItem(InfoItemReference infoItemReference) {
 		if (infoItemReference == null) {
 			return null;
@@ -446,9 +411,27 @@ public class ContentObjectFragmentRenderer implements FragmentRenderer {
 		return null;
 	}
 
-	private Tuple _getTuple(
-		String className, Class<?> displayObjectClass,
+	private JSONObject _getItemSelectorJSONObject(
 		FragmentRendererContext fragmentRendererContext) {
+
+		FragmentEntryLink fragmentEntryLink =
+			fragmentRendererContext.getFragmentEntryLink();
+
+		JSONObject jsonObject =
+			(JSONObject)
+				_fragmentEntryConfigurationParser.getConfigurationFieldValue(
+					fragmentEntryLink.getEditableValuesJSONObject(),
+					"itemSelector", FragmentConfigurationFieldDataType.OBJECT);
+
+		if (jsonObject == null) {
+			return _jsonFactory.createJSONObject();
+		}
+
+		return jsonObject;
+	}
+
+	private Tuple _getTuple(
+		String className, Class<?> displayObjectClass, JSONObject jsonObject) {
 
 		List<InfoItemRenderer<?>> infoItemRenderers =
 			FragmentRendererUtil.getInfoItemRenderers(
@@ -460,13 +443,6 @@ public class ContentObjectFragmentRenderer implements FragmentRenderer {
 
 		InfoItemRenderer<Object> defaultInfoItemRenderer =
 			(InfoItemRenderer<Object>)infoItemRenderers.get(0);
-
-		JSONObject jsonObject = _getFieldValueJSONObject(
-			fragmentRendererContext);
-
-		if (jsonObject == null) {
-			return new Tuple(defaultInfoItemRenderer);
-		}
 
 		JSONObject templateJSONObject = jsonObject.getJSONObject("template");
 
@@ -605,6 +581,9 @@ public class ContentObjectFragmentRenderer implements FragmentRenderer {
 
 	@Reference
 	private InfoItemServiceRegistry _infoItemServiceRegistry;
+
+	@Reference
+	private JSONFactory _jsonFactory;
 
 	@Reference
 	private Language _language;

@@ -1,4 +1,4 @@
-{{- $envoyGateway := .Values.operatorApplications.envoyGateway -}}
+{{- $envoyGateway := .Values.envoyGateway -}}
 {{- if $envoyGateway.enabled -}}
 {{- include "liferay-platform.requireAPIServerSources" (dict "apiServerSources" .Values.networkPolicy.apiServerSources "operatorApplication" "envoyGateway") -}}
 apiVersion: networking.k8s.io/v1
@@ -28,7 +28,8 @@ spec:
                 -   port: webhook
                     protocol: TCP
         -   from:
-                -   podSelector:
+                -   namespaceSelector: {}
+                    podSelector:
                         matchLabels:
                             app.kubernetes.io/managed-by: envoy-gateway
                             app.kubernetes.io/name: envoy
@@ -39,7 +40,7 @@ spec:
                     protocol: TCP
     podSelector:
         matchLabels:
-            app.kubernetes.io/instance: {{ $envoyGateway.name }}
+            app.kubernetes.io/instance: envoy-gateway
             app.kubernetes.io/name: gateway-helm
             control-plane: envoy-gateway
     policyTypes:
@@ -65,31 +66,12 @@ spec:
             ports:
                 -   port: metrics
                     protocol: TCP
-    podSelector: {}
+    podSelector:
+        matchLabels:
+            app.kubernetes.io/instance: envoy-gateway
+            app.kubernetes.io/name: gateway-helm
+            control-plane: envoy-gateway
     policyTypes:
         -   Ingress
 {{- end }}
----
-apiVersion: networking.k8s.io/v1
-kind: NetworkPolicy
-metadata:
-    labels:
-        {{- include "liferay-platform.labels" $ | nindent 8 }}
-    name: envoy-proxy-ingress
-    namespace: {{ $envoyGateway.namespace }}
-spec:
-    ingress:
-        -   ports:
-                -   port: 10080
-                    protocol: TCP
-                -   port: 10443
-                    protocol: TCP
-                -   port: 10443
-                    protocol: UDP
-    podSelector:
-        matchLabels:
-            app.kubernetes.io/managed-by: envoy-gateway
-            app.kubernetes.io/name: envoy
-    policyTypes:
-        -   Ingress
 {{- end -}}

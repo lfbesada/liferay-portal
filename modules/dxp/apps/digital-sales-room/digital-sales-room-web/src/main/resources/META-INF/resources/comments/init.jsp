@@ -23,6 +23,8 @@ String deleteCommentURL = (String)request.getAttribute("liferay-digital-sales-ro
 String editCommentURL = (String)request.getAttribute("liferay-digital-sales-room-web:comments:editCommentURL");
 Object editorConfig = (Object)request.getAttribute("liferay-digital-sales-room-web:comments:editorConfig");
 String getCommentsURL = (String)request.getAttribute("liferay-digital-sales-room-web:comments:getCommentsURL");
+String getMentionUsersURL = (String)request.getAttribute("liferay-digital-sales-room-web:comments:getMentionUsersURL");
+String highlightedCommentId = (String)request.getAttribute("liferay-digital-sales-room-web:comments:highlightedCommentId");
 boolean readOnly = (boolean)request.getAttribute("liferay-digital-sales-room-web:comments:readOnly");
 long roomId = (long)request.getAttribute("liferay-digital-sales-room-web:comments:roomId");
 %>

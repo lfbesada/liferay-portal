@@ -39,6 +39,7 @@ import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineExportTa
 import com.liferay.portal.vulcan.batch.engine.resource.VulcanBatchEngineImportTaskResource;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLField;
 import com.liferay.portal.vulcan.graphql.annotation.GraphQLName;
+import com.liferay.portal.vulcan.pagination.Page;
 
 import jakarta.annotation.Generated;
 
@@ -367,7 +368,7 @@ public class Mutation {
 	}
 
 	@GraphQLField(
-		description = "Partially updates the commerce channel by its internal ID — only the fields supplied in the body are replaced; omitted fields are left unchanged. A resolvable currencyCode (or matching currencyId / currencyExternalReferenceCode) is applied; an unresolved code is silently ignored and the channel's current currency is preserved. Calls CommerceChannelService.getCommerceChannel + CommerceCurrencyUtil.getCommerceCurrency + CommerceChannelService.updateCommerceChannel. Validation -- NoSuchChannelException -> 404 when channel ID not found; CommerceChannelNameException -> 400 when invalid name; CommerceChannelTypeException -> 400 when invalid type. Side effects -- an unresolvable currency code is swallowed and the existing currency kept; the channel is reindexed on update."
+		description = "Partially updates the commerce channel by its internal ID — only the fields supplied in the body are replaced; omitted fields are left unchanged. A resolvable currencyCode (or matching currencyId / currencyExternalReferenceCode) is applied; an unresolved code is silently ignored and the channel's current currency is preserved. Calls CommerceChannelService.getCommerceChannel + CommerceCurrencyUtil.getCommerceCurrency + CommerceChannelService.updateCommerceChannel. Validation -- NoSuchChannelException -> 404 when channel ID not found; CommerceChannelNameException -> 400 when invalid name; CommerceChannelTypeException -> 400 when invalid type; CommerceChannelSiteGroupIdException -> 400 when siteGroupId matches no site of the instance. Side effects -- an unresolvable currency code is swallowed and the existing currency kept; the channel is reindexed on update."
 	)
 	public Channel patchChannel(
 			@GraphQLName("channelId") Long channelId,
@@ -382,7 +383,7 @@ public class Mutation {
 	}
 
 	@GraphQLField(
-		description = "Partially updates the commerce channel by its external reference code (ERC) — only the fields supplied in the body are replaced; omitted fields are left unchanged. A resolvable currencyCode (or matching currencyId / currencyExternalReferenceCode) is applied; an unresolved code is silently ignored and the channel's current currency is preserved. Calls CommerceChannelService.fetchCommerceChannelByExternalReferenceCode + CommerceCurrencyUtil.getCommerceCurrency + CommerceChannelService.updateCommerceChannel. Validation -- NoSuchChannelException -> 404 when channel ERC not found; CommerceChannelNameException -> 400 when invalid name; CommerceChannelTypeException -> 400 when invalid type. Side effects -- an unresolvable currency code is swallowed and the existing currency kept; the channel is reindexed on update."
+		description = "Partially updates the commerce channel by its external reference code (ERC) — only the fields supplied in the body are replaced; omitted fields are left unchanged. A resolvable currencyCode (or matching currencyId / currencyExternalReferenceCode) is applied; an unresolved code is silently ignored and the channel's current currency is preserved. Calls CommerceChannelService.fetchCommerceChannelByExternalReferenceCode + CommerceCurrencyUtil.getCommerceCurrency + CommerceChannelService.updateCommerceChannel. Validation -- NoSuchChannelException -> 404 when channel ERC not found; CommerceChannelNameException -> 400 when invalid name; CommerceChannelTypeException -> 400 when invalid type; CommerceChannelSiteGroupIdException -> 400 when siteGroupId matches no site of the instance. Side effects -- an unresolvable currency code is swallowed and the existing currency kept; the channel is reindexed on update."
 	)
 	public Channel patchChannelByExternalReferenceCode(
 			@GraphQLName("externalReferenceCode") String externalReferenceCode,
@@ -398,7 +399,7 @@ public class Mutation {
 	}
 
 	@GraphQLField(
-		description = "Creates a new commerce channel and allocates a fresh internal ID via the portal counter. Calls CommerceCurrencyUtil.getCommerceCurrency + AccountEntryService.fetchAccountEntryByExternalReferenceCode + CommerceChannelService.addCommerceChannel. Validation -- NoSuchCurrencyException -> 404 when currency not resolvable; DuplicateCommerceChannelException -> 409 when channel already exists; CommerceChannelNameException -> 400 when invalid name; DuplicateExternalReferenceCodeException -> 400 when duplicate ERC. Side effects -- provisions the channel site group and reindexes the channel."
+		description = "Creates a new commerce channel and allocates a fresh internal ID via the portal counter. Calls CommerceCurrencyUtil.getCommerceCurrency + AccountEntryService.fetchAccountEntryByExternalReferenceCode + CommerceChannelService.addCommerceChannel. Validation -- NoSuchCurrencyException -> 404 when currency not resolvable; DuplicateCommerceChannelException -> 409 when channel already exists; CommerceChannelNameException -> 400 when invalid name; DuplicateExternalReferenceCodeException -> 400 when duplicate ERC; CommerceChannelSiteGroupIdException -> 400 when siteGroupId matches no site of the instance. Side effects -- provisions the channel site group and reindexes the channel."
 	)
 	public Channel createChannel(@GraphQLName("channel") Channel channel)
 		throws Exception {
@@ -442,7 +443,7 @@ public class Mutation {
 	}
 
 	@GraphQLField(
-		description = "Fully replaces the commerce channel by its internal ID — every mutable field is set from the body, and omitted optional fields are reset to their default. Falls back to a new-channel create when the supplied ID does not match an existing channel. The supplied currencyCode (or matching currencyId / currencyExternalReferenceCode) must resolve to an existing CommerceCurrency; an unresolved code returns 404. Calls CommerceChannelService.fetchCommerceChannel + CommerceCurrencyUtil.getCommerceCurrency + CommerceChannelService.updateCommerceChannel | addCommerceChannel. Validation -- NoSuchCurrencyException -> 404 when currency not resolvable; CommerceChannelNameException -> 400 when invalid name; CommerceChannelTypeException -> 400 when invalid type. Side effects -- creates the channel and provisions its site group when the ID is unknown; reindexes on write."
+		description = "Fully replaces the commerce channel by its internal ID — every mutable field is set from the body, and omitted optional fields are reset to their default. Falls back to a new-channel create when the supplied ID does not match an existing channel. The supplied currencyCode (or matching currencyId / currencyExternalReferenceCode) must resolve to an existing CommerceCurrency; an unresolved code returns 404. Calls CommerceChannelService.fetchCommerceChannel + CommerceCurrencyUtil.getCommerceCurrency + CommerceChannelService.updateCommerceChannel | addCommerceChannel. Validation -- NoSuchCurrencyException -> 404 when currency not resolvable; CommerceChannelNameException -> 400 when invalid name; CommerceChannelTypeException -> 400 when invalid type; CommerceChannelSiteGroupIdException -> 400 when siteGroupId matches no site of the instance. Side effects -- creates the channel and provisions its site group when the ID is unknown; reindexes on write."
 	)
 	public Channel updateChannel(
 			@GraphQLName("channelId") Long channelId,
@@ -469,7 +470,7 @@ public class Mutation {
 	}
 
 	@GraphQLField(
-		description = "Fully replaces the commerce channel by its external reference code (ERC) — every mutable field is set from the body, and omitted optional fields are reset to their default. Upserts when the ERC does not match an existing channel. The supplied currencyCode (or matching currencyId / currencyExternalReferenceCode) must resolve to an existing CommerceCurrency; an unresolved code returns 404. Calls CommerceCurrencyUtil.getCommerceCurrency + AccountEntryService.fetchAccountEntryByExternalReferenceCode + CommerceChannelService.addOrUpdateCommerceChannel. Validation -- NoSuchCurrencyException -> 404 when currency not resolvable; CommerceChannelNameException -> 400 when invalid name; CommerceChannelTypeException -> 400 when invalid type. Side effects -- creates the channel and provisions its site group when the ERC is unknown; reindexes on write."
+		description = "Fully replaces the commerce channel by its external reference code (ERC) — every mutable field is set from the body, and omitted optional fields are reset to their default. Upserts when the ERC does not match an existing channel. The supplied currencyCode (or matching currencyId / currencyExternalReferenceCode) must resolve to an existing CommerceCurrency; an unresolved code returns 404. Calls CommerceCurrencyUtil.getCommerceCurrency + AccountEntryService.fetchAccountEntryByExternalReferenceCode + CommerceChannelService.addOrUpdateCommerceChannel. Validation -- NoSuchCurrencyException -> 404 when currency not resolvable; CommerceChannelNameException -> 400 when invalid name; CommerceChannelTypeException -> 400 when invalid type; CommerceChannelSiteGroupIdException -> 400 when siteGroupId matches no site of the instance. Side effects -- creates the channel and provisions its site group when the ERC is unknown; reindexes on write."
 	)
 	public Channel updateChannelByExternalReferenceCode(
 			@GraphQLName("externalReferenceCode") String externalReferenceCode,
@@ -482,6 +483,28 @@ public class Mutation {
 			channelResource ->
 				channelResource.putChannelByExternalReferenceCode(
 					externalReferenceCode, channel));
+	}
+
+	@GraphQLField(
+		description = "Replaces the role permissions granted on the channel identified by ID. Roles missing from the request lose their individual permissions. Requires the PERMISSIONS action on the channel."
+	)
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateChannelPermissionsPage(
+				@GraphQLName("channelId") Long channelId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_channelResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			channelResource -> {
+				Page paginationPage = channelResource.putChannelPermissionsPage(
+					channelId, permissions);
+
+				return paginationPage.getItems();
+			});
 	}
 
 	@GraphQLField(
@@ -1041,6 +1064,8 @@ public class Mutation {
 	@GraphQLField
 	public Response createTaxCategoriesPageExportBatch(
 			@GraphQLName("search") String search,
+			@GraphQLName("filter") String filterString,
+			@GraphQLName("sort") String sortsString,
 			@GraphQLName("callbackURL") String callbackURL,
 			@GraphQLName("contentType") String contentType,
 			@GraphQLName("fieldNames") String fieldNames)
@@ -1051,7 +1076,10 @@ public class Mutation {
 			this::_populateResourceContext,
 			taxCategoryResource ->
 				taxCategoryResource.postTaxCategoriesPageExportBatch(
-					search, callbackURL, contentType, fieldNames));
+					search,
+					_filterBiFunction.apply(taxCategoryResource, filterString),
+					_sortsBiFunction.apply(taxCategoryResource, sortsString),
+					callbackURL, contentType, fieldNames));
 	}
 
 	@GraphQLField(
@@ -1079,6 +1107,29 @@ public class Mutation {
 			this::_populateResourceContext,
 			taxCategoryResource -> taxCategoryResource.postTaxCategoryBatch(
 				callbackURL, object));
+	}
+
+	@GraphQLField(
+		description = "Replaces the role permissions granted on the tax category identified by ID. Roles missing from the request lose their individual permissions. Requires the PERMISSIONS action on the tax category."
+	)
+	public java.util.Collection<com.liferay.portal.vulcan.permission.Permission>
+			updateTaxCategoryPermissionsPage(
+				@GraphQLName("taxCategoryId") Long taxCategoryId,
+				@GraphQLName("permissions")
+					com.liferay.portal.vulcan.permission.Permission[]
+						permissions)
+		throws Exception {
+
+		return _applyComponentServiceObjects(
+			_taxCategoryResourceComponentServiceObjects,
+			this::_populateResourceContext,
+			taxCategoryResource -> {
+				Page paginationPage =
+					taxCategoryResource.putTaxCategoryPermissionsPage(
+						taxCategoryId, permissions);
+
+				return paginationPage.getItems();
+			});
 	}
 
 	private <T, R, E1 extends Throwable, E2 extends Throwable> R
@@ -1461,4 +1512,4 @@ public class Mutation {
 		_vulcanBatchEngineImportTaskResource;
 
 }
-// LIFERAY-REST-BUILDER-HASH:-1954632304
+// LIFERAY-REST-BUILDER-HASH:1701857272

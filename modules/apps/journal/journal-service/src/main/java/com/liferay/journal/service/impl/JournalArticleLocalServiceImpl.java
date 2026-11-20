@@ -8,7 +8,6 @@ package com.liferay.journal.service.impl;
 import com.liferay.asset.display.page.model.AssetDisplayPageEntry;
 import com.liferay.asset.display.page.model.AssetDisplayPageEntryTable;
 import com.liferay.asset.display.page.portlet.AssetDisplayPageEntryFormProcessor;
-import com.liferay.asset.display.page.portlet.AssetDisplayPageFriendlyURLProvider;
 import com.liferay.asset.display.page.service.AssetDisplayPageEntryLocalService;
 import com.liferay.asset.kernel.AssetRendererFactoryRegistryUtil;
 import com.liferay.asset.kernel.model.AssetEntry;
@@ -91,6 +90,7 @@ import com.liferay.journal.service.base.JournalArticleLocalServiceBaseImpl;
 import com.liferay.journal.service.persistence.JournalArticleLocalizationPersistence;
 import com.liferay.journal.service.persistence.JournalArticleResourcePersistence;
 import com.liferay.journal.service.persistence.JournalFolderPersistence;
+import com.liferay.journal.util.JournalContent;
 import com.liferay.journal.util.JournalConverter;
 import com.liferay.journal.util.JournalDefaultTemplateProvider;
 import com.liferay.journal.util.JournalHelper;
@@ -134,6 +134,7 @@ import com.liferay.portal.kernel.model.SystemEventConstants;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.model.WorkflowDefinitionLink;
 import com.liferay.portal.kernel.module.configuration.ConfigurationException;
+import com.liferay.portal.kernel.module.service.Snapshot;
 import com.liferay.portal.kernel.notifications.UserNotificationDefinition;
 import com.liferay.portal.kernel.portlet.PortletProvider;
 import com.liferay.portal.kernel.portlet.PortletProviderUtil;
@@ -454,8 +455,8 @@ public class JournalArticleLocalServiceImpl
 			try {
 				validateReferences(
 					groupId, folderId, ddmStructure.getStructureId(),
-					ddmTemplateKey, layoutUuid, smallImage, smallImageURL,
-					smallImageBytes, smallImageId, smallImageSource, content);
+					ddmTemplateKey, smallImage, smallImageURL, smallImageBytes,
+					smallImageId, smallImageSource, content);
 			}
 			catch (ExportImportContentValidationException
 						exportImportContentValidationException) {
@@ -4059,6 +4060,13 @@ public class JournalArticleLocalServiceImpl
 
 		_removeArticleLocale(article, languageId);
 
+		if (article.isApproved()) {
+			JournalContent journalContent = _journalContentSnapshot.get();
+
+			journalContent.clearCache(
+				article.getGroupId(), article.getArticleId());
+		}
+
 		FriendlyURLEntry friendlyURLEntry =
 			friendlyURLEntryLocalService.fetchFriendlyURLEntry(
 				article.getGroupId(),
@@ -4550,8 +4558,8 @@ public class JournalArticleLocalServiceImpl
 			try {
 				validateReferences(
 					groupId, folderId, latestArticle.getDDMStructureId(),
-					ddmTemplateKey, layoutUuid, smallImage, smallImageURL,
-					smallImageBytes, smallImageId, smallImageSource, content);
+					ddmTemplateKey, smallImage, smallImageURL, smallImageBytes,
+					smallImageId, smallImageSource, content);
 			}
 			catch (ExportImportContentValidationException
 						exportImportContentValidationException) {
@@ -7103,15 +7111,15 @@ public class JournalArticleLocalServiceImpl
 
 	protected void validateReferences(
 			long groupId, long folderId, long ddmStructureId,
-			String ddmTemplateKey, String layoutUuid, boolean smallImage,
-			String smallImageURL, byte[] smallImageBytes, long smallImageId,
-			int smallImageSource, String content)
+			String ddmTemplateKey, boolean smallImage, String smallImageURL,
+			byte[] smallImageBytes, long smallImageId, int smallImageSource,
+			String content)
 		throws PortalException {
 
 		_getModelValidator().validateReferences(
-			groupId, folderId, ddmStructureId, ddmTemplateKey, layoutUuid,
-			smallImage, smallImageURL, smallImageBytes, smallImageId,
-			smallImageSource, content);
+			groupId, folderId, ddmStructureId, ddmTemplateKey, smallImage,
+			smallImageURL, smallImageBytes, smallImageId, smallImageSource,
+			content);
 	}
 
 	@Reference
@@ -8460,6 +8468,10 @@ public class JournalArticleLocalServiceImpl
 	private static final Log _log = LogFactoryUtil.getLog(
 		JournalArticleLocalServiceImpl.class);
 
+	private static final Snapshot<JournalContent> _journalContentSnapshot =
+		new Snapshot<>(
+			JournalArticleLocalServiceImpl.class, JournalContent.class);
+
 	@Reference
 	private AssetCategoryLocalService _assetCategoryLocalService;
 
@@ -8470,10 +8482,6 @@ public class JournalArticleLocalServiceImpl
 	@Reference
 	private AssetDisplayPageEntryLocalService
 		_assetDisplayPageEntryLocalService;
-
-	@Reference
-	private AssetDisplayPageFriendlyURLProvider
-		_assetDisplayPageFriendlyURLProvider;
 
 	@Reference
 	private AssetEntryLocalService _assetEntryLocalService;

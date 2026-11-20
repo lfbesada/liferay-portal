@@ -1,3 +1,4 @@
+**/resources/META-INF/resources/__liferay__
 **/resources/dist
 .awcache/
 .env

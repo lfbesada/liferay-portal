@@ -12,9 +12,9 @@ String redirect = ParamUtil.getString(request, "redirect");
 
 JournalFolder folder = journalDisplayContext.getFolder();
 
-long folderId = BeanParamUtil.getLong(folder, request, "folderId");
+long folderId = BeanParamUtil.getLong(folder, request, "folderId", JournalFolder::getFolderId);
 
-long parentFolderId = BeanParamUtil.getLong(folder, request, "parentFolderId", JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID);
+long parentFolderId = BeanParamUtil.getLong(folder, request, "parentFolderId", JournalFolder::getParentFolderId, JournalFolderConstants.DEFAULT_PARENT_FOLDER_ID);
 
 boolean rootFolder = ParamUtil.getBoolean(request, "rootFolder");
 
@@ -235,7 +235,7 @@ renderResponse.setTitle(title);
 
 							<liferay-ui:search-container-row
 								className="com.liferay.dynamic.data.mapping.model.DDMStructure"
-								keyProperty="structureId"
+								keyPropertyName="structureId"
 								modelVar="ddmStructure"
 							>
 								<liferay-ui:search-container-column-text

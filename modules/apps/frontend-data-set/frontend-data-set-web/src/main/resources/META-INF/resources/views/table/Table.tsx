@@ -785,6 +785,32 @@ const Table = ({
 	const [{sorts, visibleFieldNames}, viewsDispatch] =
 		useContext(ViewsContext);
 
+	const [horizontalScroll, setHorizontalScroll] = useState(false);
+
+	const tableRef = useRef<HTMLTableElement>(null);
+
+	useEffect(() => {
+		const tableResponsive = tableRef.current?.closest('.table-responsive');
+
+		if (!tableResponsive || !window.ResizeObserver) {
+			return;
+		}
+
+		const resizeObserver = new ResizeObserver(() =>
+			setHorizontalScroll(
+				tableResponsive.scrollWidth > tableResponsive.clientWidth
+			)
+		);
+
+		resizeObserver.observe(tableResponsive);
+
+		if (tableResponsive.firstElementChild) {
+			resizeObserver.observe(tableResponsive.firstElementChild);
+		}
+
+		return () => resizeObserver.disconnect();
+	}, []);
+
 	const visibleFields = getVisibleFields({
 		fields: schema.fields,
 		visibleFieldNames,
@@ -853,6 +879,9 @@ const Table = ({
 				alwaysVisibleColumns={
 					selectable ? defaultAlwaysVisibleColumns : undefined
 				}
+				className={classNames({
+					'table-horizontal-scroll': horizontalScroll,
+				})}
 				itemIdKey={nestedItemsKey}
 				messages={{
 					columnsVisibility: Liferay.Language.get(
@@ -861,11 +890,16 @@ const Table = ({
 					columnsVisibilityCell: itemsActions?.length
 						? Liferay.Language.get('item-actions')
 						: undefined,
+					columnsVisibilityClearSearch:
+						Liferay.Language.get('clear-search'),
 					columnsVisibilityDescription: Liferay.Language.get(
 						'at-least-one-column-must-remain-visible'
 					),
 					columnsVisibilityHeader:
 						Liferay.Language.get('columns-visibility'),
+					columnsVisibilityNoResults:
+						Liferay.Language.get('no-results-found'),
+					columnsVisibilitySearch: Liferay.Language.get('search'),
 					expandable: Liferay.Language.get('expandable'),
 					sortColumn: Liferay.Language.get('sort-by-x'),
 					sortDescription: Liferay.Language.get('sortable-column'),
@@ -898,6 +932,7 @@ const Table = ({
 
 					viewsDispatch(updateVisibleFields(visibleFieldNames));
 				}}
+				ref={tableRef}
 				sort={getSorting()}
 				visibleColumns={getVisibleFieldsMap(
 					schema.fields as Array<Field>,

@@ -79,7 +79,7 @@ request.setAttribute("view.jsp-eventName", eventName);
 	>
 		<liferay-ui:search-container-row
 			className="com.liferay.segments.model.SegmentsEntry"
-			keyProperty="segmentsEntryId"
+			keyPropertyName="segmentsEntryId"
 			modelVar="segmentsEntry"
 		>
 
@@ -105,7 +105,7 @@ request.setAttribute("view.jsp-eventName", eventName);
 				>
 
 					<%
-					SegmentsSourceDetailsProvider segmentsSourceDetailsProvider = SegmentsSourceDetailsProviderUtil.getSegmentsSourceDetailsProvider(segmentsEntry);
+					SegmentsSourceDetailsProvider segmentsSourceDetailsProvider = segmentsDisplayContext.getSegmentsSourceDetailsProvider(segmentsEntry);
 					%>
 
 					<c:if test="<%= segmentsSourceDetailsProvider != null %>">

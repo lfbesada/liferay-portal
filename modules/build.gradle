@@ -40,7 +40,7 @@ ext {
 		"com.liferay.gradle.plugins.theme.builder.version": "2.0.17",
 		"com.liferay.portal.tools.bundle.support.version": "3.7.5",
 		"com.liferay.portal.tools.service.builder.version": "1.0.501",
-		"com.liferay.portal.tools.rest.builder.version": "1.0.491",
+		"com.liferay.portal.tools.rest.builder.version": "1.0.492",
 		"com.liferay.portal.tools.soy.builder.version": "3.0.4",
 		"com.liferay.portal.tools.theme.builder.version": "1.1.9",
 		"com.liferay.portal.vulcan.api.version": "9.3.1"
@@ -276,6 +276,14 @@ gradle.beforeProject {
 					packageRunBuild {
 						inputs.file nodeScriptsConfigFile
 						inputs.file project.rootProject.file("node-scripts.config.js")
+
+						inputs.files {
+							if (project.fileTree(dir: "src/main/resources", include: "**/*.scss").empty) {
+								return []
+							}
+
+							project.rootProject.fileTree("apps/frontend-js/frontend-js-clay-web/clay/clay-css/src/scss")
+						}.withPathSensitivity(PathSensitivity.RELATIVE).withPropertyName("claySCSSFiles")
 					}
 				}
 

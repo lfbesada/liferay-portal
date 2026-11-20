@@ -12,17 +12,25 @@ import com.liferay.document.library.test.util.DLAppTestUtil;
 import com.liferay.headless.delivery.client.dto.v1_0.Comment;
 import com.liferay.headless.delivery.client.pagination.Page;
 import com.liferay.headless.delivery.client.pagination.Pagination;
+import com.liferay.headless.delivery.client.problem.Problem;
+import com.liferay.headless.delivery.client.resource.v1_0.CommentResource;
 import com.liferay.journal.model.JournalArticle;
 import com.liferay.journal.test.util.JournalTestUtil;
 import com.liferay.petra.string.StringBundler;
 import com.liferay.portal.kernel.json.JSONFactoryUtil;
 import com.liferay.portal.kernel.json.JSONUtil;
+import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.repository.model.FileEntry;
 import com.liferay.portal.kernel.service.ServiceContext;
+import com.liferay.portal.kernel.service.UserLocalServiceUtil;
+import com.liferay.portal.kernel.test.TestInfo;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.TestPropsValues;
+import com.liferay.portal.kernel.test.util.UserTestUtil;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.HtmlUtil;
+import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.kernel.util.PortalUtil;
 import com.liferay.portal.test.log.LogCapture;
 import com.liferay.portal.test.log.LoggerTestUtil;
 
@@ -248,6 +256,15 @@ public class CommentResourceTest extends BaseCommentResourceTestCase {
 					testDeleteSiteStructuredContentByExternalReferenceCodeStructuredContentExternalReferenceCodeCommentByExternalReferenceCode_getSiteId(),
 					prevJournalArticle.getExternalReferenceCode(),
 					newComment.getExternalReferenceCode()));
+	}
+
+	@Override
+	@Test
+	@TestInfo("LPD-115723")
+	public void testGetCommentCommentsPage() throws Exception {
+		super.testGetCommentCommentsPage();
+
+		_testGetCommentCommentsPageWithViewPermission();
 	}
 
 	@Override
@@ -1300,6 +1317,90 @@ public class CommentResourceTest extends BaseCommentResourceTestCase {
 		}
 
 		return text;
+	}
+
+	private CommentResource _getCommentResource(String password, User user) {
+		return CommentResource.builder(
+		).authentication(
+			user.getEmailAddress(), password
+		).endpoint(
+			testCompany.getVirtualHostname(),
+			PortalUtil.getPortalServerPort(false), "http"
+		).locale(
+			LocaleUtil.getDefault()
+		).build();
+	}
+
+	private void _testGetCommentCommentsPageNotFound(
+		Long parentCommentId, CommentResource userCommentResource) {
+
+		Problem.ProblemException problemException = Assert.assertThrows(
+			Problem.ProblemException.class,
+			() -> userCommentResource.getCommentCommentsPage(
+				parentCommentId, null, null, null, Pagination.of(1, 10), null));
+
+		Problem problem = problemException.getProblem();
+
+		Assert.assertEquals("NOT_FOUND", problem.getStatus());
+	}
+
+	private void _testGetCommentCommentsPageVisible(
+			Comment expectedComment, Long parentCommentId,
+			CommentResource userCommentResource)
+		throws Exception {
+
+		Page<Comment> commentCommentsPage =
+			userCommentResource.getCommentCommentsPage(
+				parentCommentId, null, null, null, Pagination.of(1, 10), null);
+
+		Assert.assertEquals(1, commentCommentsPage.getTotalCount());
+
+		List<Comment> comments = (List<Comment>)commentCommentsPage.getItems();
+
+		Comment comment = comments.get(0);
+
+		Assert.assertEquals(expectedComment.getId(), comment.getId());
+	}
+
+	private void _testGetCommentCommentsPageWithViewPermission()
+		throws Exception {
+
+		ServiceContext serviceContext = new ServiceContext();
+
+		serviceContext.setAddGroupPermissions(true);
+		serviceContext.setScopeGroupId(testGroup.getGroupId());
+
+		BlogsEntry blogsEntry = BlogsEntryLocalServiceUtil.addEntry(
+			TestPropsValues.getUserId(), RandomTestUtil.randomString(),
+			RandomTestUtil.randomString(), serviceContext);
+
+		Comment comment = commentResource.postBlogPostingComment(
+			blogsEntry.getEntryId(), randomComment());
+
+		Comment childComment = commentResource.postCommentComment(
+			comment.getId(), randomComment());
+
+		String password = RandomTestUtil.randomString();
+
+		User user1 = UserTestUtil.addUser(testCompany, password);
+
+		CommentResource commentResource1 = _getCommentResource(password, user1);
+
+		_testGetCommentCommentsPageNotFound(comment.getId(), commentResource1);
+		_testGetCommentCommentsPageNotFound(
+			comment.getParentCommentId(), commentResource1);
+
+		User user2 = UserTestUtil.addUser(testCompany, password);
+
+		UserLocalServiceUtil.addGroupUsers(
+			testGroup.getGroupId(), new long[] {user2.getUserId()});
+
+		CommentResource commentResource2 = _getCommentResource(password, user2);
+
+		_testGetCommentCommentsPageVisible(
+			childComment, comment.getId(), commentResource2);
+		_testGetCommentCommentsPageVisible(
+			comment, comment.getParentCommentId(), commentResource2);
 	}
 
 	private void _testPostBlogPostingCommentBatch() throws Exception {

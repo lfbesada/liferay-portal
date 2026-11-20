@@ -106,19 +106,6 @@ public class DefaultKaleoSignaler
 			KaleoNode currentKaleoNode, ExecutionContext executionContext)
 		throws PortalException {
 
-		signalExecute(currentKaleoNode, executionContext, false);
-	}
-
-	@Override
-	@Transactional(
-		isolation = Isolation.PORTAL, propagation = Propagation.REQUIRED,
-		rollbackFor = Exception.class
-	)
-	public void signalExecute(
-			KaleoNode currentKaleoNode, ExecutionContext executionContext,
-			boolean waitForCompletion)
-		throws PortalException {
-
 		NodeExecutor nodeExecutor = NodeExecutorRegistryUtil.getNodeExecutor(
 			currentKaleoNode.getType());
 
@@ -130,7 +117,7 @@ public class DefaultKaleoSignaler
 		_executionContextHelper.checkKaleoInstanceComplete(executionContext);
 
 		for (PathElement remainingPathElement : remainingPathElements) {
-			_execute(remainingPathElement, waitForCompletion);
+			_execute(remainingPathElement, false);
 		}
 	}
 

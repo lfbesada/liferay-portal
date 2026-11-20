@@ -1,7 +1,7 @@
 definition {
 
 	@summary = "Default summary"
-	macro addCP(maxUserNumber = null, instanceAdminLastName = null, maxUsers = null, portalInstanceActive = null, instanceAdminFirstName = null, webId = null, mailDomain = null, instanceScreenName = null, instancePassword = null, virtualHost = null, instanceAdminEmail = null, synchronousCreation = null) {
+	macro addCP(maxUserNumber = null, instanceAdminLastName = null, maxUsers = null, portalInstanceActive = null, instanceAdminFirstName = null, webId = null, mailDomain = null, instanceScreenName = null, instancePassword = null, virtualHost = null, instanceAdminEmail = null) {
 		WaitForElementPresent(locator1 = "Button#PLUS");
 
 		var virtualInstancesAdminURL = Navigator.getCurrentURL();
@@ -70,32 +70,24 @@ definition {
 
 		Button.clickAdd();
 
-		if (${synchronousCreation} == "true") {
+		Alert.viewInfoMessageSpecific(infoMessage = "The instance ${webId} is being created. You will be notified when it finishes.");
 
-			// Bundles that predate LPD-93373 create the instance before the modal closes and show no creation alert. Remove once the upgrade source bundle includes LPD-93373. Needed for LPD-110381.
+		WaitForElementNotPresent(locator1 = "IFrame#MODAL_BODY");
 
-			WaitForElementNotPresent(locator1 = "IFrame#MODAL_BODY");
+		var key_contentBody = "The instance ${webId} is ready to use.";
+
+		Navigator.gotoNotifications();
+
+		while ((!(IsElementPresent(locator1 = "Notifications#NOTIFICATIONS_CONTENT"))) && (maxIterations = "60")) {
+
+			// Wait for the asynchronous creation to finish. The instance is listed as soon as its company row commits, so the notification is the only signal that the initialization is done. Needed for LPD-93373.
+
+			Pause(value1 = 5000);
+
+			Refresh();
 		}
-		else {
-			Alert.viewInfoMessageSpecific(infoMessage = "The instance ${webId} is being created. You will be notified when it finishes.");
 
-			WaitForElementNotPresent(locator1 = "IFrame#MODAL_BODY");
-
-			var key_contentBody = "The instance ${webId} is ready to use.";
-
-			Navigator.gotoNotifications();
-
-			while ((!(IsElementPresent(locator1 = "Notifications#NOTIFICATIONS_CONTENT"))) && (maxIterations = "60")) {
-
-				// Wait for the asynchronous creation to finish. The instance is listed as soon as its company row commits, so the notification is the only signal that the initialization is done. Needed for LPD-93373.
-
-				Pause(value1 = 5000);
-
-				Refresh();
-			}
-
-			AssertElementPresent(locator1 = "Notifications#NOTIFICATIONS_CONTENT");
-		}
+		AssertElementPresent(locator1 = "Notifications#NOTIFICATIONS_CONTENT");
 
 		var companyId = JSONCompany.getCompanyId(portalInstanceName = ${virtualHost});
 

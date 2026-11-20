@@ -19,10 +19,13 @@ import com.liferay.portal.kernel.json.JSONUtil;
 import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.UserNotificationEvent;
 import com.liferay.portal.kernel.model.UserNotificationEventWrapper;
+import com.liferay.portal.kernel.portlet.PortletProvider;
+import com.liferay.portal.kernel.portlet.PortletProviderUtil;
 import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.service.UserNotificationEventLocalService;
 import com.liferay.portal.kernel.test.ReflectionTestUtil;
 import com.liferay.portal.kernel.test.TestInfo;
+import com.liferay.portal.kernel.test.portlet.MockLiferayPortletURL;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
@@ -69,22 +72,38 @@ public class SharingUserNotificationHandlerTest {
 	}
 
 	@Test
+	@TestInfo("LPD-114364")
 	public void testGetLink() throws Exception {
 		_testGetLink(false);
 		_testGetLink(true);
+		_testGetLinkWhenAssetRendererIsNull();
+		_testGetLinkWhenAssetRendererURLSharingNotificationIsBlank();
+		_testGetLinkWhenPreviewPortletURLIsNull();
 		_testGetLinkWhenSharingEntryIsNull();
 	}
 
 	@Test
 	@TestInfo("LPD-108755")
-	public void testGetTitleWhenAssetRendererIsNull() throws Exception {
+	public void testGetTitle() throws Exception {
 		_testGetTitleWhenAssetRendererIsNull(
 			Mockito.mock(AssetEntry.class), Mockito.never());
 		_testGetTitleWhenAssetRendererIsNull(null, Mockito.times(1));
 	}
 
-	protected UserNotificationEvent mockUserNotificationEvent(long classPK) {
-		JSONObject jsonObject = JSONUtil.put("classPK", classPK);
+	private String _getEntryURL() {
+		return "http://localhost:8080/" + RandomTestUtil.randomString();
+	}
+
+	private String _getLink(String entryURL) {
+		return ReflectionTestUtil.invoke(
+			_sharingUserNotificationHandler, "getLink",
+			new Class<?>[] {UserNotificationEvent.class, ServiceContext.class},
+			_mockUserNotificationEvent(JSONUtil.put("entryURL", entryURL)),
+			_serviceContext);
+	}
+
+	private UserNotificationEvent _mockUserNotificationEvent(
+		JSONObject jsonObject) {
 
 		return new UserNotificationEventWrapper(null) {
 
@@ -131,6 +150,12 @@ public class SharingUserNotificationHandlerTest {
 		);
 
 		Mockito.when(
+			_serviceContext.getPortalURL()
+		).thenReturn(
+			"http://localhost:8080"
+		);
+
+		Mockito.when(
 			_serviceContext.getRequest()
 		).thenReturn(
 			Mockito.mock(HttpServletRequest.class)
@@ -153,6 +178,40 @@ public class SharingUserNotificationHandlerTest {
 		).thenReturn(
 			_USER_ID
 		);
+	}
+
+	private void _setUpSharingEntry(AssetRenderer<Object> assetRenderer)
+		throws Exception {
+
+		Mockito.reset(_sharingEntry);
+
+		Mockito.when(
+			_sharingEntry.getClassName()
+		).thenReturn(
+			RandomTestUtil.randomString()
+		);
+
+		Mockito.when(
+			_sharingEntry.getClassNameId()
+		).thenReturn(
+			RandomTestUtil.randomLong()
+		);
+
+		Mockito.when(
+			_sharingEntry.getClassPK()
+		).thenReturn(
+			RandomTestUtil.randomLong()
+		);
+
+		Mockito.when(
+			_sharingEntry.getSharingEntryId()
+		).thenReturn(
+			RandomTestUtil.randomLong()
+		);
+
+		_setUpAssetRendererFactoryRegistryUtil(
+			_sharingEntry.getClassName(), assetRenderer,
+			_sharingEntry.getClassPK());
 	}
 
 	private void _setUpSharingEntryLocalService() {
@@ -225,9 +284,80 @@ public class SharingUserNotificationHandlerTest {
 		String link = ReflectionTestUtil.invoke(
 			_sharingUserNotificationHandler, "getLink",
 			new Class<?>[] {UserNotificationEvent.class, ServiceContext.class},
-			mockUserNotificationEvent(classPK), _serviceContext);
+			_mockUserNotificationEvent(JSONUtil.put("classPK", classPK)),
+			_serviceContext);
 
 		Assert.assertEquals(expectedURL, link);
+	}
+
+	private void _testGetLinkWhenAssetRendererIsNull() throws Exception {
+		_setUpSharingEntry(null);
+
+		String entryURL = _getEntryURL();
+
+		Assert.assertEquals(entryURL, _getLink(entryURL));
+	}
+
+	private void _testGetLinkWhenAssetRendererURLSharingNotificationIsBlank()
+		throws Exception {
+
+		_setUpSharingEntry(Mockito.mock(AssetRenderer.class));
+
+		HttpServletRequest httpServletRequest = Mockito.mock(
+			HttpServletRequest.class);
+
+		Mockito.when(
+			_themeDisplay.getRequest()
+		).thenReturn(
+			httpServletRequest
+		);
+
+		MockLiferayPortletURL mockLiferayPortletURL =
+			new MockLiferayPortletURL();
+
+		try (MockedStatic<PortletProviderUtil> portletProviderUtilMockedStatic =
+				Mockito.mockStatic(PortletProviderUtil.class)) {
+
+			portletProviderUtilMockedStatic.when(
+				() -> PortletProviderUtil.getPortletURL(
+					httpServletRequest, SharingEntry.class.getName(),
+					PortletProvider.Action.PREVIEW)
+			).thenReturn(
+				mockLiferayPortletURL
+			);
+
+			String link = _getLink(_getEntryURL());
+
+			Assert.assertEquals(
+				String.valueOf(_sharingEntry.getClassNameId()),
+				mockLiferayPortletURL.getParameter("classNameId"));
+			Assert.assertEquals(
+				String.valueOf(_sharingEntry.getClassPK()),
+				mockLiferayPortletURL.getParameter("classPK"));
+			Assert.assertEquals(
+				String.valueOf(_sharingEntry.getSharingEntryId()),
+				mockLiferayPortletURL.getParameter("sharingEntryId"));
+
+			Assert.assertEquals(mockLiferayPortletURL.toString(), link);
+		}
+	}
+
+	private void _testGetLinkWhenPreviewPortletURLIsNull() throws Exception {
+		_setUpSharingEntry(Mockito.mock(AssetRenderer.class));
+
+		String entryURL = _getEntryURL();
+
+		try (MockedStatic<PortletProviderUtil> portletProviderUtilMockedStatic =
+				Mockito.mockStatic(PortletProviderUtil.class)) {
+
+			Assert.assertEquals(entryURL, _getLink(entryURL));
+
+			portletProviderUtilMockedStatic.verify(
+				() -> PortletProviderUtil.getPortletURL(
+					Mockito.<HttpServletRequest>any(),
+					Mockito.eq(SharingEntry.class.getName()),
+					Mockito.eq(PortletProvider.Action.PREVIEW)));
+		}
 	}
 
 	private void _testGetLinkWhenSharingEntryIsNull() {
@@ -247,7 +377,8 @@ public class SharingUserNotificationHandlerTest {
 		String link = ReflectionTestUtil.invoke(
 			_sharingUserNotificationHandler, "getLink",
 			new Class<?>[] {UserNotificationEvent.class, ServiceContext.class},
-			mockUserNotificationEvent(RandomTestUtil.randomLong()),
+			_mockUserNotificationEvent(
+				JSONUtil.put("classPK", RandomTestUtil.randomLong())),
 			_serviceContext);
 
 		Assert.assertEquals(StringPool.BLANK, link);
@@ -306,7 +437,8 @@ public class SharingUserNotificationHandlerTest {
 				new Class<?>[] {
 					UserNotificationEvent.class, ServiceContext.class
 				},
-				mockUserNotificationEvent(classPK), _serviceContext));
+				_mockUserNotificationEvent(JSONUtil.put("classPK", classPK)),
+				_serviceContext));
 
 		Mockito.verify(
 			userNotificationEventLocalService, verificationMode

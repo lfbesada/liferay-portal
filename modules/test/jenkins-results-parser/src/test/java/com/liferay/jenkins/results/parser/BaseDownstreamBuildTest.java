@@ -7,7 +7,9 @@ package com.liferay.jenkins.results.parser;
 
 import com.liferay.jenkins.results.parser.test.clazz.group.AxisTestClassGroup;
 import com.liferay.jenkins.results.parser.testray.TestrayBuild;
+import com.liferay.jenkins.results.parser.testray.TestrayCaseResult;
 import com.liferay.jenkins.results.parser.testray.TestrayContext;
+import com.liferay.jenkins.results.parser.testray.TestrayFactory;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
@@ -17,6 +19,7 @@ import java.net.URL;
 
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.Properties;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.dom4j.Element;
@@ -26,6 +29,7 @@ import org.json.JSONObject;
 import org.junit.Assert;
 import org.junit.Test;
 
+import org.mockito.MockedStatic;
 import org.mockito.Mockito;
 
 /**
@@ -33,6 +37,178 @@ import org.mockito.Mockito;
  */
 public class BaseDownstreamBuildTest
 	extends com.liferay.jenkins.results.parser.Test {
+
+	@Test
+	public void testGenerateTestrayCaseResultFile() throws Exception {
+		BaseDownstreamBuild baseDownstreamBuild = Mockito.mock(
+			BaseDownstreamBuild.class);
+
+		Mockito.doCallRealMethod(
+		).when(
+			baseDownstreamBuild
+		).generateTestrayCaseResultFile();
+
+		ReflectionTestUtil.setFieldValue(
+			baseDownstreamBuild, "_testrayCaseResultURLLock", new Object());
+
+		TestrayCaseResult testrayCaseResult = Mockito.mock(
+			TestrayCaseResult.class);
+
+		try (MockedStatic<TestrayFactory> testrayFactoryMockedStatic =
+				Mockito.mockStatic(TestrayFactory.class)) {
+
+			testrayFactoryMockedStatic.when(
+				() -> TestrayFactory.newDownstreamBuildTestrayCaseResult(
+					Mockito.any(DownstreamBuild.class),
+					Mockito.any(TestrayContext.class))
+			).thenReturn(
+				testrayCaseResult
+			);
+
+			baseDownstreamBuild.generateTestrayCaseResultFile();
+
+			AxisTestClassGroup axisTestClassGroup = Mockito.mock(
+				AxisTestClassGroup.class);
+
+			Mockito.when(
+				baseDownstreamBuild.getAxisTestClassGroup()
+			).thenReturn(
+				axisTestClassGroup
+			);
+
+			baseDownstreamBuild.generateTestrayCaseResultFile();
+
+			Job job = Mockito.mock(Job.class);
+
+			Mockito.when(
+				axisTestClassGroup.getJob()
+			).thenReturn(
+				job
+			);
+
+			baseDownstreamBuild.generateTestrayCaseResultFile();
+
+			TestrayContext testrayContext = Mockito.mock(TestrayContext.class);
+
+			Mockito.when(
+				job.getTestrayContext()
+			).thenReturn(
+				testrayContext
+			);
+
+			Mockito.when(
+				testrayContext.hasTestrayCaseResultFile(axisTestClassGroup)
+			).thenReturn(
+				true
+			);
+
+			baseDownstreamBuild.generateTestrayCaseResultFile();
+
+			testrayFactoryMockedStatic.verify(
+				() -> TestrayFactory.newDownstreamBuildTestrayCaseResult(
+					Mockito.any(), Mockito.any()),
+				Mockito.never());
+
+			Mockito.when(
+				testrayContext.hasTestrayCaseResultFile(axisTestClassGroup)
+			).thenReturn(
+				false
+			);
+
+			baseDownstreamBuild.generateTestrayCaseResultFile();
+
+			Mockito.verify(
+				testrayCaseResult
+			).cacheTestrayCaseResultURL();
+
+			Mockito.verify(
+				testrayContext, Mockito.never()
+			).recordTestrayCaseResultFile(
+				Mockito.any(), Mockito.any()
+			);
+
+			String axisName = RandomTestUtil.randomString();
+			DownstreamBuildReport downstreamBuildReport = Mockito.mock(
+				DownstreamBuildReport.class);
+
+			Mockito.when(
+				downstreamBuildReport.getAxisName()
+			).thenReturn(
+				axisName
+			);
+
+			Mockito.when(
+				baseDownstreamBuild.getDownstreamBuildReport()
+			).thenReturn(
+				downstreamBuildReport
+			);
+
+			TopLevelBuild topLevelBuild = Mockito.mock(TopLevelBuild.class);
+
+			Mockito.when(
+				topLevelBuild.getBuildURL()
+			).thenReturn(
+				"https://test-1-1.liferay.com/job/" +
+					RandomTestUtil.randomString() + "/1"
+			);
+
+			TopLevelBuildReport topLevelBuildReport =
+				new DefaultTopLevelBuildReport(topLevelBuild);
+
+			Mockito.when(
+				topLevelBuild.getTopLevelBuildReport()
+			).thenReturn(
+				topLevelBuildReport
+			);
+
+			Mockito.when(
+				baseDownstreamBuild.getTopLevelBuild()
+			).thenReturn(
+				topLevelBuild
+			);
+
+			URL testrayCaseResultURL = new URL(
+				"https://" + RandomTestUtil.randomString());
+
+			Mockito.when(
+				testrayCaseResult.getTestrayCaseResultURL()
+			).thenReturn(
+				testrayCaseResultURL
+			);
+
+			baseDownstreamBuild.generateTestrayCaseResultFile();
+
+			Assert.assertSame(
+				downstreamBuildReport,
+				topLevelBuildReport.getDownstreamBuildReport(axisName));
+			Assert.assertSame(
+				testrayCaseResultURL,
+				ReflectionTestUtil.getFieldValue(
+					baseDownstreamBuild, "_testrayCaseResultURL"));
+
+			Mockito.verify(
+				testrayContext
+			).recordTestrayCaseResultFile(
+				axisTestClassGroup, testrayCaseResult
+			);
+
+			testrayFactoryMockedStatic.when(
+				() -> TestrayFactory.newDownstreamBuildTestrayCaseResult(
+					Mockito.any(DownstreamBuild.class),
+					Mockito.any(TestrayContext.class))
+			).thenReturn(
+				null
+			);
+
+			baseDownstreamBuild.generateTestrayCaseResultFile();
+
+			Mockito.verify(
+				testrayContext
+			).recordTestrayCaseResultFile(
+				Mockito.any(), Mockito.any()
+			);
+		}
+	}
 
 	@Test
 	public void testGetAxisName() {
@@ -271,6 +447,39 @@ public class BaseDownstreamBuildTest
 	}
 
 	@Test
+	public void testGetS3ObjectPath() {
+		PluginsWorkspace pluginsWorkspace = WorkspaceTestUtil.newWorkspace(
+			PluginsWorkspace.class, PluginsWorkspaceGitRepository.class);
+
+		_testGetS3ObjectPath(
+			_getS3ObjectPathName(
+				pluginsWorkspace.getPrimaryWorkspaceGitRepository()),
+			pluginsWorkspace);
+
+		PortalWorkspace portalWorkspace = WorkspaceTestUtil.newWorkspace(
+			PortalWorkspace.class, PortalWorkspaceGitRepository.class);
+
+		_testGetS3ObjectPath(
+			portalWorkspace.getS3ObjectPathName(), portalWorkspace);
+
+		SubrepositoryWorkspace subrepositoryWorkspace =
+			WorkspaceTestUtil.newWorkspace(
+				SubrepositoryWorkspace.class, WorkspaceGitRepository.class);
+
+		_testGetS3ObjectPath(
+			_getS3ObjectPathName(
+				subrepositoryWorkspace.getPrimaryWorkspaceGitRepository()),
+			subrepositoryWorkspace);
+
+		Workspace workspace = WorkspaceTestUtil.newWorkspace(
+			Workspace.class, WorkspaceGitRepository.class);
+
+		_testGetS3ObjectPath(
+			_getS3ObjectPathName(workspace.getPrimaryWorkspaceGitRepository()),
+			workspace);
+	}
+
+	@Test
 	public void testGetTestrayCaseResultURL() throws Exception {
 		BaseDownstreamBuild heldBaseDownstreamBuild =
 			_mockGetTestrayCaseResultURL();
@@ -494,6 +703,33 @@ public class BaseDownstreamBuildTest
 		ReflectionTestUtil.setFieldValue(
 			baseDownstreamBuild, "_testrayCaseResultURL",
 			new URL("https://" + RandomTestUtil.randomString()));
+		ReflectionTestUtil.setFieldValue(
+			baseDownstreamBuild, "_testrayCaseResultURLLock", new Object());
+
+		AxisTestClassGroup axisTestClassGroup = Mockito.mock(
+			AxisTestClassGroup.class);
+
+		Mockito.when(
+			baseDownstreamBuild.getAxisTestClassGroup()
+		).thenReturn(
+			axisTestClassGroup
+		);
+
+		Job job = Mockito.mock(Job.class);
+
+		Mockito.when(
+			axisTestClassGroup.getJob()
+		).thenReturn(
+			job
+		);
+
+		TestrayContext testrayContext = Mockito.mock(TestrayContext.class);
+
+		Mockito.when(
+			job.getTestrayContext()
+		).thenReturn(
+			testrayContext
+		);
 
 		baseDownstreamBuild.reset();
 
@@ -508,9 +744,59 @@ public class BaseDownstreamBuildTest
 				baseDownstreamBuild, "_testrayCaseResultURL"));
 
 		Mockito.verify(
+			testrayContext
+		).deleteTestrayCaseResultFile(
+			axisTestClassGroup
+		);
+
+		Mockito.verify(
 			baseParentBuild
 		).removeTestrayCaseResultURL(
 			axisName
+		);
+	}
+
+	@Test
+	public void testResetBeforeInitialization() {
+		BaseDownstreamBuild baseDownstreamBuild = Mockito.mock(
+			BaseDownstreamBuild.class);
+
+		Mockito.doCallRealMethod(
+		).when(
+			baseDownstreamBuild
+		).reset();
+
+		AxisTestClassGroup axisTestClassGroup = Mockito.mock(
+			AxisTestClassGroup.class);
+
+		Mockito.when(
+			baseDownstreamBuild.getAxisTestClassGroup()
+		).thenReturn(
+			axisTestClassGroup
+		);
+
+		Job job = Mockito.mock(Job.class);
+
+		Mockito.when(
+			axisTestClassGroup.getJob()
+		).thenReturn(
+			job
+		);
+
+		TestrayContext testrayContext = Mockito.mock(TestrayContext.class);
+
+		Mockito.when(
+			job.getTestrayContext()
+		).thenReturn(
+			testrayContext
+		);
+
+		baseDownstreamBuild.reset();
+
+		Mockito.verify(
+			testrayContext, Mockito.never()
+		).deleteTestrayCaseResultFile(
+			Mockito.any()
 		);
 	}
 
@@ -601,6 +887,15 @@ public class BaseDownstreamBuildTest
 			null, RandomTestUtil.randomString(), false);
 	}
 
+	private String _getS3ObjectPathName(
+		WorkspaceGitRepository workspaceGitRepository) {
+
+		return JenkinsResultsParserUtil.combine(
+			workspaceGitRepository.getName(), "/",
+			workspaceGitRepository.getBaseBranchSHA(), "/",
+			workspaceGitRepository.getSenderBranchSHA());
+	}
+
 	private BaseDownstreamBuild _mockGetTestrayCaseResultURL() {
 		BaseDownstreamBuild baseDownstreamBuild = Mockito.mock(
 			BaseDownstreamBuild.class);
@@ -647,6 +942,48 @@ public class BaseDownstreamBuildTest
 
 		Assert.assertEquals(
 			expectedAxisName, baseDownstreamBuild.getAxisName());
+	}
+
+	private void _testGetS3ObjectPath(
+		String expectedS3ObjectPathName, Workspace workspace) {
+
+		Properties buildProperties = new Properties();
+
+		String buildReportsPath = RandomTestUtil.randomString();
+
+		buildProperties.setProperty(
+			"cloud.ci.s3.bucket.build.reports.path", buildReportsPath);
+
+		JenkinsResultsParserUtil.setBuildProperties(buildProperties);
+
+		WorkspaceTestUtil.setWorkspaces(workspace);
+
+		BaseDownstreamBuild baseDownstreamBuild = Mockito.mock(
+			BaseDownstreamBuild.class);
+
+		String batchName = RandomTestUtil.randomString();
+
+		Mockito.doReturn(
+			batchName
+		).when(
+			baseDownstreamBuild
+		).getBatchName();
+
+		Mockito.doReturn(
+			BuildDatabaseUtil.getBuildDatabase()
+		).when(
+			baseDownstreamBuild
+		).getBuildDatabase();
+
+		File file = new File(RandomTestUtil.randomString());
+
+		testEquals(
+			JenkinsResultsParserUtil.combine(
+				buildReportsPath, "/", expectedS3ObjectPathName, "/", batchName,
+				"/", file.getName()),
+			ReflectionTestUtil.invoke(
+				baseDownstreamBuild, "_getS3ObjectPath",
+				new Class<?>[] {File.class}, file));
 	}
 
 	private void _testSaveBuildURLInBuildDatabase(

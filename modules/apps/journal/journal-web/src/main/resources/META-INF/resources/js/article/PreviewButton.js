@@ -10,9 +10,12 @@ import React, {useEffect, useRef, useState} from 'react';
 export default function PreviewButton({
 	disabled,
 	getPreviewURL,
+	hasFormChanges,
+	markFormSaved,
 	namespace,
 	newArticle,
 	saveAsDraftURL,
+	takeFormSnapshot,
 }) {
 	const [articleId, setArticleId] = useState(
 		document.getElementById(`${namespace}articleId`).value
@@ -42,11 +45,19 @@ export default function PreviewButton({
 
 	const enableDraft = !!articleId;
 
+	let label = Liferay.Language.get(
+		'save-as-draft-or-publish-the-web-content-to-preview-it'
+	);
+
+	if (enableDraft) {
+		label = Liferay.Language.get(
+			'a-draft-will-be-saved-before-displaying-the-preview'
+		);
+	}
+
 	return (
 		<ClayButton
-			aria-label={Liferay.Language.get(
-				'a-draft-will-be-saved-before-displaying-the-preview'
-			)}
+			aria-label={label}
 			disabled={disabled || !enableDraft}
 			displayType="secondary"
 			onClick={() => {
@@ -67,11 +78,18 @@ export default function PreviewButton({
 				const form = document.getElementById(`${namespace}fm1`);
 
 				const formData = new FormData(form);
+				const formSnapshot = takeFormSnapshot();
 
-				formData.append(
-					`${namespace}cmd`,
-					newArticle && !articleId ? 'add' : 'update'
-				);
+				let cmd = 'update';
+
+				if (newArticle && !articleId) {
+					cmd = 'add';
+				}
+				else if (!hasFormChanges()) {
+					cmd = 'preview';
+				}
+
+				formData.append(`${namespace}cmd`, cmd);
 
 				return Liferay.Util.fetch(saveAsDraftURL, {
 					body: formData,
@@ -92,6 +110,9 @@ export default function PreviewButton({
 							});
 						}
 						else {
+							const formChangedWhileSaving =
+								hasFormChanges(formSnapshot);
+
 							updateJournalInput({
 								name: 'formDate',
 								namespace,
@@ -120,6 +141,10 @@ export default function PreviewButton({
 								}
 							);
 
+							if (!formChangedWhileSaving) {
+								markFormSaved();
+							}
+
 							openModal({
 								title: Liferay.Language.get('preview'),
 								url: getPreviewURL(response),
@@ -141,12 +166,7 @@ export default function PreviewButton({
 						lockRef.current?.unlock();
 					});
 			}}
-			title={
-				!disabled &&
-				Liferay.Language.get(
-					'a-draft-will-be-saved-before-displaying-the-preview'
-				)
-			}
+			title={!disabled && label}
 		>
 			{Liferay.Language.get('preview')}
 		</ClayButton>

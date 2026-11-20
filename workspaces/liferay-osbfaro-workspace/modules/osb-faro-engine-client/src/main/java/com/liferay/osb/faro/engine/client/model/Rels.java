@@ -86,6 +86,8 @@ public interface Rels {
 
 	public static final String ASSETS = "assets";
 
+	public static final String BIGQUERY_PRICES = "bigquery-prices";
+
 	public static final String BLOCKED_KEYWORD = "blocked-keyword";
 
 	public static final String BLOCKED_KEYWORDS = "blocked-keywords";
@@ -96,11 +98,18 @@ public interface Rels {
 
 	public static final String CAMPAIGN_ACCOUNTS = "campaign-accounts";
 
+	public static final String CAMPAIGN_ACQUISITION_PROPERTIES =
+		"campaign-acquisition-properties";
+
 	public static final String CAMPAIGN_INDIVIDUALS = "campaign-individuals";
+
+	public static final String CAMPAIGN_NAMES = "campaign-names";
 
 	public static final String CAMPAIGNS = "campaigns";
 
 	public static final String CAMPAIGNS_METRICS = "campaigns-metrics";
+
+	public static final String CAMPAIGNS_TOP = "campaigns-top";
 
 	public static final String CATALOG_FIELDS = "catalog-fields";
 

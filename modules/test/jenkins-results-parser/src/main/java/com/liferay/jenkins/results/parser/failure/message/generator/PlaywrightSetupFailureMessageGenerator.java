@@ -1,0 +1,86 @@
+/**
+ * SPDX-FileCopyrightText: (c) 2026 Liferay, Inc. https://liferay.com
+ * SPDX-License-Identifier: LGPL-2.1-or-later OR LicenseRef-Liferay-DXP-EULA-2.0.0-2023-06
+ */
+
+package com.liferay.jenkins.results.parser.failure.message.generator;
+
+import com.liferay.jenkins.results.parser.Build;
+import com.liferay.jenkins.results.parser.Dom4JUtil;
+import com.liferay.jenkins.results.parser.JenkinsResultsParserUtil;
+
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import org.dom4j.Element;
+
+/**
+ * @author Calum Ragan
+ */
+public class PlaywrightSetupFailureMessageGenerator
+	extends BaseFailureMessageGenerator {
+
+	@Override
+	public String getMessage(String consoleText) {
+		if (JenkinsResultsParserUtil.isNullOrEmpty(consoleText)) {
+			return null;
+		}
+
+		Matcher matcher = _messagePattern.matcher(consoleText);
+
+		if (!matcher.find()) {
+			return null;
+		}
+
+		return matcher.group(1);
+	}
+
+	@Override
+	public Element getMessageElement(Build build) {
+		String jobVariant = build.getJobVariant();
+
+		if (!jobVariant.startsWith("playwright-js")) {
+			return null;
+		}
+
+		return getMessageElement(build.getConsoleText());
+	}
+
+	@Override
+	public Element getMessageElement(String consoleText) {
+		String message = getMessage(consoleText);
+
+		if (message == null) {
+			return null;
+		}
+
+		Element messageElement = Dom4JUtil.getNewElement(
+			"div", null,
+			Dom4JUtil.getNewElement(
+				"p", null, Dom4JUtil.getNewElement("strong", null, message)));
+
+		int index = consoleText.indexOf("\n", consoleText.indexOf(message));
+
+		if (message.startsWith("Duplicate OSGi modules found for ")) {
+			Matcher matcher = _duplicateOSGiModulesPattern.matcher(consoleText);
+
+			if (matcher.find()) {
+				index = matcher.end();
+			}
+		}
+
+		messageElement.add(
+			getConsoleTextSnippetElementByEnd(consoleText, true, index));
+
+		return messageElement;
+	}
+
+	private static final Pattern _duplicateOSGiModulesPattern = Pattern.compile(
+		"Duplicate OSGi modules found for [^\\n]+(?:\\n[^\\n]*)*?\\n[^\\n]*" +
+			"Replace \"[^\\n]+(?:\\n[ \\t]*(?:\\[exec\\][ \\t]+)?(?:dxp/)?" +
+				"apps/[^\\n]+)*");
+	private static final Pattern _messagePattern = Pattern.compile(
+		"(Duplicate OSGi modules found for [^\\n]+|Unable to (?:deploy|find) " +
+			"OSGi module [^\\n]+)");
+
+}

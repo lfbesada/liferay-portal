@@ -9,6 +9,7 @@ import com.liferay.asset.kernel.service.AssetEntryLocalService;
 import com.liferay.asset.util.AssetRendererFactoryLookup;
 import com.liferay.portal.configuration.module.configuration.ConfigurationProviderUtil;
 import com.liferay.portal.kernel.dao.search.SearchContainer;
+import com.liferay.portal.kernel.model.Company;
 import com.liferay.portal.kernel.model.User;
 import com.liferay.portal.kernel.portlet.LiferayPortletConfig;
 import com.liferay.portal.kernel.search.Document;
@@ -24,6 +25,7 @@ import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.theme.PortletDisplay;
 import com.liferay.portal.kernel.theme.ThemeDisplay;
 import com.liferay.portal.kernel.util.PortalUtil;
+import com.liferay.portal.kernel.util.PropsValues;
 import com.liferay.portal.kernel.util.WebKeys;
 import com.liferay.portal.search.hits.TotalHitsRelation;
 import com.liferay.portal.search.searcher.SearchRequest;
@@ -35,6 +37,7 @@ import com.liferay.portal.search.web.internal.display.context.PortletURLFactory;
 import com.liferay.portal.search.web.portlet.shared.search.PortletSharedSearchRequest;
 import com.liferay.portal.search.web.portlet.shared.search.PortletSharedSearchResponse;
 import com.liferay.portal.search.web.search.request.SearchSettings;
+import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.LiferayUnitTestRule;
 import com.liferay.portal.util.PortalImpl;
 
@@ -111,6 +114,18 @@ public class SearchResultsPortletTest {
 		_assertDisplayContextDocuments(document);
 	}
 
+	@FeatureFlag("LPD-114635")
+	@Test
+	public void testGetCurWhenPastTotalHits() throws Exception {
+		SearchResultsPortletDisplayContext searchResultsPortletDisplayContext =
+			_render(5, 15, 6, 25);
+
+		SearchContainer<Document> searchContainer =
+			searchResultsPortletDisplayContext.getSearchContainer();
+
+		Assert.assertEquals(4, searchContainer.getCur());
+	}
+
 	@Test
 	public void testGetIteratorURL() throws Exception {
 		Mockito.doReturn(
@@ -132,6 +147,25 @@ public class SearchResultsPortletTest {
 		Assert.assertEquals(
 			"/search?delta=10",
 			String.valueOf(searchContainer.getIteratorURL()));
+	}
+
+	@FeatureFlag("LPD-114635")
+	@Test
+	public void testIsPaginationStartAdjusted() throws Exception {
+		_testIsPaginationStartAdjusted(5, false, 0, 0);
+		_testIsPaginationStartAdjusted(5, false, 15, 4);
+		_testIsPaginationStartAdjusted(5, true, 15, 6);
+		_testIsPaginationStartAdjusted(
+			PropsValues.SEARCH_CONTAINER_PAGE_MAX_DELTA + 1, false,
+			PropsValues.SEARCH_CONTAINER_PAGE_MAX_DELTA, 2);
+	}
+
+	@FeatureFlag(enable = false, value = "LPD-114635")
+	@Test
+	public void testIsPaginationStartAdjustedWhenFeatureFlagIsDisabled()
+		throws Exception {
+
+		_testIsPaginationStartAdjusted(5, false, 15, 6);
 	}
 
 	@Test
@@ -310,7 +344,7 @@ public class SearchResultsPortletTest {
 
 			@Override
 			protected PortletURLFactory getPortletURLFactory(
-				RenderRequest renderRequest, RenderResponse renderResponse) {
+				RenderRequest renderRequest) {
 
 				return _portletURLFactory;
 			}
@@ -357,12 +391,51 @@ public class SearchResultsPortletTest {
 		return argumentCaptor.getValue();
 	}
 
+	private SearchResultsPortletDisplayContext _render(
+			int delta, int from, int start, int totalHits)
+		throws Exception {
+
+		_renderRequest = _createRenderRequest();
+
+		Mockito.doReturn(
+			String.valueOf(delta)
+		).when(
+			_portletSharedSearchResponse
+		).getParameter(
+			"delta", _renderRequest
+		);
+
+		Mockito.doReturn(
+			String.valueOf(start)
+		).when(
+			_portletSharedSearchResponse
+		).getParameter(
+			"start", _renderRequest
+		);
+
+		Mockito.doReturn(
+			from
+		).when(
+			_searchRequest
+		).getFrom();
+
+		Mockito.doReturn(
+			totalHits
+		).when(
+			_searchResponse
+		).getTotalHits();
+
+		render();
+
+		return _getDisplayContext();
+	}
+
 	private void _setUpPortalUtil() {
 		ReflectionTestUtil.setFieldValue(
 			PortalUtil.class, "_portal", new PortalImpl());
 	}
 
-	private void _setUpPortletSharedSearchResponse() {
+	private void _setUpPortletSharedSearchResponse() throws Exception {
 		Mockito.doReturn(
 			null
 		).when(
@@ -397,8 +470,12 @@ public class SearchResultsPortletTest {
 			_portletSharedSearchResponse
 		).getSearchSettings();
 
+		ThemeDisplay themeDisplay = new ThemeDisplay();
+
+		themeDisplay.setCompany(Mockito.mock(Company.class));
+
 		Mockito.doReturn(
-			new ThemeDisplay()
+			themeDisplay
 		).when(
 			_portletSharedSearchResponse
 		).getThemeDisplay(
@@ -430,6 +507,19 @@ public class SearchResultsPortletTest {
 		).fetchUser(
 			Mockito.anyLong()
 		);
+	}
+
+	private void _testIsPaginationStartAdjusted(
+			int delta, boolean expectedPaginationStartAdjusted, int from,
+			int start)
+		throws Exception {
+
+		SearchResultsPortletDisplayContext searchResultsPortletDisplayContext =
+			_render(delta, from, start, RandomTestUtil.randomInt());
+
+		Assert.assertEquals(
+			expectedPaginationStartAdjusted,
+			searchResultsPortletDisplayContext.isPaginationStartAdjusted());
 	}
 
 	private void _testTotalHitsExact(

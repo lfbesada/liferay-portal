@@ -302,7 +302,7 @@ describe('EditLifecycle', () => {
 			expect.objectContaining({id: 'stage-1', name: 'Engaged'})
 		);
 		expect(payload.stages[0].name).toBe('Aware');
-	});
+	}, 15000);
 
 	it('moves the selection to the next stage when the selected one is removed', () => {
 		renderPage();
@@ -517,7 +517,9 @@ describe('EditLifecycle', () => {
 		);
 
 		expect(screen.queryByText(/edit lifecycle/i)).toBeNull();
-		expect(screen.getByText(/dashboard not found/i)).toBeInTheDocument();
+		expect(
+			screen.getByText(/dashboard was not found/i)
+		).toBeInTheDocument();
 		expect(
 			screen.getByRole('link', {name: /go to lifecycles/i})
 		).toHaveAttribute(

@@ -86,7 +86,6 @@ import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
-import org.osgi.framework.BundleContext;
 import org.osgi.service.component.annotations.Activate;
 import org.osgi.service.component.annotations.Component;
 import org.osgi.service.component.annotations.Modified;
@@ -159,13 +158,7 @@ public class AssetListAssetEntryProviderImpl
 
 		return _getDynamicAssetEntries(
 			assetCategoryIds,
-			_createAssetEntryQuery(
-				assetListEntry,
-				UnicodePropertiesBuilder.create(
-					true
-				).fastLoad(
-					assetListEntryAudienceEntryRel.getTypeSettings()
-				).build()),
+			_getAssetEntryQuery(assetListEntry, assetListEntryAudienceEntryRel),
 			assetListEntry, assetTagNames, end, keywords, start);
 	}
 
@@ -178,10 +171,67 @@ public class AssetListAssetEntryProviderImpl
 			_getFirstSegmentsEntryId(assetListEntry, segmentsEntryIds), userId);
 	}
 
+	@Override
+	public AssetEntryQuery getAssetEntryQuery(
+		AssetListEntry assetListEntry, String[] audienceEntryERCs,
+		String userId) {
+
+		AssetListEntryAudienceEntryRel assetListEntryAudienceEntryRel =
+			_assetListEntryAudienceEntryRelLocalService.
+				fetchAssetListEntryAudienceEntryRel(
+					assetListEntry.getAssetListEntryId(), audienceEntryERCs);
+
+		if (assetListEntryAudienceEntryRel == null) {
+			return getAssetEntryQuery(
+				assetListEntry, SegmentsEntryConstants.ID_DEFAULT, userId);
+		}
+
+		return _getAssetEntryQuery(
+			assetListEntry, assetListEntryAudienceEntryRel);
+	}
+
+	@Override
+	public BooleanQuery getBooleanQuery(
+			AssetEntryQuery assetEntryQuery, AssetListEntry assetListEntry,
+			long segmentsEntryId)
+		throws Exception {
+
+		if (Objects.equals(
+				assetListEntry.getType(),
+				AssetListEntryTypeConstants.TYPE_MANUAL)) {
+
+			Map<AssetListEntryAssetEntryRel, Long> groupIds = _getGroupIds(
+				_assetListEntryAssetEntryRelLocalService.
+					getAssetListEntryAssetEntryRels(
+						assetListEntry.getAssetListEntryId(),
+						new long[] {segmentsEntryId}, QueryUtil.ALL_POS,
+						QueryUtil.ALL_POS));
+
+			if (MapUtil.isEmpty(groupIds)) {
+				return null;
+			}
+
+			return _assetHelper.getBooleanQuery(
+				_getManualSearchContext(
+					null,
+					ListUtil.toList(
+						ListUtil.fromMapKeys(groupIds),
+						AssetListEntryAssetEntryRelModel::getAssetEntryId),
+					null, assetListEntry.getCompanyId(), null),
+				_getManualAssetEntryQuery(
+					assetListEntry, ArrayUtil.toLongArray(groupIds.values())));
+		}
+
+		return _assetHelper.getBooleanQuery(
+			_getDynamicSearchContext(
+				null, assetEntryQuery, null, assetListEntry.getCompanyId(),
+				null),
+			assetEntryQuery);
+	}
+
 	@Activate
 	@Modified
-	protected void activate(
-			BundleContext bundleContext, Map<String, Object> properties)
+	protected void activate(Map<String, Object> properties)
 		throws ConfigurationException {
 
 		_assetListConfiguration = ConfigurableUtil.createConfigurable(
@@ -420,6 +470,19 @@ public class AssetListAssetEntryProviderImpl
 		return new BooleanClause[] {
 			new BooleanClause<>(booleanQuery, BooleanClauseOccur.MUST)
 		};
+	}
+
+	private AssetEntryQuery _getAssetEntryQuery(
+		AssetListEntry assetListEntry,
+		AssetListEntryAudienceEntryRel assetListEntryAudienceEntryRel) {
+
+		return _createAssetEntryQuery(
+			assetListEntry,
+			UnicodePropertiesBuilder.create(
+				true
+			).fastLoad(
+				assetListEntryAudienceEntryRel.getTypeSettings()
+			).build());
 	}
 
 	private long[] _getAssetEntryQueryGroupIds(

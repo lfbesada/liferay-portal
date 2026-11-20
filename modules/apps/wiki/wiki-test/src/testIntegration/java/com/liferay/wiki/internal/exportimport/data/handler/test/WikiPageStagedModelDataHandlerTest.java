@@ -32,6 +32,8 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.Constants;
 import com.liferay.portal.test.rule.Inject;
 import com.liferay.portal.test.rule.LiferayIntegrationTestRule;
+import com.liferay.ratings.kernel.model.RatingsEntry;
+import com.liferay.ratings.kernel.service.RatingsEntryLocalService;
 import com.liferay.wiki.attachments.test.WikiAttachmentsTest;
 import com.liferay.wiki.model.WikiNode;
 import com.liferay.wiki.model.WikiPage;
@@ -370,14 +372,29 @@ public class WikiPageStagedModelDataHandlerTest
 		super.validateImport(
 			stagedModel, stagedModelAssets, dependentStagedModelsMap, group);
 
-		WikiPage page = (WikiPage)stagedModel;
+		WikiPage wikiPage = (WikiPage)stagedModel;
 
 		List<FileEntry> attachmentsFileEntries =
-			page.getAttachmentsFileEntries();
+			wikiPage.getAttachmentsFileEntries();
 
 		Assert.assertEquals(
 			attachmentsFileEntries.toString(), 1,
 			attachmentsFileEntries.size());
+
+		WikiPage importedWikiPage = (WikiPage)getStagedModel(
+			wikiPage.getUuid(), group);
+
+		RatingsEntry importedRatingsEntry =
+			_ratingsEntryLocalService.fetchEntry(
+				TestPropsValues.getUserId(), WikiPage.class.getName(),
+				importedWikiPage.getResourcePrimKey());
+
+		RatingsEntry ratingsEntry = _ratingsEntryLocalService.getEntry(
+			TestPropsValues.getUserId(), WikiPage.class.getName(),
+			wikiPage.getResourcePrimKey());
+
+		Assert.assertEquals(
+			ratingsEntry.getScore(), importedRatingsEntry.getScore(), 0);
 
 		validateImport(dependentStagedModelsMap, group);
 	}
@@ -406,6 +423,9 @@ public class WikiPageStagedModelDataHandlerTest
 		Assert.assertEquals(
 			page.getRedirectTitle(), importedPage.getRedirectTitle());
 	}
+
+	@Inject
+	private RatingsEntryLocalService _ratingsEntryLocalService;
 
 	@Inject
 	private WikiNodeLocalService _wikiNodeLocalService;

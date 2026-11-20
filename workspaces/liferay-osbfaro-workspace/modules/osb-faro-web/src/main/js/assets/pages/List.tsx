@@ -157,6 +157,9 @@ const columns = {
 				</div>
 			);
 		},
+	assetTypeRenderer: ({itemData, value}: {itemData: any; value?: string}) => (
+		<span>{itemData.assetTypeLabel ?? value}</span>
+	),
 };
 
 const assetsEmptyStateDescription = (
@@ -186,6 +189,7 @@ const TABLE_FIELDS = [
 		truncate: true,
 	},
 	{
+		contentRenderer: 'assetTypeRenderer',
 		fieldName: 'assetType',
 		label: Liferay.Language.get('type'),
 		sortable: true,
@@ -228,17 +232,6 @@ const List = () => {
 	const objectType = OBJECT_TYPES.find(
 		(value) => value === searchParams.get('objectType')
 	);
-
-	const sortableFields = TABLE_FIELDS.filter((field) => field.sortable);
-
-	const sorts = sortableFields.some((field) => field.fieldName === orderBy)
-		? sortableFields.map((field) => ({
-				active: field.fieldName === orderBy,
-				direction: 'desc' as const,
-				key: field.fieldName,
-				label: field.label,
-			}))
-		: undefined;
 
 	const [rangeSelectors, setRangeSelectors] = useState<RangeSelectors>(
 		initialRangeSelectors
@@ -320,7 +313,7 @@ const List = () => {
 				autocompleteEnabled: true,
 				entityFieldType: 'string',
 				id: 'assetType',
-				itemKey: 'name',
+				itemKey: 'id',
 				itemLabel: 'name',
 				label: Liferay.Language.get('type'),
 				multiple: true,
@@ -464,6 +457,7 @@ const List = () => {
 			<BasePage.Body fluid>
 				<Card minHeight={300}>
 					<FrontendDataSet
+						activeSortKey={orderBy}
 
 						// Not a real transformation: this reports the query the
 						// data set is about to send so the CSV export can match
@@ -498,7 +492,12 @@ const List = () => {
 								segmentId,
 								segmentName,
 							}),
+							assetTypeRenderer: columns.assetTypeRenderer,
 						}}
+
+						// The API sorts by views when no sort is sent.
+
+						defaultSort={{key: 'viewsMetric'}}
 						emptyState={{
 							description:
 								assetsEmptyStateDescription as unknown as string,
@@ -574,7 +573,6 @@ const List = () => {
 						pagination={pagination}
 						showPagination
 						snapshotsEnabled
-						sorts={sorts}
 						views={[
 							{
 								contentRenderer: 'table',

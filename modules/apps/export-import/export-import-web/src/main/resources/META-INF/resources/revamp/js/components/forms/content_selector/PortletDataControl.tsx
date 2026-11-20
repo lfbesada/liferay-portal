@@ -13,6 +13,7 @@ import {PortletDataHandlerControl} from '../../../types/portletDataHandler';
 import {
 	PORTLET_DATA_KEY_LAYOUT_SET_LAYOUTS,
 	PortletDataHandlerSelection,
+	getAvailableLayoutSetVisibilities,
 	getNestedPortletDataHandlerControls,
 	getPortletDataHandlerSelection,
 	getSelectionSummary,
@@ -57,6 +58,9 @@ export default function PortletDataControl({
 						? portletDataHandlerControl.additionCount
 						: undefined
 				}
+				availableLayoutSetVisibilities={getAvailableLayoutSetVisibilities(
+					portletDataHandlerControl
+				)}
 				deletionCount={
 					portletDataHandlerControl.type === 'Boolean' &&
 					showDeletions

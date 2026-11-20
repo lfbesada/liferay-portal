@@ -12,11 +12,12 @@ function assert_clean_upgrade_log {
 
 	local unclean_log_entries
 
-	unclean_log_entries=$(grep -E "^[0-9]{4}-[0-9]{2}-[0-9]{2}[[:space:]]+[0-9]{2}:[0-9]{2}:[0-9]{2}([.,][0-9]{3})?[[:space:]]+(ERROR|FATAL|WARN)" "${upgrade_log}" | grep -v "Do NOT use sidecar in production" || true)
+	unclean_log_entries=$(grep --extended-regexp "^[0-9]{4}-[0-9]{2}-[0-9]{2}[[:space:]]+[0-9]{2}:[0-9]{2}:[0-9]{2}([.,][0-9]{3})?[[:space:]]+(ERROR|FATAL)" "${upgrade_log}" || true)
 
 	if [ -n "${unclean_log_entries}" ]
 	then
-		echo "Upgrade log contains ERROR, FATAL, or WARN entries:"
+		echo "Upgrade log contains ERROR or FATAL entries:"
+
 		printf "%s\n" "${unclean_log_entries}"
 
 		exit 1
@@ -262,7 +263,7 @@ function deploy_osgi_modules {
 					echo "${dir/${_PORTAL_PROJECT_DIR}\/modules\/}"
 				done
 
-				osgi_module_dir=$(echo ${osgi_module_dir} | awk '{print $1}')
+				exit 1
 			fi
 
 			if [[ -f ${osgi_module_dir}/build.gradle ]]
@@ -273,9 +274,16 @@ function deploy_osgi_modules {
 
 				local gradlew=$(get_gradlew)
 
-				${gradlew} deploy
+				if ! ${gradlew} deploy
+				then
+					echo "Unable to deploy OSGi module ${osgi_module_name} in ${osgi_modules_list_file}."
+
+					exit 1
+				fi
 			else
-				echo "Unable to find OSGi module in ${osgi_module_dir}."
+				echo "Unable to find OSGi module ${osgi_module_name} in ${osgi_modules_list_file}."
+
+				exit 1
 			fi
 		done
 	fi

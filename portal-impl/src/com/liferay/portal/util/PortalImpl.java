@@ -1254,10 +1254,15 @@ public class PortalImpl implements Portal {
 			virtualHostname = portalDomain;
 		}
 
+		Group siteGroup = themeDisplay.getSiteGroup();
+
+		Locale siteGroupDefaultLocale = getSiteDefaultLocale(siteGroup);
+
 		if (Validator.isNull(virtualHostname)) {
 			for (Locale locale : availableLocales) {
 				String i18nPath = _buildI18NPath(
-					locale, themeDisplay.getSiteGroup());
+					LocaleUtil.toLanguageId(locale), locale, siteGroup,
+					siteGroupDefaultLocale);
 
 				alternateURLs.put(
 					locale,
@@ -1289,7 +1294,11 @@ public class PortalImpl implements Portal {
 			}
 		}
 
-		Locale siteDefaultLocale = getSiteDefaultLocale(layout.getGroupId());
+		Locale siteDefaultLocale = siteGroupDefaultLocale;
+
+		if (layout.getGroupId() != themeDisplay.getSiteGroupId()) {
+			siteDefaultLocale = getSiteDefaultLocale(layout.getGroupId());
+		}
 
 		int localePrependFriendlyURLStyle = PrefsPropsUtil.getInteger(
 			themeDisplay.getCompanyId(),
@@ -1308,7 +1317,9 @@ public class PortalImpl implements Portal {
 						locale,
 						StringBundler.concat(
 							canonicalURL,
-							_buildI18NPath(locale, themeDisplay.getSiteGroup()),
+							_buildI18NPath(
+								LocaleUtil.toLanguageId(locale), locale,
+								siteGroup, siteGroupDefaultLocale),
 							StringPool.SLASH));
 				}
 			}
@@ -1322,7 +1333,8 @@ public class PortalImpl implements Portal {
 		String currentURL = canonicalURL.substring(pos);
 
 		String siteDefaultLocaleI18nPath = _buildI18NPath(
-			siteDefaultLocale, layout.getGroup());
+			LocaleUtil.toLanguageId(siteDefaultLocale), siteDefaultLocale,
+			layout.getGroup(), siteDefaultLocale);
 
 		if (currentURL.startsWith(
 				siteDefaultLocaleI18nPath + StringPool.SLASH)) {
@@ -1460,7 +1472,7 @@ public class PortalImpl implements Portal {
 			}
 
 			String i18NPath = _buildI18NPath(
-				languageId, locale, themeDisplay.getSiteGroup());
+				languageId, locale, siteGroup, siteGroupDefaultLocale);
 
 			if (!alternateURLSuffix.startsWith(i18NPath + StringPool.SLASH) &&
 				((localePrependFriendlyURLStyle == 2) ||
@@ -7171,8 +7183,7 @@ public class PortalImpl implements Portal {
 	}
 
 	protected String getServletURL(
-			Portlet portlet, String servletPath, ThemeDisplay themeDisplay)
-		throws PortalException {
+		Portlet portlet, String servletPath, ThemeDisplay themeDisplay) {
 
 		Layout layout = themeDisplay.getLayout();
 
@@ -7225,8 +7236,7 @@ public class PortalImpl implements Portal {
 	}
 
 	protected boolean isAlwaysAllowDoAsUser(
-			HttpServletRequest httpServletRequest)
-		throws Exception {
+		HttpServletRequest httpServletRequest) {
 
 		String ticketKey = ParamUtil.getString(httpServletRequest, "ticketKey");
 
@@ -7455,20 +7465,21 @@ public class PortalImpl implements Portal {
 	private String _buildI18NPath(Locale locale, Group group) {
 		String languageId = LocaleUtil.toLanguageId(locale);
 
-		return _buildI18NPath(languageId, locale, group);
+		return _buildI18NPath(languageId, locale, group, null);
 	}
 
 	private String _buildI18NPath(
-		String languageId, Locale locale, Group group) {
+		String languageId, Locale locale, Group group,
+		Locale siteDefaultLocale) {
 
 		if (Validator.isNull(languageId)) {
 			return null;
 		}
 
-		Locale siteDefaultLocale = null;
-
 		try {
-			siteDefaultLocale = getSiteDefaultLocale(group);
+			if (siteDefaultLocale == null) {
+				siteDefaultLocale = getSiteDefaultLocale(group);
+			}
 
 			if (!LanguageUtil.isSameLanguage(locale, siteDefaultLocale)) {
 				siteDefaultLocale = LanguageUtil.getLocale(
@@ -8068,9 +8079,7 @@ public class PortalImpl implements Portal {
 		return sb.toString();
 	}
 
-	private Group _getLayoutGroup(Layout layout, ThemeDisplay themeDisplay)
-		throws PortalException {
-
+	private Group _getLayoutGroup(Layout layout, ThemeDisplay themeDisplay) {
 		if (themeDisplay == null) {
 			return layout.getGroup();
 		}
@@ -8564,10 +8573,9 @@ public class PortalImpl implements Portal {
 	}
 
 	private String _prependI18nPath(
-			String changeLanguageURL, Locale locale, ThemeDisplay themeDisplay,
-			Layout layout, int localePrependFriendlyURLStyle,
-			boolean includeDefaultLocaleI18nPath)
-		throws PortalException {
+		String changeLanguageURL, Locale locale, ThemeDisplay themeDisplay,
+		Layout layout, int localePrependFriendlyURLStyle,
+		boolean includeDefaultLocaleI18nPath) {
 
 		if (localePrependFriendlyURLStyle == 0) {
 			return changeLanguageURL;

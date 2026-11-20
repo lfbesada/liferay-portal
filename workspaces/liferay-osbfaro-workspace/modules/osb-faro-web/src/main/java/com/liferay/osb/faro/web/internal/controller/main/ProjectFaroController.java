@@ -58,6 +58,7 @@ import com.liferay.petra.sql.dsl.DSLFunctionFactoryUtil;
 import com.liferay.petra.sql.dsl.DSLQueryFactoryUtil;
 import com.liferay.petra.sql.dsl.expression.Predicate;
 import com.liferay.petra.sql.dsl.query.DSLQuery;
+import com.liferay.petra.string.StringBundler;
 import com.liferay.petra.string.StringPool;
 import com.liferay.portal.kernel.cache.MultiVMPool;
 import com.liferay.portal.kernel.cache.PortalCache;
@@ -85,6 +86,7 @@ import com.liferay.portal.kernel.util.Time;
 import com.liferay.portal.kernel.util.Tuple;
 import com.liferay.portal.kernel.util.Validator;
 
+import jakarta.annotation.security.PermitAll;
 import jakarta.annotation.security.RolesAllowed;
 
 import jakarta.ws.rs.DELETE;
@@ -100,6 +102,9 @@ import jakarta.ws.rs.Produces;
 import jakarta.ws.rs.QueryParam;
 import jakarta.ws.rs.core.MediaType;
 import jakarta.ws.rs.core.Response;
+
+import java.time.LocalDate;
+import java.time.ZoneOffset;
 
 import java.util.ArrayList;
 import java.util.Calendar;
@@ -185,6 +190,39 @@ public class ProjectFaroController extends BaseFaroController {
 			JSONUtil.writeValueAsString(ipAddressesFaroParam.getValue()));
 
 		_faroProjectLocalService.updateFaroProject(faroProject);
+	}
+
+	@Path("/usage/backfill")
+	@POST
+	@RolesAllowed(RoleConstants.SITE_ADMINISTRATOR)
+	public void backfillFaroProjectUsages(
+		@QueryParam("endDateString") String endDateString,
+		@QueryParam("startDateString") String startDateString) {
+
+		LocalDate endLocalDate = _getEndLocalDate(endDateString);
+
+		LocalDate startLocalDate = _getStartLocalDate(
+			endLocalDate, startDateString);
+
+		ExecutorService executorService =
+			_portalExecutorManager.getPortalExecutor(
+				ProjectFaroController.class.getName());
+
+		executorService.submit(
+			new CompanyInheritableThreadLocalCallable<>(
+				() -> {
+					_projectUsageHelper.backfillFaroProjectUsages(
+						endLocalDate, startLocalDate);
+
+					if (_log.isInfoEnabled()) {
+						_log.info(
+							StringBundler.concat(
+								"Usage backfill finished successfully from ",
+								startLocalDate, " to ", endLocalDate));
+					}
+
+					return null;
+				}));
 	}
 
 	@Path("/{groupId}/configure")
@@ -593,6 +631,7 @@ public class ProjectFaroController extends BaseFaroController {
 
 	@GET
 	@Path("/joinable")
+	@PermitAll
 	public List<JoinableProjectDisplay> getJoinableProjectDisplays()
 		throws PortalException {
 
@@ -674,6 +713,7 @@ public class ProjectFaroController extends BaseFaroController {
 
 	@GET
 	@Path("/corpProjectUuid/{corpProjectUuid}")
+	@PermitAll
 	public ProjectDisplay getProjectDisplay(
 			@PathParam("corpProjectUuid") String corpProjectUuid)
 		throws Exception {
@@ -696,6 +736,7 @@ public class ProjectFaroController extends BaseFaroController {
 	}
 
 	@GET
+	@PermitAll
 	public List<ProjectDisplay> getProjectDisplays() {
 		return TransformUtil.transform(
 			_faroUserLocalService.getFaroUsersByLiveUserId(
@@ -775,6 +816,7 @@ public class ProjectFaroController extends BaseFaroController {
 
 	@GET
 	@Path("/time_zones")
+	@PermitAll
 	public List<TimeZoneDisplay> getTimeZones() {
 		return TimeZoneUtil.getTimeZoneDisplays();
 	}
@@ -816,9 +858,9 @@ public class ProjectFaroController extends BaseFaroController {
 
 			_sendTimeZoneNotification(groupId);
 
-			cerebroEngineClient.updateTimeZone(faroProject);
-
 			faroProject.setTimeZoneId(timeZoneId);
+
+			cerebroEngineClient.updateTimeZone(faroProject);
 		}
 
 		faroProjectLocalService.updateFaroProject(faroProject);
@@ -922,7 +964,9 @@ public class ProjectFaroController extends BaseFaroController {
 								projectUsageMetric.getActiveLogicalBytes(),
 								projectUsageMetric.
 									getAnonymousIndividualsCount(),
+								projectUsageMetric.getBillableEventsCount(),
 								projectUsageMetric.getEventsCount(),
+								projectUsageMetric.getExperimentEventsCount(),
 								faroProject.getFaroProjectId(),
 								projectUsageMetric.getKnownIndividualsCount(),
 								projectUsageMetric.getLongTermLogicalBytes(),
@@ -1449,6 +1493,16 @@ public class ProjectFaroController extends BaseFaroController {
 			StringUtil.merge(invalidEmailAddressDomains));
 	}
 
+	private LocalDate _getEndLocalDate(String endDateString) {
+		if (endDateString != null) {
+			return LocalDate.parse(endDateString);
+		}
+
+		LocalDate localDate = LocalDate.now(ZoneOffset.UTC);
+
+		return localDate.minusDays(1);
+	}
+
 	private String _getFriendlyURLErrorMessage(int type) {
 		User user = getUser();
 
@@ -1768,6 +1822,18 @@ public class ProjectFaroController extends BaseFaroController {
 		return corpProjectUuid;
 	}
 
+	private LocalDate _getStartLocalDate(
+		LocalDate endLocalDate, String startDateString) {
+
+		if (startDateString != null) {
+			return LocalDate.parse(startDateString);
+		}
+
+		LocalDate localDate = endLocalDate.minusYears(1);
+
+		return localDate.plusDays(1);
+	}
+
 	private String _getTimeZoneIdErrorMessage(User user) {
 		ResourceBundle resourceBundle = ResourceBundleUtil.getBundle(
 			"content.Language", user.getLocale(), getClass());
@@ -1780,15 +1846,13 @@ public class ProjectFaroController extends BaseFaroController {
 
 		long groupId = faroProject.getGroupId();
 
-		if (_initializingGroupIds.contains(groupId)) {
+		if (!_initializingGroupIds.add(groupId)) {
 			faroProject.setState(FaroProjectConstants.STATE_READY);
 
 			return faroProject;
 		}
 
 		try {
-			_initializingGroupIds.add(groupId);
-
 			cerebroEngineClient.updateTimeZone(faroProject);
 
 			_fieldMappingFaroController.addDefaultFieldMappings(groupId);

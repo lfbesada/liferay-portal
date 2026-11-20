@@ -119,7 +119,7 @@ public class ProductRelationshipsDisplayContext {
 
 	public Map<String, Object> getEmptyState() {
 		return HashMapBuilder.<String, Object>put(
-			"image", "/states/cms_empty_state_preview.svg"
+			"symbol", "products"
 		).put(
 			"title",
 			LanguageUtil.get(_httpServletRequest, "no-relationships-were-found")
@@ -218,7 +218,8 @@ public class ProductRelationshipsDisplayContext {
 					objectEntry.getGroupId(), ") and not (entryClassPK in (",
 					objectEntry.getObjectEntryId())),
 			"{relatedObjectEntryIds}", URLCodec.encodeURL("))"),
-			"&nestedFields=embedded,systemProperties.objectDefinitionBrief");
+			"&nestedFields=embedded,embedded.images,",
+			"systemProperties.objectDefinitionBrief&nestedFieldsDepth=2");
 	}
 
 	private ThemeDisplay _getThemeDisplay() {

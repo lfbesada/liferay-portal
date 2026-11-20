@@ -13031,7 +13031,7 @@ ${update.properties}</echo>
 		${invoker.filter.helper.log.level}
 		<Logger level="INFO" name="com.liferay.portal.security.audit.router.internal.LoggingAuditMessageProcessor" />
 		<Logger level="${release.local.service.impl.log.level}" name="com.liferay.portal.service.impl.ReleaseLocalServiceImpl" />
-		<Logger level="${dialect.detector.log.level}" name="com.liferay.portal.spring.hibernate.DialectDetector" />
+		<Logger level="${dialect.detector.log.level}" name="com.liferay.portal.spring.hibernate.DialectUtil" />
 		<Logger level="ERROR" name="com.zaxxer.hikari.pool.PoolBase" />
 		<Logger level="ERROR" name="org.apache.http.client.protocol.ResponseProcessCookies" />
 		<Logger level="OFF" name="org.hibernate.engine.jdbc.spi.SqlExceptionHelper" />
@@ -14620,7 +14620,14 @@ ANT_OPTS=${env.ANT_OPTS}</echo>
 	</target>
 
 	<target name="prepare-test-bundle">
-		<setup-libs />
+		<if>
+			<not>
+				<available file="liferay-portal-source.tar.gz" />
+			</not>
+			<then>
+				<setup-libs />
+			</then>
+		</if>
 
 		<if>
 			<not>

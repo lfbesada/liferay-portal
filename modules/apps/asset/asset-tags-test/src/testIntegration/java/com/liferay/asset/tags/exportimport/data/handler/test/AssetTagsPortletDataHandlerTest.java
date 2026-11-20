@@ -6,6 +6,7 @@
 package com.liferay.asset.tags.exportimport.data.handler.test;
 
 import com.liferay.arquillian.extension.junit.bridge.junit.Arquillian;
+import com.liferay.asset.kernel.exception.DuplicateTagException;
 import com.liferay.asset.kernel.model.AssetTag;
 import com.liferay.asset.kernel.model.AssetTagGroupRel;
 import com.liferay.asset.kernel.service.AssetTagGroupRelLocalService;
@@ -14,7 +15,6 @@ import com.liferay.asset.tags.constants.AssetTagsAdminPortletKeys;
 import com.liferay.depot.constants.DepotConstants;
 import com.liferay.depot.model.DepotEntry;
 import com.liferay.depot.service.DepotEntryLocalService;
-import com.liferay.depot.service.DepotEntryLocalServiceUtil;
 import com.liferay.exportimport.kernel.configuration.ExportImportConfigurationSettingsMapFactoryUtil;
 import com.liferay.exportimport.kernel.configuration.constants.ExportImportConfigurationConstants;
 import com.liferay.exportimport.kernel.lar.DataLevel;
@@ -22,8 +22,6 @@ import com.liferay.exportimport.kernel.lar.PortletDataHandlerKeys;
 import com.liferay.exportimport.kernel.model.ExportImportConfiguration;
 import com.liferay.exportimport.kernel.service.ExportImportConfigurationLocalService;
 import com.liferay.exportimport.kernel.service.ExportImportLocalService;
-import com.liferay.exportimport.kernel.service.StagingLocalServiceUtil;
-import com.liferay.exportimport.kernel.staging.constants.StagingConstants;
 import com.liferay.exportimport.report.constants.ExportImportReportEntryConstants;
 import com.liferay.exportimport.report.model.ExportImportReportEntry;
 import com.liferay.exportimport.report.service.ExportImportReportEntryLocalService;
@@ -38,7 +36,6 @@ import com.liferay.portal.kernel.model.Group;
 import com.liferay.portal.kernel.model.GroupConstants;
 import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.service.GroupServiceUtil;
-import com.liferay.portal.kernel.service.ServiceContext;
 import com.liferay.portal.kernel.test.rule.AggregateTestRule;
 import com.liferay.portal.kernel.test.util.RandomTestUtil;
 import com.liferay.portal.kernel.test.util.ServiceContextTestUtil;
@@ -46,6 +43,9 @@ import com.liferay.portal.kernel.test.util.TestPropsValues;
 import com.liferay.portal.kernel.util.HashMapBuilder;
 import com.liferay.portal.kernel.util.ListUtil;
 import com.liferay.portal.kernel.util.LocaleUtil;
+import com.liferay.portal.test.log.LogCapture;
+import com.liferay.portal.test.log.LogEntry;
+import com.liferay.portal.test.log.LoggerTestUtil;
 import com.liferay.portal.test.rule.FeatureFlag;
 import com.liferay.portal.test.rule.FeatureFlags;
 import com.liferay.portal.test.rule.Inject;
@@ -92,15 +92,41 @@ public class AssetTagsPortletDataHandlerTest
 
 		File larFile = _exportLayout();
 
-		assetTag.setExternalReferenceCode(RandomTestUtil.randomString());
+		String name = assetTag.getName();
+
+		assetTag.setName(RandomTestUtil.randomString());
 
 		_assetTagLocalService.updateAssetTag(assetTag);
+
+		_addTag(name);
 
 		ExportImportConfiguration exportImportConfiguration =
 			_setUpExportImportConfiguration();
 
-		_exportImportLocalService.importLayouts(
-			exportImportConfiguration, larFile);
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"com.liferay.batch.engine.internal." +
+					"BatchEngineImportTaskExecutorImpl",
+				LoggerTestUtil.ERROR)) {
+
+			_exportImportLocalService.importLayouts(
+				exportImportConfiguration, larFile);
+
+			List<LogEntry> logEntries = logCapture.getLogEntries();
+
+			Assert.assertEquals(logEntries.toString(), 1, logEntries.size());
+
+			LogEntry logEntry = logEntries.get(0);
+
+			Assert.assertEquals(LoggerTestUtil.ERROR, logEntry.getPriority());
+
+			Throwable throwable = logEntry.getThrowable();
+
+			Assert.assertEquals(
+				DuplicateTagException.class, throwable.getClass());
+			Assert.assertEquals(
+				"A tag with the name " + name + " already exists",
+				throwable.getMessage());
+		}
 
 		List<ExportImportReportEntry> exportImportReportEntries =
 			_exportImportReportEntryLocalService.getExportImportReportEntries(
@@ -117,8 +143,7 @@ public class AssetTagsPortletDataHandlerTest
 				exportImportReportEntry ->
 					Objects.equals(
 						exportImportReportEntry.getErrorMessage(),
-						"A tag with the name " + assetTag.getName() +
-							" already exists") &&
+						"A tag with the name " + name + " already exists") &&
 					(exportImportReportEntry.getType() ==
 						ExportImportReportEntryConstants.TYPE_ERROR)));
 	}
@@ -153,9 +178,13 @@ public class AssetTagsPortletDataHandlerTest
 		File larFile = _exportImportLocalService.exportPortletInfoAsFile(
 			exportImportConfiguration);
 
-		assetTag.setExternalReferenceCode(RandomTestUtil.randomString());
+		String name = assetTag.getName();
+
+		assetTag.setName(RandomTestUtil.randomString());
 
 		_assetTagLocalService.updateAssetTag(assetTag);
+
+		_addTag(name);
 
 		exportImportConfiguration =
 			_exportImportConfigurationLocalService.
@@ -169,22 +198,44 @@ public class AssetTagsPortletDataHandlerTest
 							AssetTagsAdminPortletKeys.ASSET_TAGS_ADMIN,
 							parameterMap));
 
-		long backgroundTaskId =
-			_exportImportLocalService.importPortletInfoInBackground(
-				TestPropsValues.getUserId(), exportImportConfiguration,
-				larFile);
+		try (LogCapture logCapture = LoggerTestUtil.configureLog4JLogger(
+				"com.liferay.batch.engine.internal." +
+					"BatchEngineImportTaskExecutorImpl",
+				LoggerTestUtil.ERROR)) {
 
-		ExportImportTestUtil.retryAssert(
-			1, TimeUnit.SECONDS, 5, TimeUnit.SECONDS,
-			() -> {
-				BackgroundTask backgroundTask =
-					BackgroundTaskManagerUtil.getBackgroundTask(
-						backgroundTaskId);
+			long backgroundTaskId =
+				_exportImportLocalService.importPortletInfoInBackground(
+					TestPropsValues.getUserId(), exportImportConfiguration,
+					larFile);
 
-				Assert.assertEquals(
-					BackgroundTaskConstants.STATUS_COMPLETED_WITH_ERRORS,
-					backgroundTask.getStatus());
-			});
+			ExportImportTestUtil.retryAssert(
+				1, TimeUnit.SECONDS, 5, TimeUnit.SECONDS,
+				() -> {
+					BackgroundTask backgroundTask =
+						BackgroundTaskManagerUtil.getBackgroundTask(
+							backgroundTaskId);
+
+					Assert.assertEquals(
+						BackgroundTaskConstants.STATUS_COMPLETED_WITH_ERRORS,
+						backgroundTask.getStatus());
+				});
+
+			List<LogEntry> logEntries = logCapture.getLogEntries();
+
+			Assert.assertEquals(logEntries.toString(), 1, logEntries.size());
+
+			LogEntry logEntry = logEntries.get(0);
+
+			Assert.assertEquals(LoggerTestUtil.ERROR, logEntry.getPriority());
+
+			Throwable throwable = logEntry.getThrowable();
+
+			Assert.assertEquals(
+				DuplicateTagException.class, throwable.getClass());
+			Assert.assertEquals(
+				"A tag with the name " + name + " already exists",
+				throwable.getMessage());
+		}
 	}
 
 	@Test
@@ -222,7 +273,15 @@ public class AssetTagsPortletDataHandlerTest
 
 			AssetTag assetTag = _addTag();
 
-			DepotEntry depotEntry = _addStagedDepotEntry();
+			DepotEntry depotEntry = _depotEntryLocalService.addDepotEntry(
+				HashMapBuilder.put(
+					LocaleUtil.getDefault(), RandomTestUtil.randomString()
+				).build(),
+				HashMapBuilder.put(
+					LocaleUtil.getDefault(), RandomTestUtil.randomString()
+				).build(),
+				DepotConstants.TYPE_SPACE,
+				ServiceContextTestUtil.getServiceContext());
 
 			Group depotGroup = depotEntry.getGroup();
 
@@ -290,48 +349,14 @@ public class AssetTagsPortletDataHandlerTest
 		return true;
 	}
 
-	private DepotEntry _addStagedDepotEntry() throws Exception {
-		DepotEntry depotEntry = _depotEntryLocalService.addDepotEntry(
-			HashMapBuilder.put(
-				LocaleUtil.getDefault(), RandomTestUtil.randomString()
-			).build(),
-			HashMapBuilder.put(
-				LocaleUtil.getDefault(), RandomTestUtil.randomString()
-			).build(),
-			DepotConstants.TYPE_ASSET_LIBRARY,
-			ServiceContextTestUtil.getServiceContext());
-
-		return _enableLocalStaging(depotEntry);
-	}
-
 	private AssetTag _addTag() throws Exception {
+		return _addTag(RandomTestUtil.randomString());
+	}
+
+	private AssetTag _addTag(String name) throws Exception {
 		return _assetTagLocalService.addTag(
-			"", TestPropsValues.getUserId(), stagingGroup.getGroupId(),
-			RandomTestUtil.randomString(),
+			"", TestPropsValues.getUserId(), stagingGroup.getGroupId(), name,
 			ServiceContextTestUtil.getServiceContext());
-	}
-
-	private DepotEntry _enableLocalStaging(DepotEntry depotEntry)
-		throws Exception {
-
-		Group stagingGroup = _enableLocalStaging(depotEntry.getGroup());
-
-		return DepotEntryLocalServiceUtil.fetchGroupDepotEntry(
-			stagingGroup.getGroupId());
-	}
-
-	private Group _enableLocalStaging(Group group) throws Exception {
-		ServiceContext serviceContext =
-			ServiceContextTestUtil.getServiceContext(group.getGroupId());
-
-		_setStagingAttributes(serviceContext);
-
-		serviceContext.setAttribute("staging", Boolean.TRUE);
-
-		StagingLocalServiceUtil.enableLocalStaging(
-			TestPropsValues.getUserId(), group, false, false, serviceContext);
-
-		return group.getStagingGroup();
 	}
 
 	private File _exportLayout() throws Exception {
@@ -352,25 +377,6 @@ public class AssetTagsPortletDataHandlerTest
 									AssetTagsAdminPortletKeys.ASSET_TAGS_ADMIN,
 								new String[] {Boolean.TRUE.toString()}
 							).build())));
-	}
-
-	private void _setStagingAttribute(
-		ServiceContext serviceContext, String key) {
-
-		serviceContext.setAttribute(
-			StagingConstants.STAGED_PREFIX + key + StringPool.DOUBLE_DASH,
-			String.valueOf(Boolean.TRUE));
-	}
-
-	private void _setStagingAttributes(ServiceContext serviceContext) {
-		_setStagingAttribute(
-			serviceContext, PortletDataHandlerKeys.DATA_STRATEGY_MIRROR);
-		_setStagingAttribute(
-			serviceContext, PortletDataHandlerKeys.PORTLET_CONFIGURATION_ALL);
-		_setStagingAttribute(
-			serviceContext, PortletDataHandlerKeys.PORTLET_DATA_ALL);
-		_setStagingAttribute(
-			serviceContext, PortletDataHandlerKeys.PORTLET_SETUP_ALL);
 	}
 
 	private ExportImportConfiguration _setUpExportImportConfiguration()

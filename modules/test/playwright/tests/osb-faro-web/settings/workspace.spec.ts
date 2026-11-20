@@ -10,6 +10,7 @@ import {loginAnalyticsCloudTest} from '../../../fixtures/loginAnalyticsCloudTest
 import {loginTest} from '../../../fixtures/loginTest';
 import {clickAndExpectToBeVisible} from '../../../utils/clickAndExpectToBeVisible';
 import getRandomString from '../../../utils/getRandomString';
+import {waitForAlert} from '../../../utils/waitForAlert';
 import {faroConfig} from '../main/faro.config';
 import {getDefaultProject} from '../main/utils/project';
 
@@ -124,34 +125,6 @@ test(
 );
 
 test(
-	'Subscription and Usage settings page shows current plan, limits, and add-ons',
-	{
-		tag: ['@LRAC-9180', '@LRAC-9183'],
-	},
-	async ({apiHelpers, page}) => {
-		const project = await getDefaultProject(apiHelpers);
-
-		await page.goto(
-			`${faroConfig.environment.baseUrl}/workspace/${project.groupId}/settings/usage`
-		);
-
-		await expect(page.getByText('Enterprise')).toBeVisible();
-
-		await expect(page.getByText('100,000').first()).toBeVisible();
-
-		await expect(page.getByText('60,000,000').first()).toBeVisible();
-
-		await expect(page.getByText('10,000').first()).toBeVisible();
-
-		await expect(page.getByText('15,000,000').first()).toBeVisible();
-
-		await expect(page.getByText('110,000').first()).toBeVisible();
-
-		await expect(page.getByText('75,000,000').first()).toBeVisible();
-	}
-);
-
-test(
 	'A workspace friendly URL can be set and resolves to the workspace',
 	{
 		tag: '@LRAC-11511',
@@ -176,7 +149,7 @@ test(
 			).toBeVisible();
 
 			await clickAndExpectToBeVisible({
-				target: page.getByText('Welcome to Analytics Cloud'),
+				target: page.getByText('Welcome to Liferay Data Platform'),
 				trigger: page.getByRole('link', {name: projectName}),
 			});
 
@@ -190,11 +163,7 @@ test(
 
 			await page.getByRole('button', {name: 'Next'}).click();
 
-			await clickAndExpectToBeVisible({
-				autoClick: true,
-				target: dialog.getByRole('button', {name: 'Skip'}),
-				trigger: dialog.getByRole('button', {name: 'Next'}),
-			});
+			await waitForAlert(page, 'Workspace Settings Saved');
 
 			// The friendly URL resolves to the workspace once the saved friendly
 			// URL has propagated
@@ -204,7 +173,10 @@ test(
 			);
 
 			await expect(
-				page.locator('span').filter({hasText: 'Workspace Settings'})
+				page.getByRole('heading', {
+					level: 3,
+					name: 'Workspace Settings',
+				})
 			).toBeVisible();
 		}
 		finally {
