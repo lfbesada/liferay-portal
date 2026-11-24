@@ -9,7 +9,9 @@ import com.liferay.layout.content.page.editor.sidebar.panel.ContentPageEditorSid
 import com.liferay.portal.kernel.language.Language;
 import com.liferay.portal.kernel.log.Log;
 import com.liferay.portal.kernel.log.LogFactoryUtil;
+import com.liferay.portal.kernel.model.Layout;
 import com.liferay.portal.kernel.security.permission.PermissionChecker;
+import com.liferay.portal.kernel.service.LayoutLocalService;
 import com.liferay.portal.kernel.service.permission.LayoutPermission;
 
 import java.util.Locale;
@@ -46,6 +48,12 @@ public class CommentsContentPageEditorSidebarPanel
 	public boolean isVisible(
 		PermissionChecker permissionChecker, long plid, int layoutType) {
 
+		Layout layout = _layoutLocalService.fetchLayout(plid);
+
+		if ((layout != null) && (layout.getLaunchSetId() > 0)) {
+			return false;
+		}
+
 		try {
 			if (_layoutPermission.containsLayoutUpdatePermission(
 					permissionChecker, plid)) {
@@ -67,6 +75,9 @@ public class CommentsContentPageEditorSidebarPanel
 
 	@Reference
 	private Language _language;
+
+	@Reference
+	private LayoutLocalService _layoutLocalService;
 
 	@Reference
 	private LayoutPermission _layoutPermission;
